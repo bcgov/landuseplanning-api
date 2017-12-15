@@ -29,6 +29,42 @@ exports.protectedGet = function(args, res, next) {
   });
 };
 
+//  Create a new application
+exports.protectedPost = function (args, res, next) {
+  var obj = args.swagger.params.app.value;
+  defaultLog.info("Incoming new object:", obj);
+
+  var Application = require('mongoose').model('Application');
+  var app = new Application(obj);
+  app.save()
+  .then(function (a) {
+    defaultLog.info("Saved new application object:", a);
+    res.writeHead(200, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify(a));
+  });
+};
+
+// Update an existing application
+exports.protectedPut = function (args, res, next) {
+  var objId = args.swagger.params.appId.value;
+  defaultLog.info("ObjectID:", args.swagger.params.appId.value);
+  var obj = args.swagger.params.app.value;
+  defaultLog.info("Incoming updated object:", obj);
+
+  var Application = require('mongoose').model('Application');
+  Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+      res.writeHead(200, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify(o));
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({}));
+    }
+  });
+}
+
 var getApplications = function (role) {
   return new Promise(function (resolve, reject) {
     var Application = require('mongoose').model('Application');

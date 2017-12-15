@@ -73,6 +73,29 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    post:
+      operationId: protectedPost
+      description: "Create a new application object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - write:application
+      parameters:
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/App"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Resource"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
     get:
       operationId: protectedGet
       description: "Authenticated access to retreiving applications."
@@ -81,6 +104,36 @@ paths:
       x-security-scopes:
         - admin
         - user
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Resource"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /application/{appId}:
+    x-swagger-router-controller: application
+    put:
+      operationId: protectedPut
+      description: "Update an application object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - write:application
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to update"
+          required: true
+          type: "string"
+        - name: app
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/App"
       responses:
         "200":
           description: "Success"
@@ -127,6 +180,14 @@ definitions:
       password:
         type: string
         example: "password"
+  AppId:
+    type: string
+  App:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "Fooey"
   Resource:
     type: object
     properties:
