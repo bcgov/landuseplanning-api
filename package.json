@@ -1,11 +1,11 @@
 {
-  "name": "swagger-jwt-example",
+  "name": "nrts-prc-api",
   "version": "0.0.1",
-  "author": "Miguel Duarte",
+  "author": "Mark Lisé",
   "contributors": [
-    "Miguel Duarte <miguelduarte42@gmail.com>"
+    "Mark Lisé <mark@digitalspace.ca>"
   ],
-  "description": "Swagger JWT example",
+  "description": "NRTS PRC API",
   "keywords": [],
   "license": "",
   "main": "app",
