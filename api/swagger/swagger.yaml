@@ -90,6 +90,32 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /public/application:
+    x-swagger-router-controller: application
+    options:
+      operationId: protectedOptions
+      description: "Options on Application Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Token"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: publicGet
+      description: "Retreiving public applications."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Resource"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
 
 definitions:
   Authentication:
