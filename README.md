@@ -1,6 +1,6 @@
 ## NRTS PRC API
 
-Minimal api for prc
+Minimal api for prc, stateless JWT & public API for NRTS-PRC
 
 ## How to run this
  
