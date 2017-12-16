@@ -10,22 +10,12 @@ var models        = require("./api/helpers/models");
 var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
 var winston        = require('winston');
 
-var userAuth = null;
-if (process.env.MONGODB_USERNAME && process.env.MONGODB_PASSWORD) {
-  userAuth = process.env.MONGODB_USERNAME +":"+ process.env.MONGODB_PASSWORD +"@";
-}
-var dbConnection;
-if (userAuth) {
-  dbConnection = 'mongodb://' + userAuth
+var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
                     + '/'
                     + (process.env.MONGODB_DATABASE || 'nrts-dev');
-} else {
-  dbConnection = 'mongodb://'
-                  + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
-                  + '/'
-                  + (process.env.MONGODB_DATABASE || 'nrts-dev');
-}
+var db_username = process.env.MONGODB_USERNAME || '';
+var db_password = process.env.MONGODB_PASSWORD || '';
 
 // Logging middleware
 winston.loggers.add('default', {
@@ -70,7 +60,9 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   // Load up DB
   var options = {
     useMongoClient: true,
-    poolSize: 10
+    poolSize: 10,
+    user: db_username,
+    pass: db_password
   };
   defaultLog.info("Connecting to:", dbConnection);
   mongoose.Promise  = global.Promise;
@@ -84,7 +76,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/application');
       defaultLog.info("db model loading done.");
 
-      app.listen(3000, function() {
+      app.listen(3000, '0.0.0.0', function() {
         defaultLog.info("Started server on port 3000");
       });
     },
