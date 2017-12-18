@@ -7,7 +7,7 @@
   ],
   "description": "NRTS PRC API",
   "keywords": [],
-  "license": "",
+  "license": "UNLICENED",
   "main": "app",
   "dependencies": {
     "bcrypt-nodejs": "0.0.3",
@@ -23,9 +23,6 @@
     "validator": "7.0.0",
     "winston": "^2.4.0",
     "yamljs": "0.2.9"
-  },
-  "engines": {
-    "node": "7.7.0"
   },
   "scripts": {
     "start": "node app"
