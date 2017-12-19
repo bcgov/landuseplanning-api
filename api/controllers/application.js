@@ -14,7 +14,7 @@ exports.publicGet = function (args, res, next) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.appId.value)};
   }
 
-  getApplications(['public'], {})
+  getApplications(['public'], query)
   .then(function (data) {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(data));
