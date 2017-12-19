@@ -1,13 +1,20 @@
 var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
+var mongoose    = require('mongoose');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
 
 exports.publicGet = function (args, res, next) {
-  getApplications(['public'])
+  // Build match query if on appId route
+  var query = {};
+  if (args.swagger.params.appId) {
+    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.appId.value)};
+  }
+
+  getApplications(['public'], {})
   .then(function (data) {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(data));
@@ -17,12 +24,18 @@ exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.params.auth_payload.scopes;
 
-  var Application = require('mongoose').model('Application');
-  var User        = require('mongoose').model('User');
+  var Application = mongoose.model('Application');
+  var User        = mongoose.model('User');
 
   defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
 
-  getApplications(args.swagger.params.auth_payload.scopes)
+  // Build match query if on appId route
+  var query = {};
+  if (args.swagger.params.appId) {
+    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.appId.value)};
+  }
+
+  getApplications(args.swagger.params.auth_payload.scopes, query)
   .then(function (data) {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(data));
@@ -34,7 +47,7 @@ exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.app.value;
   defaultLog.info("Incoming new object:", obj);
 
-  var Application = require('mongoose').model('Application');
+  var Application = mongoose.model('Application');
   var app = new Application(obj);
   app.save()
   .then(function (a) {
@@ -65,9 +78,9 @@ exports.protectedPut = function (args, res, next) {
   });
 }
 
-var getApplications = function (role) {
+var getApplications = function (role, query) {
   return new Promise(function (resolve, reject) {
-    var Application = require('mongoose').model('Application');
+    var Application = mongoose.model('Application');
     var projection = {};
     var fields = ['_id',
                   'code',
@@ -84,6 +97,9 @@ var getApplications = function (role) {
         projection[f] = 1;
     });
     Application.aggregate([
+      {
+        "$match": query
+      },
       {
         "$project": projection
       },

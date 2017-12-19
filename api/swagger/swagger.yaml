@@ -115,6 +115,47 @@ paths:
             $ref: "#/definitions/Error"
   /application/{appId}:
     x-swagger-router-controller: application
+    options:
+      operationId: protectedOptions
+      description: "Options on Application GET Route"
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Token"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: protectedGet
+      description: "Authenticated access to retreiving applications."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - user
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Resource"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
     put:
       operationId: protectedPut
       description: "Update an application object."
@@ -160,6 +201,44 @@ paths:
     get:
       operationId: publicGet
       description: "Retreiving public applications."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Resource"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/application/{appId}:
+    x-swagger-router-controller: application
+    options:
+      operationId: protectedOptions
+      description: "Options on Application GET Route"
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/Token"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: publicGet
+      description: "Public access to retreiving applications."
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
       responses:
         "200":
           description: "Success"
