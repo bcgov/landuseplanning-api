@@ -15,6 +15,7 @@ Check the swagger-ui on `http://localhost:3000/docs`
 "password": "password"
 }
 ``
+
  and take the token that you get in the response
  
  6) GET `http://localhost:3000/api/application` again with the following header
