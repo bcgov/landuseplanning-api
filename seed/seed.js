@@ -118,17 +118,17 @@ var run = function () {
     console.log('start');
     Promise.resolve()
       .then(function () {
-        // require('./loadOrgs')();
+        // require('./loadOrgs')(); // FUTURE
         var orglist = require('./orglist.json');
         return insertAll('organizations', orglist);
       })
       .then(function () {
-        // require('./loadApps')();
+        // require('./loadApps')(); // FUTURE
         var applist = require('./applist.json');
         return insertAll('applications', applist);
       })
       .then(function () {
-        // require('./loadDocs')();
+        // require('./loadDocs')(); // FUTURE
         var doclist = require('./doclist.json');
         return insertAll('documents', doclist);
       })
