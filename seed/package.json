@@ -8,10 +8,9 @@
   "description": "NRTS PRC API SEED",
   "keywords": [],
   "license": "UNLICENSED",
-  "main": "app",
+  "main": "seed",
   "dependencies": {
-    "mongoose": "^4.13.6",
-    "promise": "^8.0.1"
+    "mongoose": "^4.13.6"
   },
   "scripts": {
     "start": "node seed"

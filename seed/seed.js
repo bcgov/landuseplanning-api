@@ -1,27 +1,31 @@
 'use strict';
 
+//
+// Example: node seed.js MONGO_USER MONGO_PASSWORD mongodb nrts-prod
+//
+
 var MongoClient = require('mongodb').MongoClient;
-var Promise = require('promise');
+var Promise = require('es6-promise').Promise;
 var _ = require('lodash');
 
-var defaultConnectionString = 'mongodb://localhost:27017/nrts-dev';
-var url = '';
+var uri = '';
 
 var args = process.argv.slice(2);
 if (args.length !== 4) {
-  console.log('Using default localhost connection:', defaultConnectionString);
-  url = defaultConnectionString;
+  uri = 'mongodb://localhost:27017/nrts-dev';
+  console.log('Using default connection:', uri);
 } else {
   var username = args[0];
   var password = args[1];
   var host = args[2];
   var db = args[3];
-  url = 'mongodb://' + username + ':' + password + '@' + host + ':27017/' + db;
+  uri = 'mongodb://' + username + ':' + password + '@' + host + ':27017/' + db;
+  console.log('Using connection:', uri);
 }
 
 var find = function (collectionName, query, fields) {
   return new Promise(function (resolve, reject) {
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(uri, function (err, db) {
 
       var collection = db.collection(collectionName);
 
@@ -37,7 +41,7 @@ var find = function (collectionName, query, fields) {
 
 var findOne = function (collectionName, query) {
   return new Promise(function (resolve, reject) {
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(uri, function (err, db) {
 
       var collection = db.collection(collectionName);
 
@@ -53,18 +57,25 @@ var findOne = function (collectionName, query) {
 
 var insertAll = function (collectionName, entries) {
   return new Promise(function (resolve, reject) {
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(uri, function (err, db) {
+
+      if (err) {
+        reject(err);
+        return;
+      }
 
       var collection = db.collection(collectionName);
 
       collection.insertMany(entries, {}, function (err, result) {
         db.close();
+
         if (err) {
           reject(err);
-        } else {
-          console.log('inserted ' + result.insertedCount + ' entry(ies) into ' + collectionName);
-          resolve(result);
+          return;
         }
+
+        console.log('inserted ' + result.insertedCount + ' entry(ies) into ' + collectionName);
+        resolve(result);
       });
 
     });
@@ -73,7 +84,7 @@ var insertAll = function (collectionName, entries) {
 
 var update = function (collectionName, query, entry) {
   return new Promise(function (resolve, reject) {
-    MongoClient.connect(url, function (err, db) {
+    MongoClient.connect(uri, function (err, db) {
 
       var collection = db.collection(collectionName);
 
@@ -125,7 +136,6 @@ var run = function () {
         console.log('end');
         resolve(':)');
       }, function (err) {
-        console.log('ERROR: end');
         console.log('ERROR: end err =', JSON.stringify(err));
         reject(err);
       });
