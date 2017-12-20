@@ -1,7 +1,7 @@
 [
     {
-        "_addedBy": "admin",
-        "_proponent": "Letts Marine Services Corp",
+        "addedBy": "admin",
+        "proponent": "Letts Marine Services Corp",
         "tags": [
             [
                 "public"
@@ -10,7 +10,6 @@
                 "admin"
             ]
         ],
-        "isPublished": false,
         "code": "6406200",
         "name": "6406200",
         "cl_file": "6406200",
@@ -37,8 +36,8 @@
         "postID": 54105
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "SB Central Coast Holding (01) Corp",
+        "addedBy": "admin",
+        "proponent": "SB Central Coast Holding (01) Corp",
         "tags": [
             [
                 "public"
@@ -47,7 +46,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6407573",
         "name": "6407573",
         "cl_file": "6407573",
@@ -74,8 +72,8 @@
         "postID": 54104
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Bridge Power Hydro Developments Ltd.",
+        "addedBy": "admin",
+        "proponent": "Bridge Power Hydro Developments Ltd.",
         "tags": [
             [
                 "public"
@@ -84,7 +82,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6408232",
         "name": "6408232",
         "cl_file": "6408232, 6001185",
@@ -111,8 +108,8 @@
         "postID": 51721
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Yukon Alpine Heli Skiing Ltd",
+        "addedBy": "admin",
+        "proponent": "Yukon Alpine Heli Skiing Ltd",
         "tags": [
             [
                 "public"
@@ -121,7 +118,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6408427",
         "name": "6408427",
         "cl_file": "6408427",
@@ -148,8 +144,8 @@
         "postID": 54143
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Daudet Creek Contracting",
+        "addedBy": "admin",
+        "proponent": "Daudet Creek Contracting",
         "tags": [
             [
                 "public"
@@ -158,7 +154,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409010",
         "name": "6409010",
         "cl_file": "6409010",
@@ -185,8 +180,8 @@
         "postID": 53665
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Skeena Cat Skiing Inc",
+        "addedBy": "admin",
+        "proponent": "Skeena Cat Skiing Inc",
         "tags": [
             [
                 "public"
@@ -195,7 +190,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409020",
         "name": "6409020",
         "cl_file": "6409020",
@@ -222,8 +216,8 @@
         "postID": 53872
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Carbon Development Corporation",
+        "addedBy": "admin",
+        "proponent": "Carbon Development Corporation",
         "tags": [
             [
                 "public"
@@ -232,7 +226,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409021",
         "name": "6409021",
         "cl_file": "6409021",
@@ -259,8 +252,8 @@
         "postID": 53923
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "BC Hydro & Power Authority",
+        "addedBy": "admin",
+        "proponent": "BC Hydro & Power Authority",
         "tags": [
             [
                 "public"
@@ -269,7 +262,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409023",
         "name": "6409023",
         "cl_file": "6409023",
@@ -296,8 +288,8 @@
         "postID": 53869
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Tina St Cyr",
+        "addedBy": "admin",
+        "proponent": "Tina St Cyr",
         "tags": [
             [
                 "public"
@@ -306,7 +298,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409024",
         "name": "6409024",
         "cl_file": "6409024",
@@ -333,8 +324,8 @@
         "postID": 53922
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Nancy Norby-Quock",
+        "addedBy": "admin",
+        "proponent": "Nancy Norby-Quock",
         "tags": [
             [
                 "public"
@@ -343,7 +334,6 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409030",
         "name": "6409030",
         "cl_file": "6409030",
