@@ -1,7 +1,7 @@
 [
     {
-        "_addedBy": "admin",
-        "_proponent": "Letts Marine Services Corp",
+        "addedBy": "admin",
+        "proponent": "Letts Marine Services Corp",
         "tags": [
             [
                 "public"
@@ -10,10 +10,11 @@
                 "admin"
             ]
         ],
-        "isPublished": false,
         "code": "6406200",
         "name": "6406200",
-        "cl_file": "6406200",
+        "cl_files": [
+            "6406200"
+        ],
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL",
@@ -21,8 +22,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Porcher Island",
-        "lat": 53.9934,
-        "lon": -130.4875,
+        "latitude": 53.9934,
+        "longitude": -130.4875,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 2,
         "projectDate": "2017-11-09",
@@ -37,8 +38,8 @@
         "postID": 54105
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "SB Central Coast Holding (01) Corp",
+        "addedBy": "admin",
+        "proponent": "SB Central Coast Holding (01) Corp",
         "tags": [
             [
                 "public"
@@ -47,10 +48,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6407573",
         "name": "6407573",
-        "cl_file": "6407573",
+        "cl_files": [
+            "6407573"
+        ],
         "type": "LICENCE",
         "subtype": "INVESTIGATIVE LICENCE",
         "purpose": "WINDPOWER",
@@ -58,8 +60,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Aristazabal Island",
-        "lat": 52.6535,
-        "lon": -129.073,
+        "latitude": 52.6535,
+        "longitude": -129.073,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 4993,
         "projectDate": "2017-11-28",
@@ -74,8 +76,8 @@
         "postID": 54104
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Bridge Power Hydro Developments Ltd.",
+        "addedBy": "admin",
+        "proponent": "Bridge Power Hydro Developments Ltd.",
         "tags": [
             [
                 "public"
@@ -84,10 +86,12 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6408232",
         "name": "6408232",
-        "cl_file": "6408232, 6001185",
+        "cl_files": [
+            "6408232",
+            "6001185"
+        ],
         "type": "LICENCE",
         "subtype": "INVESTIGATIVE LICENCE",
         "purpose": "WATERPOWER",
@@ -95,8 +99,8 @@
         "status": "DISPOSITION IN GOOD STANDING",
         "region": "Skeena, Smithers",
         "location": "Bitter Creek - North Coast",
-        "lat": 56.0329,
-        "lon": -129.9373,
+        "latitude": 56.0329,
+        "longitude": -129.9373,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 634.936,
         "projectDate": "2017-10-27",
@@ -111,8 +115,8 @@
         "postID": 51721
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Yukon Alpine Heli Skiing Ltd",
+        "addedBy": "admin",
+        "proponent": "Yukon Alpine Heli Skiing Ltd",
         "tags": [
             [
                 "public"
@@ -121,10 +125,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6408427",
         "name": "6408427",
-        "cl_file": "6408427",
+        "cl_files": [
+            "6408427"
+        ],
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL RECREATION",
@@ -132,8 +137,8 @@
         "status": "DISPOSITION IN GOOD STANDING",
         "region": "Skeena, Smithers",
         "location": "Telegraph Creek",
-        "lat": 57.9029,
-        "lon": -131.1592,
+        "latitude": 57.9029,
+        "longitude": -131.1592,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 2.4,
         "projectDate": "2017-11-15",
@@ -148,8 +153,8 @@
         "postID": 54143
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Daudet Creek Contracting",
+        "addedBy": "admin",
+        "proponent": "Daudet Creek Contracting",
         "tags": [
             [
                 "public"
@@ -158,10 +163,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409010",
         "name": "6409010",
-        "cl_file": "6409010",
+        "cl_files": [
+            "6409010"
+        ],
         "type": "",
         "subtype": "",
         "purpose": "COMMERCIAL",
@@ -169,8 +175,8 @@
         "status": "",
         "region": "Skeena, Smithers",
         "location": "Forest Avenue South, Kitimat",
-        "lat": 54.056002,
-        "lon": -128.606403,
+        "latitude": 54.056002,
+        "longitude": -128.606403,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 1.0,
         "projectDate": "2017-08-16",
@@ -185,8 +191,8 @@
         "postID": 53665
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Skeena Cat Skiing Inc",
+        "addedBy": "admin",
+        "proponent": "Skeena Cat Skiing Inc",
         "tags": [
             [
                 "public"
@@ -195,10 +201,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409020",
         "name": "6409020",
-        "cl_file": "6409020",
+        "cl_files": [
+            "6409020"
+        ],
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL RECREATION",
@@ -206,8 +213,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Hazelton",
-        "lat": 55.2568,
-        "lon": -127.672,
+        "latitude": 55.2568,
+        "longitude": -127.672,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 30183.686,
         "projectDate": "2017-10-05",
@@ -222,8 +229,8 @@
         "postID": 53872
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Carbon Development Corporation",
+        "addedBy": "admin",
+        "proponent": "Carbon Development Corporation",
         "tags": [
             [
                 "public"
@@ -232,10 +239,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409021",
         "name": "6409021",
-        "cl_file": "6409021",
+        "cl_files": [
+            "6409021"
+        ],
         "type": "LICENCE",
         "subtype": "TEMPORARY LICENCE",
         "purpose": "INDUSTRIAL",
@@ -243,8 +251,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Telkwa",
-        "lat": 54.695,
-        "lon": -127.0476,
+        "latitude": 54.695,
+        "longitude": -127.0476,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 48.3,
         "projectDate": "2017-10-27",
@@ -259,8 +267,8 @@
         "postID": 53923
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "BC Hydro & Power Authority",
+        "addedBy": "admin",
+        "proponent": "BC Hydro & Power Authority",
         "tags": [
             [
                 "public"
@@ -269,10 +277,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409023",
         "name": "6409023",
-        "cl_file": "6409023",
+        "cl_files": [
+            "6409023"
+        ],
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "TRANSPORTATION",
@@ -280,8 +289,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Babine Lake to Takla Landing",
-        "lat": 54.7967,
-        "lon": -126.0272,
+        "latitude": 54.7967,
+        "longitude": -126.0272,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 47.1,
         "projectDate": "2017-10-05",
@@ -296,8 +305,8 @@
         "postID": 53869
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Tina St Cyr",
+        "addedBy": "admin",
+        "proponent": "Tina St Cyr",
         "tags": [
             [
                 "public"
@@ -306,10 +315,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409024",
         "name": "6409024",
-        "cl_file": "6409024",
+        "cl_files": [
+            "6409024"
+        ],
         "type": "CROWN GRANT",
         "subtype": "DIRECT SALE",
         "purpose": "RESIDENTIAL",
@@ -317,8 +327,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Atlin BC",
-        "lat": 59.578,
-        "lon": -133.6895,
+        "latitude": 59.578,
+        "longitude": -133.6895,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 0.683,
         "projectDate": "2017-10-27",
@@ -333,8 +343,8 @@
         "postID": 53922
     },
     {
-        "_addedBy": "admin",
-        "_proponent": "Nancy Norby-Quock",
+        "addedBy": "admin",
+        "proponent": "Nancy Norby-Quock",
         "tags": [
             [
                 "public"
@@ -343,10 +353,11 @@
                 "admin"
             ]
         ],
-        "isPublished": true,
         "code": "6409030",
         "name": "6409030",
-        "cl_file": "6409030",
+        "cl_files": [
+            "6409030"
+        ],
         "type": "CROWN GRANT",
         "subtype": "DIRECT SALE",
         "purpose": "RESIDENTIAL",
@@ -354,8 +365,8 @@
         "status": "ACCEPTED",
         "region": "Skeena, Smithers",
         "location": "Seltat Creek, Haines Highway",
-        "lat": 59.6,
-        "lon": -136.36667,
+        "latitude": 59.6,
+        "longitude": -136.36667,
         "businessUnit": "SK - LAND MGMNT - SKEENA FIELD OFFICE",
         "areaHectares": 0.78,
         "projectDate": "2017-11-28",
