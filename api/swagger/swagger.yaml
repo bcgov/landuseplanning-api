@@ -28,6 +28,63 @@ consumes:
   - application/json
 produces:
   - application/json
+
+definitions:
+  Authentication:
+    type: object
+    properties:
+      username:
+        type: string
+        example: "username"
+      password:
+        type: string
+        example: "password"
+  AppId:
+    type: string
+  App:
+    type: object
+    properties:
+      name:
+        type: string
+        example: "Fooey"
+  ApplicationFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|type
+    enum: &applicationFields
+      - name
+      - type
+      - subtype
+      - purpose
+      - subpurpose
+      - proponent
+      - latitude
+      - longitude
+      - location
+      - region
+      - description
+      - legalDescription
+      - businessUnit
+      - cl_files
+      - commodityType
+      - commodity
+      - commodities
+  Resource:
+    type: object
+    properties:
+      resource:
+        type: string
+  Token:
+    type: object
+    properties:
+      token:
+        type: string
+  Error:
+    type: object
+    properties:
+      message:
+        type: string
+
 paths:
 
   /login/token:
@@ -104,6 +161,16 @@ paths:
       x-security-scopes:
         - admin
         - user
+      parameters:
+        - in: query
+          name: fields
+          description: "Application fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *applicationFields
       responses:
         "200":
           description: "Success"
@@ -147,6 +214,15 @@ paths:
           description: "ID of application to get"
           required: true
           type: "string"
+        - in: query
+          name: fields
+          description: "Application fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *applicationFields
       responses:
         "200":
           description: "Success"
@@ -201,6 +277,16 @@ paths:
     get:
       operationId: publicGet
       description: "Retreiving public applications."
+      parameters:
+        - in: query
+          name: fields
+          description: "Application fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *applicationFields
       responses:
         "200":
           description: "Success"
@@ -239,6 +325,15 @@ paths:
           description: "ID of application to get"
           required: true
           type: "string"
+        - in: query
+          name: fields
+          description: "Application fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *applicationFields
       responses:
         "200":
           description: "Success"
@@ -249,36 +344,3 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-definitions:
-  Authentication:
-    type: object
-    properties:
-      username:
-        type: string
-        example: "username"
-      password:
-        type: string
-        example: "password"
-  AppId:
-    type: string
-  App:
-    type: object
-    properties:
-      name:
-        type: string
-        example: "Fooey"
-  Resource:
-    type: object
-    properties:
-      resource:
-        type: string
-  Token:
-    type: object
-    properties:
-      token:
-        type: string
-  Error:
-    type: object
-    properties:
-      message:
-        type: string

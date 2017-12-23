@@ -14,7 +14,7 @@ exports.publicGet = function (args, res, next) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.appId.value)};
   }
 
-  getApplications(['public'], query)
+  getApplications(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(data));
@@ -35,7 +35,7 @@ exports.protectedGet = function(args, res, next) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.appId.value)};
   }
 
-  getApplications(args.swagger.params.auth_payload.scopes, query)
+  getApplications(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(data));
@@ -78,33 +78,43 @@ exports.protectedPut = function (args, res, next) {
   });
 }
 
-var getApplications = function (role, query) {
+var getApplications = function (role, query, fields) {
   return new Promise(function (resolve, reject) {
     var Application = mongoose.model('Application');
     var projection = {};
-    var fields = ['_id',
-                  'code',
-                  'name',
-                  'type',
-                  'subtype',
-                  'purpose',
-                  'subpurpose',
-                  'proponent',
-                  'latitude',
-                  'longitude',
-                  'location',
-                  'region',
-                  'description',
-                  'legalDescription',
-                  'businessUnit',
-                  'cl_files',
-                  'commodityType',
-                  'commodity',
-                  'commodities',
-                  'tags'];
-    _.each(fields, function (f) {
+
+    // Fields we always return
+    var defaultFields = ['_id',
+                        'code',
+                        'tags'];
+    _.each(defaultFields, function (f) {
         projection[f] = 1;
     });
+
+    // Add requested fields - sanitize first by including only those that we can/want to return
+    var sanitizedFields = _.remove(fields, function (f) {
+      return (_.indexOf(['name',
+                        'type',
+                        'subtype',
+                        'purpose',
+                        'subpurpose',
+                        'proponent',
+                        'latitude',
+                        'longitude',
+                        'location',
+                        'region',
+                        'description',
+                        'legalDescription',
+                        'businessUnit',
+                        'cl_files',
+                        'commodityType',
+                        'commodity',
+                        'commodities'], f) !== -1);
+    });
+    _.each(sanitizedFields, function (f) {
+      projection[f] = 1;
+    });
+
     Application.aggregate([
       {
         "$match": query
