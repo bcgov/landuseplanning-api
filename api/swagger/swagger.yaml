@@ -39,18 +39,29 @@ definitions:
       password:
         type: string
         example: "password"
+
+### Application Definitions
   AppId:
-    type: string
-  App:
     type: object
     properties:
-      name:
+      _id:
         type: string
-        example: "Fooey"
-  ApplicationFields:
+        example: "54759eb3c090d83494e2d804"
+  AppObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+      tags:
+        type: string
+        example: "[['public']]"
+        ## TODO: Add more fields here.
+  Application:
     type: string
     description: "Optional fields to return."
     example: name|type
+    #TODO: Fix enums
     enum: &applicationFields
       - name
       - type
@@ -69,11 +80,32 @@ definitions:
       - commodityType
       - commodity
       - commodities
-  Resource:
+### Document Definitions
+  DocId:
     type: object
     properties:
-      resource:
+      displayName:
         type: string
+        example: "A cool document"
+  DocObject:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool document"
+        ## TODO: Add more fields here.
+  DocumentFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|type
+    #TODO: Fix enums
+    enum: &documentFields
+      - displayName
+      - documentFileName
+      - internalURL
+      - internalMime
+
+### Resource Definitions
   Token:
     type: object
     properties:
@@ -85,6 +117,7 @@ definitions:
       message:
         type: string
 
+### Path Definitions
 paths:
 
   /login/token:
@@ -125,7 +158,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Token"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -143,12 +176,12 @@ paths:
           in: body
           required: true
           schema:
-            $ref: "#/definitions/App"
+            $ref: "#/definitions/AppId"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -175,7 +208,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -195,7 +228,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Token"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -227,7 +260,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -250,12 +283,12 @@ paths:
           in: body
           required: true
           schema:
-            $ref: "#/definitions/App"
+            $ref: "#/definitions/AppId"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -269,7 +302,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Token"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -291,7 +324,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -311,7 +344,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Token"
+            $ref: "#/definitions/AppObject"
         "403":
           description: "Access Denied"
           schema:
@@ -338,7 +371,236 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/Resource"
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## Documents
+  /document:
+    x-swagger-router-controller: document
+    options:
+      operationId: protectedOptions
+      description: "Options on Document Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      operationId: protectedPost
+      description: "Create a new document object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - write:document
+      parameters:
+        - name: doc
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DocId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a document."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - user
+      parameters:
+        - in: query
+          name: fields
+          description: "Document fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /document/{docId}:
+    x-swagger-router-controller: document
+    options:
+      operationId: protectedOptions
+      description: "Options on Document GET Route"
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a document."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - user
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Document fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      operationId: protectedPut
+      description: "Update an document object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - admin
+        - write:document
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to update"
+          required: true
+          type: "string"
+        - name: doc
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DocId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/document:
+    x-swagger-router-controller: document
+    options:
+      operationId: protectedOptions
+      description: "Options on Document Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: publicGet
+      description: "Retreiving public documents."
+      parameters:
+        - in: query
+          name: fields
+          description: "Document fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/document/{docId}:
+    x-swagger-router-controller: document
+    options:
+      operationId: protectedOptions
+      description: "Options on Document GET Route"
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      operationId: publicGet
+      description: "Public access to retreiving documents."
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Document fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
         "403":
           description: "Access Denied"
           schema:
