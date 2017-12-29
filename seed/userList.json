@@ -1,0 +1,8 @@
+[
+    {
+        "username": "admin",
+        "password": "admin",
+        "displayName": "PRC Admin",
+        "roles": ["sysadmin", "public"]
+    }
+]

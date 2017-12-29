@@ -119,6 +119,11 @@ var run = function () {
     Promise.resolve()
       .then(function () {
         // require('./loadOrgs')(); // FUTURE
+        var userList = require('./userlist.json');
+        return insertAll('users', userList);
+      })
+      .then(function () {
+        // require('./loadOrgs')(); // FUTURE
         var orglist = require('./orglist.json');
         return insertAll('organizations', orglist);
       })
