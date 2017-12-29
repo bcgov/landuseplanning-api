@@ -2,6 +2,11 @@ var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
+var mime        = require('mime-types');
+var FlakeIdGen  = require('flake-idgen'),
+    intformat   = require('biguint-format'),
+    generator   = new FlakeIdGen;
+var fs          = require('fs');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -59,15 +64,30 @@ exports.protectedPost = function (args, res, next) {
 
 // Update an existing application
 exports.protectedPut = function (args, res, next) {
+  // defaultLog.info("upfile:", args.swagger.params.upfile);
   var objId = args.swagger.params.docId.value;
   defaultLog.info("ObjectID:", args.swagger.params.docId.value);
-  var obj = args.swagger.params.app.value;
-  defaultLog.info("Incoming updated object:", obj);
+
+  var guid = intformat(generator.next(), 'dec');
+  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+  try {
+    // TODO: Read from ENV.
+    fs.writeFileSync("./uploads/"+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+  } catch (e) {
+    defaultLog.info("Error:", e);
+    res.writeHead(400, { "Content-Type": "application/json" });
+    // Delete the path details before we return to the caller.
+    delete e['path'];
+    return res.end(JSON.stringify(e));
+  }
+
+  var obj = args.swagger.params;
+  // defaultLog.info("Incoming updated object:", obj);
 
   var Document = require('mongoose').model('Document');
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      defaultLog.info("o:", o)
       res.writeHead(200, { "Content-Type": "application/json" });
       return res.end(JSON.stringify(o));
     } else {

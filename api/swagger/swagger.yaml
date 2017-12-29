@@ -272,6 +272,7 @@ paths:
         - Bearer: []
       x-security-scopes:
         - admin
+        - sysadmin
         - write:application
       parameters:
         - name: appId
@@ -279,11 +280,6 @@ paths:
           description: "ID of application to update"
           required: true
           type: "string"
-        - name: app
-          in: body
-          required: true
-          schema:
-            $ref: "#/definitions/AppId"
       responses:
         "200":
           description: "Success"
@@ -395,6 +391,7 @@ paths:
     post:
       operationId: protectedPost
       description: "Create a new document object."
+      summary: "Create a new document object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -501,18 +498,21 @@ paths:
         - Bearer: []
       x-security-scopes:
         - admin
+        - sysadmin
         - write:document
+      consumes:
+        - multipart/form-data
       parameters:
         - name: docId
           in: path
           description: "ID of document to update"
           required: true
           type: "string"
-        - name: doc
-          in: body
+        - name: upfile
+          in: formData
+          description: "The file to upload."
           required: true
-          schema:
-            $ref: "#/definitions/DocId"
+          type: file
       responses:
         "200":
           description: "Success"
