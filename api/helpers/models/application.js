@@ -4,7 +4,9 @@
     _proponent       : { type: String, trim: true, default: null},
     code             : { type: String, trim: true, default: ''},
     name             : { type: String, trim: true },
-    tags             : [[{ type: String, trim: true, default: '[["admin"]]' }]],
+    // Note: Default on tag property is purely for display only, they have no real effect on the model
+    // This must be done in the code.
+    tags             : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     type             : { type: String },
     subtype          : { type: String },
     purpose          : { type: String },
