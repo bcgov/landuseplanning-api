@@ -1,5 +1,5 @@
  module.exports = require ('../models')('Document', {
-    // _addedBy         : { type:'ObjectId', ref:'User', default:null },
+    _addedBy         : { type:'ObjectId', ref:'User', default:null },
     // _application     : { type:'ObjectId', ref:'Application', default:null },
     documentFileName : { type:String, default:'' },
     // Note: Default on tag property is purely for display only, they have no real effect on the model

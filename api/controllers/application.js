@@ -25,7 +25,6 @@ exports.protectedGet = function(args, res, next) {
   self.scopes     = args.swagger.params.auth_payload.scopes;
 
   var Application = mongoose.model('Application');
-  var User        = mongoose.model('User');
 
   defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
 

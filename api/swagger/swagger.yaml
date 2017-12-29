@@ -25,6 +25,11 @@ tags:
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "user"
+  description: "Operations about users"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -150,6 +155,27 @@ definitions:
     enum: &organizationFields
       - name
       - code
+### User Definitions
+  UserId:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool user"
+  UserObject:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool user"
+        ## TODO: Add more fields here.
+  UserFields:
+    type: string
+    description: "Optional fields to return."
+    example: displayName|displayName
+    #TODO: Fix enums
+    enum: &userFields
+      - displayName
 ### Resource Definitions
   Token:
     type: object
@@ -964,6 +990,163 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+### User
+  /user:
+    x-swagger-router-controller: user
+    options:
+      tags:
+        - user
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on User Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - user
+      summary: "Create a new user"
+      operationId: protectedPost
+      description: "Create a new user object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:user
+      parameters:
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - user
+      summary: "Get a list of users"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving users."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+        - in: query
+          name: fields
+          description: "User fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *userFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /user/{userId}:
+    x-swagger-router-controller: user
+    options:
+      tags:
+        - user
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on User GET Route"
+      parameters:
+        - name: userId
+          in: path
+          description: "ID of user to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - user
+      summary: "Get an user"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving users."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+        - name: userId
+          in: path
+          description: "ID of user to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "User fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *userFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - user
+      summary: "Update an user"
+      operationId: protectedPut
+      description: "Update an user object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:user
+      parameters:
+        - name: userId
+          in: path
+          description: "ID of user to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
         "403":
           description: "Access Denied"
           schema:
