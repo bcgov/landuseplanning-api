@@ -4,6 +4,27 @@ info:
   title: NRTS PRC API
 host: localhost:3000
 basePath: /api
+tags:
+- name: "login"
+  description: "Everything about Logging in"
+  externalDocs:
+    description: "Find out more"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "application"
+  description: "Operations about applications"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "document"
+  description: "Operations about documents"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "organization"
+  description: "Operations about organizations"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -104,7 +125,31 @@ definitions:
       - documentFileName
       - internalURL
       - internalMime
-
+### Organization Definitions
+  OrgId:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+  OrgObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+      tags:
+        type: string
+        example: "[['public']]"
+        ## TODO: Add more fields here.
+  Organization:
+    type: string
+    description: "Optional fields to return."
+    example: name|code
+    #TODO: Fix enums
+    enum: &organizationFields
+      - name
+      - code
 ### Resource Definitions
   Token:
     type: object
@@ -119,20 +164,25 @@ definitions:
 
 ### Path Definitions
 paths:
-
   /login/token:
     x-swagger-router-controller: login
     options:
+      tags:
+        - login
       operationId: loginOptions
       description: "Options for Login"
+      summary: "Pre-flight request"
       responses:
         "200":
           description: "Success"
           schema:
             $ref: "#/definitions/Token"
     post:
+      tags:
+        - login
       operationId: loginPost
       description: "Get a JWT in order to access certain protected routes."
+      summary: "Get a Bearer token."
       parameters:
         - name: authentication
           in: body
@@ -149,9 +199,13 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+### Application Routes
   /application:
     x-swagger-router-controller: application
     options:
+      tags:
+        - application
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Application Route"
       responses:
@@ -164,6 +218,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     post:
+      tags:
+        - application
+      summary: "Create a new application"
       operationId: protectedPost
       description: "Create a new application object."
       security:
@@ -187,6 +244,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - application
+      summary: "Get a list of applications"
       operationId: protectedGet
       description: "Authenticated access to retreiving applications."
       security:
@@ -216,6 +276,9 @@ paths:
   /application/{appId}:
     x-swagger-router-controller: application
     options:
+      tags:
+        - application
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Application GET Route"
       parameters:
@@ -234,6 +297,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - application
+      summary: "Get an application"
       operationId: protectedGet
       description: "Authenticated access to retreiving applications."
       security:
@@ -266,6 +332,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     put:
+      tags:
+        - application
+      summary: "Update an application"
       operationId: protectedPut
       description: "Update an application object."
       security:
@@ -291,6 +360,9 @@ paths:
   /public/application:
     x-swagger-router-controller: application
     options:
+      tags:
+        - application
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Application Route"
       responses:
@@ -303,6 +375,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - application
+      summary: "Get a list of public applications"
       operationId: publicGet
       description: "Retreiving public applications."
       parameters:
@@ -327,6 +402,9 @@ paths:
   /public/application/{appId}:
     x-swagger-router-controller: application
     options:
+      tags:
+        - application
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Application GET Route"
       parameters:
@@ -345,6 +423,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - application
+      summary: "Get an application"
       operationId: publicGet
       description: "Public access to retreiving applications."
       parameters:
@@ -376,6 +457,9 @@ paths:
   /document:
     x-swagger-router-controller: document
     options:
+      tags:
+        - document
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Document Route"
       responses:
@@ -388,6 +472,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     post:
+      tags:
+        - document
+      summary: "Create a new document"
       operationId: protectedPost
       description: "Create a new document object."
       summary: "Create a new document object."
@@ -412,6 +499,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - document
+      summary: "Get a list of documents"
       operationId: protectedGet
       description: "Authenticated access to retreiving a document."
       security:
@@ -441,6 +531,9 @@ paths:
   /document/{docId}:
     x-swagger-router-controller: document
     options:
+      tags:
+        - document
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Document GET Route"
       parameters:
@@ -459,6 +552,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - document
+      summary: "Get a document"
       operationId: protectedGet
       description: "Authenticated access to retreiving a document."
       security:
@@ -491,6 +587,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     put:
+      tags:
+        - document
+      summary: "Update/Upload a document"
       operationId: protectedPut
       description: "Update an document object."
       security:
@@ -523,6 +622,9 @@ paths:
   /public/document:
     x-swagger-router-controller: document
     options:
+      tags:
+        - document
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Document Route"
       responses:
@@ -535,6 +637,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - document
+      summary: "Get a list of documents"
       operationId: publicGet
       description: "Retreiving public documents."
       parameters:
@@ -559,6 +664,9 @@ paths:
   /public/document/{docId}:
     x-swagger-router-controller: document
     options:
+      tags:
+        - document
+      summary: "Pre-flight request"
       operationId: protectedOptions
       description: "Options on Document GET Route"
       parameters:
@@ -577,6 +685,9 @@ paths:
           schema:
             $ref: "#/definitions/Error"
     get:
+      tags:
+        - document
+      summary: "Get a document"
       operationId: publicGet
       description: "Public access to retreiving documents."
       parameters:
@@ -604,3 +715,256 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+### Organizations
+  /organization:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - organization
+      summary: "Create an organization"
+      operationId: protectedPost
+      description: "Create a new organization object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:organization
+      parameters:
+        - name: org
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/OrgId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - organization
+      summary: "Get a list of documents"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving organizations."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - in: query
+          name: fields
+          description: "Organization fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *organizationFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /organization/{orgId}:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization GET Route"
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - organization
+      summary: "Get an organization"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving organizations."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Organization fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *organizationFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - organization
+      summary: "Update an organization"
+      operationId: protectedPut
+      description: "Update an organization object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:organization
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/organization:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - organization
+      summary: "Get a list of documents"
+      operationId: publicGet
+      description: "Retreiving public organizations."
+      parameters:
+        - in: query
+          name: fields
+          description: "Organization fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *organizationFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/organization/{orgId}:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization GET Route"
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - organization
+      summary: "Get a document"
+      operationId: publicGet
+      description: "Public access to retreiving organizations."
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Organization fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *organizationFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
