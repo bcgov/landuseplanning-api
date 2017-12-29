@@ -49,6 +49,8 @@ exports.protectedPost = function (args, res, next) {
 
   var Application = mongoose.model('Application');
   var app = new Application(obj);
+  // Define security tag defaults
+  app.tags = [['sysadmin']];
   app.save()
   .then(function (a) {
     defaultLog.info("Saved new application object:", a);
@@ -61,7 +63,10 @@ exports.protectedPost = function (args, res, next) {
 exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.appId.value;
   defaultLog.info("ObjectID:", args.swagger.params.appId.value);
+
   var obj = args.swagger.params.app.value;
+  // Strip security tags - these will not be updated on this route.
+  delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
 
   var Application = require('mongoose').model('Application');

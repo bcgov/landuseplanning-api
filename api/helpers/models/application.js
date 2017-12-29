@@ -4,7 +4,7 @@
     _proponent       : { type: String, trim: true, default: null},
     code             : { type: String, trim: true, default: ''},
     name             : { type: String, trim: true },
-    tags             : [[{ type: String, trim: true, default: '' }]],
+    tags             : [[{ type: String, trim: true, default: '[["admin"]]' }]],
     type             : { type: String },
     subtype          : { type: String },
     purpose          : { type: String },

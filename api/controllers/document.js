@@ -50,16 +50,19 @@ exports.protectedGet = function(args, res, next) {
 
 //  Create a new application
 exports.protectedPost = function (args, res, next) {
-  var obj = args.swagger.params.app.value;
+  console.log("Creating new object");
+  var obj = args.swagger.params.doc.value;
   defaultLog.info("Incoming new object:", obj);
 
   var Document = mongoose.model('Document');
-  var app = new Document(obj);
-  app.save()
-  .then(function (a) {
-    defaultLog.info("Saved new application object:", a);
+  var doc = new Document(obj);
+  // Define security tag defaults
+  doc.tags = [['sysadmin']];
+  doc.save()
+  .then(function (d) {
+    defaultLog.info("Saved new application object:", d);
     res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(a));
+    return res.end(JSON.stringify(d));
   });
 };
 
@@ -82,11 +85,9 @@ exports.protectedPut = function (args, res, next) {
   }
 
   var obj = args.swagger.params;
-  // defaultLog.info("Incoming updated object:", obj);
-
-  // TODO: Middleware for managing new uploads
-  // Default to admin/sysadmin
-  obj.tags =[['admin'], ['sysadmin']];
+  // Strip security tags - these will not be updated on this route.
+  delete obj.tags;
+  defaultLog.info("Incoming updated object:", obj);
 
   var Document = require('mongoose').model('Document');
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {

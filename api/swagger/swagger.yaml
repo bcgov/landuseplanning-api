@@ -169,7 +169,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - write:application
       parameters:
         - name: app
@@ -192,7 +192,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - user
       parameters:
         - in: query
@@ -239,7 +239,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - user
       parameters:
         - name: appId
@@ -271,7 +271,6 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
         - sysadmin
         - write:application
       parameters:
@@ -395,7 +394,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - write:document
       parameters:
         - name: doc
@@ -418,7 +417,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - user
       parameters:
         - in: query
@@ -465,7 +464,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
+        - sysadmin
         - user
       parameters:
         - name: docId
@@ -497,7 +496,6 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - admin
         - sysadmin
         - write:document
       consumes:
