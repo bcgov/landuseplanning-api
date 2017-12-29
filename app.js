@@ -1,6 +1,8 @@
 "use strict";
 
 var app           = require("express")();
+var fs            = require('fs');
+var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads";
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
 var mongoose      = require("mongoose");
@@ -56,6 +58,11 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerRouter(routerConfig));
 
   app.use(middleware.swaggerUi());
+
+  // Make sure uploads directory exists
+  if (!fs.existsSync(uploadDir)){
+      fs.mkdirSync(uploadDir);
+  }
 
   // Load up DB
   var options = {
