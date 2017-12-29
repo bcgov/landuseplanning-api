@@ -84,6 +84,10 @@ exports.protectedPut = function (args, res, next) {
   var obj = args.swagger.params;
   // defaultLog.info("Incoming updated object:", obj);
 
+  // TODO: Middleware for managing new uploads
+  // Default to admin/sysadmin
+  obj.tags =[['admin'], ['sysadmin']];
+
   var Document = require('mongoose').model('Document');
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
