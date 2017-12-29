@@ -2,7 +2,7 @@
 
 var app           = require("express")();
 var fs            = require('fs');
-var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads";
+var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
 var mongoose      = require("mongoose");
@@ -60,10 +60,14 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerUi());
 
   // Make sure uploads directory exists
-  if (!fs.existsSync(uploadDir)){
-      fs.mkdirSync(uploadDir);
+  try {
+    if (!fs.existsSync(uploadDir)){
+        fs.mkdirSync(uploadDir);
+    }
+  } catch (e) {
+    // Fall through - uploads will continue to fail until this is resolved locally.
+    defaultLog.info("Couldn't create upload folder:", e);
   }
-
   // Load up DB
   var options = {
     useMongoClient: true,

@@ -7,6 +7,7 @@ var FlakeIdGen  = require('flake-idgen'),
     intformat   = require('biguint-format'),
     generator   = new FlakeIdGen;
 var fs          = require('fs');
+var uploadDir   = process.env.UPLOAD_DIRECTORY || "./uploads/";
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -71,8 +72,7 @@ exports.protectedPut = function (args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    // TODO: Read from ENV.
-    fs.writeFileSync("./uploads/"+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+    fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
   } catch (e) {
     defaultLog.info("Error:", e);
     res.writeHead(400, { "Content-Type": "application/json" });
