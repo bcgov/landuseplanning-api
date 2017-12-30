@@ -617,7 +617,7 @@ paths:
         - document
       summary: "Update/Upload a document"
       operationId: protectedPut
-      description: "Update an document object."
+      description: "Update a document object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -1194,7 +1194,7 @@ paths:
     get:
       tags:
         - user
-      summary: "Get an user"
+      summary: "Get a user"
       operationId: protectedGet
       description: "Authenticated access to retreiving users."
       security:
@@ -1228,9 +1228,9 @@ paths:
     put:
       tags:
         - user
-      summary: "Update an user"
+      summary: "Update a user"
       operationId: protectedPut
-      description: "Update an user object."
+      description: "Update a user object."
       security:
         - Bearer: []
       x-security-scopes:
