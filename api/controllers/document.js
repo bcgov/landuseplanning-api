@@ -3,6 +3,7 @@ var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var mime        = require('mime-types');
+var Actions     = require('../helpers/actions');
 var FlakeIdGen  = require('flake-idgen'),
     intformat   = require('biguint-format'),
     generator   = new FlakeIdGen;
@@ -62,6 +63,61 @@ exports.protectedPost = function (args, res, next) {
     defaultLog.info("Saved new document object:", d);
     res.writeHead(200, { "Content-Type": "application/json" });
     return res.end(JSON.stringify(d));
+  });
+};
+
+exports.protectedPublish = function (args, res, next) {
+  var objId = args.swagger.params.docId.value;
+  defaultLog.info("Publish Document:", objId);
+
+  var Document = require('mongoose').model('Document');
+  Document.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Add public to the tag of this obj.
+      Actions.publish(o)
+      .then(function (published) {
+        // Published successfully
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(published));
+      }, function (err) {
+        // Error
+        res.writeHead(err.code, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(err));        
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({}));
+    }
+  });
+};
+exports.protectedUnPublish = function (args, res, next) {
+  var objId = args.swagger.params.docId.value;
+  defaultLog.info("UnPublish Document:", objId);
+
+  var Document = require('mongoose').model('Document');
+  Document.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Remove public to the tag of this obj.
+      Actions.unPublish(o)
+      .then(function (unpublished) {
+        // UnPublished successfully
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(unpublished));
+      }, function (err) {
+        // Error
+        res.writeHead(err.code, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(err));
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      res.writeHead(404, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({}));
+    }
   });
 };
 

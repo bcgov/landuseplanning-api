@@ -645,6 +645,106 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /document/{docId}/publish:
+    x-swagger-router-controller: document
+    options:
+      tags:
+        - document
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Document GET Route"
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - document
+      summary: "Publish a document"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a document."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:document
+        # TODO: Define publish roles.
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /document/{docId}/unpublish:
+    x-swagger-router-controller: document
+    options:
+      tags:
+        - document
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Document GET Route"
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - document
+      summary: "UnPublish a document"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role on a document."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:document
+        # TODO: Define unpublish roles.
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /public/document:
     x-swagger-router-controller: document
     options:
