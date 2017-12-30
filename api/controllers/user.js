@@ -2,6 +2,7 @@ var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
+var Actions     = require('../helpers/actions');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -23,8 +24,7 @@ exports.protectedGet = function(args, res, next) {
 
   getUsers(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(data));
+    return Actions.sendResponse(res, 200, data);
   });
 };
 
@@ -40,8 +40,7 @@ exports.protectedPost = function (args, res, next) {
   user.save()
   .then(function (a) {
     defaultLog.info("Saved new organization object:", a);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(a));
+    return Actions.sendResponse(res, 200, data);
   });
 };
 
@@ -60,12 +59,10 @@ exports.protectedPut = function (args, res, next) {
   User.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-      res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify(o));
+      return Actions.sendResponse(res, 200, o);
     } else {
       defaultLog.info("Couldn't find that object!");
-      res.writeHead(404, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({}));
+      return Actions.sendResponse(res, 404, {});
     }
   });
 }

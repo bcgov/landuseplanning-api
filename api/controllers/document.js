@@ -23,8 +23,7 @@ exports.publicGet = function (args, res, next) {
 
   getDocuments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(data));
+    return Actions.sendResponse(res, 200, data);
   });
 };
 exports.protectedGet = function(args, res, next) {
@@ -43,8 +42,7 @@ exports.protectedGet = function(args, res, next) {
 
   getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(data));
+    return Actions.sendResponse(res, 200, data);
   });
 };
 
@@ -61,8 +59,7 @@ exports.protectedPost = function (args, res, next) {
   doc.save()
   .then(function (d) {
     defaultLog.info("Saved new document object:", d);
-    res.writeHead(200, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(d));
+    return Actions.sendResponse(res, 200, d);
   });
 };
 
@@ -79,17 +76,14 @@ exports.protectedPublish = function (args, res, next) {
       Actions.publish(o)
       .then(function (published) {
         // Published successfully
-        res.writeHead(200, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(published));
+        return Actions.sendResponse(res, 200, published);
       }, function (err) {
         // Error
-        res.writeHead(err.code, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(err));        
+        return Actions.sendResponse(res, err.code, err);
       });
     } else {
       defaultLog.info("Couldn't find that object!");
-      res.writeHead(404, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({}));
+      return Actions.sendResponse(res, 404, {});
     }
   });
 };
@@ -106,17 +100,14 @@ exports.protectedUnPublish = function (args, res, next) {
       Actions.unPublish(o)
       .then(function (unpublished) {
         // UnPublished successfully
-        res.writeHead(200, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(unpublished));
+        return Actions.sendResponse(res, 200, unpublished);
       }, function (err) {
         // Error
-        res.writeHead(err.code, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(err));
+        return Actions.sendResponse(res, err.code, err);
       });
     } else {
       defaultLog.info("Couldn't find that object!");
-      res.writeHead(404, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({}));
+      return Actions.sendResponse(res, 404, {});
     }
   });
 };
@@ -133,10 +124,9 @@ exports.protectedPut = function (args, res, next) {
     fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
   } catch (e) {
     defaultLog.info("Error:", e);
-    res.writeHead(400, { "Content-Type": "application/json" });
     // Delete the path details before we return to the caller.
     delete e['path'];
-    return res.end(JSON.stringify(e));
+    return Actions.sendResponse(res, 400, e);
   }
 
   var obj = args.swagger.params;
@@ -148,12 +138,10 @@ exports.protectedPut = function (args, res, next) {
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-      res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify(o));
+      return Actions.sendResponse(res, 200, o);
     } else {
       defaultLog.info("Couldn't find that object!");
-      res.writeHead(404, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({}));
+      return Actions.sendResponse(res, 404, {});
     }
   });
 }
