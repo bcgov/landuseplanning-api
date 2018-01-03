@@ -30,6 +30,11 @@ tags:
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "search"
+  description: "Operations about searching"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -106,6 +111,25 @@ definitions:
       - commodityType
       - commodity
       - commodities
+
+### Search Definitions
+  crownLandsId:
+    type: string
+    example: "54759eb3c090d83494e2d804"
+  SearchObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "0230191"
+  Search:
+    type: string
+    description: "Optional fields to return."
+    example: name|type
+    #TODO: Fix enums
+    enum: &searchFields
+      - name
+
 ### Document Definitions
   DocId:
     type: object
@@ -474,6 +498,61 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## Search
+  /public/search/bcgw/crownLandsId/{crownLandsId}:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Search Route"
+      parameters:
+        - name: crownLandsId
+          in: path
+          description: "ID of Crown Tenures to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get a list of searchable things from the bcgw"
+      operationId: publicGetBCGW
+      description: "Retreiving search results."
+      parameters:
+        - name: crownLandsId
+          in: path
+          description: "ID of Crown Tenures to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Search fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *searchFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
         "403":
           description: "Access Denied"
           schema:
