@@ -52,7 +52,10 @@ if (hostname !== 'localhost:3000') {
 
 swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerMetadata());
-  
+
+  // TODO: Fix this
+  app.use(middleware.swaggerValidator({ validateResponse: false}));
+
   app.use(
     middleware.swaggerSecurity({
       Bearer: auth.verifyToken
@@ -66,7 +69,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
 
   app.use(middleware.swaggerRouter(routerConfig));
 
-  app.use(middleware.swaggerUi());
+  app.use(middleware.swaggerUi({apiDocs: '/docs', swaggerUi: '/docs'}));
 
   // Make sure uploads directory exists
   try {
