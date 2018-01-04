@@ -3,7 +3,7 @@
 var app           = require("express")();
 var fs            = require('fs');
 var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
-var hostname      = process.env.HOSTNAME || "localhost";
+var hostname      = process.env.API_HOSTNAME || "localhost:3000";
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
 var mongoose      = require("mongoose");
@@ -44,6 +44,11 @@ app.use(function (req, res, next) {
 
 // Dynamically set the hostname based on what environment we're in.
 swaggerConfig.host = hostname;
+
+// Swagger UI needs to be told that we only serve https in Openshift
+if (hostname !== 'localhost:3000') {
+  swaggerConfig.schemes = ['https'];
+}
 
 swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerMetadata());
