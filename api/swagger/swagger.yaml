@@ -616,6 +616,14 @@ paths:
         - user
       parameters:
         - in: query
+          name: application
+          description: "Documents relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
           name: fields
           description: "Document fields to return."
           required: false
@@ -848,6 +856,14 @@ paths:
       operationId: publicGet
       description: "Retreiving public documents."
       parameters:
+        - in: query
+          name: application
+          description: "Documents relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
         - in: query
           name: fields
           description: "Document fields to return."

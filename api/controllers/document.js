@@ -20,6 +20,9 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.docId) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.docId.value)};
   }
+  if (args.swagger.params.application.value) {
+    _.assignIn(query, { "application": { $in: args.swagger.params.application.value}}); 
+  }
 
   getDocuments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -38,6 +41,9 @@ exports.protectedGet = function(args, res, next) {
   var query = {};
   if (args.swagger.params.docId) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.docId.value)};
+  }
+  if (args.swagger.params.application.value) {
+    _.assignIn(query, { "application": { $in: args.swagger.params.application.value}}); 
   }
 
   getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
