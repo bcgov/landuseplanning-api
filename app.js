@@ -3,6 +3,7 @@
 var app           = require("express")();
 var fs            = require('fs');
 var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
+var hostname      = process.env.HOSTNAME || "localhost";
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
 var mongoose      = require("mongoose");
@@ -40,6 +41,9 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Credentials', true);
   next();
 });
+
+// Dynamically set the hostname based on what environment we're in.
+swaggerConfig.host = hostname;
 
 swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerMetadata());
