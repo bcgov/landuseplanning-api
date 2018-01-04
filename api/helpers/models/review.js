@@ -1,4 +1,4 @@
- module.exports = require ('../models')('Organization', {
+ module.exports = require ('../models')('Review', {
     _addedBy         : { type:'ObjectId', ref:'User', default:null },
     // Reviews map to possibly more than one application
     _applications    : [{ type:'ObjectId', ref:'Application', default:null }],

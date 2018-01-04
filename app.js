@@ -95,6 +95,8 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/user');
       require('./api/helpers/models/application');
       require('./api/helpers/models/document');
+      require('./api/helpers/models/decision');
+      require('./api/helpers/models/review');
       require('./api/helpers/models/organization');
       defaultLog.info("db model loading done.");
 

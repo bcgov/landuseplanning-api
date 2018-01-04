@@ -1,4 +1,4 @@
- module.exports = require ('../models')('Review', {
+ module.exports = require ('../models')('Decision', {
     _addedBy         : { type:'ObjectId', ref:'User', default:null },
     _review          : { type:'ObjectId', ref:'Review', default:null },
     // Note: Default on tag property is purely for display only, they have no real effect on the model
