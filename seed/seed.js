@@ -118,7 +118,7 @@ var run = function () {
     console.log('start');
     Promise.resolve()
       .then(function () {
-        // require('./loadOrgs')(); // FUTURE
+        // require('./loadUsers')(); // FUTURE
         var userList = require('./userlist.json');
         return insertAll('users', userList);
       })
@@ -137,6 +137,11 @@ var run = function () {
         var doclist = require('./doclist.json');
         return insertAll('documents', doclist);
       })
+      // .then(function () {
+      //   // require('./loadPeriods')(); // FUTURE
+      //   var periodlist = require('./periodlist.json');
+      //   return insertAll('periods', periodlist);
+      // })
       .then(function () {
         console.log('end');
         resolve(':)');
