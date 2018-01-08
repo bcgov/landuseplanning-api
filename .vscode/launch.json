@@ -20,12 +20,6 @@
             "request": "launch",
             "name": "Launch API using Node",
             "program": "${workspaceFolder}/app.js"
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Launch Seed",
-            "program": "${workspaceFolder}/seed/seed.js"
         }
     ]
 }
