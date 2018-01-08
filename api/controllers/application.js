@@ -105,6 +105,8 @@ var getApplications = function (role, query, fields) {
                         'region',
                         'description',
                         'legalDescription',
+                        'status',
+                        'projectDate',
                         'businessUnit',
                         'cl_files',
                         'commodityType',

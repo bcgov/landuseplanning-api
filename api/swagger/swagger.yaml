@@ -106,6 +106,7 @@ definitions:
       - region
       - description
       - legalDescription
+      - status
       - projectDate
       - businessUnit
       - cl_files
