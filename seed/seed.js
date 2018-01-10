@@ -5,8 +5,9 @@
 //
 
 var MongoClient = require('mongodb').MongoClient;
-var Promise = require('es6-promise').Promise;
-var _ = require('lodash');
+var Promise     = require('es6-promise').Promise;
+var _           = require('lodash');
+var request     = require('request');
 
 var uri = '';
 
@@ -22,6 +23,46 @@ if (args.length !== 4) {
   uri = 'mongodb://' + username + ':' + password + '@' + host + ':27017/' + db;
   console.log('Using connection:', uri);
 }
+
+// JWT Login
+var jwt = null;
+var login = function (username, password) {
+  return new Promise (function (resolve, reject) {
+    var body = JSON.stringify({
+        username: username,
+        password: password
+      });
+    request.post({
+        url: 'http://localhost:3000/api/login/token',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: body
+      }, function (err, res, body) {
+        if (err || res.statusCode !== 200) {
+          // console.log("err:", err, res);
+          reject(null);
+        } else {
+          var data = JSON.parse(body);
+          // console.log("jwt:", data);
+          resolve(data.accessToken);
+        }
+    });
+  });
+};
+
+
+console.log("TEST:");
+login("admin", "admin")
+.then(function (jwt) {
+  console.log("jwt:", jwt);
+})
+.catch(function (err) {
+  console.log("ERR:", err);
+});
+
+return;
+
 
 var find = function (collectionName, query, fields) {
   return new Promise(function (resolve, reject) {
