@@ -432,6 +432,106 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /application/{appId}/publish:
+    x-swagger-router-controller: application
+    options:
+      tags:
+        - application
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Application Route"
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - application
+      summary: "Publish a application"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a application."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:application
+        # TODO: Define publish roles.
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /application/{appId}/unpublish:
+    x-swagger-router-controller: application
+    options:
+      tags:
+        - application
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Application Route"
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - application
+      summary: "UnPublish a application"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role to a application."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:application
+        # TODO: Define publish roles.
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /public/application:
     x-swagger-router-controller: application
     options:
@@ -1104,6 +1204,106 @@ paths:
       x-security-scopes:
         - sysadmin
         - write:organization
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /organization/{orgId}/publish:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization Route"
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - organization
+      summary: "Publish a organization"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a organization."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:organization
+        # TODO: Define publish roles.
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /organization/{orgId}/unpublish:
+    x-swagger-router-controller: organization
+    options:
+      tags:
+        - organization
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Organization Route"
+      parameters:
+        - name: orgId
+          in: path
+          description: "ID of organization to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - organization
+      summary: "UnPublish a organization"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role to a organization."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:organization
+        # TODO: Define publish roles.
       parameters:
         - name: orgId
           in: path

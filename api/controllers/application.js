@@ -51,7 +51,7 @@ exports.protectedPost = function (args, res, next) {
   app.tags = [['sysadmin']];
   app.save()
   .then(function (a) {
-    defaultLog.info("Saved new application object:", a);
+    // defaultLog.info("Saved new application object:", a);
     return Actions.sendResponse(res, 200, a);
   });
 };
@@ -61,7 +61,7 @@ exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.appId.value;
   defaultLog.info("ObjectID:", args.swagger.params.appId.value);
 
-  var obj = args.swagger.params.app.value;
+  var obj = args.swagger.params.appId.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
@@ -78,6 +78,55 @@ exports.protectedPut = function (args, res, next) {
   });
 }
 
+// Publish/Unpublish the application
+exports.protectedPublish = function (args, res, next) {
+  var objId = args.swagger.params.appId.value;
+  defaultLog.info("Publish Application:", objId);
+
+  var Application = require('mongoose').model('Application');
+  Application.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Add public to the tag of this obj.
+      Actions.publish(o)
+      .then(function (published) {
+        // Published successfully
+        return Actions.sendResponse(res, 200, published);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, err.code, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
+exports.protectedUnPublish = function (args, res, next) {
+  var objId = args.swagger.params.appId.value;
+  defaultLog.info("UnPublish Application:", objId);
+
+  var Application = require('mongoose').model('Application');
+  Application.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Remove public to the tag of this obj.
+      Actions.unPublish(o)
+      .then(function (unpublished) {
+        // UnPublished successfully
+        return Actions.sendResponse(res, 200, unpublished);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, err.code, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
 var getApplications = function (role, query, fields) {
   return new Promise(function (resolve, reject) {
     var Application = mongoose.model('Application');
