@@ -54,7 +54,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   app.use(middleware.swaggerMetadata());
 
   // TODO: Fix this
-  app.use(middleware.swaggerValidator({ validateResponse: false}));
+  // app.use(middleware.swaggerValidator({ validateResponse: false}));
 
   app.use(
     middleware.swaggerSecurity({
