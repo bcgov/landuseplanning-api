@@ -11,7 +11,7 @@
             ]
         ],
         "documentFileName": "6406200_Geomark.pdf",
-        "internalURL": "config/seed-data/documents/6406200_Geomark.pdf",
+        "internalURL": "./documents/6406200_Geomark.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -26,7 +26,7 @@
             ]
         ],
         "documentFileName": "6406200_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6406200_Management_Plan.pdf",
+        "internalURL": "./documents/6406200_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -41,7 +41,7 @@
             ]
         ],
         "documentFileName": "6406200_Referral_Map.pdf",
-        "internalURL": "config/seed-data/documents/6406200_Referral_Map.pdf",
+        "internalURL": "./documents/6406200_Referral_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -56,7 +56,7 @@
             ]
         ],
         "documentFileName": "6408232_Area_Overview.pdf",
-        "internalURL": "config/seed-data/documents/6408232_Area_Overview.pdf",
+        "internalURL": "./documents/6408232_Area_Overview.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -71,7 +71,7 @@
             ]
         ],
         "documentFileName": "6408232_Proponent_Maps.pdf",
-        "internalURL": "config/seed-data/documents/6408232_Proponent_Maps.pdf",
+        "internalURL": "./documents/6408232_Proponent_Maps.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -86,7 +86,7 @@
             ]
         ],
         "documentFileName": "6408232_Referral_Maps.pdf",
-        "internalURL": "config/seed-data/documents/6408232_Referral_Maps.pdf",
+        "internalURL": "./documents/6408232_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -101,7 +101,7 @@
             ]
         ],
         "documentFileName": "6408427_Document_Map.pdf",
-        "internalURL": "config/seed-data/documents/6408427_Document_Map.pdf",
+        "internalURL": "./documents/6408427_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -116,7 +116,7 @@
             ]
         ],
         "documentFileName": "6408427_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6408427_Management_Plan.pdf",
+        "internalURL": "./documents/6408427_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -131,7 +131,7 @@
             ]
         ],
         "documentFileName": "6408427_Referral_Mapbook.pdf",
-        "internalURL": "config/seed-data/documents/6408427_Referral_Mapbook.pdf",
+        "internalURL": "./documents/6408427_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -146,7 +146,7 @@
             ]
         ],
         "documentFileName": "6409010_Document_Map.pdf",
-        "internalURL": "config/seed-data/documents/6409010_Document_Map.pdf",
+        "internalURL": "./documents/6409010_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -161,7 +161,7 @@
             ]
         ],
         "documentFileName": "6409010_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409010_Management_Plan.pdf",
+        "internalURL": "./documents/6409010_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -176,7 +176,7 @@
             ]
         ],
         "documentFileName": "6409010_Referral_Maps.pdf",
-        "internalURL": "config/seed-data/documents/6409010_Referral_Maps.pdf",
+        "internalURL": "./documents/6409010_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -191,7 +191,7 @@
             ]
         ],
         "documentFileName": "6409020_Document_Map.pdf",
-        "internalURL": "config/seed-data/documents/6409020_Document_Map.pdf",
+        "internalURL": "./documents/6409020_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -206,7 +206,7 @@
             ]
         ],
         "documentFileName": "6409020_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409020_Management_Plan.pdf",
+        "internalURL": "./documents/6409020_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -221,7 +221,7 @@
             ]
         ],
         "documentFileName": "6409020_Referral_Map.pdf",
-        "internalURL": "config/seed-data/documents/6409020_Referral_Map.pdf",
+        "internalURL": "./documents/6409020_Referral_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -236,7 +236,7 @@
             ]
         ],
         "documentFileName": "6409021_Document_Map.pdf",
-        "internalURL": "config/seed-data/documents/6409021_Document_Map.pdf",
+        "internalURL": "./documents/6409021_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -251,7 +251,7 @@
             ]
         ],
         "documentFileName": "6409021_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409021_Management_Plan.pdf",
+        "internalURL": "./documents/6409021_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -266,7 +266,7 @@
             ]
         ],
         "documentFileName": "6409021_Referral_Mapbook.pdf",
-        "internalURL": "config/seed-data/documents/6409021_Referral_Mapbook.pdf",
+        "internalURL": "./documents/6409021_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -281,7 +281,7 @@
             ]
         ],
         "documentFileName": "6409023_Document_Maps.pdf",
-        "internalURL": "config/seed-data/documents/6409023_Document_Maps.pdf",
+        "internalURL": "./documents/6409023_Document_Maps.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -296,7 +296,7 @@
             ]
         ],
         "documentFileName": "6409023_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409023_Management_Plan.pdf",
+        "internalURL": "./documents/6409023_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -311,7 +311,7 @@
             ]
         ],
         "documentFileName": "6409023_Referral_Maps.pdf",
-        "internalURL": "config/seed-data/documents/6409023_Referral_Maps.pdf",
+        "internalURL": "./documents/6409023_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -326,7 +326,7 @@
             ]
         ],
         "documentFileName": "6409024_All_Maps_and_site_plan.pdf",
-        "internalURL": "config/seed-data/documents/6409024_All_Maps_and_site_plan.pdf",
+        "internalURL": "./documents/6409024_All_Maps_and_site_plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -341,7 +341,7 @@
             ]
         ],
         "documentFileName": "6409024_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409024_Management_Plan.pdf",
+        "internalURL": "./documents/6409024_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -356,7 +356,7 @@
             ]
         ],
         "documentFileName": "6409030_Document_Map.pdf",
-        "internalURL": "config/seed-data/documents/6409030_Document_Map.pdf",
+        "internalURL": "./documents/6409030_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -371,7 +371,7 @@
             ]
         ],
         "documentFileName": "6409030_Management_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409030_Management_Plan.pdf",
+        "internalURL": "./documents/6409030_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -386,7 +386,7 @@
             ]
         ],
         "documentFileName": "6409030_Referral_Mapbook.pdf",
-        "internalURL": "config/seed-data/documents/6409030_Referral_Mapbook.pdf",
+        "internalURL": "./documents/6409030_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
     {
@@ -401,7 +401,7 @@
             ]
         ],
         "documentFileName": "6409030_Site_Specific_Plan.pdf",
-        "internalURL": "config/seed-data/documents/6409030_Site_Specific_Plan.pdf",
+        "internalURL": "./documents/6409030_Site_Specific_Plan.pdf",
         "internalMime": "application/pdf"
     }
 ]

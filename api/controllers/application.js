@@ -49,6 +49,7 @@ exports.protectedPost = function (args, res, next) {
   var app = new Application(obj);
   // Define security tag defaults
   app.tags = [['sysadmin']];
+  app._addedBy = args.swagger.params.auth_payload.userID;
   app.save()
   .then(function (a) {
     // defaultLog.info("Saved new application object:", a);
@@ -65,6 +66,7 @@ exports.protectedPut = function (args, res, next) {
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
+  // TODO sanitize/update audits.
 
   var Application = require('mongoose').model('Application');
   Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {

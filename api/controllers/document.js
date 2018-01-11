@@ -138,12 +138,16 @@ exports.protectedPut = function (args, res, next) {
   var obj = args.swagger.params;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
-  defaultLog.info("Incoming updated object:", obj);
+  defaultLog.info("Incoming updated object:", obj._id);
+  // Update file location
+  obj.internalURL = uploadDir+guid+"."+ext;
+  // Update who did this?
+  obj._addedBy = args.swagger.params.auth_payload.userID;
 
   var Document = require('mongoose').model('Document');
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      // defaultLog.info("o:", o);
       return Actions.sendResponse(res, 200, o);
     } else {
       defaultLog.info("Couldn't find that object!");

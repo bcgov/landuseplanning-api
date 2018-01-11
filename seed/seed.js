@@ -4,28 +4,37 @@
 // Example: node seed.js MONGO_USER MONGO_PASSWORD mongodb nrts-prod
 //
 
-var MongoClient = require('mongodb').MongoClient;
-var Promise     = require('es6-promise').Promise;
-var _           = require('lodash');
-var request     = require('request');
-
-var uri = '';
+var Promise         = require('es6-promise').Promise;
+var _               = require('lodash');
+var request         = require('request');
+var fs              = require('fs');
+var _applications   = [];
+var username        = '';
+var password        = '';
+var protocol        = 'http';
+var host            = 'localhost';
+var port            = '3000'
+var uri             = '';
 
 var args = process.argv.slice(2);
-if (args.length !== 4) {
-  uri = 'mongodb://localhost:27017/nrts-dev';
-  console.log('Using default connection:', uri);
+if (args.length !== 5) {
+  console.log('');
+  console.log('Please specify proper parameters: <username> <password> <protocol> <host> <port>');
+  console.log('');
+  console.log('eg: node seed.js admin admin http localhost 3000');
+  return;
 } else {
-  var username = args[0];
-  var password = args[1];
-  var host = args[2];
-  var db = args[3];
-  uri = 'mongodb://' + username + ':' + password + '@' + host + ':27017/' + db;
+  username    = args[0];
+  password    = args[1];
+  protocol    = args[2];
+  host        = args[3];
+  port        = args[4];
+  uri         = protocol + '://' + host + ':' + port + '/'; 
   console.log('Using connection:', uri);
 }
-
+// return;
 // JWT Login
-var jwt = null;
+var jwt_login = null;
 var login = function (username, password) {
   return new Promise (function (resolve, reject) {
     var body = JSON.stringify({
@@ -33,7 +42,7 @@ var login = function (username, password) {
         password: password
       });
     request.post({
-        url: 'http://localhost:3000/api/login/token',
+        url: uri + 'api/login/token',
         headers: {
           'Content-Type': 'application/json'
         },
@@ -45,100 +54,105 @@ var login = function (username, password) {
         } else {
           var data = JSON.parse(body);
           // console.log("jwt:", data);
+          jwt_login = data.accessToken;
           resolve(data.accessToken);
         }
     });
   });
 };
 
-
-console.log("TEST:");
-login("admin", "admin")
-.then(function (jwt) {
-  console.log("jwt:", jwt);
-})
-.catch(function (err) {
-  console.log("ERR:", err);
-});
-
-return;
-
-
-var find = function (collectionName, query, fields) {
+var insertAll = function (route, entries) {
+  var self = this;
   return new Promise(function (resolve, reject) {
-    MongoClient.connect(uri, function (err, db) {
+    console.log("route:", route);
+    // console.log("entries:", entries);
 
-      var collection = db.collection(collectionName);
+    _.each(entries, function (e) {
+      // console.log("e:", e);
+      var postBody = JSON.stringify(e);
 
-      collection.find(query, fields).toArray(function (err, entries) {
-        if (err) reject(err);
-        db.close();
-        resolve(entries);
-      });
-
-    });
-  });
-};
-
-var findOne = function (collectionName, query) {
-  return new Promise(function (resolve, reject) {
-    MongoClient.connect(uri, function (err, db) {
-
-      var collection = db.collection(collectionName);
-
-      collection.findOne(query, function (err, entries) {
-        if (err) reject(err);
-        db.close();
-        resolve(entries);
-      });
-
-    });
-  });
-};
-
-var insertAll = function (collectionName, entries) {
-  return new Promise(function (resolve, reject) {
-    MongoClient.connect(uri, function (err, db) {
-
-      if (err) {
-        reject(err);
-        return;
+      if (route == 'api/document') {
+        // Bind the objectID's
+        var f = _.find(_applications, {code: e.application});
+        e._application = f._id;
+        postBody = JSON.stringify(e);
       }
 
-      var collection = db.collection(collectionName);
+      request.post({
+          url: uri + route,
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + jwt_login
+          },
+          body: postBody
+        }, function (err, res, body) {
+          if (err || res.statusCode !== 200) {
+            // console.log("err:", err, res);
+            reject(null);
+          } else {
+            var data = JSON.parse(body);
+            console.log("SAVED:", data._id);
 
-      collection.insertMany(entries, {}, function (err, result) {
-        db.close();
+            // Save the various objects for later lookup
+            if (route === 'api/application') {
+                _applications.push(data);
+            }
 
-        if (err) {
-          reject(err);
-          return;
-        }
-
-        console.log('inserted ' + result.insertedCount + ' entry(ies) into ' + collectionName);
-        resolve(result);
+            if (route === 'api/document') {
+                var formData = {
+                    upfile: fs.createReadStream(e.internalURL)
+                };
+                request.put({ url: uri + route + '/' + data._id,
+                              headers: {
+                                  'Content-Type': 'application/json',
+                                  'Authorization': 'Bearer ' + jwt_login
+                              },
+                              formData: formData
+                            },
+                  function optionalCallback(err, httpResponse, body) {
+                      if (err) {
+                        console.error('upload failed:', err);
+                        reject(null);
+                      } else {
+                        // Update it to be public
+                        request.put({
+                            url: uri + route + '/' + data._id + '/publish',
+                            headers: {
+                              'Content-Type': 'application/json',
+                              'Authorization': 'Bearer ' + jwt_login
+                            },
+                            body: postBody
+                        }, function (err2, res2, body2) {
+                          if (err2 || res2.statusCode !== 200) {
+                            console.log("err2:", err2);
+                            reject(null);
+                          } else {
+                            resolve("Updated:", body2._id);
+                          }
+                        });
+                      }
+                  }
+                );                
+            } else {
+                // Update it to be public
+                request.put({
+                  url: uri + route + '/' + data._id + '/publish',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + jwt_login
+                  },
+                  body: postBody
+                }, function (err2, res2, body2) {
+                  if (err2 || res2.statusCode !== 200) {
+                  console.log("err2:", err2);
+                  reject(null);
+                } else {
+                  resolve("Updated:", body2._id);
+                } 
+              });
+            }
+          }
       });
-
-    });
-  });
-};
-
-var update = function (collectionName, query, entry) {
-  return new Promise(function (resolve, reject) {
-    MongoClient.connect(uri, function (err, db) {
-
-      var collection = db.collection(collectionName);
-
-      collection.updateOne(query, { $set: entry }, {}, function (err, result) {
-        db.close();
-        if (err) {
-          reject(err);
-        } else {
-          console.log('updated entry in ' + collectionName);
-          resolve(result);
-        }
-      });
-
     });
   });
 };
@@ -152,52 +166,20 @@ var updateAll = function (collectionName, entries) {
   });
   return Promise.all(updates);
 };
-
-var run = function () {
-  return new Promise(function (resolve, reject) {
-
-    console.log('start');
-    Promise.resolve()
-      .then(function () {
-        // require('./loadUsers')(); // FUTURE
-        var userList = require('./userlist.json');
-        return insertAll('users', userList);
-      })
-      .then(function () {
-        // require('./loadOrgs')(); // FUTURE
-        var orglist = require('./orglist.json');
-        return insertAll('organizations', orglist);
-      })
-      .then(function () {
-        // require('./loadApps')(); // FUTURE
-        var applist = require('./applist.json');
-        return insertAll('applications', applist);
-      })
-      .then(function () {
-        // require('./loadDocs')(); // FUTURE
-        var doclist = require('./doclist.json');
-        return insertAll('documents', doclist);
-      })
-      // .then(function () {
-      //   // require('./loadPeriods')(); // FUTURE
-      //   var periodlist = require('./periodlist.json');
-      //   return insertAll('periods', periodlist);
-      // })
-      .then(function () {
-        console.log('end');
-        resolve(':)');
-      }, function (err) {
-        console.log('ERROR: end err =', JSON.stringify(err));
-        reject(err);
-      });
-
-  });
-};
-
-run().then(function (success) {
-  console.log('success', success);
-  process.exit();
-}).catch(function (error) {
-  console.error('error', error);
-  process.exit();
+console.log("Logging in and getting JWT:");
+login(username, password)
+.then(function () {
+  var orglist = require('./orglist.json');
+  return insertAll('api/organization', orglist);
+})
+.then(function () {
+  var applist = require('./applist.json');
+  return insertAll('api/application', applist);
+})
+.then(function () {
+  var orglist = require('./doclist.json');
+  return insertAll('api/document', orglist);
+})
+.catch(function (err) {
+  console.log("ERR:", err);
 });

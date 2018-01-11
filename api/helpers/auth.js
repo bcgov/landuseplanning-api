@@ -80,6 +80,7 @@ exports.issueToken = function(user,
 
   var payload = {
     username: user.username,
+    userID: user._id,
     deviceId: deviceId,
     jti: jti,
     iss: ISSUER,
