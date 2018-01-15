@@ -1,0 +1,46 @@
+module.exports = require('../models')('Comment', {
+    _addedBy        : { type: 'ObjectId', ref: 'User', default: null },
+    _commentPeriod  : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
+    // Note: Default on tag property is purely for display only, they have no real effect on the model
+    // This must be done in the code.
+    tags            : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
+    name            : { type: String, trim: true },
+
+    // unique number per application (not guid) for export and sorting
+    commentNumber   : { type: Number },
+
+    // free form field (supports rich text?)
+    comment         : { type: String, default: '' },
+
+    commentAuthor   : {
+        // May reference a particular user in the future.
+        userId      : { type: 'ObjectId', ref: 'User' },
+
+        // All the following details are in case there's no binding to a particular user objId
+        orgName     : { type: String, default: null },
+        contactName : { type: String, default: '' },
+        location    : { type: String, default: '' },
+        email       : { type: String, default: '' },
+        phone       : { type: String, default: '' },
+
+        tags        : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
+    },
+
+    // list of attachments
+    documents       : [{ type: 'ObjectId', ref: 'Document' }],
+
+    // Who vetted this comment?
+    review          : {
+        reviewerId      : { type: 'ObjectId', ref: 'User' },
+        reviewerNotes   : { type: String, default: '' },
+        reviewerDate    : { type: Date, default: '' },
+
+        tags        : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
+    },
+    
+    // TODO: More date fields?
+    dateAdded       : { type: Date, default: Date.now },
+
+    commentStatus   : { type: String, default: 'Pending', enum: ['Pending', 'Accepted', 'Rejected'] },
+    isDeleted       : { type: Boolean, default: false }
+});

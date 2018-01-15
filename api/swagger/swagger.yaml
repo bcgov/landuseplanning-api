@@ -157,6 +157,40 @@ definitions:
       - internalURL
       - internalMime
 
+### Comment Definitions
+  CommentId:
+    type: object
+    properties:
+      comment:
+        type: string
+        example: "A cool user"
+  CommentObject:
+    type: object
+    properties:
+      commentAuthor:
+        type: object
+        example: "A cool comment"
+        ## TODO: Add more fields here.
+        properties:
+          contactName:
+            type: string
+            example: "Bob Smith"
+          location:
+            type: string
+            example: "Victoria"
+  CommentFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|documents
+    #TODO: Fix enums
+    enum: &commentFields
+      - documents
+      - commentAuthor
+      - comment
+      - status
+      - dateAdded
+      - _addedBy
+
 ### Decision Definitions
   DecisionId:
     type: object
@@ -1821,6 +1855,384 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/DecisionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## Comments
+  /comment:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - comment
+      summary: "Create a new comment"
+      operationId: protectedPost
+      description: "Create a new comment object."
+      summary: "Create a new comment object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:comment
+      parameters:
+        - name: comment
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CommentObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Get a list of comments"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a comment."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - in: query
+          name: application
+          description: "Comments relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "comment fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /comment/{CommentId}:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Get a comment"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a comment."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "comment fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - comment
+      summary: "Update/Upload a comment"
+      operationId: protectedPut
+      description: "Update a comment object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:comment
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to update"
+          required: true
+          type: "string"
+        - name: upfile
+          in: formData
+          description: "The file to upload."
+          required: true
+          type: file
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /comment/{CommentId}/publish:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - comment
+      summary: "Publish a comment"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a comment."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:comment
+        # TODO: Define publish roles.
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /comment/{CommentId}/unpublish:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - comment
+      summary: "UnPublish a comment"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role on a comment."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:comment
+        # TODO: Define unpublish roles.
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/comment:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Get a list of comments"
+      operationId: publicGet
+      description: "Retreiving public comments."
+      parameters:
+        - in: query
+          name: application
+          description: "Comments relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "comment fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/comment/{CommentId}:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Get a comment"
+      operationId: publicGet
+      description: "Public access to retreiving comments."
+      parameters:
+        - name: CommentId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "comment fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
         "403":
           description: "Access Denied"
           schema:
