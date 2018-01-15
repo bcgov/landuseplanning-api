@@ -150,7 +150,6 @@ var getComments = function (role, query, fields) {
       return (_.indexOf(['name',
                         'commentNumber',
                         'comment',
-                        'commentStatus',
                         'dateAdded',
                         'commentAuthor',
                         'documents',
