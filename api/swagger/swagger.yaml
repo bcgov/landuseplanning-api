@@ -191,6 +191,37 @@ definitions:
       - dateAdded
       - _addedBy
 
+### Comment Definitions
+  CommentPeriodId:
+    type: object
+    properties:
+      commentperiod:
+        type: string
+        example: "A comment period Id"
+  CommentPeriodObject:
+    type: object
+    properties:
+      _application:
+        type: string
+        example: ""
+      description:
+        type: string
+        example: "Description of comment period"
+      internal:
+        type: object
+        example: "Victoria"
+      ## TODO: Add more fields here.
+  CommentPeriodFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|documents
+    #TODO: Fix enums
+    enum: &commentperiodFields
+      - startDate
+      - endDate
+      - description
+      - internal
+      - _addedBy
 ### Decision Definitions
   DecisionId:
     type: object
@@ -2233,6 +2264,384 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## CommentPeriods
+  /commentperiod:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - commentperiod
+      summary: "Create a new commentperiod"
+      operationId: protectedPost
+      description: "Create a new commentperiod object."
+      summary: "Create a new commentperiod object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:commentperiod
+      parameters:
+        - name: commentperiod
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - commentperiod
+      summary: "Get a list of comments"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a commentperiod."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - in: query
+          name: application
+          description: "CommentPeriods relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "commentperiod fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /commentperiod/{CommentPeriodId}:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod GET Route"
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - commentperiod
+      summary: "Get a commentperiod"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a commentperiod."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "commentperiod fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - commentperiod
+      summary: "Update/Upload a commentperiod"
+      operationId: protectedPut
+      description: "Update a commentperiod object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:commentperiod
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to update"
+          required: true
+          type: "string"
+        - name: upfile
+          in: formData
+          description: "The file to upload."
+          required: true
+          type: file
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /commentperiod/{CommentPeriodId}/publish:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod GET Route"
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - commentperiod
+      summary: "Publish a commentperiod"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a commentperiod."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:commentperiod
+        # TODO: Define publish roles.
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /commentperiod/{CommentPeriodId}/unpublish:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod GET Route"
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - commentperiod
+      summary: "UnPublish a commentperiod"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role on a commentperiod."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:commentperiod
+        # TODO: Define unpublish roles.
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/commentperiod:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - commentperiod
+      summary: "Get a list of comments"
+      operationId: publicGet
+      description: "Retreiving public comments."
+      parameters:
+        - in: query
+          name: application
+          description: "CommentPeriods relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "commentperiod fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/commentperiod/{CommentPeriodId}:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod GET Route"
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - commentperiod
+      summary: "Get a commentperiod"
+      operationId: publicGet
+      description: "Public access to retreiving comments."
+      parameters:
+        - name: CommentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "commentperiod fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
         "403":
           description: "Access Denied"
           schema:
