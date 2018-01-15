@@ -2317,7 +2317,7 @@ paths:
     get:
       tags:
         - commentperiod
-      summary: "Get a list of comments"
+      summary: "Get a list of comment periods"
       operationId: protectedGet
       description: "Authenticated access to retreiving a commentperiod."
       security:
