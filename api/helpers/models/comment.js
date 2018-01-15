@@ -14,14 +14,22 @@ module.exports = require('../models')('Comment', {
 
     commentAuthor   : {
         // May reference a particular user in the future.
-        userId      : { type: 'ObjectId', ref: 'User' },
+        _userId      : { type: 'ObjectId', ref: 'User' },
 
         // All the following details are in case there's no binding to a particular user objId
+        // TODO: Should this be cleaned up a bit more?
         orgName     : { type: String, default: null },
         contactName : { type: String, default: '' },
         location    : { type: String, default: '' },
-        email       : { type: String, default: '' },
-        phone       : { type: String, default: '' },
+
+        // Did the user request to be anonymous?
+        requestedAnonymous : { type: Boolean, default: false },
+
+        internal: {
+            email   : { type: String, default: '' },
+            phone   : { type: String, default: '' },
+            tags    : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
+        },
 
         tags        : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
     },
@@ -31,7 +39,7 @@ module.exports = require('../models')('Comment', {
 
     // Who vetted this comment?
     review          : {
-        reviewerId      : { type: 'ObjectId', ref: 'User' },
+        _reviewerId     : { type: 'ObjectId', ref: 'User' },
         reviewerNotes   : { type: String, default: '' },
         reviewerDate    : { type: Date, default: '' },
 

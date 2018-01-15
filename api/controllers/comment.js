@@ -41,7 +41,7 @@ exports.protectedGet = function(args, res, next) {
 };
 
 //  Create a new Comment
-exports.protectedPost = function (args, res, next) {
+exports.unProtectedPost = function (args, res, next) {
   var obj = args.swagger.params.comment.value;
   defaultLog.info("Incoming new object:", obj);
 
@@ -51,7 +51,17 @@ exports.protectedPost = function (args, res, next) {
   comment.tags = [['sysadmin']];
   comment.review.tags = [['sysadmin']];
   comment.commentAuthor.tags = [['sysadmin']];
-  comment._addedBy = args.swagger.params.auth_payload.userID;
+
+  if (comment.requestedAnonymous) {
+    comment.commentAuthor.tags = [['sysadmin'], ['public']];
+  }
+
+  // Never allow this to be updated
+  comment.commentAuthor.internal.tags = [['sysadmin']];
+
+  // Not needed until we tie user profiles in.
+  // comment._addedBy = args.swagger.params.auth_payload.userID;
+
   comment.save()
   .then(function (c) {
     // defaultLog.info("Saved new Comment object:", c);
@@ -69,6 +79,10 @@ exports.protectedPut = function (args, res, next) {
   delete obj.tags;
   delete obj.review.tags;
   delete obj.commentAuthor.tags;
+
+  // Never allow this to be updated
+  delete obj.commentAuthor.internal.tags;
+
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 
@@ -150,6 +164,7 @@ var getComments = function (role, query, fields) {
       return (_.indexOf(['name',
                         'commentNumber',
                         'comment',
+                        'internal',
                         'dateAdded',
                         'commentAuthor',
                         'documents',
