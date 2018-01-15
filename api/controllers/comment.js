@@ -150,8 +150,13 @@ var getComments = function (role, query, fields) {
       return (_.indexOf(['name',
                         'commentNumber',
                         'comment',
+                        'commentStatus',
+                        'dateAdded',
                         'commentAuthor',
                         'documents',
+                        'review',
+                        '_addedBy',
+                        '_commentPeriod',
                         'review',
                         'commentStatus',
                         'isDeleted'], f) !== -1);
