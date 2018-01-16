@@ -14,6 +14,17 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.CommentId) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.CommentId.value)};
   }
+  if (args.swagger.params.commentperiod) {
+    var oids = [];
+    _.each(args.swagger.params.commentperiod.value, function (i) {
+      oids.push(mongoose.Types.ObjectId('5a5d4b162cb574331ca61b29'));
+    });
+    query = _.assignIn({ "_commentPeriod": {
+        $in: oids
+      }
+    });
+  }
+  console.log("query:", query);
 
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -52,7 +63,10 @@ exports.unProtectedPost = function (args, res, next) {
   comment.review.tags = [['sysadmin']];
   comment.commentAuthor.tags = [['sysadmin']];
 
-  if (comment.requestedAnonymous) {
+  // Unless they request to be anon, make their stuff public.
+  // TODO: Contact name/location/org currently showing public
+  // when they request anonymous.
+  if (!comment.commentAuthor.requestedAnonymous) {
     comment.commentAuthor.tags = [['sysadmin'], ['public']];
   }
 

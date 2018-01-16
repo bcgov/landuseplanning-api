@@ -1922,8 +1922,8 @@ paths:
         - user
       parameters:
         - in: query
-          name: application
-          description: "Comments relating to a particular Application(s)"
+          name: commentperiod
+          description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -2185,8 +2185,8 @@ paths:
       description: "Retreiving public comments."
       parameters:
         - in: query
-          name: application
-          description: "Comments relating to a particular Application(s)"
+          name: commentperiod
+          description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false
           collectionFormat: pipes
