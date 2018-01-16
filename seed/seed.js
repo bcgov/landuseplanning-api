@@ -9,6 +9,7 @@ var _               = require('lodash');
 var request         = require('request');
 var fs              = require('fs');
 var _applications   = [];
+var _commentPeriods = [];
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -71,12 +72,17 @@ var insertAll = function (route, entries) {
       // console.log("e:", e);
       var postBody = JSON.stringify(e);
 
-      if (route == 'api/document') {
-        // Bind the objectID's
+      // Bind the objectID's
+      if (route === 'api/document' || route === 'api/commentperiod') {
         var f = _.find(_applications, {code: e.application});
         e._application = f._id;
-        postBody = JSON.stringify(e);
       }
+      if (route === 'api/public/comment') {
+        var f = _.find(_commentPeriods, {code: e.commentPeriod});
+        e._commentPeriod = f._id;
+      }
+      postBody = JSON.stringify(e);
+      // end bind objectID's
 
       request.post({
           url: uri + route,
@@ -96,6 +102,9 @@ var insertAll = function (route, entries) {
             // Save the various objects for later lookup
             if (route === 'api/application') {
                 _applications.push(data);
+            }
+            if (route === 'api/commentperiod') {
+                _commentPeriods.push(data);
             }
 
             if (route === 'api/document') {
@@ -134,22 +143,31 @@ var insertAll = function (route, entries) {
                   }
                 );                
             } else {
-                // Update it to be public
-                request.put({
-                  url: uri + route + '/' + data._id + '/publish',
-                  headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Bearer ' + jwt_login
-                  },
-                  body: postBody
-                }, function (err2, res2, body2) {
-                  if (err2 || res2.statusCode !== 200) {
-                  console.log("err2:", err2);
-                  reject(null);
+                if (route === 'api/public/comment') {
+                  // Swap to the authenticated access route.
+                  route = 'api/comment';
+                }
+                // Update it to be public - assume everything public
+                // unless it has the magic flag.
+                if (e.seedDontPublish) {
+                  resolve();
                 } else {
-                  resolve("Updated:", body2._id);
-                } 
-              });
+                  request.put({
+                    url: uri + route + '/' + data._id + '/publish',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer ' + jwt_login
+                    },
+                    body: postBody
+                    }, function (err3, res2, body2) {
+                      if (err3 || res2.statusCode !== 200) {
+                      console.log("err3:", err3);
+                      reject(null);
+                    } else {
+                      resolve("Updated:", body2._id);
+                    }
+                  });
+                }
             }
           }
       });
@@ -179,6 +197,14 @@ login(username, password)
 .then(function () {
   var orglist = require('./doclist.json');
   return insertAll('api/document', orglist);
+})
+.then(function () {
+  var cplist = require('./commentperiodlist.json');
+  return insertAll('api/commentperiod', cplist);
+})
+.then(function () {
+  var clist = require('./commentlist.json');
+  return insertAll('api/public/comment', clist);
 })
 .catch(function (err) {
   console.log("ERR:", err);
