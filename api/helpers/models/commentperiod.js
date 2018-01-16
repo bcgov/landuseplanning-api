@@ -5,6 +5,7 @@ module.exports = require('../models')('CommentPeriod', {
     // This must be done in the code.
     tags            : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     name            : { type: String, trim: true },
+    code            : { type: String, trim: true },
 
     startDate       : { type: Date, default: null },
     endDate         : { type: Date, default: null },

@@ -1,0 +1,52 @@
+[
+    {
+        "addedBy": "admin",
+        "commentPeriod": "comment-period-1",
+        "commentNumber": 1,
+        "comment": "This is the first comment for this application.",
+        "commentAuthor": {
+            "contactName": "Adam",
+            "location": "Abbotsford",
+            "internal": {
+                "email": "adam@mailinator.com",
+                "phone": "111-222-3333"
+            }
+        },
+        "seedDontPublish": true,
+        "status": "Pending"
+    },
+    {
+        "addedBy": "admin",
+        "commentPeriod": "comment-period-1",
+        "commentNumber": 2,
+        "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "commentAuthor": {
+            "orgName": "Bears Inc.",
+            "contactName": "Bob",
+            "location": "Bamfield",
+            "internal": {
+                "email": "bob@mailinator.com",
+                "phone": "222-333-4444"
+            }
+        },
+        "seedDontPublish": true,
+        "status": "Pending"
+    },
+    {
+        "addedBy": "admin",
+        "commentPeriod": "comment-period-1",
+        "commentNumber": 3,
+        "comment": "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
+        "commentAuthor": {
+            "orgName": "",
+            "contactName": "Joe",
+            "location": "Foo",
+            "internal": {
+                "email": "foo@mailinator.com",
+                "phone": "555-555-5555"
+            },
+            "requestedAnonymous": true
+        },
+        "status": "Accepted"
+    }
+]

@@ -135,6 +135,7 @@ var getComments = function (role, query, fields) {
 
     // Fields we always return
     var defaultFields = ['_id',
+                        'code',
                         'tags'];
     _.each(defaultFields, function (f) {
         projection[f] = 1;
