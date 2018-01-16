@@ -11,20 +11,20 @@ exports.protectedOptions = function (args, res, rest) {
 exports.publicGet = function (args, res, next) {
   // Build match query if on CommentId route
   var query = {};
-  if (args.swagger.params.CommentId) {
+  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.CommentId.value)};
   }
-  if (args.swagger.params.commentperiod) {
+  if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
     var oids = [];
     _.each(args.swagger.params.commentperiod.value, function (i) {
-      oids.push(mongoose.Types.ObjectId('5a5d4b162cb574331ca61b29'));
+      oids.push(mongoose.Types.ObjectId(i));
     });
     query = _.assignIn({ "_commentPeriod": {
         $in: oids
       }
     });
   }
-  console.log("query:", query);
+  defaultLog.info("query:", query);
 
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -32,18 +32,26 @@ exports.publicGet = function (args, res, next) {
   });
 };
 exports.protectedGet = function(args, res, next) {
-  var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
-
   var Comment = mongoose.model('Comment');
 
   defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
 
   // Build match query if on CommentId route
   var query = {};
-  if (args.swagger.params.CommentId) {
+  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = { "_id": mongoose.Types.ObjectId(args.swagger.params.CommentId.value)};
   }
+  if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
+    var oids = [];
+    _.each(args.swagger.params.commentperiod.value, function (i) {
+      oids.push(mongoose.Types.ObjectId(i));
+    });
+    query = _.assignIn({ "_commentPeriod": {
+        $in: oids
+      }
+    });
+  }
+  defaultLog.info("query:", query);
 
   getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
