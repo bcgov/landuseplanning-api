@@ -221,6 +221,7 @@ definitions:
       - endDate
       - description
       - internal
+      - _application
       - _addedBy
 ### Decision Definitions
   DecisionId:
@@ -2337,7 +2338,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentFields
+            enum: *commentperiodFields
       responses:
         "200":
           description: "Success"

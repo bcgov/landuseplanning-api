@@ -4,6 +4,7 @@ var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var mime        = require('mime-types');
 var Actions     = require('../helpers/actions');
+var Utils       = require('../helpers/utils');
 var FlakeIdGen  = require('flake-idgen'),
     intformat   = require('biguint-format'),
     generator   = new FlakeIdGen;
@@ -18,10 +19,10 @@ exports.publicGet = function (args, res, next) {
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.docId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
   if (args.swagger.params.application.value) {
-    _.assignIn(query, { "application": { $in: args.swagger.params.application.value}}); 
+    query = Utils.buildQuery("application", args.swagger.params.application.value, query);
   }
 
   getDocuments(['public'], query, args.swagger.params.fields.value)
@@ -40,10 +41,10 @@ exports.protectedGet = function(args, res, next) {
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.docId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
   if (args.swagger.params.application.value) {
-    _.assignIn(query, { "application": { $in: args.swagger.params.application.value}}); 
+    query = Utils.buildQuery("application", args.swagger.params.application.value, query);
   }
 
   getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)

@@ -3,6 +3,7 @@ var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
+var Utils       = require('../helpers/utils');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -19,7 +20,7 @@ exports.protectedGet = function(args, res, next) {
   // Build match query if on userId route
   var query = {};
   if (args.swagger.params.userId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.userId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.userId.value, query);
   }
 
   getUsers(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)

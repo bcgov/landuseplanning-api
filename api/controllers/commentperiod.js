@@ -3,6 +3,7 @@ var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
+var Utils       = require('../helpers/utils');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -12,9 +13,11 @@ exports.publicGet = function (args, res, next) {
   // Build match query if on CommentPeriodId route
   var query = {};
   if (args.swagger.params.CommentPeriodId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.CommentPeriodId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-
+  if (args.swagger.params.application && args.swagger.params.application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params.application.value, query);
+  }
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
@@ -28,7 +31,10 @@ exports.protectedGet = function(args, res, next) {
   // Build match query if on CommentPeriodId route
   var query = {};
   if (args.swagger.params.CommentPeriodId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.CommentPeriodId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
+  }
+  if (args.swagger.params.application && args.swagger.params.application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params.application.value, query);
   }
 
   getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)

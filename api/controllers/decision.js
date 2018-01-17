@@ -3,6 +3,7 @@ var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
+var Utils       = require('../helpers/utils');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -12,7 +13,7 @@ exports.publicGet = function (args, res, next) {
   // Build match query if on decisionId route
   var query = {};
   if (args.swagger.params.decisionId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.decisionId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
   }
 
   getDecisions(['public'], query, args.swagger.params.fields.value)
@@ -31,7 +32,7 @@ exports.protectedGet = function(args, res, next) {
   // Build match query if on decisionId route
   var query = {};
   if (args.swagger.params.decisionId) {
-    query = { "_id": mongoose.Types.ObjectId(args.swagger.params.decisionId.value)};
+    query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
   }
 
   getDecisions(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
