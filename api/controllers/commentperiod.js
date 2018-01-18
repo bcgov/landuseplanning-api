@@ -15,8 +15,8 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.CommentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-  if (args.swagger.params.application && args.swagger.params.application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params.application.value, query);
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -33,8 +33,8 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.CommentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-  if (args.swagger.params.application && args.swagger.params.application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params.application.value, query);
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
 
   getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)

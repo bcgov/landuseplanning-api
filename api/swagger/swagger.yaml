@@ -2379,7 +2379,7 @@ paths:
         - user
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "CommentPeriods relating to a particular Application(s)"
           type: array
           required: false
@@ -2620,7 +2620,7 @@ paths:
       description: "Retreiving public comment period(s)."
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "CommentPeriods relating to a particular Application(s)"
           type: array
           required: false
