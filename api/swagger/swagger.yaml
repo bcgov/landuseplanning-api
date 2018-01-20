@@ -184,10 +184,10 @@ definitions:
   CommentFields:
     type: string
     description: "Optional fields to return."
-    example: name|documents
+    example: name|_documents
     #TODO: Fix enums
     enum: &commentFields
-      - documents
+      - _documents
       - commentAuthor
       - comment
       - status
@@ -217,7 +217,7 @@ definitions:
   CommentPeriodFields:
     type: string
     description: "Optional fields to return."
-    example: name|documents
+    example: startDate|endDate|description
     #TODO: Fix enums
     enum: &commentperiodFields
       - startDate

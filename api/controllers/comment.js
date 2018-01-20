@@ -186,7 +186,7 @@ var getComments = function (role, query, fields) {
                         'internal',
                         'dateAdded',
                         'commentAuthor',
-                        'documents',
+                        '_documents',
                         'review',
                         '_addedBy',
                         '_commentPeriod',

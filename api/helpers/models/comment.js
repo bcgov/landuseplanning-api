@@ -35,7 +35,7 @@ module.exports = require('../models')('Comment', {
     },
 
     // list of attachments
-    documents       : [{ type: 'ObjectId', ref: 'Document' }],
+    _documents       : [{ type: 'ObjectId', ref: 'Document' }],
 
     // Who vetted this comment?
     review          : {
