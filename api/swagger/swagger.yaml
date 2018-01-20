@@ -286,14 +286,19 @@ definitions:
       displayName:
         type: string
         example: "A cool user"
+
         ## TODO: Add more fields here.
   UserFields:
     type: string
     description: "Optional fields to return."
-    example: displayName|displayName
+    example: displayName|roles
     #TODO: Fix enums
     enum: &userFields
       - displayName
+      - firstName
+      - lastName
+      - username
+      - roles
 ### Resource Definitions
   Token:
     type: object
