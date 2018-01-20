@@ -76,6 +76,7 @@ var getUsers = function (role, query, fields) {
     // Fields we always return
     var defaultFields = ['_id',
                         'displayName',
+                        'roles',
                         'tags'];
     _.each(defaultFields, function (f) {
         projection[f] = 1;
@@ -83,7 +84,7 @@ var getUsers = function (role, query, fields) {
 
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['displayName'], f) !== -1);
+      return (_.indexOf(['displayName', 'firstName', 'lastName', 'username', 'roles'], f) !== -1);
     });
     _.each(sanitizedFields, function (f) {
       projection[f] = 1;
