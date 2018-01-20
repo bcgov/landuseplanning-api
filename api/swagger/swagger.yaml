@@ -868,7 +868,7 @@ paths:
         - user
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "Documents relating to a particular Application(s)"
           type: array
           required: false
@@ -1109,7 +1109,7 @@ paths:
       description: "Retreiving public documents."
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "Documents relating to a particular Application(s)"
           type: array
           required: false
@@ -2384,7 +2384,7 @@ paths:
         - user
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "CommentPeriods relating to a particular Application(s)"
           type: array
           required: false
@@ -2620,12 +2620,12 @@ paths:
     get:
       tags:
         - commentperiod
-      summary: "Get a list of comments"
+      summary: "Get a list of comment period(s)"
       operationId: publicGet
-      description: "Retreiving public comments."
+      description: "Retreiving public comment period(s)."
       parameters:
         - in: query
-          name: application
+          name: _application
           description: "CommentPeriods relating to a particular Application(s)"
           type: array
           required: false
@@ -2640,7 +2640,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentFields
+            enum: *commentperiodFields
       responses:
         "200":
           description: "Success"

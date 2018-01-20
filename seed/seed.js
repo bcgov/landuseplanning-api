@@ -74,7 +74,7 @@ var insertAll = function (route, entries) {
 
       // Bind the objectID's
       if (route === 'api/document' || route === 'api/commentperiod') {
-        var f = _.find(_applications, {code: e.application});
+        var f = _.find(_applications, {code: e._application});
         e._application = f._id;
       }
       if (route === 'api/public/comment') {
