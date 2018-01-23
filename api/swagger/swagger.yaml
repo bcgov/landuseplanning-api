@@ -1689,6 +1689,11 @@ paths:
           description: "ID of user to update"
           required: true
           type: "string"
+        - name: user
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/UserObject"
       responses:
         "200":
           description: "Success"

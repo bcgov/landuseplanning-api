@@ -45,16 +45,32 @@ exports.protectedPost = function (args, res, next) {
   });
 };
 
-// Update an existing organization
+// Update an existing user
 exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.userId.value;
   defaultLog.info("ObjectID:", args.swagger.params.userId.value);
 
-  var obj = args.swagger.params.app.value;
+  var obj = args.swagger.params.user.value;
   // NB: Don't strip security tags on protectedPut.  Only sysadmins
   // Can call this route.
   // delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
+
+  // TODO: Fix this, we need better handling of role selection/updating
+  // For now, we only have 2 roles, we are just munging this to be in multi-
+  // dimensional arrays since our input only passes a single string which is
+  // the new singular role.
+  if (obj.roles === 'public') {
+    obj.roles = [['public']];
+  }
+  if (obj.roles === 'sysadmin') {
+    obj.roles = [['sysadmin']];
+  }
+
+  if (obj.username && obj.username === 'admin' && !_.some(obj.roles, _.method('includes', 'sysadmin'))) {
+    // No way, can't change admin user.
+    return Actions.sendResponse(res, 405, {message: '405: Admin user must have sysadmin role.'});
+  }
 
   var User = require('mongoose').model('User');
   User.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
