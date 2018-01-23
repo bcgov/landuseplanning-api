@@ -41,7 +41,7 @@ exports.protectedPost = function (args, res, next) {
   user.save()
   .then(function (a) {
     defaultLog.info("Saved new organization object:", a);
-    return Actions.sendResponse(res, 200, data);
+    return Actions.sendResponse(res, 200, a);
   });
 };
 
