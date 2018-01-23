@@ -78,6 +78,7 @@ var insertAll = function (route, entries) {
         e._application = f._id;
       }
       if (route === 'api/public/comment') {
+        console.log('cmm:', _commentPeriods);
         var f = _.find(_commentPeriods, {code: e.commentPeriod});
         e._commentPeriod = f._id;
       }
@@ -136,9 +137,13 @@ var insertAll = function (route, entries) {
                             console.log("err2:", err2);
                             reject(null);
                           } else {
+                            var waitTill = new Date(new Date().getTime() + seconds * 1000);
+                            while(waitTill > new Date()){}
+
                             resolve("Updated:", body2._id);
                           }
                         });
+
                       }
                   }
                 );                
