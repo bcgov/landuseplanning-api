@@ -18,6 +18,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
+
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
@@ -105,7 +106,8 @@ exports.protectedDelete = function (args, res, next) {
         return Actions.sendResponse(res, 200, deleted);
       }, function (err) {
         // Error
-        return Actions.sendResponse(res, err.code, err);
+        defaultLog.info("Couldn't Execute!");
+        return Actions.sendResponse(res, 400, err);
       });
     } else {
       defaultLog.info("Couldn't find that object!");
