@@ -99,7 +99,7 @@ definitions:
       - subtype
       - purpose
       - subpurpose
-      - proponent
+      - _proponent
       - latitude
       - longitude
       - location

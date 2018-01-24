@@ -10,6 +10,7 @@ var request         = require('request');
 var fs              = require('fs');
 var _applications   = [];
 var _commentPeriods = [];
+var _organizations  = [];
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -74,13 +75,21 @@ var insertAll = function (route, entries) {
 
       // Bind the objectID's
       if (route === 'api/document' || route === 'api/commentperiod') {
+        console.log('app:', _applications);
         var f = _.find(_applications, {code: e._application});
         e._application = f._id;
       }
       if (route === 'api/public/comment') {
-        console.log('cmm:', _commentPeriods);
+        console.log('cmt:', _commentPeriods);
         var f = _.find(_commentPeriods, {code: e.commentPeriod});
+        console.log('f:', f);
         e._commentPeriod = f._id;
+      }
+      if (route === 'api/application') {
+        console.log('org:1', e.proponent);
+        console.log('org:2', _.find(_organizations, { name: e.proponent}));
+        var f = _.find(_organizations, { name: e.proponent});
+        e._proponent = f._id;
       }
       postBody = JSON.stringify(e);
       // end bind objectID's
@@ -98,6 +107,8 @@ var insertAll = function (route, entries) {
             reject(null);
           } else {
             var data = JSON.parse(body);
+            var waitTill = new Date(new Date().getTime() + 100);
+            while(waitTill > new Date()){}
             console.log("SAVED:", data._id);
 
             // Save the various objects for later lookup
@@ -106,6 +117,9 @@ var insertAll = function (route, entries) {
             }
             if (route === 'api/commentperiod') {
                 _commentPeriods.push(data);
+            }
+            if (route === 'api/organization') {
+                _organizations.push(data);
             }
 
             if (route === 'api/document') {
@@ -137,7 +151,7 @@ var insertAll = function (route, entries) {
                             console.log("err2:", err2);
                             reject(null);
                           } else {
-                            var waitTill = new Date(new Date().getTime() + seconds * 1000);
+                            var waitTill = new Date(new Date().getTime() + 100);
                             while(waitTill > new Date()){}
 
                             resolve("Updated:", body2._id);

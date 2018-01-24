@@ -150,7 +150,7 @@ var getApplications = function (role, query, fields) {
                         'subtype',
                         'purpose',
                         'subpurpose',
-                        'proponent',
+                        '_proponent',
                         'latitude',
                         'longitude',
                         'location',
