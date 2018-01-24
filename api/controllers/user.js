@@ -29,7 +29,7 @@ exports.protectedGet = function(args, res, next) {
   });
 };
 
-//  Create a new organization
+//  Create a new user
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.user.value;
   defaultLog.info("Incoming new object:", obj);
@@ -40,7 +40,7 @@ exports.protectedPost = function (args, res, next) {
   user.tags = [['sysadmin']];
   user.save()
   .then(function (a) {
-    defaultLog.info("Saved new organization object:", a);
+    defaultLog.info("Saved new user object:", a);
     return Actions.sendResponse(res, 200, a);
   });
 };

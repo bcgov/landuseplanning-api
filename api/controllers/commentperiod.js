@@ -85,6 +85,32 @@ exports.protectedPut = function (args, res, next) {
   });
 }
 
+//  Delete a new CommentPeriod
+exports.protectedDelete = function (args, res, next) {
+  var objId = args.swagger.params.CommentPeriodId.value;
+  defaultLog.info("Delete CommentPeriod:", objId);
+
+  var commentperiod = require('mongoose').model('CommentPeriod');
+  commentperiod.findOne({_id: objId, isDeleted: false}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Set the deleted flag.
+      Actions.delete(o)
+      .then(function (deleted) {
+        // Deleted successfully
+        return Actions.sendResponse(res, 200, deleted);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, err.code, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
+
 // Publish/Unpublish the CommentPeriod
 exports.protectedPublish = function (args, res, next) {
   var objId = args.swagger.params.CommentPeriodId.value;
