@@ -65,11 +65,14 @@ exports.protectedPost = function (args, res, next) {
 exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.CommentPeriodId.value;
   defaultLog.info("ObjectID:", args.swagger.params.CommentPeriodId.value);
+  var obj = args.swagger.params.cp.value;
 
-  var obj = args.swagger.params.CommentPeriodId.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
+
+  // Since it's a sub-element, we need to ensure we keep it updated to what it is.
   delete obj.internal.tags;
+  obj.internal.tags = [['sysadmin']];
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 
