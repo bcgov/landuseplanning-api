@@ -2484,18 +2484,18 @@ paths:
         - sysadmin
         - write:commentperiod
       consumes:
-        - multipart/form-data
+        - application/json
       parameters:
         - name: CommentPeriodId
           in: path
           description: "ID of commentperiod to update"
           required: true
           type: "string"
-        - name: upfile
-          in: formData
-          description: "The file to upload."
+        - name: cp
+          in: body
           required: true
-          type: file
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
       responses:
         "200":
           description: "Success"
