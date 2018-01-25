@@ -1989,7 +1989,7 @@ paths:
         - user
       parameters:
         - in: query
-          name: commentperiod
+          name: _commentperiod
           description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false
@@ -2252,7 +2252,7 @@ paths:
       description: "Retreiving public comments."
       parameters:
         - in: query
-          name: commentperiod
+          name: _commentperiod
           description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false

@@ -1,7 +1,6 @@
  module.exports = require ('../models')('Application', {
     _addedBy         : { type:'ObjectId', ref:'User', default:null },
-    // _proponent       : { type:'ObjectId', ref:'Organization', default:null },
-    _proponent       : { type: String, trim: true, default: null},
+    _proponent       : { type:'ObjectId', ref:'Organization', default:null },
     code             : { type: String, trim: true, default: ''},
     name             : { type: String, trim: true },
     // Note: Default on tag property is purely for display only, they have no real effect on the model

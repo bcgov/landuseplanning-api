@@ -15,8 +15,8 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
   }
-  if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
-    query = Utils.buildQuery("_commentPeriod", args.swagger.params.commentperiod.value, query);
+  if (args.swagger.params._commentperiod && args.swagger.params._commentperiod.value) {
+    query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentperiod.value, query);
   }
   defaultLog.info("query:", query);
 
@@ -35,8 +35,8 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
   }
-  if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
-    query = Utils.buildQuery("_commentPeriod", args.swagger.params.commentperiod.value, query);
+  if (args.swagger.params._commentperiod && args.swagger.params._commentperiod.value) {
+    query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentperiod.value, query);
   }
   defaultLog.info("query:", query);
 
