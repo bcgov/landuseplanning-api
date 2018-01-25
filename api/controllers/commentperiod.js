@@ -52,9 +52,15 @@ exports.protectedGet = function(args, res, next) {
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.commentperiod.value;
   defaultLog.info("Incoming new object:", obj);
+  if (!obj.internal) {
+    obj.internal = {};
+  }
+  obj.internal._addedBy = mongoose.Types.ObjectId(args.swagger.params.auth_payload.userID.value);
+  obj._addedBy = mongoose.Types.ObjectId(args.swagger.params.auth_payload.userID.value);
 
   var CommentPeriod = mongoose.model('CommentPeriod');
   var commentperiod = new CommentPeriod(obj);
+
   // Define security tag defaults
   commentperiod.tags = [['sysadmin']];
   commentperiod.internal.tags = [['sysadmin']];
