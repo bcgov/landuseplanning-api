@@ -2397,6 +2397,11 @@ paths:
           items:
             type: string
         - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "CommentPeriods that are deleted or not"
+        - in: query
           name: fields
           description: "commentperiod fields to return."
           required: false
@@ -2665,6 +2670,11 @@ paths:
           collectionFormat: pipes
           items:
             type: string
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "CommentPeriods that are deleted or not"
         - in: query
           name: fields
           description: "commentperiod fields to return."
