@@ -2091,11 +2091,11 @@ paths:
           description: "ID of comment to update"
           required: true
           type: "string"
-        - name: upfile
-          in: formData
-          description: "The file to upload."
+        - name: comment
+          in: body
           required: true
-          type: file
+          schema:
+            $ref: "#/definitions/CommentObject"
       responses:
         "200":
           description: "Success"

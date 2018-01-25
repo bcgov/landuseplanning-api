@@ -83,20 +83,36 @@ exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.CommentId.value;
   defaultLog.info("ObjectID:", args.swagger.params.CommentId.value);
 
-  var obj = args.swagger.params.CommentId.value;
+  var obj = args.swagger.params.comment.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   if (obj.review) {
     delete obj.review.tags;
+    if (obj.commentStatus === 'Accepted') {
+      obj.review.tags = [['sysadmin'], ['public']]
+    } else if (obj.commentStatus === 'Pending') {
+      obj.review.tags = [['sysadmin']]
+    } else if (obj.commentStatus === 'Rejected') {
+      obj.review.tags = [['sysadmin']]
+    }
   }
   if (obj.commentAuthor) {
     delete obj.commentAuthor.tags;
+    // Did they request anon?
+    if (obj.commentAuthor.requestedAnonymous) {
+      obj.commentAuthor.tags = [['sysadmin']];
+    } else {
+      obj.commentAuthor.tags = [['sysadmin'],['public']];
+    }
 
     // Never allow this to be updated
     if (obj.commentAuthor.internal) {
       delete obj.commentAuthor.internal.tags;
+      obj.commentAuthor.internal.tags = [['sysadmin']];
     }
   }
+
+  console.log('object:', obj);
 
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
