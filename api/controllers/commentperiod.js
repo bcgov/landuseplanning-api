@@ -18,6 +18,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
+  _.assignIn(query, { isDeleted: false });
 
   getComments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
