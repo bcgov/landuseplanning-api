@@ -91,10 +91,12 @@ exports.protectedPut = function (args, res, next) {
   }
   if (obj.commentAuthor) {
     delete obj.commentAuthor.tags;
-  }
 
-  // Never allow this to be updated
-  delete obj.commentAuthor.internal.tags;
+    // Never allow this to be updated
+    if (obj.commentAuthor.internal) {
+      delete obj.commentAuthor.internal.tags;
+    }
+  }
 
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
