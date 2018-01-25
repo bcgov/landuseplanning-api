@@ -38,16 +38,6 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
     query = Utils.buildQuery("_commentPeriod", args.swagger.params.commentperiod.value, query);
   }
-  if (args.swagger.params.commentperiod && args.swagger.params.commentperiod.value) {
-    var oids = [];
-    _.each(args.swagger.params.commentperiod.value, function (i) {
-      oids.push(mongoose.Types.ObjectId(i));
-    });
-    query = _.assignIn({ "_commentPeriod": {
-        $in: oids
-      }
-    });
-  }
   defaultLog.info("query:", query);
 
   getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
