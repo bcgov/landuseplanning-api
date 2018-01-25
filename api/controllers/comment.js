@@ -96,8 +96,12 @@ exports.protectedPut = function (args, res, next) {
   var obj = args.swagger.params.CommentId.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
-  delete obj.review.tags;
-  delete obj.commentAuthor.tags;
+  if (obj.review) {
+    delete obj.review.tags;
+  }
+  if (obj.commentAuthor) {
+    delete obj.commentAuthor.tags;
+  }
 
   // Never allow this to be updated
   delete obj.commentAuthor.internal.tags;
