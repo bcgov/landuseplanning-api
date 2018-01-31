@@ -102,6 +102,7 @@ definitions:
       - _proponent
       - latitude
       - longitude
+      - areaHectares
       - location
       - region
       - description
