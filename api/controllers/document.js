@@ -52,6 +52,67 @@ exports.protectedGet = function(args, res, next) {
     return Actions.sendResponse(res, 200, data);
   });
 };
+exports.publicDownload = function(args, res, next) {
+  var self        = this;
+  var Document = mongoose.model('Document');
+
+  // Build match query if on docId route
+  var query = {};
+  if (args.swagger.params.docId) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  } else {
+    return Actions.sendResponse(res, 404, {});
+  }
+
+  getDocuments(['public'], query, ["internalURL", "documentFileName", "internalMime"])
+  .then(function (data) {
+    if (data && data.length === 1) {
+      var blob = data[0];
+      if (fs.existsSync(blob.internalURL)) {
+        var stream 	= fs.createReadStream(blob.internalURL);
+        var stat 	= fs.statSync(blob.internalURL);
+        res.setHeader('Content-Length', stat.size);
+        res.setHeader('Content-Type', blob.internalMime);
+        res.setHeader('Content-Disposition', 'inline;filename="' + blob.documentFileName + '"');
+        stream.pipe(res);
+			}
+    } else {
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
+
+exports.protectedDownload = function(args, res, next) {
+  var self        = this;
+  self.scopes     = args.swagger.params.auth_payload.scopes;
+
+  var Document = mongoose.model('Document');
+
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+
+  // Build match query if on docId route
+  var query = {};
+  if (args.swagger.params.docId) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  }
+
+  getDocuments(args.swagger.params.auth_payload.scopes, query, ["internalURL", "documentFileName", "internalMime"])
+  .then(function (data) {
+    if (data && data.length === 1) {
+      var blob = data[0];
+      if (fs.existsSync(blob.internalURL)) {
+        var stream 	= fs.createReadStream(blob.internalURL);
+        var stat 	= fs.statSync(blob.internalURL);
+        res.setHeader('Content-Length', stat.size);
+        res.setHeader('Content-Type', blob.internalMime);
+        res.setHeader('Content-Disposition', 'inline;filename="' + blob.documentFileName + '"');
+        stream.pipe(res);
+			}
+    } else {
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
 
 //  Create a new document
 exports.protectedPost = function (args, res, next) {
@@ -172,6 +233,7 @@ var getDocuments = function (role, query, fields) {
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
       return (_.indexOf(['displayName',
+                         'internalURL',
                          'documentFileName',
                          'internalMime'], f) !== -1);
     });
