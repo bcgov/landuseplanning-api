@@ -2082,7 +2082,7 @@ paths:
         - user
       parameters:
         - in: query
-          name: _commentperiod
+          name: _commentPeriod
           description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false
@@ -2345,7 +2345,7 @@ paths:
       description: "Retreiving public comments."
       parameters:
         - in: query
-          name: _commentperiod
+          name: _commentPeriod
           description: "Comments relating to a particular Comment Period(s)"
           type: array
           required: false
@@ -2455,7 +2455,7 @@ paths:
         - sysadmin
         - write:commentperiod
       parameters:
-        - name: commentperiod
+        - name: _commentPeriod
           in: body
           required: true
           schema:
