@@ -153,6 +153,7 @@ var getApplications = function (role, query, fields) {
                         '_proponent',
                         'latitude',
                         'longitude',
+                        'areaHectares',
                         'location',
                         'region',
                         'description',
