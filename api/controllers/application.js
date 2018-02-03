@@ -63,7 +63,7 @@ exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.appId.value;
   defaultLog.info("ObjectID:", args.swagger.params.appId.value);
 
-  var obj = args.swagger.params.appId.value;
+  var obj = args.swagger.params.AppObject.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
@@ -162,6 +162,7 @@ var getApplications = function (role, query, fields) {
                         'projectDate',
                         'businessUnit',
                         'cl_files',
+                        'stageCode',
                         'commodityType',
                         'commodity',
                         'commodities'], f) !== -1);

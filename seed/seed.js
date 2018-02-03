@@ -63,31 +63,25 @@ var login = function (username, password) {
   });
 };
 
-var insertAll = function (route, entries) {
-  var self = this;
+var doWork = function (e, route) {
   return new Promise(function (resolve, reject) {
-    console.log("route:", route);
-    // console.log("entries:", entries);
-
-    _.each(entries, function (e) {
       // console.log("e:", e);
       var postBody = JSON.stringify(e);
 
       // Bind the objectID's
       if (route === 'api/document' || route === 'api/commentperiod') {
-        console.log('app:', _applications);
+        // console.log('app:', _applications);
         var f = _.find(_applications, {code: e._application});
         e._application = f._id;
       }
       if (route === 'api/public/comment') {
-        console.log('cmt:', _commentPeriods);
+        // console.log('cmt:', _commentPeriods);
         var f = _.find(_commentPeriods, {code: e.commentPeriod});
-        console.log('f:', f);
         e._commentPeriod = f._id;
       }
       if (route === 'api/application') {
-        console.log('org:1', e.proponent);
-        console.log('org:2', _.find(_organizations, { name: e.proponent}));
+        // console.log('org:1', e.proponent);
+        // console.log('org:2', _.find(_organizations, { name: e.proponent}));
         var f = _.find(_organizations, { name: e.proponent});
         e._proponent = f._id;
       }
@@ -107,10 +101,6 @@ var insertAll = function (route, entries) {
             reject(null);
           } else {
             var data = JSON.parse(body);
-            var waitTill = new Date(new Date().getTime() + 100);
-            while(waitTill > new Date()){}
-            console.log("SAVED:", data._id);
-
             // Save the various objects for later lookup
             if (route === 'api/application') {
                 _applications.push(data);
@@ -151,9 +141,6 @@ var insertAll = function (route, entries) {
                             console.log("err2:", err2);
                             reject(null);
                           } else {
-                            var waitTill = new Date(new Date().getTime() + 100);
-                            while(waitTill > new Date()){}
-
                             resolve("Updated:", body2._id);
                           }
                         });
@@ -190,7 +177,22 @@ var insertAll = function (route, entries) {
             }
           }
       });
-    });
+  });
+};
+
+var insertAll = function (route, entries) {
+  var self = this;
+  return new Promise(function (resolve, reject) {
+    console.log("route:", route);
+
+    Promise.resolve ()
+    .then (function () {
+      return entries.reduce (function (current, item) {
+        return current.then (function () {
+          return doWork(item, route);
+        });
+      }, Promise.resolve());
+    }).then(resolve, reject);
   });
 };
 
