@@ -50,7 +50,7 @@ exports.protectedGet = function(args, res, next) {
 
 //  Create a new CommentPeriod
 exports.protectedPost = function (args, res, next) {
-  var obj = args.swagger.params.commentperiod.value;
+  var obj = args.swagger.params._commentPeriod.value;
   defaultLog.info("Incoming new object:", obj);
   if (!obj.internal) {
     obj.internal = {};
