@@ -499,6 +499,11 @@ paths:
           description: "ID of application to update"
           required: true
           type: "string"
+        - name: AppObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/AppObject"
       responses:
         "200":
           description: "Success"
