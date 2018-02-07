@@ -111,6 +111,7 @@ definitions:
       - projectDate
       - businessUnit
       - cl_files
+      - stageCode
       - commodityType
       - commodity
       - commodities

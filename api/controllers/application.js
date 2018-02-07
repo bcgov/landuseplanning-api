@@ -162,6 +162,7 @@ var getApplications = function (role, query, fields) {
                         'projectDate',
                         'businessUnit',
                         'cl_files',
+                        'stageCode',
                         'commodityType',
                         'commodity',
                         'commodities'], f) !== -1);
