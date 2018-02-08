@@ -11,7 +11,6 @@
             "notes": "This comment period is only visible on the admin site",
             "addedBy": "admin"
         },
-        "seedDontPublish": true,
         "isDeleted": false
     },
     {
@@ -26,16 +25,30 @@
             "notes": "This comment period is only visible on the admin site",
             "addedBy": "admin"
         },
-        "seedDontPublish": true,
-        "isDeleted": false
+        "seedDontPublish": true
     },
     {
         "addedBy": "admin",
         "_application": "6408232",
         "code": "comment-period-3",
         "name": "Comment Period 3",
+        "startDate": "2018-01-01",
+        "endDate": "2018-01-31",
+        "description": "This is the first comment period for Application # 6408232.",
+        "isDeleted": false
+    },
+    {
+        "addedBy": "admin",
+        "_application": "6408232",
+        "code": "comment-period-4",
+        "name": "Comment Period 4",
         "startDate": "2018-03-01",
         "endDate": "2018-03-31",
-        "description": "This is the comment period for Application # 6408232."
+        "description": "This is the second comment period for Application # 6408232.",
+        "internal": {
+            "notes": "This comment period is only visible on the admin site",
+            "addedBy": "admin"
+        },
+        "isDeleted": false
     }
 ]

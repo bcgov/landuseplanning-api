@@ -11,10 +11,8 @@
             "internal": {
                 "email": "ellis.lara@mailinator.com",
                 "phone": "000-000-0000"
-            },
-            "requestedAnonymous": true
+            }
         },
-        "seedDontPublish": true,
         "status": "Pending"
     },
     {
@@ -30,7 +28,6 @@
                 "phone": "111-111-1111"
             }
         },
-        "seedDontPublish": true,
         "status": "Pending"
     },
     {
@@ -44,8 +41,7 @@
             "internal": {
                 "email": "clint.penelope@mailinator.com",
                 "phone": "222-222-2222"
-            },
-            "requestedAnonymous": true
+            }
         },
         "status": "Accepted"
     },
@@ -62,7 +58,6 @@
                 "phone": "333-333-3333"
             }
         },
-        "seedDontPublish": true,
         "status": "Pending"
     },
     {
@@ -76,10 +71,8 @@
             "internal": {
                 "email": "marci.ogden@mailinator.com",
                 "phone": "444-444-4444"
-            },
-            "requestedAnonymous": true
+            }
         },
-        "seedDontPublish": true,
         "status": "Pending"
     },
     {
@@ -93,8 +86,10 @@
             "internal": {
                 "email": "andie.gale@mailinator.com",
                 "phone": "555-555-5555"
-            }
+            },
+            "requestedAnonymous": true
         },
+        "seedDontPublish": true,
         "status": "Accepted"
     },
     {
@@ -125,7 +120,8 @@
             "internal": {
                 "email": "abraham.brianna@mailinator.com",
                 "phone": "777-777-7777"
-            }
+            },
+            "requestedAnonymous": true
         },
         "seedDontPublish": true,
         "status": "Pending"
@@ -144,6 +140,7 @@
             },
             "requestedAnonymous": true
         },
+        "seedDontPublish": true,
         "status": "Accepted"
     },
     {
@@ -157,13 +154,15 @@
             "internal": {
                 "email": "benji.beulah@mailinator.com",
                 "phone": "999-999-9999"
-            }
+            },
+            "requestedAnonymous": true
         },
+        "seedDontPublish": true,
         "status": "Accepted"
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-2",
+        "commentPeriod": "comment-period-3",
         "commentNumber": 1,
         "comment": "This is the first comment for this application.",
         "commentAuthor": {
@@ -174,12 +173,11 @@
                 "phone": "111-111-1111"
             }
         },
-        "seedDontPublish": true,
         "status": "Pending"
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-2",
+        "commentPeriod": "comment-period-3",
         "commentNumber": 2,
         "comment": "This is the second comment for this application.",
         "commentAuthor": {
@@ -188,15 +186,13 @@
             "internal": {
                 "email": "gena.parker@mailinator.com",
                 "phone": "222-222-2222"
-            },
-            "requestedAnonymous": true
+            }
         },
-        "seedDontPublish": true,
-        "status": "Pending"
+        "status": "Rejected"
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-2",
+        "commentPeriod": "comment-period-3",
         "commentNumber": 3,
         "comment": "This is the third comment for this application.",
         "commentAuthor": {
@@ -207,7 +203,6 @@
                 "phone": "333-333-3333"
             }
         },
-        "seedDontPublish": true,
         "status": "Accepted"
     }
 ]
