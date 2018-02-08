@@ -21,7 +21,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.docId) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
-  if (args.swagger.params._application.value) {
+  if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
 
