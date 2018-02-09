@@ -847,12 +847,24 @@ paths:
       x-security-scopes:
         - sysadmin
         - write:document
+      consumes:
+        - multipart/form-data
       parameters:
-        - name: doc
-          in: body
+        - name: upfile
+          in: formData
+          description: "The file to upload."
           required: true
-          schema:
-            $ref: "#/definitions/DocId"
+          type: file
+        - name: _application
+          in: formData
+          description: "The application to bind this document to."
+          required: false
+          type: string
+        - name: _comment
+          in: formData
+          description: "The comment to bind this document to."
+          required: false
+          type: string
       responses:
         "200":
           description: "Success"
