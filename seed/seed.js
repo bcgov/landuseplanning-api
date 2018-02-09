@@ -88,95 +88,96 @@ var doWork = function (e, route) {
       postBody = JSON.stringify(e);
       // end bind objectID's
 
-      request.post({
-          url: uri + route,
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + jwt_login
-          },
-          body: postBody
-        }, function (err, res, body) {
-          if (err || res.statusCode !== 200) {
-            // console.log("err:", err, res);
-            reject(null);
-          } else {
+      if (route === 'api/document') {
+        var formData = {
+          upfile: fs.createReadStream(e.internalURL)
+        };
+        request.post({ url: uri + route,
+                      headers: {
+                          'Content-Type': 'application/json',
+                          'Authorization': 'Bearer ' + jwt_login
+                      },
+                      formData: formData
+                    },
+          function optionalCallback(err, httpResponse, body) {
             var data = JSON.parse(body);
-            // Save the various objects for later lookup
-            if (route === 'api/application') {
-                _applications.push(data);
-            }
-            if (route === 'api/commentperiod') {
-                _commentPeriods.push(data);
-            }
-            if (route === 'api/organization') {
-                _organizations.push(data);
-            }
-
-            if (route === 'api/document') {
-                var formData = {
-                    upfile: fs.createReadStream(e.internalURL)
-                };
-                request.put({ url: uri + route + '/' + data._id,
-                              headers: {
-                                  'Content-Type': 'application/json',
-                                  'Authorization': 'Bearer ' + jwt_login
-                              },
-                              formData: formData
-                            },
-                  function optionalCallback(err, httpResponse, body) {
-                      if (err) {
-                        console.error('upload failed:', err);
-                        reject(null);
-                      } else {
-                        // Update it to be public
-                        request.put({
-                            url: uri + route + '/' + data._id + '/publish',
-                            headers: {
-                              'Content-Type': 'application/json',
-                              'Authorization': 'Bearer ' + jwt_login
-                            },
-                            body: postBody
-                        }, function (err2, res2, body2) {
-                          if (err2 || res2.statusCode !== 200) {
-                            console.log("err2:", err2);
-                            reject(null);
-                          } else {
-                            resolve("Updated:", body2._id);
-                          }
-                        });
-
-                      }
-                  }
-                );                
-            } else {
-                if (route === 'api/public/comment') {
-                  // Swap to the authenticated access route.
-                  route = 'api/comment';
-                }
-                // Update it to be public - assume everything public
-                // unless it has the magic flag.
-                if (e.seedDontPublish) {
-                  resolve();
-                } else {
-                  request.put({
+              if (err) {
+                console.error('upload failed:', err);
+                reject(null);
+              } else {
+                // Update it to be public
+                request.put({
                     url: uri + route + '/' + data._id + '/publish',
                     headers: {
                       'Content-Type': 'application/json',
                       'Authorization': 'Bearer ' + jwt_login
                     },
                     body: postBody
-                    }, function (err3, res2, body2) {
-                      if (err3 || res2.statusCode !== 200) {
-                      console.log("err3:", err3);
-                      reject(null);
-                    } else {
-                      resolve("Updated:", body2._id);
-                    }
-                  });
-                }
-            }
+                }, function (err2, res2, body2) {
+                  if (err2 || res2.statusCode !== 200) {
+                    console.log("err2:", err2);
+                    reject(null);
+                  } else {
+                    resolve("Updated:", body2._id);
+                  }
+                });
+
+              }
           }
-      });
+        );
+      } else {
+        request.post({
+            url: uri + route,
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + jwt_login
+            },
+            body: postBody
+          }, function (err, res, body) {
+            if (err || res.statusCode !== 200) {
+              // console.log("err:", err, res);
+              reject(null);
+            } else {
+              var data = JSON.parse(body);
+              // Save the various objects for later lookup
+              if (route === 'api/application') {
+                  _applications.push(data);
+              }
+              if (route === 'api/commentperiod') {
+                  _commentPeriods.push(data);
+              }
+              if (route === 'api/organization') {
+                  _organizations.push(data);
+              }
+
+              if (route === 'api/public/comment') {
+                // Swap to the authenticated access route.
+                route = 'api/comment';
+              }
+              // Update it to be public - assume everything public
+              // unless it has the magic flag.
+              if (e.seedDontPublish) {
+                resolve();
+              } else {
+                request.put({
+                  url: uri + route + '/' + data._id + '/publish',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + jwt_login
+                  },
+                  body: postBody
+                  }, function (err3, res2, body2) {
+                    if (err3 || res2.statusCode !== 200) {
+                    console.log("err3:", err3);
+                    reject(null);
+                  } else {
+                    resolve("Updated:", body2._id);
+                  }
+                });
+              }
+            }
+        });
+      }
   });
 };
 
