@@ -24,6 +24,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
+  _.assignIn(query, { isDeleted: false });
 
   getDocuments(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -43,8 +44,14 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.docId) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
-  if (args.swagger.params._application.value) {
+  if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
   }
 
   getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
@@ -148,6 +155,31 @@ exports.protectedPost = function (args, res, next) {
   .then(function (d) {
     defaultLog.info("Saved new document object:", d);
     return Actions.sendResponse(res, 200, d);
+  });
+};
+
+exports.protectedDelete = function (args, res, next) {
+  var objId = args.swagger.params.docId.value;
+  defaultLog.info("Delete Document:", objId);
+
+  var Document = require('mongoose').model('Document');
+  Document.findOne({_id: objId, isDeleted: false}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Set the deleted flag.
+      Actions.delete(o)
+      .then(function (deleted) {
+        // Deleted successfully
+        return Actions.sendResponse(res, 200, deleted);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, 400, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
   });
 };
 

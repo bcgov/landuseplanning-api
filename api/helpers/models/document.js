@@ -7,5 +7,6 @@
     tags             : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     displayName      : { type:String, default:'' },
     internalURL      : { type:String, default:'' },
+    isDeleted        : { type: Boolean, default: false },
     internalMime     : { type:String, default:'' }
 });
