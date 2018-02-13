@@ -13,7 +13,24 @@
                 "phone": "000-000-0000"
             }
         },
-        "status": "Pending"
+        "status": "Accepted",
+        "_documents": [
+            {
+                "addedBy": "admin",
+                "tags": [
+                    [
+                        "public"
+                    ],
+                    [
+                        "sysadmin"
+                    ]
+                ],
+                "documentFileName": "4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
+                "displayName": "Rick Astley",
+                "internalURL": "./documents/4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
+                "internalMime": "image/jpeg"
+            }
+        ]
     },
     {
         "addedBy": "admin",
