@@ -192,7 +192,7 @@ definitions:
       - _documents
       - commentAuthor
       - comment
-      - status
+      - commentStatus
       - dateAdded
       - _addedBy
 
@@ -994,6 +994,34 @@ paths:
           description: "The file to upload."
           required: true
           type: file
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - document
+      summary: "Delete a document"
+      operationId: protectedDelete
+      description: "Delete a document object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:document
+      consumes:
+        - application/json
+      parameters:
+        - name: docId
+          in: path
+          description: "ID of document to delete"
+          required: true
+          type: "string"
       responses:
         "200":
           description: "Success"

@@ -11,6 +11,7 @@
             ]
         ],
         "documentFileName": "6406200_Geomark.pdf",
+        "displayName": "Geomark",
         "internalURL": "./documents/6406200_Geomark.pdf",
         "internalMime": "application/pdf"
     },
@@ -26,6 +27,7 @@
             ]
         ],
         "documentFileName": "6406200_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6406200_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -41,6 +43,7 @@
             ]
         ],
         "documentFileName": "6406200_Referral_Map.pdf",
+        "displayName": "Referral Map",
         "internalURL": "./documents/6406200_Referral_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -56,6 +59,7 @@
             ]
         ],
         "documentFileName": "6408232_Area_Overview.pdf",
+        "displayName": "Area Overview",
         "internalURL": "./documents/6408232_Area_Overview.pdf",
         "internalMime": "application/pdf"
     },
@@ -71,6 +75,7 @@
             ]
         ],
         "documentFileName": "6408232_Proponent_Maps.pdf",
+        "displayName": "Proponent Maps",
         "internalURL": "./documents/6408232_Proponent_Maps.pdf",
         "internalMime": "application/pdf"
     },
@@ -86,6 +91,7 @@
             ]
         ],
         "documentFileName": "6408232_Referral_Maps.pdf",
+        "displayName": "Referral Maps",
         "internalURL": "./documents/6408232_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
@@ -101,6 +107,7 @@
             ]
         ],
         "documentFileName": "6408427_Document_Map.pdf",
+        "displayName": "Document Map",
         "internalURL": "./documents/6408427_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -116,6 +123,7 @@
             ]
         ],
         "documentFileName": "6408427_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6408427_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -131,6 +139,7 @@
             ]
         ],
         "documentFileName": "6408427_Referral_Mapbook.pdf",
+        "displayName": "Referral Mapbook",
         "internalURL": "./documents/6408427_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
@@ -146,6 +155,7 @@
             ]
         ],
         "documentFileName": "6409010_Document_Map.pdf",
+        "displayName": "Document Map",
         "internalURL": "./documents/6409010_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -161,6 +171,7 @@
             ]
         ],
         "documentFileName": "6409010_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409010_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -176,6 +187,7 @@
             ]
         ],
         "documentFileName": "6409010_Referral_Maps.pdf",
+        "displayName": "Referral Maps",
         "internalURL": "./documents/6409010_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
@@ -191,6 +203,7 @@
             ]
         ],
         "documentFileName": "6409020_Document_Map.pdf",
+        "displayName": "Document Map",
         "internalURL": "./documents/6409020_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -206,6 +219,7 @@
             ]
         ],
         "documentFileName": "6409020_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409020_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -221,6 +235,7 @@
             ]
         ],
         "documentFileName": "6409020_Referral_Map.pdf",
+        "displayName": "Referral Map",
         "internalURL": "./documents/6409020_Referral_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -236,6 +251,7 @@
             ]
         ],
         "documentFileName": "6409021_Document_Map.pdf",
+        "displayName": "Document Map",
         "internalURL": "./documents/6409021_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -251,6 +267,7 @@
             ]
         ],
         "documentFileName": "6409021_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409021_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -266,6 +283,7 @@
             ]
         ],
         "documentFileName": "6409021_Referral_Mapbook.pdf",
+        "displayName": "Referral Mapbook",
         "internalURL": "./documents/6409021_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
@@ -281,6 +299,7 @@
             ]
         ],
         "documentFileName": "6409023_Document_Maps.pdf",
+        "displayName": "Document Maps",
         "internalURL": "./documents/6409023_Document_Maps.pdf",
         "internalMime": "application/pdf"
     },
@@ -296,6 +315,7 @@
             ]
         ],
         "documentFileName": "6409023_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409023_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -311,6 +331,7 @@
             ]
         ],
         "documentFileName": "6409023_Referral_Maps.pdf",
+        "displayName": "Referral Maps",
         "internalURL": "./documents/6409023_Referral_Maps.pdf",
         "internalMime": "application/pdf"
     },
@@ -326,6 +347,7 @@
             ]
         ],
         "documentFileName": "6409024_All_Maps_and_site_plan.pdf",
+        "displayName": "All Maps and Site Plan",
         "internalURL": "./documents/6409024_All_Maps_and_site_plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -341,6 +363,7 @@
             ]
         ],
         "documentFileName": "6409024_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409024_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -356,6 +379,7 @@
             ]
         ],
         "documentFileName": "6409030_Document_Map.pdf",
+        "displayName": "Document Map",
         "internalURL": "./documents/6409030_Document_Map.pdf",
         "internalMime": "application/pdf"
     },
@@ -371,6 +395,7 @@
             ]
         ],
         "documentFileName": "6409030_Management_Plan.pdf",
+        "displayName": "Management Plan",
         "internalURL": "./documents/6409030_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
@@ -386,6 +411,7 @@
             ]
         ],
         "documentFileName": "6409030_Referral_Mapbook.pdf",
+        "displayName": "Referral Mapbook",
         "internalURL": "./documents/6409030_Referral_Mapbook.pdf",
         "internalMime": "application/pdf"
     },
@@ -401,6 +427,7 @@
             ]
         ],
         "documentFileName": "6409030_Site_Specific_Plan.pdf",
+        "displayName": "Site Specific Plan",
         "internalURL": "./documents/6409030_Site_Specific_Plan.pdf",
         "internalMime": "application/pdf"
     }
