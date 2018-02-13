@@ -38,8 +38,11 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
+  // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
   }
 
   getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
