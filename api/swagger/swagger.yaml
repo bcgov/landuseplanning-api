@@ -513,6 +513,36 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - application
+      summary: "Delete an application"
+      operationId: protectedDelete
+      description: "Delete an application object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+        - name: appId
+          in: path
+          description: "ID of application to delete"
+          required: true
+          type: "string"
+        - name: AppObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/AppObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AppObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /application/{appId}/publish:
     x-swagger-router-controller: application
     options:
@@ -1207,6 +1237,14 @@ paths:
         - in: query
           name: _application
           description: "Documents relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: _comment
+          description: "Documents relating to a particular Comment(s)"
           type: array
           required: false
           collectionFormat: pipes

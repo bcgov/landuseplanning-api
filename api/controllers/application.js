@@ -15,6 +15,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   }
+  _.assignIn(query, { isDeleted: false });
 
   getApplications(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -34,12 +35,43 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
 
   getApplications(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
 };
+
+exports.protectedDelete = function (args, res, next) {
+  var appId = args.swagger.params.appId.value;
+  defaultLog.info("Delete Application:", appId);
+
+  var Application = mongoose.model('Application');
+  Application.findOne({_id: appId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Set the deleted flag.
+      Actions.delete(o)
+      .then(function (deleted) {
+        // Deleted successfully
+        return Actions.sendResponse(res, 200, deleted);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, 400, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+}
 
 //  Create a new application
 exports.protectedPost = function (args, res, next) {
