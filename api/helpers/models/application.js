@@ -27,5 +27,6 @@
     stageCode        : { type:String, default: '' },
     internalID       : { type:Number, default: 0 },
     interestID       : { type:Number, default: 0 },
+    isDeleted        : { type: Boolean, default: false },
     postID           : { type:Number, default: 0 }
 });
