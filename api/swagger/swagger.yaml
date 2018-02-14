@@ -925,6 +925,14 @@ paths:
           items:
             type: string
         - in: query
+          name: _comment
+          description: "Documents relating to a particular Comment(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
           name: fields
           description: "Document fields to return."
           required: false
