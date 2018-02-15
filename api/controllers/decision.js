@@ -15,7 +15,6 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.decisionId) {
     query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
   }
-  _.assignIn(query, { isDeleted: false });
 
   getDecisions(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -34,12 +33,6 @@ exports.protectedGet = function(args, res, next) {
   var query = {};
   if (args.swagger.params.decisionId) {
     query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
-  }
-  // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted) {
-    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-    _.assignIn(query, { isDeleted: false });
   }
 
   getDecisions(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
