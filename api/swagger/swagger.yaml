@@ -415,6 +415,11 @@ paths:
           items:
             type: string
             enum: *applicationFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Applications that are deleted or not"
       responses:
         "200":
           description: "Success"
@@ -473,6 +478,11 @@ paths:
           items:
             type: string
             enum: *applicationFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Applications that are deleted or not"
       responses:
         "200":
           description: "Success"
@@ -951,6 +961,11 @@ paths:
           items:
             type: string
             enum: *documentFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Documents that are deleted or not"
       responses:
         "200":
           description: "Success"
@@ -1984,6 +1999,11 @@ paths:
           items:
             type: string
             enum: *decisionFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Decisions that are deleted or not"
       responses:
         "200":
           description: "Success"
@@ -2211,6 +2231,11 @@ paths:
           collectionFormat: pipes
           items:
             type: string
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Comments that are deleted or not"
         - in: query
           name: fields
           description: "comment fields to return."

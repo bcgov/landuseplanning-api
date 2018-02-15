@@ -18,6 +18,7 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
     query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentPeriod.value, query);
   }
+  _.assignIn(query, { isDeleted: false });
   defaultLog.info("query:", query);
 
   getComments(['public'], query, args.swagger.params.fields.value)
@@ -35,8 +36,14 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
   }
-  if (args.swagger.params._commentperiod && args.swagger.params._commentperiod.value) {
-    query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentperiod.value, query);
+  if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
+    query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentPeriod.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
   }
   defaultLog.info("query:", query);
 
