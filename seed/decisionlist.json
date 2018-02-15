@@ -5,23 +5,6 @@
         "code": "decision-1",
         "name": "Decision 1",
         "date": "2017-12-31",
-        "description": "Yes, it's allowed.",
-        "_documents": [
-            {
-                "addedBy": "admin",
-                "tags": [
-                    [
-                        "public"
-                    ],
-                    [
-                        "sysadmin"
-                    ]
-                ],
-                "documentFileName": "yes-its-allowed.jpg",
-                "displayName": "Document of Acceptance",
-                "internalURL": "./documents/yes-its-allowed.jpg",
-                "internalMime": "image/jpeg"
-            }
-        ]
+        "description": "Yes, it's allowed."
     }
 ]
