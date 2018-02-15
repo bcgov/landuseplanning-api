@@ -90,7 +90,8 @@ var doWork = function (e, route) {
 
       if (route === 'api/document') {
         var formData = {
-          upfile: fs.createReadStream(e.internalURL)
+          upfile: fs.createReadStream(e.internalURL),
+          displayName: e.displayName
         };
         request.post({ url: uri + route,
                       headers: {
