@@ -2212,6 +2212,11 @@ paths:
           items:
             type: string
         - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Comments that are deleted or not"
+        - in: query
           name: fields
           description: "comment fields to return."
           required: false
