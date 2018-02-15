@@ -39,7 +39,7 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted) {
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
     _.assignIn(query, { isDeleted: false });
