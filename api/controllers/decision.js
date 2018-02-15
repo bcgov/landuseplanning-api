@@ -43,14 +43,14 @@ exports.protectedGet = function(args, res, next) {
 
 //  Create a new decision
 exports.protectedPost = function (args, res, next) {
-  var obj = args.swagger.params.app.value;
+  var obj = args.swagger.params.decision.value;
   defaultLog.info("Incoming new object:", obj);
 
   var Decision = mongoose.model('Decision');
-  var app = new Decision(obj);
+  var decision = new Decision(obj);
   // Define security tag defaults
-  app.tags = [['sysadmin']];
-  app.save()
+  decision.tags = [['sysadmin']];
+  decision.save()
   .then(function (a) {
     defaultLog.info("Saved new decision object:", a);
     return Actions.sendResponse(res, 200, a);
@@ -62,7 +62,7 @@ exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.decisionId.value;
   defaultLog.info("ObjectID:", args.swagger.params.decisionId.value);
 
-  var obj = args.swagger.params.app.value;
+  var obj = args.swagger.params.decision.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);

@@ -5,5 +5,6 @@
     // This must be done in the code.
     tags             : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     code             : { type: String, trim: true, default: ''},
-    name             : { type: String, trim: true }
+    name             : { type: String, trim: true },
+    description      : { type: String, trim: true }
 });
