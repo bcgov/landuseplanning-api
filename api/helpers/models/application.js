@@ -28,5 +28,9 @@
     internalID       : { type:Number, default: 0 },
     interestID       : { type:Number, default: 0 },
     isDeleted        : { type: Boolean, default: false },
-    postID           : { type:Number, default: 0 }
+    postID           : { type:Number, default: 0 },
+    internal: {
+        notes   : { type: String, default: '' },
+        tags    : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
+    },
 });
