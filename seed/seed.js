@@ -11,6 +11,7 @@ var fs              = require('fs');
 var _applications   = [];
 var _commentPeriods = [];
 var _organizations  = [];
+var _decisions      = [];
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -65,14 +66,27 @@ var login = function (username, password) {
 
 var doWork = function (e, route) {
   return new Promise(function (resolve, reject) {
+      // console.log("-----------------------");
+      // console.log("route:", route);
       // console.log("e:", e);
       var postBody = JSON.stringify(e);
 
       // Bind the objectID's
       if (route === 'api/document' || route === 'api/commentperiod') {
         // console.log('app:', _applications);
-        var f = _.find(_applications, {code: e._application});
-        e._application = f._id;
+        // console.log('e._application:', e._application);
+        // console.log('e._decision:', e._decision);
+        // console.log('e._comment:', e._comment);
+        if (e._application) {
+          var f = _.find(_applications, {code: e._application});
+          e._application = f._id;
+        } else if (e._decision) {
+          var f = _.find(_decisions, {code: e._decision});
+          e._decision = f._id;
+        } else if (e._comment) {
+          var f = _.find(_commentPeriods, {code: e._commentPeriod});
+          e._comment = f._id;
+        }
       }
       if (route === 'api/public/comment') {
         // console.log('cmt:', _commentPeriods);
@@ -85,6 +99,11 @@ var doWork = function (e, route) {
         var f = _.find(_organizations, { name: e.proponent});
         e._proponent = f._id;
       }
+      if (route === 'api/decision') {
+        var f = _.find(_applications, { code: e._application});
+        // e._decision = f._id;
+        e._application = f._id;
+      }
       postBody = JSON.stringify(e);
       // end bind objectID's
 
@@ -93,6 +112,16 @@ var doWork = function (e, route) {
           upfile: fs.createReadStream(e.internalURL),
           displayName: e.displayName
         };
+        if (e._application) {
+          formData._application = e._application;
+        }
+        if (e._decision) {
+          formData._decision = e._decision;
+        }
+        if (e._comment) {
+          // console.log("form:", formData);
+          formData._comment = e._comment;
+        }
         request.post({ url: uri + route,
                       headers: {
                           'Content-Type': 'application/json',
@@ -149,6 +178,9 @@ var doWork = function (e, route) {
               }
               if (route === 'api/organization') {
                   _organizations.push(data);
+              }
+              if (route === 'api/decision') {
+                _decisions.push(data);
               }
 
               if (route === 'api/public/comment') {
@@ -218,16 +250,20 @@ login(username, password)
   return insertAll('api/application', applist);
 })
 .then(function () {
-  var orglist = require('./doclist.json');
-  return insertAll('api/document', orglist);
-})
-.then(function () {
   var cplist = require('./commentperiodlist.json');
   return insertAll('api/commentperiod', cplist);
 })
 .then(function () {
+  var dlist = require('./decisionlist.json');
+  return insertAll('api/decision', dlist);
+})
+.then(function () {
   var clist = require('./commentlist.json');
   return insertAll('api/public/comment', clist);
+})
+.then(function () {
+  var orglist = require('./doclist.json');
+  return insertAll('api/document', orglist);
 })
 .catch(function (err) {
   console.log("ERR:", err);

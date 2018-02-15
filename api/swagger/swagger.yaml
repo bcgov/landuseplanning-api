@@ -890,6 +890,11 @@ paths:
           description: "The application to bind this document to."
           required: false
           type: string
+        - name: _decision
+          in: formData
+          description: "The decision to bind this document to."
+          required: false
+          type: string
         - name: _comment
           in: formData
           description: "The comment to bind this document to."
@@ -1037,6 +1042,26 @@ paths:
           description: "The file to upload."
           required: true
           type: file
+        - name: _application
+          in: formData
+          description: "The application to bind this document to."
+          required: false
+          type: string
+        - name: _decision
+          in: formData
+          description: "The decision to bind this document to."
+          required: false
+          type: string
+        - name: _comment
+          in: formData
+          description: "The comment to bind this document to."
+          required: false
+          type: string
+        - name: displayName
+          in: formData
+          description: "The displayName of the file."
+          required: false
+          type: string
       responses:
         "200":
           description: "Success"

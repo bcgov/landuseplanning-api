@@ -132,6 +132,7 @@ exports.protectedPost = function (args, res, next) {
   console.log("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
+  var _decision     = args.swagger.params._decision.value;
   var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
 
@@ -152,6 +153,7 @@ exports.protectedPost = function (args, res, next) {
   doc.tags = [['sysadmin']];
   doc._application = _application;
   doc._comment = _comment;
+  doc._decision = _decision;
   doc.displayName = displayName;
   doc.documentFileName = upfile.originalname;
   doc.internalMime = upfile.mimetype;
@@ -243,6 +245,9 @@ exports.protectedUnPublish = function (args, res, next) {
 exports.protectedPut = function (args, res, next) {
   // defaultLog.info("upfile:", args.swagger.params.upfile);
   var objId = args.swagger.params.docId.value;
+  var _application  = args.swagger.params._application.value;
+  var _comment      = args.swagger.params._comment.value;
+  var _decision     = args.swagger.params._decision.value;
   defaultLog.info("ObjectID:", args.swagger.params.docId.value);
 
   var guid = intformat(generator.next(), 'dec');
@@ -264,6 +269,10 @@ exports.protectedPut = function (args, res, next) {
   obj.internalURL = uploadDir+guid+"."+ext;
   // Update who did this?
   obj._addedBy = args.swagger.params.auth_payload.userID;
+  doc._application = _application;
+  doc._comment = _comment;
+  doc._decision = _decision;
+  doc.displayName = displayName;
 
   var Document = require('mongoose').model('Document');
   Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
