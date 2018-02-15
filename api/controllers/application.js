@@ -101,6 +101,12 @@ exports.protectedPut = function (args, res, next) {
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 
+  // Never allow this to be updated
+  if (obj.internal) {
+    delete obj.internal.tags;
+    obj.internal.tags = [['sysadmin']];
+  }
+
   var Application = require('mongoose').model('Application');
   Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
@@ -180,6 +186,7 @@ var getApplications = function (role, query, fields) {
       return (_.indexOf(['name',
                         'type',
                         'subtype',
+                        'internal',
                         'purpose',
                         'subpurpose',
                         '_proponent',
