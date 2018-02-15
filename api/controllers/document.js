@@ -132,6 +132,7 @@ exports.protectedPost = function (args, res, next) {
   console.log("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
+  var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
 
   var guid = intformat(generator.next(), 'dec');
@@ -151,7 +152,7 @@ exports.protectedPost = function (args, res, next) {
   doc.tags = [['sysadmin']];
   doc._application = _application;
   doc._comment = _comment;
-  doc.displayName = upfile.originalname;
+  doc.displayName = displayName;
   doc.documentFileName = upfile.originalname;
   doc.internalMime = upfile.mimetype;
   doc.internalURL = uploadDir+guid+"."+ext;

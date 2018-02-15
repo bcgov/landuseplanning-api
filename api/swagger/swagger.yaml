@@ -895,6 +895,11 @@ paths:
           description: "The comment to bind this document to."
           required: false
           type: string
+        - name: displayName
+          in: formData
+          description: "The displayName of the file."
+          required: false
+          type: string
       responses:
         "200":
           description: "Success"
