@@ -2000,6 +2000,14 @@ paths:
             type: string
             enum: *decisionFields
         - in: query
+          name: _application
+          description: "Decisions relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
           name: isDeleted
           type: boolean
           required: false
@@ -2130,6 +2138,14 @@ paths:
           items:
             type: string
             enum: *decisionFields
+        - in: query
+          name: _application
+          description: "Decisions relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
       responses:
         "200":
           description: "Success"
