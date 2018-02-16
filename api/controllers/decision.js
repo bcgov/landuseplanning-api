@@ -91,7 +91,55 @@ exports.protectedPut = function (args, res, next) {
     }
   });
 }
+// Publish/Unpublish the Decision
+exports.protectedPublish = function (args, res, next) {
+  var objId = args.swagger.params.decisionId.value;
+  defaultLog.info("Publish Decision:", objId);
 
+  var decision = require('mongoose').model('Decision');
+  decision.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Add public to the tag of this obj.
+      Actions.publish(o)
+      .then(function (published) {
+        // Published successfully
+        return Actions.sendResponse(res, 200, published);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, err.code, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
+exports.protectedUnPublish = function (args, res, next) {
+  var objId = args.swagger.params.decisionId.value;
+  defaultLog.info("UnPublish Decision:", objId);
+
+  var decision = require('mongoose').model('Decision');
+  decision.findOne({_id: objId}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Remove public to the tag of this obj.
+      Actions.unPublish(o)
+      .then(function (unpublished) {
+        // UnPublished successfully
+        return Actions.sendResponse(res, 200, unpublished);
+      }, function (err) {
+        // Error
+        return Actions.sendResponse(res, err.code, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
 var getDecisions = function (role, query, fields) {
   return new Promise(function (resolve, reject) {
     var Decision = mongoose.model('Decision');
