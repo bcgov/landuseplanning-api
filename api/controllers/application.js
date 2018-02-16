@@ -82,6 +82,7 @@ exports.protectedPost = function (args, res, next) {
   var app = new Application(obj);
   // Define security tag defaults
   app.tags = [['sysadmin']];
+  app.internal.tags = [['sysadmin']];
   app._addedBy = args.swagger.params.auth_payload.userID;
   app.save()
   .then(function (a) {
@@ -98,6 +99,9 @@ exports.protectedPut = function (args, res, next) {
   var obj = args.swagger.params.AppObject.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
+  if (obj.internal && obj.internal.tags) {
+    delete obj.internal.tags;
+  }
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 
