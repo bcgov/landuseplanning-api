@@ -2105,6 +2105,106 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /decision/{decisionId}/publish:
+    x-swagger-router-controller: decision
+    options:
+      tags:
+        - decision
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on decision GET Route"
+      parameters:
+        - name: decisionId
+          in: path
+          description: "ID of decision to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DecisionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - decision
+      summary: "Publish a decision"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a decision."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:decision
+        # TODO: Define publish roles.
+      parameters:
+        - name: decisionId
+          in: path
+          description: "ID of decision to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DecisionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /decision/{decisionId}/unpublish:
+    x-swagger-router-controller: decision
+    options:
+      tags:
+        - decision
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on decision GET Route"
+      parameters:
+        - name: decisionId
+          in: path
+          description: "ID of decision to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DecisionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - decision
+      summary: "UnPublish a decision"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role to a decision."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:decision
+        # TODO: Define publish roles.
+      parameters:
+        - name: decisionId
+          in: path
+          description: "ID of decision to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DecisionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /public/decision:
     x-swagger-router-controller: decision
     options:
