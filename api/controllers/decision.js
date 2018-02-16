@@ -157,6 +157,10 @@ var getDecisions = function (role, query, fields) {
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
       return (_.indexOf(['name',
+                         '_addedBy',
+                         '_application',
+                         'description',
+                         'decisionDate',
                         'code'], f) !== -1);
     });
     _.each(sanitizedFields, function (f) {
