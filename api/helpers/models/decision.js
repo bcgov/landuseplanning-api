@@ -7,6 +7,7 @@
     tags             : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     code             : { type: String, trim: true, default: ''},
     name             : { type: String, trim: true },
+    decisionDate     : { type: Date, default: Date.now },
     description      : { type: String, trim: true },
     isDeleted        : { type: Boolean, default: false }
 });

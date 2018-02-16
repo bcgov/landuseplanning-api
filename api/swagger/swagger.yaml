@@ -241,6 +241,9 @@ definitions:
       name:
         type: string
         example: "Decision Name"
+      description:
+        type: string
+        example: "Decision Description"
         ## TODO: Add more fields here.
   DecisionFields:
     type: string
@@ -249,6 +252,10 @@ definitions:
     #TODO: Fix enums
     enum: &decisionFields
       - name
+      - date
+      - description
+      - _application
+      - decisionDate
 
 ### Organization Definitions
   OrgId:
@@ -945,6 +952,14 @@ paths:
           items:
             type: string
         - in: query
+          name: _decision
+          description: "Documents relating to a particular Decision(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
           name: _comment
           description: "Documents relating to a particular Comment(s)"
           type: array
@@ -1290,6 +1305,14 @@ paths:
         - in: query
           name: _application
           description: "Documents relating to a particular Application(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: _decision
+          description: "Documents relating to a particular Decision(s)"
           type: array
           required: false
           collectionFormat: pipes

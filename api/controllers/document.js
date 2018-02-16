@@ -27,6 +27,9 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
+  if (args.swagger.params._decision && args.swagger.params._decision.value) {
+    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
+  }
   _.assignIn(query, { isDeleted: false });
 
   getDocuments(['public'], query, args.swagger.params.fields.value)
