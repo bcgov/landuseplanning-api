@@ -15,6 +15,9 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.decisionId) {
     query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
   }
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  }
   _.assignIn(query, { isDeleted: false });
 
   getDecisions(['public'], query, args.swagger.params.fields.value)
@@ -34,6 +37,9 @@ exports.protectedGet = function(args, res, next) {
   var query = {};
   if (args.swagger.params.decisionId) {
     query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
+  }
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
