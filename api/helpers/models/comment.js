@@ -5,6 +5,7 @@ module.exports = require('../models')('Comment', {
     // This must be done in the code.
     tags            : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     name            : { type: String, trim: true },
+    code            : { type: String, trim: true, default: ''},
 
     // unique number per application (not guid) for export and sorting
     commentNumber   : { type: Number },

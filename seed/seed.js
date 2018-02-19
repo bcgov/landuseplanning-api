@@ -12,6 +12,7 @@ var _applications   = [];
 var _commentPeriods = [];
 var _organizations  = [];
 var _decisions      = [];
+var _comments       = [];
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -83,9 +84,13 @@ var doWork = function (e, route) {
         } else if (e._decision) {
           var f = _.find(_decisions, {code: e._decision});
           e._decision = f._id;
-        } else if (e._comment) {
-          var f = _.find(_commentPeriods, {code: e._commentPeriod});
-          e._comment = f._id;
+        }
+
+        if (route === 'api/document') {
+          if (e._comment) {
+            var f = _.find(_comments, {code: e._comment});
+            e._comment = f._id;
+          }
         }
       }
       if (route === 'api/public/comment') {
@@ -174,7 +179,10 @@ var doWork = function (e, route) {
                   _applications.push(data);
               }
               if (route === 'api/commentperiod') {
-                  _commentPeriods.push(data);
+                _commentPeriods.push(data);
+              }
+              if (route === 'api/public/comment') {
+                _comments.push(data);
               }
               if (route === 'api/organization') {
                   _organizations.push(data);
