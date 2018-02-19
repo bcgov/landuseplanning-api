@@ -4,8 +4,8 @@
         "_application": "6406200",
         "code": "comment-period-1",
         "name": "Comment Period 1",
-        "startDate": "2018-01-01",
-        "endDate": "2018-01-31",
+        "startDate": "2018-01-01T00:00:00-08:00",
+        "endDate": "2018-01-31T00:00:00-08:00",
         "description": "This is the comment period for Application # 6406200.",
         "internal": {
             "notes": "These notes are only visible on the admin site.",
@@ -17,8 +17,8 @@
         "_application": "6407573",
         "code": "comment-period-2",
         "name": "Comment Period 2",
-        "startDate": "2018-01-01",
-        "endDate": "2018-03-31",
+        "startDate": "2018-01-01T00:00:00-08:00",
+        "endDate": "2018-03-31T00:00:00-08:00",
         "description": "This is the comment period for Application # 6407573.",
         "internal": {
             "notes": "These notes are only visible on the admin site.",
@@ -30,24 +30,8 @@
         "_application": "6408232",
         "code": "comment-period-3",
         "name": "Comment Period 3",
-        "startDate": "2018-01-01",
-        "endDate": "2018-01-31",
-        "description": "This is the first comment period for Application # 6408232.",
-        "isDeleted": false
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408232",
-        "code": "comment-period-4",
-        "name": "Comment Period 4",
-        "startDate": "2018-03-01",
-        "endDate": "2018-03-31",
-        "description": "This is the second comment period for Application # 6408232.",
-        "internal": {
-            "notes": "This comment period is initially not published.",
-            "addedBy": "admin"
-        },
-        "seedDontPublish": true,
-        "isDeleted": false
+        "startDate": "2018-03-01T00:00:00-08:00",
+        "endDate": "2018-03-31T00:00:00-08:00",
+        "description": "This is the comment period for Application # 6408232."
     }
 ]
