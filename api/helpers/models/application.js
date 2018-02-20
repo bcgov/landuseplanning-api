@@ -24,7 +24,6 @@
     mapsheet         : { type:String, default: '' },
     description      : { type:String, default: '' },
     tantalisID       : { type:Number, default: 0 },
-    stageCode        : { type:String, default: '' },
     internalID       : { type:Number, default: 0 },
     interestID       : { type:Number, default: 0 },
     isDeleted        : { type: Boolean, default: false },

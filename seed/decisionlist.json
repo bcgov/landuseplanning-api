@@ -4,7 +4,7 @@
         "_application": "6408427",
         "code": "decision-1",
         "name": "Decision 1",
-        "decisionDate": "2017-12-31",
+        "decisionDate": "2017-12-31T00:00:00-08:00",
         "description": "Yes, it's allowed.",
         "seedDontPublish": false
     }
