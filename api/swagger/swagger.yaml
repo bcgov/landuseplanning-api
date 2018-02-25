@@ -1294,6 +1294,50 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    post:
+      tags:
+        - document
+      summary: "Create a new document from public"
+      operationId: unProtectedPost
+      description: "Create a new document object from public."
+      summary: "Create a new document object from public."
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: upfile
+          in: formData
+          description: "The file to upload."
+          required: true
+          type: file
+        - name: _application
+          in: formData
+          description: "The application to bind this document to."
+          required: false
+          type: string
+        - name: _decision
+          in: formData
+          description: "The decision to bind this document to."
+          required: false
+          type: string
+        - name: _comment
+          in: formData
+          description: "The comment to bind this document to."
+          required: false
+          type: string
+        - name: displayName
+          in: formData
+          description: "The displayName of the file."
+          required: false
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
     get:
       tags:
         - document
