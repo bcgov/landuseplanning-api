@@ -37,6 +37,44 @@ exports.publicGet = function (args, res, next) {
     return Actions.sendResponse(res, 200, data);
   });
 };
+exports.unProtectedPost = function(args, res, next) {
+  console.log("Creating new object");
+  var _application  = args.swagger.params._application.value;
+  var _comment      = args.swagger.params._comment.value;
+  var _decision     = args.swagger.params._decision.value;
+  var displayName   = args.swagger.params.displayName.value;
+  var upfile        = args.swagger.params.upfile.value;
+
+  var guid = intformat(generator.next(), 'dec');
+  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+  try {
+    fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+  } catch (e) {
+    defaultLog.info("Error:", e);
+    // Delete the path details before we return to the caller.
+    delete e['path'];
+    return Actions.sendResponse(res, 400, e);
+  }
+
+  var Document = mongoose.model('Document');
+  var doc = new Document();
+  // Define security tag defaults
+  doc.tags = [['sysadmin']];
+  doc._application = _application;
+  doc._comment = _comment;
+  doc._decision = _decision;
+  doc.displayName = displayName;
+  doc.documentFileName = upfile.originalname;
+  doc.internalMime = upfile.mimetype;
+  doc.internalURL = uploadDir+guid+"."+ext;
+  // Update who did this?  TODO: Public
+  // doc._addedBy = args.swagger.params.auth_payload.userID;
+  doc.save()
+  .then(function (d) {
+    defaultLog.info("Saved new document object:", d);
+    return Actions.sendResponse(res, 200, d);
+  });
+};
 exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.params.auth_payload.scopes;
