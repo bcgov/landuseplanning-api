@@ -35,9 +35,6 @@ module.exports = require('../models')('Comment', {
         tags        : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
     },
 
-    // list of attachments
-    _documents       : [{ type: 'ObjectId', ref: 'Document' }],
-
     // Who vetted this comment?
     review          : {
         _reviewerId     : { type: 'ObjectId', ref: 'User' },

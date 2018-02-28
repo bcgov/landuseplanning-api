@@ -185,10 +185,9 @@ definitions:
   CommentFields:
     type: string
     description: "Optional fields to return."
-    example: name|_documents
+    example: name|commentAuthor
     #TODO: Fix enums
     enum: &commentFields
-      - _documents
       - commentAuthor
       - comment
       - commentStatus
