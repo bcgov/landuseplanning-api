@@ -94,6 +94,9 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
+  if (args.swagger.params._decision && args.swagger.params._decision.value) {
+    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
+  }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
