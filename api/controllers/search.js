@@ -27,7 +27,38 @@ exports.publicGetBCGW = function (args, res, next) {
         reject(res.statusCode+' '+body);
       } else {
         defaultLog.info ('BCGW Call Complete.', body);
-        resolve(JSON.parse(body));
+        var obj = JSON.parse(body);
+        // Search for this in our DB in case it's been imported in an application.
+        try {
+          var result = _.chain(obj.features)
+          .groupBy("properties.DISPOSITION_TRANSACTION_SID")
+          .toPairs()
+          .map(function(currentItem) {
+              return _.zipObject(["SID", "sids"], currentItem);
+          })
+          .value();
+
+          obj.sidsFound = [];
+          result.reduce (function (current, code) {
+            return current.then (function () {
+                // console.log ('+++++++++', code.SID);
+                var Application = require('mongoose').model('Application');
+                return Application.findOne({cl_files: { "$in":[clFile]},  tantalisID: code.SID}, function (err, o) {
+                if (o) {
+                  obj.sidsFound.push(code.SID);
+                } else {
+                  console.log("Nothing found");
+                }
+              });
+            });
+          }, Promise.resolve())
+          .then(function () {
+            resolve(obj);
+          });
+        } catch (e) {
+          // Error, don't tag the isImported on it.
+          resolve(obj);
+        }
       }
     });
   }).then(function (data) {
