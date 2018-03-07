@@ -204,6 +204,7 @@ var getApplications = function (role, query, fields) {
                         'status',
                         'projectDate',
                         'businessUnit',
+                        'tantalisID',
                         'cl_files',
                         'commodityType',
                         'commodity',
