@@ -76,7 +76,7 @@ exports.publicGetBCGWDispositionTransactionId = function (args, res, next) {
 
   // TODO: Error handling.
 
-  var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=pub:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=application/json&PROPERTYNAME=DISPOSITION_TRANSACTION_SID&CQL_FILTER=DISPOSITION_TRANSACTION_SID=";
+  var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=";
   return new Promise(function (resolve, reject) {
     request({url: searchURL + "'" + dtId + "'"}, function (err, res, body) {
       if (err) {
