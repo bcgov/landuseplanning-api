@@ -91,6 +91,32 @@ exports.protectedPut = function (args, res, next) {
     }
   });
 }
+//  Delete a Decision
+exports.protectedDelete = function (args, res, next) {
+  var objId = args.swagger.params.decisionId.value;
+  defaultLog.info("Delete Decision:", objId);
+
+  var decision = require('mongoose').model('Decision');
+  decision.findOne({_id: objId, isDeleted: false}, function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Set the deleted flag.
+      Actions.delete(o)
+      .then(function (deleted) {
+        // Deleted successfully
+        return Actions.sendResponse(res, 200, deleted);
+      }, function (err) {
+        // Error
+        defaultLog.info("Couldn't Execute!");
+        return Actions.sendResponse(res, 400, err);
+      });
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};
 // Publish/Unpublish the Decision
 exports.protectedPublish = function (args, res, next) {
   var objId = args.swagger.params.decisionId.value;
