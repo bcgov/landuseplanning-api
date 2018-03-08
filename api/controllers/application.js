@@ -189,6 +189,7 @@ var getApplications = function (role, query, fields) {
     var sanitizedFields = _.remove(fields, function (f) {
       return (_.indexOf(['name',
                         'type',
+                        'agency',
                         'subtype',
                         'internal',
                         'purpose',
