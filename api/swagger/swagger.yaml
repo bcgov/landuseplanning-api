@@ -808,6 +808,50 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /public/search/bcgw/getClientsInfoByDispositionId/{dtId}:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Search Route"
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Disposition ID to get client info on"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get a list of clients associated with this disposition"
+      operationId: publicGetClientsInfoByDispositionId
+      description: "Returns a list of client(s)."
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Disposition ID to get client info on"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /public/search/bcgw/dispositionTransactionId/{dtId}:
     x-swagger-router-controller: search
     options:
