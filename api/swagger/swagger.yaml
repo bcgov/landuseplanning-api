@@ -2205,6 +2205,11 @@ paths:
           description: "ID of decision to update"
           required: true
           type: "string"
+        - name: decision
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DecisionObject"
       responses:
         "200":
           description: "Success"
