@@ -28,6 +28,7 @@
     interestID       : { type:Number, default: 0 },
     isDeleted        : { type: Boolean, default: false },
     postID           : { type:Number, default: 0 },
+    client           : { type:String, default: '' },
     internal: {
         notes   : { type: String, default: '' },
         tags    : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
