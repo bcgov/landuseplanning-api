@@ -26,8 +26,15 @@ exports.publicGetBCGW = function (args, res, next) {
       } else if (res.statusCode !== 200) {
         reject(res.statusCode+' '+body);
       } else {
-        defaultLog.info ('BCGW Call Complete.', body);
-        var obj = JSON.parse(body);
+        var obj = {};
+        try {
+          defaultLog.info ('BCGW Call Complete.', body);
+          obj = JSON.parse(body);
+        } catch (e) {
+          defaultLog.error ('Parsing Failed.', e);
+          resolve(obj);
+        }
+
         // Search for this in our DB in case it's been imported in an application.
         try {
           var result = _.chain(obj.features)
@@ -84,8 +91,14 @@ exports.publicGetBCGWDispositionTransactionId = function (args, res, next) {
       } else if (res.statusCode !== 200) {
         reject(res.statusCode+' '+body);
       } else {
-        defaultLog.info ('BCGW Call Complete.', body);
-        resolve(JSON.parse(body));
+        var obj = {};
+        try {
+          defaultLog.info ('BCGW Call Complete.', body);
+          obj = JSON.parse(body);
+        } catch (e) {
+          defaultLog.error ('Parsing Failed.', e);
+        }
+        resolve(obj);
       }
     });
   }).then(function (data) {
