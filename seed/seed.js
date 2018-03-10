@@ -101,8 +101,10 @@ var doWork = function (e, route) {
       if (route === 'api/application') {
         // console.log('org:1', e.proponent);
         // console.log('org:2', _.find(_organizations, { name: e.proponent}));
-        var f = _.find(_organizations, { name: e.proponent});
-        e._proponent = f._id;
+        // FOR NOW, USING CLIENT STRING INSTEAD OF REF TO ORGANIZATION
+        // var f = _.find(_organizations, { name: e.proponent});
+        // e._proponent = f._id;
+        e.client = e.client;
       }
       if (route === 'api/decision') {
         var f = _.find(_applications, { code: e._application});
