@@ -60,6 +60,9 @@ exports.unProtectedPost = function (args, res, next) {
 
   var Comment = mongoose.model('Comment');
   var comment = new Comment(obj);
+
+  comment.commentStatus = "Pending";
+
   // Define security tag defaults
   comment.tags = [['sysadmin']];
   comment.review.tags = [['sysadmin']];
