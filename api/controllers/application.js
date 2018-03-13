@@ -35,8 +35,11 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   }
+  if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+    _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
+  }
   // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
     _.assignIn(query, { isDeleted: false });
