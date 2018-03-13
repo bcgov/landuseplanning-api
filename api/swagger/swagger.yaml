@@ -425,6 +425,11 @@ paths:
           type: boolean
           required: false
           description: "Applications that are deleted or not"
+        - in: query
+          name: tantalisId
+          type: number
+          required: false
+          description: "Get an Application that contain this specific disposition."
       responses:
         "200":
           description: "Success"
