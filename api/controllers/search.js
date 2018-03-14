@@ -84,7 +84,7 @@ exports.publicGetBCGW = function (args, res, next) {
             return current.then (function () {
                 // console.log ('+++++++++', code.SID);
                 var Application = require('mongoose').model('Application');
-                return Application.findOne({cl_files: { "$in":[clFile]},  tantalisID: code.SID}, function (err, o) {
+                return Application.findOne({tantalisID: code.SID}, function (err, o) {
                 if (o) {
                   obj.sidsFound.push(code.SID);
                 } else {
