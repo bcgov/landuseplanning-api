@@ -2640,8 +2640,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:comment
+        - publish:comment
         # TODO: Define publish roles.
       parameters:
         - name: CommentId
@@ -2690,8 +2689,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:comment
+        - unpublish:comment
         # TODO: Define unpublish roles.
       parameters:
         - name: CommentId
