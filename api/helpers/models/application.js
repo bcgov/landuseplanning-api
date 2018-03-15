@@ -16,7 +16,7 @@
     latitude         : { type: Number, default: 0.00 },
     longitude        : { type: Number, default: 0.00 },
     areaHectares     : { type: Number, default: 0.00 },
-    projectDate      : { type: Date, default: Date.now },
+    publishDate      : { type: Date, default: Date.now },
     businessUnit     : { type: String },
     legalDescription : { type: String },
     agency           : { type:String, default: '' },
