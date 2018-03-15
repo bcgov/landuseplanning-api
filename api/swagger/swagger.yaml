@@ -108,7 +108,7 @@ definitions:
       - description
       - legalDescription
       - status
-      - projectDate
+      - publishDate
       - businessUnit
       - cl_files
       - commodityType
