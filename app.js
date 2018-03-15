@@ -69,7 +69,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
 
   app.use(middleware.swaggerRouter(routerConfig));
 
-  app.use(middleware.swaggerUi({apiDocs: '/docs', swaggerUi: '/docs'}));
+  app.use(middleware.swaggerUi({apiDocs: '/api/docs', swaggerUi: '/api/docs'}));
 
   // Make sure uploads directory exists
   try {
