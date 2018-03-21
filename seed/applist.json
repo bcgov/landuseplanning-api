@@ -12,9 +12,7 @@
         ],
         "code": "6406200",
         "name": "6406200",
-        "cl_files": [
-            "6406200"
-        ],
+        "cl_file": "6406200",
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL",
@@ -49,9 +47,7 @@
         ],
         "code": "6407573",
         "name": "6407573",
-        "cl_files": [
-            "6407573"
-        ],
+        "cl_file": "6407573",
         "type": "LICENCE",
         "subtype": "INVESTIGATIVE LICENCE",
         "purpose": "WINDPOWER",
@@ -86,10 +82,7 @@
         ],
         "code": "6408232",
         "name": "6408232",
-        "cl_files": [
-            "6408232",
-            "6001185"
-        ],
+        "cl_file": "6408232",
         "type": "LICENCE",
         "subtype": "INVESTIGATIVE LICENCE",
         "purpose": "WATERPOWER",
@@ -124,9 +117,7 @@
         ],
         "code": "6408427",
         "name": "6408427",
-        "cl_files": [
-            "6408427"
-        ],
+        "cl_file": "6408427",
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL RECREATION",
@@ -161,9 +152,7 @@
         ],
         "code": "6409010",
         "name": "6409010",
-        "cl_files": [
-            "6409010"
-        ],
+        "cl_file": "6409010",
         "type": "",
         "subtype": "",
         "purpose": "COMMERCIAL",
@@ -198,9 +187,7 @@
         ],
         "code": "6409020",
         "name": "6409020",
-        "cl_files": [
-            "6409020"
-        ],
+        "cl_file": "6409020",
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "COMMERCIAL RECREATION",
@@ -235,9 +222,7 @@
         ],
         "code": "6409021",
         "name": "6409021",
-        "cl_files": [
-            "6409021"
-        ],
+        "cl_file": "6409021",
         "type": "LICENCE",
         "subtype": "TEMPORARY LICENCE",
         "purpose": "INDUSTRIAL",
@@ -272,9 +257,7 @@
         ],
         "code": "6409023",
         "name": "6409023",
-        "cl_files": [
-            "6409023"
-        ],
+        "cl_file": "6409023",
         "type": "LICENCE",
         "subtype": "LICENCE OF OCCUPATION",
         "purpose": "TRANSPORTATION",
@@ -309,9 +292,7 @@
         ],
         "code": "6409024",
         "name": "6409024",
-        "cl_files": [
-            "6409024"
-        ],
+        "cl_file": "6409024",
         "type": "CROWN GRANT",
         "subtype": "DIRECT SALE",
         "purpose": "RESIDENTIAL",
@@ -346,9 +327,7 @@
         ],
         "code": "6409030",
         "name": "6409030",
-        "cl_files": [
-            "6409030"
-        ],
+        "cl_file": "6409030",
         "type": "CROWN GRANT",
         "subtype": "DIRECT SALE",
         "purpose": "RESIDENTIAL",

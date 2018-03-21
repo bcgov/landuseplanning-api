@@ -210,7 +210,7 @@ var getApplications = function (role, query, fields) {
                         'publishDate',
                         'businessUnit',
                         'tantalisID',
-                        'cl_files',
+                        'cl_file',
                         'commodityType',
                         'commodity',
                         'commodities'], f) !== -1);
