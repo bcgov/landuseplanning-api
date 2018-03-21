@@ -110,7 +110,7 @@ definitions:
       - status
       - publishDate
       - businessUnit
-      - cl_files
+      - cl_file
       - commodityType
       - commodity
       - commodities

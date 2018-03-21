@@ -20,7 +20,7 @@
     businessUnit     : { type: String },
     legalDescription : { type: String },
     agency           : { type:String, default: '' },
-    cl_files         : [{ type:Number, default: 0 }],
+    cl_file          : { type:Number, default: 0 },
     mapsheet         : { type:String, default: '' },
     description      : { type:String, default: '' },
     tantalisID       : { type:Number, default: 0 },
