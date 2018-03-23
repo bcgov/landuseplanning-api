@@ -10,7 +10,7 @@
   "license": "UNLICENED",
   "main": "app",
   "dependencies": {
-    "bcrypt-nodejs": "0.0.3",
+    "bcrypt-nodejs": "^0.0.3",
     "biguint-format": "^1.0.0",
     "express": "4.12.3",
     "flake-idgen": "^1.1.0",
