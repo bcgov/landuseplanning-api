@@ -104,6 +104,12 @@ var hashPassword = function (user, password) {
   }
 };
 
+exports.setPassword = function (user) {
+  var bcrypt = require("bcrypt-nodejs");
+  user.salt = bcrypt.genSaltSync(16);
+  user.password = hashPassword(user, user.password);
+  return user;
+}
 /**
  * Create instance method for authenticating user
  */

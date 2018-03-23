@@ -36,6 +36,10 @@ exports.protectedPost = function (args, res, next) {
 
   var User = mongoose.model('User');
   var user = new User(obj);
+
+  // Make the user's password salted and store that instead of the actual password.
+  user = auth.setPassword(user);
+
   // Define security tag defaults - users not public by default.
   user.tags = [['sysadmin']];
   user.save()
@@ -55,6 +59,10 @@ exports.protectedPut = function (args, res, next) {
   // Can call this route.
   // delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
+
+  if (obj.password) {
+    obj = auth.setPassword(obj);
+  }
 
   // TODO: Fix this, we need better handling of role selection/updating
   // For now, we only have 2 roles, we are just munging this to be in multi-
