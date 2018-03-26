@@ -45,7 +45,7 @@ module.exports = require('../models')('Comment', {
     },
     
     // TODO: More date fields?
-    dateAdded       : { type: Date, default: Date.now },
+    dateAdded       : { type: Date, default: Date.now() },
 
     commentStatus   : { type: String, default: 'Pending', enum: ['Pending', 'Accepted', 'Rejected'] },
     isDeleted       : { type: Boolean, default: false }
