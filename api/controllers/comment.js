@@ -62,6 +62,7 @@ exports.unProtectedPost = function (args, res, next) {
   var comment = new Comment(obj);
 
   comment.commentStatus = "Pending";
+  comment.dateAdded = Date.now();
 
   // Define security tag defaults
   comment.tags = [['sysadmin']];
