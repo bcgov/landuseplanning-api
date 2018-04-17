@@ -10,6 +10,7 @@ var FlakeIdGen  = require('flake-idgen'),
     generator   = new FlakeIdGen;
 var fs          = require('fs');
 var uploadDir   = process.env.UPLOAD_DIRECTORY || "./uploads/";
+var ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -48,32 +49,40 @@ exports.unProtectedPost = function(args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    .then(function (valid) {
+      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+        defaultLog.warn("File failed virus check.");
+        return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
+      } else {
+        fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+        var Document = mongoose.model('Document');
+        var doc = new Document();
+        // Define security tag defaults
+        doc.tags = [['sysadmin']];
+        doc._application = _application;
+        doc._comment = _comment;
+        doc._decision = _decision;
+        doc.displayName = displayName;
+        doc.documentFileName = upfile.originalname;
+        doc.internalMime = upfile.mimetype;
+        doc.internalURL = uploadDir+guid+"."+ext;
+        doc.passedAVCheck = true;
+        // Update who did this?  TODO: Public
+        // doc._addedBy = args.swagger.params.auth_payload.userID;
+        doc.save()
+        .then(function (d) {
+          defaultLog.info("Saved new document object:", d._id);
+          return Actions.sendResponse(res, 200, d);
+        });
+      }
+    });
   } catch (e) {
     defaultLog.info("Error:", e);
     // Delete the path details before we return to the caller.
     delete e['path'];
     return Actions.sendResponse(res, 400, e);
   }
-
-  var Document = mongoose.model('Document');
-  var doc = new Document();
-  // Define security tag defaults
-  doc.tags = [['sysadmin']];
-  doc._application = _application;
-  doc._comment = _comment;
-  doc._decision = _decision;
-  doc.displayName = displayName;
-  doc.documentFileName = upfile.originalname;
-  doc.internalMime = upfile.mimetype;
-  doc.internalURL = uploadDir+guid+"."+ext;
-  // Update who did this?  TODO: Public
-  // doc._addedBy = args.swagger.params.auth_payload.userID;
-  doc.save()
-  .then(function (d) {
-    defaultLog.info("Saved new document object:", d);
-    return Actions.sendResponse(res, 200, d);
-  });
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
@@ -183,32 +192,41 @@ exports.protectedPost = function (args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    .then(function (valid) {
+      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+        defaultLog.warn("File failed virus check.");
+        return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
+      } else {
+        fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+
+        var Document = mongoose.model('Document');
+        var doc = new Document();
+        // Define security tag defaults
+        doc.tags = [['sysadmin']];
+        doc._application = _application;
+        doc._comment = _comment;
+        doc._decision = _decision;
+        doc.displayName = displayName;
+        doc.documentFileName = upfile.originalname;
+        doc.internalMime = upfile.mimetype;
+        doc.internalURL = uploadDir+guid+"."+ext;
+        doc.passedAVCheck = true;
+        // Update who did this?
+        doc._addedBy = args.swagger.params.auth_payload.userID;
+        doc.save()
+        .then(function (d) {
+          defaultLog.info("Saved new document object:", d._id);
+          return Actions.sendResponse(res, 200, d);
+        });
+      }
+    });
   } catch (e) {
     defaultLog.info("Error:", e);
     // Delete the path details before we return to the caller.
     delete e['path'];
     return Actions.sendResponse(res, 400, e);
   }
-
-  var Document = mongoose.model('Document');
-  var doc = new Document();
-  // Define security tag defaults
-  doc.tags = [['sysadmin']];
-  doc._application = _application;
-  doc._comment = _comment;
-  doc._decision = _decision;
-  doc.displayName = displayName;
-  doc.documentFileName = upfile.originalname;
-  doc.internalMime = upfile.mimetype;
-  doc.internalURL = uploadDir+guid+"."+ext;
-  // Update who did this?
-  doc._addedBy = args.swagger.params.auth_payload.userID;
-  doc.save()
-  .then(function (d) {
-    defaultLog.info("Saved new document object:", d);
-    return Actions.sendResponse(res, 200, d);
-  });
 };
 
 exports.protectedDelete = function (args, res, next) {
@@ -297,37 +315,44 @@ exports.protectedPut = function (args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    .then(function (valid) {
+      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+        defaultLog.warn("File failed virus check.");
+        return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
+      } else {
+        fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
+        var obj = args.swagger.params;
+        // Strip security tags - these will not be updated on this route.
+        delete obj.tags;
+        defaultLog.info("Incoming updated object:", obj._id);
+        // Update file location
+        obj.internalURL = uploadDir+guid+"."+ext;
+        // Update who did this?
+        obj._addedBy = args.swagger.params.auth_payload.userID;
+        doc._application = _application;
+        doc._comment = _comment;
+        doc._decision = _decision;
+        doc.displayName = displayName;
+        doc.passedAVCheck = true;
+        var Document = require('mongoose').model('Document');
+        Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
+          if (o) {
+            // defaultLog.info("o:", o);
+            return Actions.sendResponse(res, 200, o);
+          } else {
+            defaultLog.info("Couldn't find that object!");
+            return Actions.sendResponse(res, 404, {});
+          }
+        });
+      }
+    });
   } catch (e) {
     defaultLog.info("Error:", e);
     // Delete the path details before we return to the caller.
     delete e['path'];
     return Actions.sendResponse(res, 400, e);
   }
-
-  var obj = args.swagger.params;
-  // Strip security tags - these will not be updated on this route.
-  delete obj.tags;
-  defaultLog.info("Incoming updated object:", obj._id);
-  // Update file location
-  obj.internalURL = uploadDir+guid+"."+ext;
-  // Update who did this?
-  obj._addedBy = args.swagger.params.auth_payload.userID;
-  doc._application = _application;
-  doc._comment = _comment;
-  doc._decision = _decision;
-  doc.displayName = displayName;
-
-  var Document = require('mongoose').model('Document');
-  Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
-    if (o) {
-      // defaultLog.info("o:", o);
-      return Actions.sendResponse(res, 200, o);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
 }
 
 var getDocuments = function (role, query, fields) {
@@ -346,6 +371,7 @@ var getDocuments = function (role, query, fields) {
     var sanitizedFields = _.remove(fields, function (f) {
       return (_.indexOf(['displayName',
                          'internalURL',
+                         'passedAVCheck',
                          'documentFileName',
                          'internalMime'], f) !== -1);
     });

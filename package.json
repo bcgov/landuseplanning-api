@@ -12,6 +12,7 @@
   "dependencies": {
     "bcrypt-nodejs": "^0.0.3",
     "biguint-format": "^1.0.0",
+    "clamav.js": "^0.12.0",
     "express": "4.12.3",
     "flake-idgen": "^1.1.0",
     "jsonwebtoken": "7.3.0",
@@ -20,6 +21,7 @@
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "request": "^2.83.0",
+    "stream": "^0.0.2",
     "swagger-tools": "^0.10.3",
     "underscore": "^1.8.3",
     "validator": "7.0.0",

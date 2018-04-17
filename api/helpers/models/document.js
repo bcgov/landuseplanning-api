@@ -10,5 +10,6 @@
     displayName      : { type:String, default:'' },
     internalURL      : { type:String, default:'' },
     isDeleted        : { type: Boolean, default: false },
+    passedAVCheck    : { type: Boolean, default: false },
     internalMime     : { type:String, default:'' }
 });
