@@ -49,9 +49,16 @@ exports.unProtectedPost = function(args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    Promise.resolve()
+    .then(function () {
+      if (ENABLE_VIRUS_SCANNING == 'true') {
+        return Utils.avScan(args.swagger.params.upfile.value.buffer);
+      } else {
+        return true;
+      }
+    })
     .then(function (valid) {
-      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+      if (!valid) {
         defaultLog.warn("File failed virus check.");
         return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
       } else {
@@ -192,9 +199,16 @@ exports.protectedPost = function (args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    Promise.resolve()
+    .then(function () {
+      if (ENABLE_VIRUS_SCANNING == 'true') {
+        return Utils.avScan(args.swagger.params.upfile.value.buffer);
+      } else {
+        return true;
+      }
+    })
     .then(function (valid) {
-      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+      if (!valid) {
         defaultLog.warn("File failed virus check.");
         return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
       } else {
@@ -315,9 +329,16 @@ exports.protectedPut = function (args, res, next) {
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
-    Utils.avScan(args.swagger.params.upfile.value.buffer)
+    Promise.resolve()
+    .then(function () {
+      if (ENABLE_VIRUS_SCANNING == 'true') {
+        return Utils.avScan(args.swagger.params.upfile.value.buffer);
+      } else {
+        return true;
+      }
+    })
     .then(function (valid) {
-      if (!valid && ENABLE_VIRUS_SCANNING === true) {
+      if (!valid) {
         defaultLog.warn("File failed virus check.");
         return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
       } else {
