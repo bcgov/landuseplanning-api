@@ -1,0 +1,50 @@
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  name: filebackup
+spec:
+  schedule: "1 1 * * *"  
+  jobTemplate:             
+    spec:
+      template:
+        metadata:
+          labels:          
+            parent: "filebackup"
+        spec:
+          containers:
+          - name: filebackup
+            image: registry.access.redhat.com/rhscl/mongodb-32-rhel7
+            env:
+              - name: JSON_PAYLOAD
+                value: '{"text":"File Backup Job Completed Successfully!"}'
+              - name: NOTIFICATION_URL
+                value: ''
+            volumeMounts:
+            - name: "file-backup"
+              mountPath: "/filebackup"
+            - name: "filedata"
+              mountPath: "/filedata"
+              readOnly: true
+            command:
+            - 'bash'
+            - '-c'
+            - 'rsync -avrh /filedata/* /filebackup/ 
+            && echo "Filebackup complete" 
+            && curl -X POST -H "Content-type: application/json"
+            --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}"'
+          restartPolicy: Never 
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumes:
+          - name: file-backup
+            persistentVolumeClaim:
+              claimName: file-backup
+          - name: filedata
+            persistentVolumeClaim:
+              claimName: filedata
+        dnsPolicy: ClusterFirst
+        restartPolicy: Never
+        schedulerName: default-scheduler
+        securityContext: {}
+        terminationGracePeriodSeconds: 30
