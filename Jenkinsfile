@@ -1,76 +1,48 @@
 pipeline {
   agent any
+  options {
+    skipDefaultCheckout()
+  }
   stages {
-    stage('build nrts-prc-api-build') {
-      steps {
-        echo "Building: nrts-prc-api"
-        openshiftBuild bldCfg: 'nrts-prc-api', showBuildLogs: 'true'
-        openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: '$BUILD_ID', srcStream: 'nrts-prc-api', srcTag: 'latest'
-      }
-    }
-    stage('deploy to DEV') {
-      steps {
-        openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: 'dev', srcStream: 'nrts-prc-api', srcTag: '$BUILD_ID'
-        notifyBuild('DEPLOYED:DEV')
-      }
-    }
-    stage('deploy to TEST') {
+    stage('Building: nrts-prc-api beta branch') {
       steps {
         script {
           try {
-            timeout(time: 2, unit: 'MINUTES') {
-              input "Deploy to TEST?"
-              openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: 'test', srcStream: 'nrts-prc-api', srcTag: '$BUILD_ID'
-              notifyBuild('DEPLOYED:TEST')
-            }
+            echo "Building: ${env.JOB_NAME} #${env.BUILD_ID}"
+            notifyBuild("Building: ${env.JOB_NAME} #${env.BUILD_ID}", "YELLOW")
+            openshiftBuild bldCfg: 'nrts-prc-api-beta', showBuildLogs: 'true'
           } catch (e) {
-            notifyBuild('DEPLOYMENT:TEST ABORTED')
+            notifyBuild("BUILD ${env.JOB_NAME} #${env.BUILD_ID} ABORTED", "RED")
           }
         }
       }
     }
-    stage('deploy to PROD') {
+    stage('Deploy') {
       steps {
         script {
           try {
-            timeout(time: 2, unit: 'MINUTES') {
-              input "Deploy to PROD?"
-              openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: 'prod', srcStream: 'nrts-prc-api', srcTag: '$BUILD_ID'
-              notifyBuild('DEPLOYED:PROD')
-            }
+            echo "Deploying: ${env.JOB_NAME} #${env.BUILD_ID}"
+            notifyBuild("Deploying: ${env.JOB_NAME} #${env.BUILD_ID}", "YELLOW")
+            openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: 'master', srcStream: 'nrts-prc-api', srcTag: '$BUILD_ID'
           } catch (e) {
-            notifyBuild('DEPLOYMENT:PROD ABORTED')
+            notifyBuild("DEPLOY ${env.JOB_NAME} #${env.BUILD_ID} ABORTED", "RED")
           }
         }
+        notifyBuild("DEPLOYED: ${env.JOB_NAME} #${env.BUILD_ID}", "GREEN")
       }
     }
   }
 }
 
-def notifyBuild(String buildStatus = 'STARTED') {
-  // build status of null means successful
-  buildStatus =  buildStatus ?: 'SUCCESSFUL'
-
-  // Default values
-  def colorName = 'RED'
-  def colorCode = '#FF0000'
-  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
-  def summary = "${subject} (${env.BUILD_URL})"
-  def details = """<p>STARTED: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]':</p>
-    <p>Check console output at "<a href="${env.BUILD_URL}">${env.JOB_NAME} [${env.BUILD_NUMBER}]</a>"</p>"""
-
-  // Override default values based on build status
-  if (buildStatus == 'STARTED' || buildStatus.startsWith("DEPLOYMENT")) {
-    color = 'YELLOW'
+def notifyBuild(String msg = '', String colour = 'GREEN') {
+  if (colour == 'YELLOW') {
     colorCode = '#FFFF00'
-  } else if (buildStatus == 'SUCCESSFUL' || buildStatus.startsWith("DEPLOYED")) {
-    color = 'GREEN'
+  } else if (colour == 'GREEN') {
     colorCode = '#00FF00'
   } else {
-    color = 'RED'
     colorCode = '#FF0000'
   }
 
   // Send notifications
-  //slackSend (color: colorCode, message: summary)
+  slackSend (color: colorCode, message: msg)
 }
