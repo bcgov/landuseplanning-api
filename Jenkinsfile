@@ -18,21 +18,6 @@ pipeline {
         }
       }
     }
-    stage('Deploy') {
-      steps {
-        script {
-          try {
-            echo "Deploying: ${env.JOB_NAME} #${env.BUILD_ID}"
-            notifyBuild("Deploying: ${env.JOB_NAME} #${env.BUILD_ID}", "YELLOW")
-            openshiftTag destStream: 'nrts-prc-api', verbose: 'true', destTag: 'master', srcStream: 'nrts-prc-api', srcTag: '$BUILD_ID'
-          } catch (e) {
-            notifyBuild("DEPLOY ${env.JOB_NAME} #${env.BUILD_ID} ABORTED", "RED")
-            error('Stopping early…')
-          }
-        }
-        notifyBuild("DEPLOYED: ${env.JOB_NAME} #${env.BUILD_ID}", "GREEN")
-      }
-    }
   }
 }
 
