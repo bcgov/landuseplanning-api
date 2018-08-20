@@ -230,6 +230,17 @@ definitions:
       - commentStatus
       - dateAdded
       - _addedBy
+  CommentSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +commentStatus,-dateAdded
+    enum: &commentSortByFields
+      - +commentStatus
+      - -commentStatus
+      - +contactName
+      - -contactName
+      - +dateAdded
+      - -dateAdded
 
 ### Comment Definitions
   CommentPeriodId:
@@ -2993,7 +3004,7 @@ paths:
         - comment
       summary: "Get a list of comments"
       operationId: protectedGet
-      description: "Authenticated access to retreiving a comment."
+      description: "Authenticated access to retrieving comments."
       security:
         - Bearer: []
       x-security-scopes:
@@ -3002,7 +3013,7 @@ paths:
       parameters:
         - in: query
           name: _commentPeriod
-          description: "Comments relating to a particular Comment Period(s)"
+          description: "Comments relating to a particular Comment Period"
           type: array
           required: false
           collectionFormat: pipes
@@ -3015,13 +3026,31 @@ paths:
           description: "Comments that are deleted or not"
         - in: query
           name: fields
-          description: "comment fields to return."
+          description: "Comment fields to return."
           required: false
           type: array
           collectionFormat: pipes
           items:
             type: string
             enum: *commentFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: sortBy
+          description: "Comment fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *commentSortByFields
       responses:
         "200":
           description: "Success"
@@ -3059,7 +3088,7 @@ paths:
         - comment
       summary: "Get a comment"
       operationId: protectedGet
-      description: "Authenticated access to retreiving a comment."
+      description: "Authenticated access to retrieving a comment."
       security:
         - Bearer: []
       x-security-scopes:
@@ -3073,7 +3102,7 @@ paths:
           type: "string"
         - in: query
           name: fields
-          description: "comment fields to return."
+          description: "Comment fields to return."
           required: false
           type: array
           collectionFormat: pipes
@@ -3264,11 +3293,11 @@ paths:
         - comment
       summary: "Get a list of comments"
       operationId: publicGet
-      description: "Retreiving public comments."
+      description: "Retrieving public comments."
       parameters:
         - in: query
           name: _commentPeriod
-          description: "Comments relating to a particular Comment Period(s)"
+          description: "Comments relating to a particular Comment Period"
           type: array
           required: false
           collectionFormat: pipes
@@ -3276,13 +3305,31 @@ paths:
             type: string
         - in: query
           name: fields
-          description: "comment fields to return."
+          description: "Comment fields to return."
           required: false
           type: array
           collectionFormat: pipes
           items:
             type: string
             enum: *commentFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: sortBy
+          description: "Comment fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *commentSortByFields
       responses:
         "200":
           description: "Success"
@@ -3320,7 +3367,7 @@ paths:
         - comment
       summary: "Get a comment"
       operationId: publicGet
-      description: "Public access to retreiving comments."
+      description: "Public access to retrieving a comment."
       parameters:
         - name: CommentId
           in: path
@@ -3329,7 +3376,7 @@ paths:
           type: "string"
         - in: query
           name: fields
-          description: "comment fields to return."
+          description: "Comment fields to return."
           required: false
           type: array
           collectionFormat: pipes
