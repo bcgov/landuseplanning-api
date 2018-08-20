@@ -25,6 +25,12 @@ exports.publish = function (o) {
     });
 };
 
+exports.isPublished = function (o) {
+    return _.find(o.tags, function (item) {
+        return _.isEqual(item, ['public']);
+    });
+};
+
 exports.unPublish = function (o) {
     return new Promise(function (resolve, reject) {
         var exists = _.remove(o.tags, function (item) {

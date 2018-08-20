@@ -4,6 +4,7 @@ var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
+var request     = require('request');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -76,6 +77,61 @@ exports.protectedDelete = function (args, res, next) {
   });
 }
 
+var doFeaturePubUnPub = function (action, objId) {
+  return new Promise(function (resolve, reject) {
+    var Feature = require('mongoose').model('Feature');
+
+    Feature.find({applicationID: objId}, function (err, featureObjects) {
+      if (err) {
+        reject(err);
+      } else {
+        var promises = [];
+        _.each(featureObjects, function (f) {
+          promises.push(f);
+        });
+        // Iterate through all the promises before returning.
+        Promise.resolve()
+        .then(function () {
+          return promises.reduce(function (previousItem, currentItem) {
+            return previousItem.then(function () {
+              if (action == 'publish') {
+                if (!Actions.isPublished(currentItem)) {
+                  return Actions.publish(currentItem);
+                } else {
+                  return Promise.resolve();
+                }
+              } else {
+                // Default unpub
+                if (Actions.isPublished(currentItem)) {
+                  return Actions.unPublish(currentItem);
+                } else {
+                  return Promise.resolve();
+                }
+              }
+            });
+          }, Promise.resolve());
+        }).then(function () {
+          // All done with promises in the array, return to the caller.
+          defaultLog.info("done Pub/UnPub all features.");
+          resolve();
+        });
+      }
+    });
+  });
+}
+
+var doFeatureSave = function (item, appId) {
+  return new Promise(function (resolve, reject) {
+    // MBL TODO: What to do if feature was already in?
+    var Feature = mongoose.model('Feature');
+    var feat    = new Feature(item);
+
+    // Bind reference to application Obj
+    feat.applicationID = appId;
+    feat.save().then(resolve, reject);
+  });
+};
+
 //  Create a new application
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.app.value;
@@ -88,10 +144,53 @@ exports.protectedPost = function (args, res, next) {
   app.internal.tags = [['sysadmin']];
   app._addedBy = args.swagger.params.auth_payload.userID;
   app.save()
-  .then(function (a) {
+  .then(function (savedApp) {
+    // Get the shapes from BCGW for this DISPOSITION and save them into the feature collection
+    var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=";
+    defaultLog.info("SEARCHING:", searchURL+ "'" + savedApp.tantalisID + "'");
+    return new Promise(function (resolve, reject) {
+      request({url: searchURL + "'" + savedApp.tantalisID + "'"}, function (err, res, body) {
+        if (err) {
+          reject(err);
+        } else if (res.statusCode !== 200) {
+          reject(res.statusCode+' '+body);
+        } else {
+          var obj = {};
+          try {
+            defaultLog.info ('BCGW Call Complete.', body);
+            obj = JSON.parse(body);
+
+            // Store the features in the DB
+            var allFeaturesForDisp = [];
+            _.each(obj.features, function (f) {
+              // Tags default NOT public - force the application publish step before enabling these
+              // to show up on the public map.
+              f.tags = [['sysadmin']];
+              allFeaturesForDisp.push(f);
+            });
+
+            Promise.resolve()
+            .then(function () {
+              return allFeaturesForDisp.reduce(function (previousItem, currentItem) {
+                return previousItem.then(function () {
+                  return doFeatureSave(currentItem, savedApp._id);
+                });
+              }, Promise.resolve());
+            }).then(function () {
+              // All done with promises in the array, return to the caller.
+              resolve(savedApp);
+            });
+          } catch (e) {
+            defaultLog.error ('Parsing Failed.', e);
+            resolve(savedApp);
+          }
+        }
+      });
+    });
+  }).then(function (theApp) {
     // defaultLog.info("Saved new application object:", a);
-    return Actions.sendResponse(res, 200, a);
-  });
+    return Actions.sendResponse(res, 200, theApp);
+  })
 };
 
 // Update an existing application
@@ -136,9 +235,11 @@ exports.protectedPublish = function (args, res, next) {
     if (o) {
       defaultLog.info("o:", o);
 
-      // Add public to the tag of this obj.
-      Actions.publish(o)
-      .then(function (published) {
+      // Go through the feature collection and publish the corresponding features.
+      doFeaturePubUnPub('publish', objId).then(function () {
+        // Publish the application
+        return Actions.publish(o);
+      }).then(function (published) {
         // Published successfully
         return Actions.sendResponse(res, 200, published);
       }, function (err) {
@@ -160,9 +261,10 @@ exports.protectedUnPublish = function (args, res, next) {
     if (o) {
       defaultLog.info("o:", o);
 
-      // Remove public to the tag of this obj.
-      Actions.unPublish(o)
-      .then(function (unpublished) {
+      // Go through the feature collection and publish the corresponding features.
+      doFeaturePubUnPub('unpublish',objId).then(function () {
+        Actions.unPublish(o);
+      }).then(function (unpublished) {
         // UnPublished successfully
         return Actions.sendResponse(res, 200, unpublished);
       }, function (err) {

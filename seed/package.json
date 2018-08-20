@@ -10,7 +10,10 @@
   "license": "UNLICENSED",
   "main": "seed",
   "dependencies": {
-    "mongoose": "^4.13.6"
+    "body-parser": "^1.18.3",
+    "lodash": "^4.17.10",
+    "mongoose": "^4.13.6",
+    "request": "^2.88.0"
   },
   "scripts": {
     "start": "node seed admin admin http localhost 3000"
