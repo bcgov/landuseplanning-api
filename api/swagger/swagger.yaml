@@ -15,6 +15,11 @@ tags:
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/nrts-prc-api.git"
+- name: "feature"
+  description: "Operations about features"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/nrts-prc-api.git"
 - name: "document"
   description: "Operations about documents"
   externalDocs:
@@ -114,6 +119,38 @@ definitions:
       - commodityType
       - commodity
       - commodities
+      - tantalisID
+
+### Application Definitions
+  FeatureId:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+  FeatureObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+      tags:
+        type: string
+        example: "[['public']]"
+        ## TODO: Add more fields here.
+  Feature:
+    type: string
+    description: "Optional fields to return."
+    example: name|type
+    #TODO: Fix enums
+    enum: &featureFields
+      - type
+      - tags
+      - geometry
+      - geometryName
+      - properties
+      - isDeleted
+      - applicationID
 
 ### Search Definitions
   crownLandsId:
@@ -307,6 +344,11 @@ definitions:
       - username
       - roles
 ### Resource Definitions
+  Coordinates:
+    type: object
+    properties:
+      msg:
+        type: string
   Token:
     type: object
     properties:
@@ -759,6 +801,425 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+### Feature Routes
+  /feature:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Feature Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - feature
+      summary: "Create a new feature"
+      operationId: protectedPost
+      description: "Create a new feature object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:feature
+      parameters:
+        - name: feature
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/FeatureId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - feature
+      summary: "Get a list of features"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving features."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - in: query
+          name: fields
+          description: "feature fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *featureFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Features that are deleted or not"
+        - in: query
+          name: tantalisId
+          type: number
+          required: false
+          description: "Get a Feature that contain this specific disposition."
+        - in: query
+          name: applicationId
+          type: string
+          required: false
+          description: "Get a Feature that is associated with a particular application."
+        - in: query
+          name: coordinates
+          required: false
+          description: "Query fetures by coordinates."
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /feature/{featureId}:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Feature GET Route"
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - feature
+      summary: "Get an feature"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving features."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "feature fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *featureFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Features that are deleted or not"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - feature
+      summary: "Update an feature"
+      operationId: protectedPut
+      description: "Update an feature object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:feature
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to update"
+          required: true
+          type: "string"
+        - name: FeatureObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/FeatureObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - feature
+      summary: "Delete an feature"
+      operationId: protectedDelete
+      description: "Delete an feature object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to delete"
+          required: true
+          type: "string"
+        - name: FeatureObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/FeatureObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /feature/{featureId}/publish:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on feature Route"
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - feature
+      summary: "Publish a feature"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a feature."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:feature
+        # TODO: Define publish roles.
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /feature/{featureId}/unpublish:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on feature Route"
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - feature
+      summary: "UnPublish a feature"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role to a feature."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:feature
+        # TODO: Define publish roles.
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to update"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/feature:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on feature Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - feature
+      summary: "Get a list of public features"
+      operationId: publicGet
+      description: "Retreiving public features."
+      parameters:
+        - in: query
+          name: fields
+          description: "feature fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *featureFields
+        - in: query
+          name: coordinates
+          required: false
+          description: "Query fetures by coordinates."
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/feature/{featureId}:
+    x-swagger-router-controller: feature
+    options:
+      tags:
+        - feature
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on feature GET Route"
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - feature
+      summary: "Get an feature"
+      operationId: publicGet
+      description: "Public access to retreiving features."
+      parameters:
+        - name: featureId
+          in: path
+          description: "ID of feature to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "feature fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *featureFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
 ## Search
   /public/search/bcgw/crownLandsId/{crownLandsId}:
     x-swagger-router-controller: search
@@ -885,6 +1346,59 @@ paths:
         - search
       summary: "Get a list of searchable things from the bcgw"
       operationId: publicGetBCGWDispositionTransactionId
+      description: "Retreiving search results."
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Tantalis Obj to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Search fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *searchFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/search/dispositionTransactionId/{dtId}:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Search Route"
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Tantalis Obj to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get a list of searchable things from the bcgw"
+      operationId: publicGetDispositionTransactionId
       description: "Retreiving search results."
       parameters:
         - name: dtId

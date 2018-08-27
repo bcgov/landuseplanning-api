@@ -110,6 +110,34 @@ exports.publicGetBCGW = function (args, res, next) {
   });
 };
 
+// Get local shapes
+exports.publicGetDispositionTransactionId = function (args, res, next) {
+  return new Promise(function (resolve, reject) {
+      var Feature     = require('mongoose').model('Feature');
+
+      var query = {};
+      if (args.swagger.params.dtId && args.swagger.params.dtId.value !== undefined) {
+        _.assignIn(query, { 'properties.DISPOSITION_TRANSACTION_SID': args.swagger.params.dtId.value });
+      }
+
+      return Feature.find(query, function (err, data) {
+        if (err) {
+          return Actions.sendResponse(res, 400, err);
+        } else {
+          var featureCollection = {};
+          featureCollection.crs = {};
+          featureCollection.crs.properties = {};
+          featureCollection.crs.properties.name = "urn:ogc:def:crs:EPSG::4326";
+          featureCollection.totalFeatures = data.length;
+          featureCollection.features = data;
+          featureCollection.type = "FeatureCollection";
+          return Actions.sendResponse(res, 200, featureCollection);
+        }
+    });
+  });
+};
+
+// Get bcgw shapes
 exports.publicGetBCGWDispositionTransactionId = function (args, res, next) {
   // Build match query if on appId route
   var dtId = args.swagger.params.dtId.value;
