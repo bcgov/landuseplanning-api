@@ -145,54 +145,6 @@
     },
     {
         "addedBy": "admin",
-        "_application": "6409010",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409010_Document_Map.pdf",
-        "displayName": "Document Map",
-        "internalURL": "./documents/6409010_Document_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409010",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409010_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409010_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409010",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409010_Referral_Maps.pdf",
-        "displayName": "Referral Maps",
-        "internalURL": "./documents/6409010_Referral_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
         "_application": "6409020",
         "tags": [
             [
@@ -333,38 +285,6 @@
         "documentFileName": "6409023_Referral_Maps.pdf",
         "displayName": "Referral Maps",
         "internalURL": "./documents/6409023_Referral_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409024",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409024_All_Maps_and_site_plan.pdf",
-        "displayName": "All Maps and Site Plan",
-        "internalURL": "./documents/6409024_All_Maps_and_site_plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409024",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409024_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409024_Management_Plan.pdf",
         "internalMime": "application/pdf"
     },
     {

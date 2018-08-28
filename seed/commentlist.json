@@ -177,7 +177,7 @@
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-3",
+        "commentPeriod": "comment-period-2",
         "commentNumber": 1,
         "code": "comment-3-1",
         "comment": "This is the first comment for this application.",
@@ -194,7 +194,7 @@
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-3",
+        "commentPeriod": "comment-period-2",
         "commentNumber": 2,
         "code": "comment-3-2",
         "comment": "This is the second comment for this application.",
@@ -211,7 +211,7 @@
     },
     {
         "addedBy": "admin",
-        "commentPeriod": "comment-period-3",
+        "commentPeriod": "comment-period-2",
         "commentNumber": 3,
         "code": "comment-3-3",
         "comment": "This is the third comment for this application.",
