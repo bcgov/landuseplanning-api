@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "nrts-prc-api",
+    "name": "nrts-prc-api-beta",
     "annotations": {
       "description": "Template for Node.js applications with a MongoDB database, based on OpenShift provided templates 'nodejs-mongodb-example' and 'mongodb-persistent-template'.",
       "tags": "quickstart,nodejs,mongodb",
@@ -10,7 +10,7 @@
     }
   },
   "labels": {
-    "template": "nrts-prc-api"
+    "template": "nrts-prc-api-beta"
   },
   "objects": [
     {
@@ -207,7 +207,7 @@
       "spec": {
         "ports": [
           {
-            "name": "mongodb",
+            "name": "mongodb-${NAME}",
             "port": 27017,
             "targetPort": 27017
           }
@@ -263,7 +263,7 @@
           "spec": {
             "containers": [
               {
-                "name": "mongodb",
+                "name": "mongodb-${NAME}",
                 "image": " ",
                 "ports": [
                   {
@@ -296,7 +296,7 @@
                       "/bin/sh",
                       "-i",
                       "-c",
-                      "mongostat --host 127.0.0.1 -u admin -p ${DATABASE_ADMIN_PASSWORD} -n 1 --noheaders"
+                      "mongo 127.0.0.1:27017/$MONGODB_DATABASE -u $MONGODB_USER -p $MONGODB_PASSWORD --eval='quit()'"
                     ]
                   }
                 },
@@ -339,7 +339,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "nrts-prc-api"
+      "value": "nrts-prc-api-beta"
     },
     {
       "name": "MONGO_IMAGE_NAMESPACE",
@@ -363,12 +363,12 @@
       "name": "APPLICATION_DOMAIN",
       "displayName": "Application Hostname",
       "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
-      "value": "https://nrts-prc-api-test.pathfinder.gov.bc.ca"
+      "value": "nrts-prc-beta.pathfinder.gov.bc.ca/api"
     },
     {
       "name": "DATABASE_SERVICE_NAME",
       "displayName": "Database Service Name",
-      "value": "mongodb"
+      "value": "mongodb-beta"
     },
     {
       "name": "DATABASE_USER",
@@ -435,7 +435,14 @@
       "name": "APP_DEPLOYMENT_TAG",
       "displayName": "Image tag to watch for changes and trigger deployment.",
       "description": "Image tag to watch for changes and trigger deployment.",
-      "value": "dev",
+      "value": "beta",
+      "required": true
+    },
+    {
+      "name": "READINESS_PROBE_URL",
+      "displayName": "URL to watch for readiness.",
+      "description": "URL to watch for readiness.",
+      "value": "/api/docs",
       "required": true
     }
   ]
