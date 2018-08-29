@@ -1,0 +1,51 @@
+apiVersion: batch/v2alpha1
+kind: CronJob
+metadata:
+  labels:
+    app: update-shapes-template
+  name: update-shapes
+  namespace: nrts-prc-tools
+spec:
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            parent: update-shapes
+        spec:
+          containers:
+          - name: update-shapes
+            env:
+            - name: API_USERNAME
+              value: ""
+            - name: API_PASSWORD
+              value: ''
+            - name: API_PROTOCOL
+              value: ''
+            - name: API_HOST
+              value: ''
+            - name: API_PORT
+              value: ''
+            - name: JSON_PAYLOAD
+              value: '{"text":"Shapes Import Job for nrts-prc-prod Completed Successfully!"}'
+            - name: NOTIFICATION_URL
+              value: ''
+            image: docker-registry.default.svc:5000/nrts-prc-tools/nrts-prc-api:master
+            command:
+            - bash
+            - -c
+            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" && echo "Shapes import complete"'
+            # - 'pwd && echo "Shapes import complete" && curl -X POST -H "Content-type: application/json"
+              # --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}"'
+            imagePullPolicy: Always
+            resources: {}
+            terminationMessagePath: /dev/termination-log
+            terminationMessagePolicy: File
+          dnsPolicy: ClusterFirst
+          restartPolicy: Never
+          schedulerName: default-scheduler
+          securityContext: {}
+          terminationGracePeriodSeconds: 30
+  schedule: "*/1 * * * *"
+  suspend: false
