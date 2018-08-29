@@ -81,26 +81,29 @@ exports.protectedGet = function(args, res, next) {
 };
 
 exports.protectedDelete = function (args, res, next) {
-  var featureId = args.swagger.params.featureId.value;
-  defaultLog.info("Delete Feature:", featureId);
+  defaultLog.info("Deleting a Feature(s)");
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
 
   var Feature = mongoose.model('Feature');
-  Feature.findOne({_id: featureId}, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
+  var query = {};
+  // Build match query if on featureId route
+  if (args.swagger.params.featureId) {
+    query = Utils.buildQuery("_id", args.swagger.params.featureId.value, query);
+  } else if (args.swagger.params.applicationID && args.swagger.params.applicationID.value !== undefined){
+    _.assignIn(query, { applicationID: mongoose.Types.ObjectId(args.swagger.params.applicationID.value) });
+  }
 
-      // Set the deleted flag.
-      Actions.delete(o)
-      .then(function (deleted) {
-        // Deleted successfully
-        return Actions.sendResponse(res, 200, deleted);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, 400, err);
-      });
+  if (!Object.keys(query).length > 0) {
+    // Don't allow unilateral delete.
+    return Actions.sendResponse(res, 400, "Can't delete entire collection.");
+  }
+
+  // Straight delete, don't isDelete=true them.
+  Feature.remove(query, function (err, data) {
+    if (data) {
+        return Actions.sendResponse(res, 200, data);
     } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
+        return Actions.sendResponse(res, 400, err);
     }
   });
 }

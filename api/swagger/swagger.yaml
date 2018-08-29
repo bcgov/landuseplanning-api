@@ -845,6 +845,31 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - feature
+      summary: "Delete a feature(s)"
+      operationId: protectedDelete
+      description: "Delete specific features."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+          - name: applicationID
+            in: query
+            type: string
+            required: true
+            description: "Delete features corresponding to an applicationID."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/FeatureObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
     get:
       tags:
         - feature
