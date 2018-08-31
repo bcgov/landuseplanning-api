@@ -479,6 +479,16 @@ paths:
           required: false
           description: "Applications that are deleted or not"
         - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
           name: tantalisId
           type: number
           required: false
@@ -749,6 +759,16 @@ paths:
           items:
             type: string
             enum: *applicationFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page."
       responses:
         "200":
           description: "Success"

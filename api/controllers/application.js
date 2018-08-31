@@ -6,6 +6,9 @@ var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
 
+var DEFAULT_PAGESIZE  = 100;
+var MAX_LIMIT         = 1000;
+
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
@@ -13,12 +16,29 @@ exports.protectedOptions = function (args, res, rest) {
 exports.publicGet = function (args, res, next) {
   // Build match query if on appId route
   var query = {};
+  var skip        = null;
+  var limit       = null;
+
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  } else {
+    // Could be a bunch of results - enable pagination
+    var pageSize = DEFAULT_PAGESIZE;
+    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
+      if (args.swagger.params.pageSize.value > 0) {
+        pageSize = args.swagger.params.pageSize.value;
+      }
+    }
+    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
+      if (args.swagger.params.pageNum.value >= 0) {
+        skip = (args.swagger.params.pageNum.value * pageSize);
+        limit = pageSize;
+      }
+    }
   }
   _.assignIn(query, { isDeleted: false });
 
-  getApplications(['public'], query, args.swagger.params.fields.value)
+  getApplications(['public'], query, args.swagger.params.fields.value, skip, limit)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -26,6 +46,8 @@ exports.publicGet = function (args, res, next) {
 exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.params.auth_payload.scopes;
+  var skip        = null;
+  var limit       = null;
 
   var Application = mongoose.model('Application');
 
@@ -35,6 +57,20 @@ exports.protectedGet = function(args, res, next) {
   var query = {};
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  } else {
+    // Could be a bunch of results - enable pagination
+    var pageSize = DEFAULT_PAGESIZE;
+    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
+      if (args.swagger.params.pageSize.value > 0) {
+        pageSize = args.swagger.params.pageSize.value;
+      }
+    }
+    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
+      if (args.swagger.params.pageNum.value >= 0) {
+        skip = (args.swagger.params.pageNum.value * pageSize);
+        limit = pageSize;
+      }
+    }
   }
   if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
     _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
@@ -46,7 +82,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getApplications(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getApplications(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value, skip, limit)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -293,7 +329,7 @@ exports.protectedUnPublish = function (args, res, next) {
     }
   });
 };
-var getApplications = function (role, query, fields) {
+var getApplications = function (role, query, fields, skip, limit) {
   return new Promise(function (resolve, reject) {
     var Application = mongoose.model('Application');
     var projection = {};
@@ -355,12 +391,14 @@ var getApplications = function (role, query, fields) {
                       in: { $setIsSubset: [ "$$fieldTag", role ] }
                     }
                   }
-                },
-              then: "$$DESCEND",
-              else: "$$PRUNE"
-            }
+              },
+            then: "$$DESCEND",
+            else: "$$PRUNE"
           }
         }
+      },
+      { $skip: skip || 0 },
+      { $limit: limit || MAX_LIMIT }
     ]).exec()
     .then(function (data) {
       defaultLog.info("data:", data);
