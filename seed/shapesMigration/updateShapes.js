@@ -105,11 +105,22 @@ var getAndSaveFeatures = function (item) {
 
                 // Store the features in the DB
                 var allFeaturesForDisp = [];
+                var allPolygons = [];
+                var turf = require('@turf/turf');
+                var helpers = require('@turf/helpers');
+                var centroids = helpers.featureCollection([]);
                 _.each(obj.features, function (f) {
                     // Tags default public
                     f.tags = [['sysadmin'], ['public']];
                     allFeaturesForDisp.push(f);
+                    // Get the polygon and put it for later centroid calculation
+                    centroids.features.push(turf.centroid(f));
                 });
+                // Centroid of all the shapes.
+                var featureCollectionCentroid;
+                if (centroids.features.length > 0) {
+                    featureCollectionCentroid = turf.centroid(centroids).geometry.coordinates;
+                }
 
                 Promise.resolve()
                 .then(function () {
@@ -119,7 +130,11 @@ var getAndSaveFeatures = function (item) {
                         });
                     }, Promise.resolve());
                 }).then(function (f) {
-                    // All done with promises in the array, return last feature to the caller.
+                    // All done with promises in the array, return last feature to the caller,
+                    // adding the centroid of all shapes to the obj.
+                    if (featureCollectionCentroid) {
+                        f.featureCollectionCentroid = featureCollectionCentroid;
+                    }
                     resolve(f);
                 });
             }
@@ -178,8 +193,7 @@ var updateApplicationMeta = function (item) {
         updatedAppObject.type           = item.properties.TENURE_TYPE;
         updatedAppObject.subtype        = item.properties.TENURE_SUBTYPE;
         updatedAppObject.location       = item.properties.TENURE_LOCATION;
-        // Calculate?
-        // updatedAppObject.region       = item.;
+        updatedAppObject.centroid       = item.featureCollectionCentroid;
         request.put({
             url: uri + 'api/application/' + item.applicationID,
             headers: {

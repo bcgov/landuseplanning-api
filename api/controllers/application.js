@@ -162,12 +162,25 @@ exports.protectedPost = function (args, res, next) {
 
             // Store the features in the DB
             var allFeaturesForDisp = [];
+            var allPolygons = [];
+            var turf = require('@turf/turf');
+            var helpers = require('@turf/helpers');
+            var centroids = helpers.featureCollection([]);
             _.each(obj.features, function (f) {
-              // Tags default NOT public - force the application publish step before enabling these
-              // to show up on the public map.
-              f.tags = [['sysadmin']];
-              allFeaturesForDisp.push(f);
+                // Tags default public
+                f.tags = [['sysadmin'], ['public']];
+                allFeaturesForDisp.push(f);
+                // Get the polygon and put it for later centroid calculation
+                centroids.features.push(turf.centroid(f));
             });
+            // Centroid of all the shapes.
+            var featureCollectionCentroid;
+            if (centroids.features.length > 0) {
+              featureCollectionCentroid = turf.centroid(centroids).geometry.coordinates;
+              // Store the centroid.
+              savedApp.centroid = featureCollectionCentroid;
+            }
+
 
             Promise.resolve()
             .then(function () {
@@ -178,7 +191,10 @@ exports.protectedPost = function (args, res, next) {
               }, Promise.resolve());
             }).then(function () {
               // All done with promises in the array, return to the caller.
-              resolve(savedApp);
+              return savedApp.save();
+            })
+            .then(function (a) {
+              resolve(a);
             });
           } catch (e) {
             defaultLog.error ('Parsing Failed.', e);

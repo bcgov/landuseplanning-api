@@ -13,8 +13,8 @@
     status           : { type: String },
     region           : { type: String },
     location         : { type: String, default: '' },
-    latitude         : { type: Number, default: 0.00 },
-    longitude        : { type: Number, default: 0.00 },
+    // Centroid (in coordinates) of all features associated with this application.
+    centroid         : [{ type: Number, default: 0.00}],
     areaHectares     : { type: Number, default: 0.00 },
     publishDate      : { type: Date, default: Date.now },
     businessUnit     : { type: String },
