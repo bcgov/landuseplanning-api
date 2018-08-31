@@ -10,6 +10,7 @@
   "license": "UNLICENSED",
   "main": "seed",
   "dependencies": {
+    "@turf/helpers": "^6.1.4",
     "body-parser": "^1.18.3",
     "lodash": "^4.17.10",
     "mongoose": "^4.13.6",
