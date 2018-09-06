@@ -191,6 +191,7 @@ var updateApplicationMeta = function (item) {
         updatedAppObject.subpurpose     = item.properties.TENURE_SUBPURPOSE;
         updatedAppObject.status         = item.properties.TENURE_STATUS;
         updatedAppObject.type           = item.properties.TENURE_TYPE;
+        updatedAppObject.tenureStage    = item.properties.TENURE_STAGE;
         updatedAppObject.subtype        = item.properties.TENURE_SUBTYPE;
         updatedAppObject.location       = item.properties.TENURE_LOCATION;
         updatedAppObject.centroid       = item.featureCollectionCentroid;

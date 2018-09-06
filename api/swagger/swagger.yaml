@@ -105,8 +105,8 @@ definitions:
       - purpose
       - subpurpose
       - _proponent
-      - latitude
-      - longitude
+      - centroid
+      - tenureStage
       - areaHectares
       - location
       - region
