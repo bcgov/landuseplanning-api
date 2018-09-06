@@ -11,7 +11,7 @@
     purpose          : { type: String },
     subpurpose       : { type: String },
     status           : { type: String },
-    region           : { type: String },
+    tenureStage      : { type: String },
     location         : { type: String, default: '' },
     // Centroid (in coordinates) of all features associated with this application.
     centroid         : [{ type: Number, default: 0.00}],
