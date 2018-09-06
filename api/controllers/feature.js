@@ -40,11 +40,11 @@ exports.publicGet = function (args, res, next) {
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Feature = mongoose.model('Feature');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   var query = {};
   // Build match query if on featureId route
@@ -74,7 +74,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getFeatures(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getFeatures(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -82,7 +82,7 @@ exports.protectedGet = function(args, res, next) {
 
 exports.protectedDelete = function (args, res, next) {
   defaultLog.info("Deleting a Feature(s)");
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   var Feature = mongoose.model('Feature');
   var query = {};

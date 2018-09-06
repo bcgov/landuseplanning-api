@@ -28,7 +28,7 @@ exports.publicGet = function (args, res, next) {
 exports.protectedGet = function(args, res, next) {
   var Comment = mongoose.model('CommentPeriod');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route
   var query = {};
@@ -45,7 +45,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getComments(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -55,11 +55,12 @@ exports.protectedGet = function(args, res, next) {
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params._commentPeriod.value;
   defaultLog.info("Incoming new object:", obj);
+  defaultLog.info("args.swagger.params.auth_payload:", args.swagger.params.auth_payload);
   if (!obj.internal) {
     obj.internal = {};
   }
-  obj.internal._addedBy = mongoose.Types.ObjectId(args.swagger.params.auth_payload.userID.value);
-  obj._addedBy = mongoose.Types.ObjectId(args.swagger.params.auth_payload.userID.value);
+  obj.internal._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
 
   var CommentPeriod = mongoose.model('CommentPeriod');
   var commentperiod = new CommentPeriod(obj);
@@ -67,7 +68,8 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   commentperiod.tags = [['sysadmin']];
   commentperiod.internal.tags = [['sysadmin']];
-  commentperiod._addedBy = args.swagger.params.auth_payload.userID;
+  commentperiod.internal._addedBy = args.swagger.params.auth_payload.preferred_username;
+  commentperiod._addedBy = args.swagger.params.auth_payload.preferred_username;
   commentperiod.save()
   .then(function (c) {
     // defaultLog.info("Saved new CommentPeriod object:", c);

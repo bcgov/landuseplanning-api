@@ -64,8 +64,6 @@ exports.publicGet = function (args, res, next) {
 };
 
 exports.protectedGet = function (args, res, next) {
-  // defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
-
   var query = {}, sort = {};
   var skip = null, limit = null;
 
@@ -114,7 +112,7 @@ exports.protectedGet = function (args, res, next) {
   }
 
   // defaultLog.info("query:", query);
-  getComments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value, sort, skip, limit)
+  getComments(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value, sort, skip, limit)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -147,7 +145,7 @@ exports.unProtectedPost = function (args, res, next) {
   comment.commentAuthor.internal.tags = [['sysadmin']];
 
   // Not needed until we tie user profiles in.
-  // comment._addedBy = args.swagger.params.auth_payload.userID;
+  // comment._addedBy = args.swagger.params.auth_payload.preferred_username.value;
 
   comment.save()
   .then(function (c) {

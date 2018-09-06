@@ -1,5 +1,5 @@
 module.exports = require('../models')('CommentPeriod', {
-    _addedBy        : { type: 'ObjectId', ref: 'User', default: null },
+    _addedBy        : { type: String, default: null },
     _application    : { type: 'ObjectId', ref: 'Application', default: null, index: true },
     // Note: Default on tag property is purely for display only, they have no real effect on the model
     // This must be done in the code.
@@ -12,7 +12,7 @@ module.exports = require('../models')('CommentPeriod', {
     description     : { type: String, default: '' },
     internal        : {
         notes    : { type: String, default: ''},
-        _addedBy : { type: 'ObjectId', ref: 'User', default: null },
+        _addedBy : { type: String, default: null },
         tags     : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
     },
     isDeleted       : { type: Boolean, default: false }

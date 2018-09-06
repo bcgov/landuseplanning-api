@@ -93,11 +93,11 @@ exports.unProtectedPost = function(args, res, next) {
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
   var query = {};
@@ -120,7 +120,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getDocuments(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -157,11 +157,11 @@ exports.publicDownload = function(args, res, next) {
 
 exports.protectedDownload = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
   var query = {};
@@ -169,7 +169,7 @@ exports.protectedDownload = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
 
-  getDocuments(args.swagger.params.auth_payload.scopes, query, ["internalURL", "documentFileName", "internalMime"])
+  getDocuments(args.swagger.operation["x-security-scopes"], query, ["internalURL", "documentFileName", "internalMime"])
   .then(function (data) {
     if (data && data.length === 1) {
       var blob = data[0];
@@ -227,7 +227,7 @@ exports.protectedPost = function (args, res, next) {
         doc.internalURL = uploadDir+guid+"."+ext;
         doc.passedAVCheck = true;
         // Update who did this?
-        doc._addedBy = args.swagger.params.auth_payload.userID;
+        doc._addedBy = args.swagger.params.auth_payload.preferred_username.value;
         doc.save()
         .then(function (d) {
           defaultLog.info("Saved new document object:", d._id);
@@ -350,7 +350,7 @@ exports.protectedPut = function (args, res, next) {
         // Update file location
         obj.internalURL = uploadDir+guid+"."+ext;
         // Update who did this?
-        obj._addedBy = args.swagger.params.auth_payload.userID;
+        obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
         doc._application = _application;
         doc._comment = _comment;
         doc._decision = _decision;

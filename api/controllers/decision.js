@@ -27,11 +27,11 @@ exports.publicGet = function (args, res, next) {
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Decision = mongoose.model('Decision');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on decisionId route
   var query = {};
@@ -48,7 +48,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getDecisions(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getDecisions(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });

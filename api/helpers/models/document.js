@@ -1,5 +1,5 @@
  module.exports = require ('../models')('Document', {
-    _addedBy         : { type:'ObjectId', ref:'User', default:null },
+    _addedBy         : { type: String, default:null },
     _application     : { type:'ObjectId', ref:'Application', default:null },
     _decision        : { type:'ObjectId', ref:'Decision', default:null },
     _comment         : { type:'ObjectId', ref:'CommentPeriod', default:null },

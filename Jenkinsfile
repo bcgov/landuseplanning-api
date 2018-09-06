@@ -37,13 +37,13 @@ pipeline {
     skipDefaultCheckout()
   }
   stages {
-    stage('Building: nrts-prc-api master branch') {
+    stage('Building: nrts-prc-api scale branch') {
       steps {
         script {
           try {
             echo "Building: ${env.JOB_NAME} #${env.BUILD_ID}"
             notifyBuild("Building: ${env.JOB_NAME} #${env.BUILD_ID}", "YELLOW")
-            openshiftBuild bldCfg: 'nrts-prc-api-master', showBuildLogs: 'true'
+            openshiftBuild bldCfg: 'nrts-prc-api-scale', showBuildLogs: 'true'
           } catch (e) {
             notifyBuild("BUILD ${env.JOB_NAME} #${env.BUILD_ID} ABORTED", "RED")
             error('Stopping early…')

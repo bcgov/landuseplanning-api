@@ -11,11 +11,11 @@ exports.protectedOptions = function (args, res, rest) {
 
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var User = mongoose.model('User');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on userId route
   var query = {};
@@ -23,7 +23,7 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.userId.value, query);
   }
 
-  getUsers(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getUsers(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -33,6 +33,7 @@ exports.protectedGet = function(args, res, next) {
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.user.value;
   defaultLog.info("Incoming new object:", obj);
+  console.log("Incoming updated object:", obj);
 
   var User = mongoose.model('User');
   var user = new User(obj);
@@ -53,6 +54,8 @@ exports.protectedPost = function (args, res, next) {
 exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.userId.value;
   defaultLog.info("ObjectID:", args.swagger.params.userId.value);
+
+  this.scopes     = args.swagger.operation["x-security-scopes"];
 
   var obj = args.swagger.params.user.value;
   // NB: Don't strip security tags on protectedPut.  Only sysadmins

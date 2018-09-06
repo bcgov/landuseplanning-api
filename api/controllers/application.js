@@ -45,13 +45,13 @@ exports.publicGet = function (args, res, next) {
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
   var skip        = null;
   var limit       = null;
 
   var Application = mongoose.model('Application');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", self.scopes);
 
   // Build match query if on appId route
   var query = {};
@@ -82,7 +82,7 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getApplications(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value, skip, limit)
+  getApplications(self.scopes, query, args.swagger.params.fields.value, skip, limit)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -178,7 +178,7 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   app.tags = [['sysadmin']];
   app.internal.tags = [['sysadmin']];
-  app._addedBy = args.swagger.params.auth_payload.userID;
+  app._addedBy = args.swagger.params.auth_payload.preferred_username.value;
   app.save()
   .then(function (savedApp) {
     // Get the shapes from BCGW for this DISPOSITION and save them into the feature collection
