@@ -1209,6 +1209,16 @@ paths:
             type: string
             enum: *featureFields
         - in: query
+          name: tantalisId
+          type: number
+          required: false
+          description: "Get a Feature that contain this specific disposition."
+        - in: query
+          name: applicationId
+          type: string
+          required: false
+          description: "Get a Feature that is associated with a particular application."
+        - in: query
           name: coordinates
           required: false
           description: "Query fetures by coordinates."
