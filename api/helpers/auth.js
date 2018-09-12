@@ -50,7 +50,7 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
           // add the token to the request so that we can access it in the endpoint code if necessary
           req.swagger.params.auth_payload = decodedToken;
           defaultLog.info("JWT Verified.");
-          return callback(null);
+          return callback();
         } else {
           defaultLog.info("JWT Role/Issuer mismatch.");
           return callback(sendError());
@@ -98,7 +98,7 @@ exports.issueToken = function(user,
 var hashPassword = function (user, password) {
   if (user.salt && password) {
     var crypto = require('crypto');
-    return crypto.pbkdf2Sync(password, new Buffer(user.salt, 'base64'), 10000, 64).toString('base64');
+    return crypto.pbkdf2Sync(password, new Buffer(user.salt, 'base64'), 10000, 64, 'sha1').toString('base64');
   } else {
     return password;
   }

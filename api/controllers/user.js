@@ -60,6 +60,13 @@ exports.protectedPut = function (args, res, next) {
   // delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
 
+  // TODO Temporary: Only let the 'admin' account change usernames and passwords.
+  // Additionally, don't let them update their username.
+  delete obj.username;
+  if (args.swagger.params.auth_payload.username !== 'admin') {
+    delete obj.password;
+  }
+
   if (obj.password) {
     obj = auth.setPassword(obj);
   }
