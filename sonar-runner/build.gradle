@@ -1,0 +1,93 @@
+// Uses DSL plugins resolution introduced in Gradle 2.1
+plugins {
+  id "java"
+  id "jacoco"
+  id "org.sonarqube" version "2.6.1"
+}
+
+
+def env = System.env
+
+//consume environment variables and cli arguments
+//cli usage
+// ./gradlew -Pproject_name_extension=foo
+//env variable usage
+// in .bashrc or equivalent
+//   export SONAR_PROJECT_NAME_EXTENSION
+// ensure that the file is sourced to populate your environment
+// verify with 
+//   printenv |  grep SONAR
+//then ./gradlew sonarQube
+
+def pne = ""
+
+if ( project.hasProperty('project_name_extension') ) {
+	pne = "-" + project_name_extension
+} else if ( env.SONAR_PROJECT_NAME_EXTENSION != null ) {
+	pne = "-" + env.SONAR_PROJECT_NAME_EXTENSION
+}
+
+//consume environment variables and cli arguments
+//cli usage
+// ./gradlew -Pproject_key_extension=foo sonarqube
+//env variable usage
+// in .bashrc or equivalent
+//   export SONAR_PROJECT_KEY_EXTENSION
+// ensure that the file is sourced to populate your environment
+// verify with 
+//   printenv |  grep SONAR
+//then ./gradlew sonarqube
+
+def pke = ""
+
+if ( project.hasProperty('project_key_extension') ) {
+	pke = "-" + project_key_extension
+}  else if ( env.SONAR_PROJECT_KEY_EXTENSION != null ) {
+         pke = "-" + env.SONAR_PROJECT_KEY_EXTENSION
+}
+
+sonarqube {
+    properties {
+        property "sonar.host.url", "https://sonarqube-prc-tools.pathfinder.gov.bc.ca"        
+        property "sonar.projectName", "prc-api$pne"
+        property "sonar.projectKey", "org.sonarqube:prc-api$pke"
+        property "sonar.projectBaseDir", "../"
+        property "sonar.sources", "./modules"
+        //property "sonar.tests", "test"
+        property "sourceEncoding", "UTF-8"
+    }
+}
+
+allprojects {
+  TimeZone.getTimeZone('UTC')
+  Date date = new Date()
+  String newdate = date.format("yyyyMMdd-HH:mm:ss")
+  String hostName = InetAddress.getLocalHost().getHostName()
+  String buildNum = System.getenv("BUILD_NUMBER")
+  String buildIdentifier = buildNum != null ? buildNum : hostName
+
+  ext.baseVersion = newdate + "_" + buildIdentifier
+  ext.snapshotVersion = false
+
+  group = "org.sonarqube"
+  version = "$baseVersion" + (snapshotVersion ? "-SNAPSHOT" : "")
+}
+
+test {
+  ignoreFailures = true
+}
+
+dependencies {
+    testCompile 'junit:junit:4.12'
+}
+
+repositories {
+  repositories {
+    maven {
+      url "http://repo1.maven.org/maven2/"
+    }
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+}
