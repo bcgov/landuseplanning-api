@@ -84,6 +84,8 @@ exports.protectedPut = function (args, res, next) {
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
 
+  delete obj._addedBy;
+
   // Since it's a sub-element, we need to ensure we keep it updated to what it is.
   delete obj.internal.tags;
   obj.internal.tags = [['sysadmin']];
