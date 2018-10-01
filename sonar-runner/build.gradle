@@ -52,7 +52,7 @@ sonarqube {
         property "sonar.projectName", "prc-api$pne"
         property "sonar.projectKey", "org.sonarqube:prc-api$pke"
         property "sonar.projectBaseDir", "../"
-        property "sonar.sources", "./modules"
+        property "sonar.sources", "./api"
         //property "sonar.tests", "test"
         property "sourceEncoding", "UTF-8"
     }
