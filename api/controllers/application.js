@@ -315,7 +315,7 @@ exports.protectedUnPublish = function (args, res, next) {
 
       // Go through the feature collection and publish the corresponding features.
       doFeaturePubUnPub('unpublish',objId).then(function () {
-        Actions.unPublish(o);
+        return Actions.unPublish(o);
       }).then(function (unpublished) {
         // UnPublished successfully
         return Actions.sendResponse(res, 200, unpublished);
