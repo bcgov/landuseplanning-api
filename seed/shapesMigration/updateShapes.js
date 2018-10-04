@@ -1,5 +1,5 @@
 //
-// Example: node updateShapes.js MONGO_USER MONGO_PASSWORD mongodb nrts-prod
+// Example: node updateShapes.js admin admin https nrts-prc-dev.pathfinder.gov.bc.ca 443
 //
 var Promise     = require('es6-promise').Promise;
 var _           = require('lodash');
@@ -22,8 +22,8 @@ if (args.length !== 5) {
     username = args[0];
     password = args[1];
     protocol = args[2];
-    host = args[3];
-    port = args[4];
+    host     = args[3];
+    port     = args[4];
     uri = protocol + '://' + host + ':' + port + '/';
     console.log('Using connection:', uri);
 }
@@ -105,7 +105,10 @@ var getAndSaveFeatures = function (item) {
 
                 // Store the features in the DB
                 var allFeaturesForDisp = [];
-                var allPolygons = [];
+                // don't clear previous value if no features
+                if (obj.features.length > 0) {
+                  item.areaHectares = 0.00;
+                }
                 var turf = require('@turf/turf');
                 var helpers = require('@turf/helpers');
                 var centroids = helpers.featureCollection([]);
@@ -115,7 +118,11 @@ var getAndSaveFeatures = function (item) {
                     allFeaturesForDisp.push(f);
                     // Get the polygon and put it for later centroid calculation
                     centroids.features.push(turf.centroid(f));
-                });
+                    // Calculate Total Area (hectares) from all features
+                    if (f.properties && f.properties.TENURE_AREA_IN_HECTARES) {
+                      item.areaHectares += parseFloat(f.properties.TENURE_AREA_IN_HECTARES);
+                    }
+                  });
                 // Centroid of all the shapes.
                 var featureCollectionCentroid;
                 if (centroids.features.length > 0) {
@@ -135,6 +142,7 @@ var getAndSaveFeatures = function (item) {
                     if (featureCollectionCentroid) {
                         f.featureCollectionCentroid = featureCollectionCentroid;
                     }
+                    f.areaHectares = item.areaHectares;
                     resolve(f);
                 });
             }
@@ -163,6 +171,7 @@ var doFeatureSave = function (item, appId) {
         });
     });
 };
+
 var deleteAllApplicationFeatures = function (item) {
     return new Promise(function (resolve, reject) {
         request.delete({
@@ -186,15 +195,17 @@ var deleteAllApplicationFeatures = function (item) {
 var updateApplicationMeta = function (item) {
     return new Promise(function (resolve, reject) {
         var updatedAppObject = {};
-        updatedAppObject.businessUnit   = item.properties.RESPONSIBLE_BUSINESS_UNIT;
-        updatedAppObject.purpose        = item.properties.TENURE_PURPOSE;
-        updatedAppObject.subpurpose     = item.properties.TENURE_SUBPURPOSE;
-        updatedAppObject.status         = item.properties.TENURE_STATUS;
-        updatedAppObject.type           = item.properties.TENURE_TYPE;
-        updatedAppObject.tenureStage    = item.properties.TENURE_STAGE;
-        updatedAppObject.subtype        = item.properties.TENURE_SUBTYPE;
-        updatedAppObject.location       = item.properties.TENURE_LOCATION;
-        updatedAppObject.centroid       = item.featureCollectionCentroid;
+        updatedAppObject.businessUnit     = item.properties.RESPONSIBLE_BUSINESS_UNIT;
+        updatedAppObject.purpose          = item.properties.TENURE_PURPOSE;
+        updatedAppObject.subpurpose       = item.properties.TENURE_SUBPURPOSE;
+        updatedAppObject.status           = item.properties.TENURE_STATUS;
+        updatedAppObject.type             = item.properties.TENURE_TYPE;
+        updatedAppObject.tenureStage      = item.properties.TENURE_STAGE;
+        updatedAppObject.subtype          = item.properties.TENURE_SUBTYPE;
+        updatedAppObject.location         = item.properties.TENURE_LOCATION;
+        updatedAppObject.legalDescription = item.properties.TENURE_LEGAL_DESCRIPTION;
+        updatedAppObject.centroid         = item.featureCollectionCentroid;
+        updatedAppObject.areaHectares     = item.areaHectares;
         request.put({
             url: uri + 'api/application/' + item.applicationID,
             headers: {
@@ -213,6 +224,7 @@ var updateApplicationMeta = function (item) {
         });
     });
 };
+
 console.log("Logging in and getting JWT.");
 login(username, password)
     .then(function () {

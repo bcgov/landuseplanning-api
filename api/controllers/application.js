@@ -198,7 +198,10 @@ exports.protectedPost = function (args, res, next) {
 
             // Store the features in the DB
             var allFeaturesForDisp = [];
-            var allPolygons = [];
+            // don't clear previous value if no features
+            if (obj.features.length > 0) {
+              savedApp.areaHectares = 0.00;
+            }
             var turf = require('@turf/turf');
             var helpers = require('@turf/helpers');
             var centroids = helpers.featureCollection([]);
@@ -208,6 +211,10 @@ exports.protectedPost = function (args, res, next) {
                 allFeaturesForDisp.push(f);
                 // Get the polygon and put it for later centroid calculation
                 centroids.features.push(turf.centroid(f));
+                // Calculate Total Area (hectares) from all features
+                if (f.properties && f.properties.TENURE_AREA_IN_HECTARES) {
+                  savedApp.areaHectares += parseFloat(f.properties.TENURE_AREA_IN_HECTARES);
+                }
             });
             // Centroid of all the shapes.
             var featureCollectionCentroid;
@@ -216,7 +223,6 @@ exports.protectedPost = function (args, res, next) {
               // Store the centroid.
               savedApp.centroid = featureCollectionCentroid;
             }
-
 
             Promise.resolve()
             .then(function () {
@@ -344,30 +350,26 @@ var getApplications = function (role, query, fields, skip, limit) {
 
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['name',
-                        'type',
-                        'client',
-                        'agency',
-                        'subtype',
-                        'internal',
-                        'purpose',
-                        'subpurpose',
-                        '_proponent',
-                        'centroid',
-                        'tenureStage',
-                        'areaHectares',
-                        'location',
-                        'region',
-                        'description',
-                        'legalDescription',
-                        'status',
-                        'publishDate',
-                        'businessUnit',
-                        'tantalisID',
-                        'cl_file',
-                        'commodityType',
-                        'commodity',
-                        'commodities'], f) !== -1);
+      return (_.indexOf(['_proponent',
+                         'agency',
+                         'areaHectares',
+                         'businessUnit',
+                         'centroid',
+                         'cl_file',
+                         'client',
+                         'description',
+                         'internal',
+                         'legalDescription',
+                         'location',
+                         'name',
+                         'publishDate',
+                         'purpose',
+                         'status',
+                         'subpurpose',
+                         'subtype',
+                         'tantalisID',
+                         'tenureStage',
+                         'type'], f) !== -1);
     });
     _.each(sanitizedFields, function (f) {
       projection[f] = 1;
