@@ -113,6 +113,7 @@ exports.issueToken = function(user,
 
   var payload = {
     name: user.username,
+    preferred_username: user.username,
     userID: user._id,
     deviceId: deviceId,
     jti: jti,
