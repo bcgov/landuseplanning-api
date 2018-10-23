@@ -5,8 +5,35 @@ var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 
-var DEFAULT_PAGESIZE = 100;
-var MAX_LIMIT = 1000;
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf(['name',
+                      'commentNumber',
+                      'comment',
+                      'internal',
+                      'dateAdded',
+                      'commentAuthor',
+                      'review',
+                      '_addedBy',
+                      '_commentPeriod',
+                      'review',
+                      'commentStatus',
+                      'isDeleted'], f) !== -1);
+  });
+}
+
+// Function 'warms up' the query so that we can project the field that we're sorting on
+// extract 'contactName' and lower-case it
+var sortWarmUp = function (sort, fields) {
+  if (sort) {
+    var projection = {};
+    _.each(fields, function (f) {
+        projection[f] = 1;
+    });
+    return sort.contactName ? { $project: Object.assign({ contactName: { $toLower: "$commentAuthor.contactName" } }, projection) } : null;
+  }
+  return null;
+}
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
@@ -42,24 +69,63 @@ exports.publicGet = function (args, res, next) {
       }, this);
     }
 
-    var pageSize = DEFAULT_PAGESIZE;
-    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
-      if (args.swagger.params.pageSize.value > 0) {
-        pageSize = args.swagger.params.pageSize.value;
-      }
-    }
-    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
-      if (args.swagger.params.pageNum.value >= 0) {
-        skip = (args.swagger.params.pageNum.value * pageSize);
-        limit = pageSize;
-      }
-    }
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
   }
 
-  // defaultLog.info("query:", query);
-  getComments(['public'], query, args.swagger.params.fields.value, sort, skip, limit)
+  const fields = getSanitizedFields(args.swagger.params.fields.value);
+
+  Utils.runDataQuery('Comment',
+                    ['public'],
+                    query,
+                    fields, // Fields
+                    sortWarmUp(sort, fields),
+                    sort, // sort
+                    skip, // skip
+                    limit, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
+  });
+};
+
+exports.protectedHead = function (args, res, next) {
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on CommentPeriodId route
+  var query = {};
+  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
+  }
+  if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
+    query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentPeriod.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
+
+  Utils.runDataQuery('Comment',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/comment/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {s
+      return Actions.sendResponse(res, 404, data);
+    }
   });
 };
 
@@ -93,26 +159,26 @@ exports.protectedGet = function (args, res, next) {
           case 'contactName':
             sort[sort_by] = order_by;
             break;
-          }
+        }
       }, this);
     }
 
-    var pageSize = DEFAULT_PAGESIZE;
-    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
-      if (args.swagger.params.pageSize.value > 0) {
-        pageSize = args.swagger.params.pageSize.value;
-      }
-    }
-    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
-      if (args.swagger.params.pageNum.value >= 0) {
-        skip = (args.swagger.params.pageNum.value * pageSize);
-        limit = pageSize;
-      }
-    }
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
   }
 
-  // defaultLog.info("query:", query);
-  getComments(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value, sort, skip, limit)
+  const fields = getSanitizedFields(args.swagger.params.fields.value);
+
+  Utils.runDataQuery('Comment',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    fields, // Fields
+                    sortWarmUp(sort, fields),
+                    sort, // sort
+                    skip, // skip
+                    limit, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -254,73 +320,5 @@ exports.protectedUnPublish = function (args, res, next) {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
-};
-
-var getComments = function (role, query, fields, sort, skip, limit) {
-  return new Promise(function (resolve, reject) {
-    var Comment = mongoose.model('Comment');
-    var projection = {};
-
-    // Fields we always return
-    var defaultFields = ['_id',
-                        'tags'];
-    _.each(defaultFields, function (f) {
-        projection[f] = 1;
-    });
-
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['name',
-                        'commentNumber',
-                        'comment',
-                        'internal',
-                        'dateAdded',
-                        'commentAuthor',
-                        'review',
-                        '_addedBy',
-                        '_commentPeriod',
-                        'review',
-                        'commentStatus',
-                        'isDeleted'], f) !== -1);
-    });
-    _.each(sanitizedFields, function (f) {
-      projection[f] = 1;
-    });
-
-    // use compact() to remove null elements
-    var aggregations = _.compact([
-      { $match: query },
-      { $project: projection },
-      { $redact: {
-         $cond: {
-            if: {
-              $anyElementTrue: {
-                    $map: {
-                      input: "$tags" ,
-                      as: "fieldTag",
-                      in: { $setIsSubset: [ "$$fieldTag", role ] }
-                    }
-                  }
-                },
-              then: "$$DESCEND",
-              else: "$$PRUNE"
-            }
-          }
-      },
-      // extract 'contactName' and lower-case it so we can sort on it
-      sort && sort.contactName ? { $project: Object.assign({ contactName: { $toLower: "$commentAuthor.contactName" } }, projection) } : null,
-      !_.isEmpty(sort) ? { $sort: sort } : null,
-      // project with original keys to exclude 'contactName'
-      sort && sort.contactName ? { $project: projection } : null,
-      { $skip: skip || 0 },
-      { $limit: limit || MAX_LIMIT }
-    ]);
-
-    Comment.aggregate(aggregations).exec()
-    .then(function (data) {
-      defaultLog.info("data:", data);
-      resolve(data);
-    });
   });
 };

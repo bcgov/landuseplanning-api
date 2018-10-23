@@ -5,6 +5,17 @@ var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf(['name',
+                      '_addedBy',
+                      '_application',
+                      'description',
+                      'decisionDate',
+                    'code'], f) !== -1);
+  });
+}
+
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
@@ -20,15 +31,21 @@ exports.publicGet = function (args, res, next) {
   }
   _.assignIn(query, { isDeleted: false });
 
-  getDecisions(['public'], query, args.swagger.params.fields.value)
+  Utils.runDataQuery('Decision',
+                    ['public'],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
 };
-exports.protectedGet = function(args, res, next) {
-  var self        = this;
-  self.scopes     = args.swagger.operation["x-security-scopes"];
 
+exports.protectedHead = function (args, res, next) {
   var Decision = mongoose.model('Decision');
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
@@ -48,7 +65,56 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getDecisions(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
+  Utils.runDataQuery('Decision',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/commentperiod/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.decisionId && args.swagger.params.decisionId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  });
+}
+
+exports.protectedGet = function(args, res, next) {
+  var Decision = mongoose.model('Decision');
+
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on decisionId route
+  var query = {};
+  if (args.swagger.params.decisionId) {
+    query = Utils.buildQuery("_id", args.swagger.params.decisionId.value, query);
+  }
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
+
+  Utils.runDataQuery('Decision',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -164,63 +230,5 @@ exports.protectedUnPublish = function (args, res, next) {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
-};
-var getDecisions = function (role, query, fields) {
-  return new Promise(function (resolve, reject) {
-    var Decision = mongoose.model('Decision');
-    var projection = {};
-
-    // Fields we always return
-    var defaultFields = ['_id',
-                        'code',
-                        'name',
-                        'tags'];
-    _.each(defaultFields, function (f) {
-        projection[f] = 1;
-    });
-
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['name',
-                         '_addedBy',
-                         '_application',
-                         'description',
-                         'decisionDate',
-                        'code'], f) !== -1);
-    });
-    _.each(sanitizedFields, function (f) {
-      projection[f] = 1;
-    });
-
-    Decision.aggregate([
-      {
-        "$match": query
-      },
-      {
-        "$project": projection
-      },
-      {
-        $redact: {
-         $cond: {
-            if: {
-              $anyElementTrue: {
-                    $map: {
-                      input: "$tags" ,
-                      as: "fieldTag",
-                      in: { $setIsSubset: [ "$$fieldTag", role ] }
-                    }
-                  }
-                },
-              then: "$$DESCEND",
-              else: "$$PRUNE"
-            }
-          }
-        }
-    ]).exec()
-    .then(function (data) {
-      defaultLog.info("data:", data);
-      resolve(data);
-    });
   });
 };

@@ -5,6 +5,19 @@ var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf(['name',
+                        'startDate',
+                        'endDate',
+                        'description',
+                        '_addedBy',
+                        '_application',
+                        'internal',
+                        'isDeleted'], f) !== -1);
+  });
+}
+
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
@@ -20,11 +33,59 @@ exports.publicGet = function (args, res, next) {
   }
   _.assignIn(query, { isDeleted: false });
 
-  getComments(['public'], query, args.swagger.params.fields.value)
+  Utils.runDataQuery('CommentPeriod',
+                    ['public'],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
 };
+
+exports.protectedHead = function (args, res, next) {
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on CommentPeriodId route
+  var query = {};
+  if (args.swagger.params.CommentPeriodId && args.swagger.params.CommentPeriodId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
+  }
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
+
+  Utils.runDataQuery('CommentPeriod',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/commentperiod/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.CommentPeriodId && args.swagger.params.CommentPeriodId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  });
+}
+
 exports.protectedGet = function(args, res, next) {
   var Comment = mongoose.model('CommentPeriod');
 
@@ -45,7 +106,15 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getComments(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
+  Utils.runDataQuery('CommentPeriod',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -180,64 +249,5 @@ exports.protectedUnPublish = function (args, res, next) {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
-};
-var getComments = function (role, query, fields) {
-  return new Promise(function (resolve, reject) {
-    var commentperiod = mongoose.model('CommentPeriod');
-    var projection = {};
-
-    // Fields we always return
-    var defaultFields = ['_id',
-                        'code',
-                        'tags'];
-    _.each(defaultFields, function (f) {
-        projection[f] = 1;
-    });
-
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['name',
-                        'startDate',
-                        'endDate',
-                        'description',
-                        '_addedBy',
-                        '_application',
-                        'internal',
-                        'isDeleted'], f) !== -1);
-    });
-    _.each(sanitizedFields, function (f) {
-      projection[f] = 1;
-    });
-
-    commentperiod.aggregate([
-      {
-        "$match": query
-      },
-      {
-        "$project": projection
-      },
-      {
-        $redact: {
-         $cond: {
-            if: {
-              $anyElementTrue: {
-                    $map: {
-                      input: "$tags" ,
-                      as: "fieldTag",
-                      in: { $setIsSubset: [ "$$fieldTag", role ] }
-                    }
-                  }
-                },
-              then: "$$DESCEND",
-              else: "$$PRUNE"
-            }
-          }
-        }
-    ]).exec()
-    .then(function (data) {
-      defaultLog.info("data:", data);
-      resolve(data);
-    });
   });
 };
