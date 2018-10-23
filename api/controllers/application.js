@@ -6,52 +6,126 @@ var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
 
-var DEFAULT_PAGESIZE  = 100;
-var MAX_LIMIT         = 1000;
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf(['_proponent',
+                      'agency',
+                      'areaHectares',
+                      'businessUnit',
+                      'centroid',
+                      'cl_file',
+                      'client',
+                      'description',
+                      'internal',
+                      'legalDescription',
+                      'location',
+                      'name',
+                      'publishDate',
+                      'purpose',
+                      'status',
+                      'subpurpose',
+                      'subtype',
+                      'tantalisID',
+                      'tenureStage',
+                      'type'], f) !== -1);
+  });
+}
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
 
-exports.publicGet = function (args, res, next) {
+exports.publicHead = function (args, res, next) {
   // Build match query if on appId route
-  var query = {};
-  var skip        = null;
-  var limit       = null;
+  var query   = {};
+  var skip    = null;
+  var limit   = null;
 
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
-    var pageSize = DEFAULT_PAGESIZE;
-    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
-      if (args.swagger.params.pageSize.value > 0) {
-        pageSize = args.swagger.params.pageSize.value;
-      }
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
+
+    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
     }
-    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
-      if (args.swagger.params.pageNum.value >= 0) {
-        skip = (args.swagger.params.pageNum.value * pageSize);
-        limit = pageSize;
-      }
+    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
+      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
     }
   }
+
   _.assignIn(query, { isDeleted: false });
 
-  getApplications(['public'], query, args.swagger.params.fields.value, skip, limit)
+  Utils.runDataQuery('Application',
+                    ['public'],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    skip, // skip
+                    limit, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/comment/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  });
+};
+
+exports.publicGet = function (args, res, next) {
+  // Build match query if on appId route
+  var query   = {};
+  var skip    = null;
+  var limit   = null;
+
+  if (args.swagger.params.appId) {
+    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  } else {
+    // Could be a bunch of results - enable pagination
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
+
+    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
+    }
+    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
+      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    }
+  }
+
+  _.assignIn(query, { isDeleted: false });
+
+  Utils.runDataQuery('Application',
+                    ['public'],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    skip, // skip
+                    limit, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
 };
+
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.operation["x-security-scopes"];
   var skip        = null;
   var limit       = null;
 
   var Application = mongoose.model('Application');
 
-  defaultLog.info("args.swagger.params:", self.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on appId route
   var query = {};
@@ -59,22 +133,18 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
-    var pageSize = DEFAULT_PAGESIZE;
-    if (args.swagger.params.pageSize && args.swagger.params.pageSize.value !== undefined) {
-      if (args.swagger.params.pageSize.value > 0) {
-        pageSize = args.swagger.params.pageSize.value;
-      }
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
+
+    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
     }
-    if (args.swagger.params.pageNum && args.swagger.params.pageNum.value !== undefined) {
-      if (args.swagger.params.pageNum.value >= 0) {
-        skip = (args.swagger.params.pageNum.value * pageSize);
-        limit = pageSize;
-      }
+    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
+      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
     }
   }
-  if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-    _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
-  }
+
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
@@ -82,9 +152,61 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getApplications(self.scopes, query, args.swagger.params.fields.value, skip, limit)
+  Utils.runDataQuery('Application',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    skip, // skip
+                    limit, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
+  });
+};
+
+exports.protectedHead = function (args, res, next) {
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on appId route
+  var query = {};
+  if (args.swagger.params.appId) {
+    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  } else {
+    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
+    }
+    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
+      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    }
+  }
+
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
+
+  Utils.runDataQuery('Application',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/comment/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
   });
 };
 
@@ -333,78 +455,5 @@ exports.protectedUnPublish = function (args, res, next) {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
-};
-var getApplications = function (role, query, fields, skip, limit) {
-  return new Promise(function (resolve, reject) {
-    var Application = mongoose.model('Application');
-    var projection = {};
-
-    // Fields we always return
-    var defaultFields = ['_id',
-                        'code',
-                        'tags'];
-    _.each(defaultFields, function (f) {
-        projection[f] = 1;
-    });
-
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['_proponent',
-                         'agency',
-                         'areaHectares',
-                         'businessUnit',
-                         'centroid',
-                         'cl_file',
-                         'client',
-                         'description',
-                         'internal',
-                         'legalDescription',
-                         'location',
-                         'name',
-                         'publishDate',
-                         'purpose',
-                         'status',
-                         'subpurpose',
-                         'subtype',
-                         'tantalisID',
-                         'tenureStage',
-                         'type'], f) !== -1);
-    });
-    _.each(sanitizedFields, function (f) {
-      projection[f] = 1;
-    });
-
-    Application.aggregate([
-      {
-        "$match": query
-      },
-      {
-        "$project": projection
-      },
-      {
-        $redact: {
-         $cond: {
-            if: {
-              $anyElementTrue: {
-                    $map: {
-                      input: "$tags" ,
-                      as: "fieldTag",
-                      in: { $setIsSubset: [ "$$fieldTag", role ] }
-                    }
-                  }
-              },
-            then: "$$DESCEND",
-            else: "$$PRUNE"
-          }
-        }
-      },
-      { $skip: skip || 0 },
-      { $limit: limit || MAX_LIMIT }
-    ]).exec()
-    .then(function (data) {
-      defaultLog.info("data:", data);
-      resolve(data);
-    });
   });
 };
