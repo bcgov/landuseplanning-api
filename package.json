@@ -40,6 +40,19 @@
     "yamljs": "0.2.9"
   },
   "scripts": {
-    "start": "node app"
+    "start": "node app",
+    "test": "echo 'Test suite should be run with \"`npm run tests` or npm `run tests-debug`\"'",
+    "tests": "UPLOAD_DIRECTORY='./api/test/uploads/' jest api --runInBand",
+    "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
+    "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"
+  },
+  "devDependencies": {
+    "database-cleaner": "^1.2.0",
+    "factory-girl": "^5.0.2",
+    "jest": "^23.6.0",
+    "mongodb-memory-server": "^2.6.2",
+    "nock": "^10.0.1",
+    "shelljs": "^0.8.3",
+    "supertest": "^3.3.0"
   }
 }

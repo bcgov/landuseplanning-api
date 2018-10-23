@@ -1,0 +1,96 @@
+{
+  "displayFieldName": "ORGANIZATIONS_LEGAL_NAME",
+  "fieldAliases": {
+      "ORGANIZATIONS_LEGAL_NAME": "ORGANIZATIONS_LEGAL_NAME",
+      "INDIVIDUALS_FIRST_NAME": "INDIVIDUALS_FIRST_NAME",
+      "INDIVIDUALS_LAST_NAME": "INDIVIDUALS_LAST_NAME",
+      "CITY": "CITY",
+      "PROVINCE_ABBREVIATION": "PROVINCE_ABBREVIATION",
+      "STATE_ABBREVIATION": "STATE_ABBREVIATION",
+      "COUNTRY": "COUNTRY",
+      "DISPOSITION_TRANSACTION_SID": "DISPOSITION_TRANSACTION_SID",
+      "INTERESTED_PARTY_SID": "INTERESTED_PARTY_SID"
+  },
+  "fields": [
+      {
+          "name": "ORGANIZATIONS_LEGAL_NAME",
+          "type": "esriFieldTypeString",
+          "alias": "ORGANIZATIONS_LEGAL_NAME",
+          "length": 100
+      },
+      {
+          "name": "INDIVIDUALS_FIRST_NAME",
+          "type": "esriFieldTypeString",
+          "alias": "INDIVIDUALS_FIRST_NAME",
+          "length": 40
+      },
+      {
+          "name": "INDIVIDUALS_LAST_NAME",
+          "type": "esriFieldTypeString",
+          "alias": "INDIVIDUALS_LAST_NAME",
+          "length": 40
+      },
+      {
+          "name": "CITY",
+          "type": "esriFieldTypeString",
+          "alias": "CITY",
+          "length": 90
+      },
+      {
+          "name": "PROVINCE_ABBREVIATION",
+          "type": "esriFieldTypeString",
+          "alias": "PROVINCE_ABBREVIATION",
+          "length": 6
+      },
+      {
+          "name": "STATE_ABBREVIATION",
+          "type": "esriFieldTypeString",
+          "alias": "STATE_ABBREVIATION",
+          "length": 6
+      },
+      {
+          "name": "COUNTRY",
+          "type": "esriFieldTypeString",
+          "alias": "COUNTRY",
+          "length": 60
+      },
+      {
+          "name": "DISPOSITION_TRANSACTION_SID",
+          "type": "esriFieldTypeInteger",
+          "alias": "DISPOSITION_TRANSACTION_SID"
+      },
+      {
+          "name": "INTERESTED_PARTY_SID",
+          "type": "esriFieldTypeInteger",
+          "alias": "INTERESTED_PARTY_SID"
+      }
+  ],
+  "features": [
+      {
+          "attributes": {
+              "ORGANIZATIONS_LEGAL_NAME": "BRITISH COLUMBIA HYDRO AND POWER AUTHORITY",
+              "INDIVIDUALS_FIRST_NAME": null,
+              "INDIVIDUALS_LAST_NAME": null,
+              "CITY": "BURNABY",
+              "PROVINCE_ABBREVIATION": "BC",
+              "STATE_ABBREVIATION": null,
+              "COUNTRY": "CANADA",
+              "DISPOSITION_TRANSACTION_SID": 930889,
+              "INTERESTED_PARTY_SID": 1915
+          }
+      },
+      {
+          "attributes": {
+              "ORGANIZATIONS_LEGAL_NAME": "BRITISH COLUMBIA HYDRO AND POWER AUTHORITY",
+              "INDIVIDUALS_FIRST_NAME": null,
+              "INDIVIDUALS_LAST_NAME": null,
+              "CITY": "BURNABY",
+              "PROVINCE_ABBREVIATION": "BC",
+              "STATE_ABBREVIATION": null,
+              "COUNTRY": "CANADA",
+              "DISPOSITION_TRANSACTION_SID": 930889,
+              "INTERESTED_PARTY_SID": 1915
+          }
+      }
+  ]
+}
