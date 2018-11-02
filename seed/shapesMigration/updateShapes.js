@@ -137,12 +137,16 @@ var getAndSaveFeatures = function (item) {
                         });
                     }, Promise.resolve());
                 }).then(function (f) {
-                    // All done with promises in the array, return last feature to the caller,
-                    // adding the centroid of all shapes to the obj.
-                    if (featureCollectionCentroid) {
-                        f.featureCollectionCentroid = featureCollectionCentroid;
+                    // All done with promises in the array, return last feature to the caller, NB:
+                    // Sometimes we won't have shapes in the in our DB, and sometimes the BCGW doesn't have shapes
+                    // So we must make sure that we have a shape that was pulled from the BCGW in order to do anything.
+                    if (f) {
+                        // adding the centroid of all shapes to the obj.
+                        if (featureCollectionCentroid) {
+                            f.featureCollectionCentroid = featureCollectionCentroid;
+                        }
+                        f.areaHectares = item.areaHectares;
                     }
-                    f.areaHectares = item.areaHectares;
                     resolve(f);
                 });
             }
