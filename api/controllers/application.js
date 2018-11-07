@@ -302,7 +302,7 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   app.tags = [['sysadmin']];
   app.internal.tags = [['sysadmin']];
-  app._createdBy = args.swagger.params.auth_payload.userID;
+  app._createdBy = args.swagger.params.auth_payload.preferred_username;
   app.createdDate = Date.now();
   app.save()
   .then(function (savedApp) {
