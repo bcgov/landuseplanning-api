@@ -9,7 +9,7 @@
     cl_file          : { type:Number, default: 0 },
     client           : { type:String, default: '' },
     code             : { type: String, trim: true, default: ''},
-    _createdBy       : { type:'ObjectId', ref:'User', default:null },
+    _createdBy       : { type: String, default: '' },
     createdDate      : { type: Date, default: Date.now },
     description      : { type:String, default: '' },
     internal: {
