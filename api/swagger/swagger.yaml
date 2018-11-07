@@ -99,18 +99,20 @@ definitions:
     example: name|type
     #TODO: Fix enums
     enum: &applicationFields
-      - _proponent
       - agency
       - areaHectares
       - businessUnit
       - centroid
       - cl_file
       - client
+      - _createdBy
+      - createdDate
       - description
       - internal
       - legalDescription
       - location
       - name
+      - _proponent
       - publishDate
       - purpose
       - status

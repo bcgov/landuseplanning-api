@@ -1,7 +1,4 @@
  module.exports = require ('../models')('Application', {
-    _addedBy         : { type: String, default:null },
-    _proponent       : { type:'ObjectId', ref:'Organization', default:null },
-
     agency           : { type:String, default: '' },
     areaHectares     : { type: Number, default: 0.00 },
     businessUnit     : { type: String },
@@ -12,6 +9,8 @@
     cl_file          : { type:Number, default: 0 },
     client           : { type:String, default: '' },
     code             : { type: String, trim: true, default: ''},
+    _createdBy       : { type:'ObjectId', ref:'User', default:null },
+    createdDate      : { type: Date, default: Date.now },
     description      : { type:String, default: '' },
     internal: {
         notes   : { type: String, default: '' },
@@ -21,7 +20,8 @@
     legalDescription : { type: String },
     location         : { type: String, default: '' },
     name             : { type: String, trim: true },
-    publishDate      : { type: Date, default: Date.now },
+    _proponent       : { type:'ObjectId', ref:'Organization', default:null },
+    publishDate      : { type: Date },
     purpose          : { type: String },
     status           : { type: String },
     subpurpose       : { type: String },

@@ -12,9 +12,9 @@ module.exports = function () {
         var entries = [];
         var count = 0;
 
-        var doUserWork = function (application, _addedBy) {
+        var doUserWork = function (application, _createdBy) {
             return new Promise(function (resolve, reject) {
-                User.findOne({ username: _addedBy }, function (err, res) {
+                User.findOne({ username: _createdBy }, function (err, res) {
                     if (res !== null) {
                         // assume user exists!
                         application.setAuditFields(res);
@@ -83,7 +83,7 @@ module.exports = function () {
                                 return doOrgWork(application, currentItem._proponent);
                             })
                             .then(function (application) {
-                                return doUserWork(application, currentItem._addedBy);
+                                return doUserWork(application, currentItem._createdBy);
                             });
                     });
                 }, Promise.resolve());

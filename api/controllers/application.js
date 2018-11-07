@@ -8,18 +8,20 @@ var request     = require('request');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
-    return (_.indexOf(['_proponent',
-                      'agency',
+    return (_.indexOf(['agency',
                       'areaHectares',
                       'businessUnit',
                       'centroid',
                       'cl_file',
                       'client',
+                      '_createdBy',
+                      'createdDate',
                       'description',
                       'internal',
                       'legalDescription',
                       'location',
                       'name',
+                      '_proponent',
                       'publishDate',
                       'purpose',
                       'status',
@@ -300,7 +302,8 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   app.tags = [['sysadmin']];
   app.internal.tags = [['sysadmin']];
-  app._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  app._createdBy = args.swagger.params.auth_payload.userID;
+  app.createdDate = Date.now();
   app.save()
   .then(function (savedApp) {
     // Get the shapes from BCGW for this DISPOSITION and save them into the feature collection
