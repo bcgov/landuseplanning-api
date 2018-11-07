@@ -51,7 +51,7 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   app.tags = [['sysadmin']];
   // Update who did this?
-  app._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  app._addedBy = args.swagger.params.auth_payload.preferred_username;
   app.save()
   .then(function (a) {
     // defaultLog.info("Saved new organization object:", a);

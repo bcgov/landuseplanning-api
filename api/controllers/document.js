@@ -317,7 +317,7 @@ exports.protectedPost = function (args, res, next) {
         doc.internalURL = uploadDir+guid+"."+ext;
         doc.passedAVCheck = true;
         // Update who did this?
-        doc._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+        doc._addedBy = args.swagger.params.auth_payload.preferred_username;
         doc.save()
         .then(function (d) {
           defaultLog.info("Saved new document object:", d._id);
@@ -440,7 +440,7 @@ exports.protectedPut = function (args, res, next) {
         // Update file location
         obj.internalURL = uploadDir+guid+"."+ext;
         // Update who did this?
-        obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+        obj._addedBy = args.swagger.params.auth_payload.preferred_username;
         doc._application = _application;
         doc._comment = _comment;
         doc._decision = _decision;
