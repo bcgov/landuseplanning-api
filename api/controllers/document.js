@@ -94,7 +94,7 @@ exports.unProtectedPost = function(args, res, next) {
         doc.internalURL = uploadDir+guid+"."+ext;
         doc.passedAVCheck = true;
         // Update who did this?  TODO: Public
-        // doc._addedBy = args.swagger.params.auth_payload.userID;
+        // doc._addedBy = args.swagger.params.auth_payload.preferred_username;
         doc.save()
         .then(function (d) {
           defaultLog.info("Saved new document object:", d._id);
