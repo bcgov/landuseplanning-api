@@ -211,7 +211,7 @@ exports.unProtectedPost = function (args, res, next) {
   comment.commentAuthor.internal.tags = [['sysadmin']];
 
   // Not needed until we tie user profiles in.
-  // comment._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  // comment._addedBy = args.swagger.params.auth_payload.preferred_username;
 
   comment.save()
   .then(function (c) {
