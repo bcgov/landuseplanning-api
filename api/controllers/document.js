@@ -12,6 +12,16 @@ var fs          = require('fs');
 var uploadDir   = process.env.UPLOAD_DIRECTORY || "./uploads/";
 var ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
 
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf(['displayName',
+                      'internalURL',
+                      'passedAVCheck',
+                      'documentFileName',
+                      'internalMime'], f) !== -1);
+  });
+}
+
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
@@ -33,7 +43,15 @@ exports.publicGet = function (args, res, next) {
   }
   _.assignIn(query, { isDeleted: false });
 
-  getDocuments(['public'], query, args.swagger.params.fields.value)
+  Utils.runDataQuery('Document',
+                    ['public'],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -91,13 +109,11 @@ exports.unProtectedPost = function(args, res, next) {
     return Actions.sendResponse(res, 400, e);
   }
 };
-exports.protectedGet = function(args, res, next) {
-  var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
 
+exports.protectedHead = function (args, res, next) {
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
   var query = {};
@@ -120,7 +136,65 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  getDocuments(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  Utils.runDataQuery('Document',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ['_id',
+                      'tags'], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/commentperiod/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.docId && args.swagger.params.docId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  });
+}
+
+exports.protectedGet = function(args, res, next) {
+  var self        = this;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
+
+  var Document = mongoose.model('Document');
+
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on docId route
+  var query = {};
+  if (args.swagger.params.docId) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  }
+  if (args.swagger.params._application && args.swagger.params._application.value) {
+    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  }
+  if (args.swagger.params._comment && args.swagger.params._comment.value) {
+    query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
+  }
+  if (args.swagger.params._decision && args.swagger.params._decision.value) {
+    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  } else {
+    _.assignIn(query, { isDeleted: false });
+  }
+
+  Utils.runDataQuery('Document',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    getSanitizedFields(args.swagger.params.fields.value), // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -137,7 +211,15 @@ exports.publicDownload = function(args, res, next) {
     return Actions.sendResponse(res, 404, {});
   }
 
-  getDocuments(['public'], query, ["internalURL", "documentFileName", "internalMime"])
+  Utils.runDataQuery('Document',
+                    ['public'],
+                    query,
+                    ["internalURL", "documentFileName", "internalMime"], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     if (data && data.length === 1) {
       var blob = data[0];
@@ -157,11 +239,11 @@ exports.publicDownload = function(args, res, next) {
 
 exports.protectedDownload = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
   var query = {};
@@ -169,7 +251,15 @@ exports.protectedDownload = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
 
-  getDocuments(args.swagger.params.auth_payload.scopes, query, ["internalURL", "documentFileName", "internalMime"])
+  Utils.runDataQuery('Document',
+                    args.swagger.operation["x-security-scopes"],
+                    query,
+                    ["internalURL", "documentFileName", "internalMime"], // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    false) // count
   .then(function (data) {
     if (data && data.length === 1) {
       var blob = data[0];
@@ -227,7 +317,7 @@ exports.protectedPost = function (args, res, next) {
         doc.internalURL = uploadDir+guid+"."+ext;
         doc.passedAVCheck = true;
         // Update who did this?
-        doc._addedBy = args.swagger.params.auth_payload.userID;
+        doc._addedBy = args.swagger.params.auth_payload.preferred_username.value;
         doc.save()
         .then(function (d) {
           defaultLog.info("Saved new document object:", d._id);
@@ -350,7 +440,7 @@ exports.protectedPut = function (args, res, next) {
         // Update file location
         obj.internalURL = uploadDir+guid+"."+ext;
         // Update who did this?
-        obj._addedBy = args.swagger.params.auth_payload.userID;
+        obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
         doc._application = _application;
         doc._comment = _comment;
         doc._decision = _decision;
@@ -375,59 +465,3 @@ exports.protectedPut = function (args, res, next) {
     return Actions.sendResponse(res, 400, e);
   }
 }
-
-var getDocuments = function (role, query, fields) {
-  return new Promise(function (resolve, reject) {
-    var Document = mongoose.model('Document');
-    var projection = {};
-
-    // Fields we always return
-    var defaultFields = ['_id',
-                        'tags'];
-    _.each(defaultFields, function (f) {
-        projection[f] = 1;
-    });
-
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['displayName',
-                         'internalURL',
-                         'passedAVCheck',
-                         'documentFileName',
-                         'internalMime'], f) !== -1);
-    });
-    _.each(sanitizedFields, function (f) {
-      projection[f] = 1;
-    });
-
-    Document.aggregate([
-      {
-        "$match": query
-      },
-      {
-        "$project": projection
-      },
-      {
-        $redact: {
-         $cond: {
-            if: {
-              $anyElementTrue: {
-                    $map: {
-                      input: "$tags" ,
-                      as: "fieldTag",
-                      in: { $setIsSubset: [ "$$fieldTag", role ] }
-                    }
-                  }
-                },
-              then: "$$DESCEND",
-              else: "$$PRUNE"
-            }
-          }
-        }
-    ]).exec()
-    .then(function (data) {
-      defaultLog.info("data:", data);
-      resolve(data);
-    });
-  });
-};

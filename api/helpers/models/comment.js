@@ -1,5 +1,5 @@
 module.exports = require('../models')('Comment', {
-    _addedBy        : { type: 'ObjectId', ref: 'User', default: null },
+    _addedBy        : { type: String, default: null },
     _commentPeriod  : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
     // Note: Default on tag property is purely for display only, they have no real effect on the model
     // This must be done in the code.

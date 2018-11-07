@@ -1,14 +1,18 @@
 "use strict";
 
 var jwt             = require("jsonwebtoken");
-var ISSUER          = "nrts-prc-api";
+const jwksClient    = require('jwks-rsa');
+
+var ISSUER          = process.env.SSO_ISSUER || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc";
+var JWKSURI         = process.env.SSO_JWKSURI || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc/protocol/openid-connect/certs";
 var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.
 var SECRET          = process.env.SECRET || "defaultSecret";
+var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "false";
 var winston         = require('winston');
 var defaultLog      = winston.loggers.get('default');
 
 exports.verifyToken = function(req, authOrSecDef, token, callback) {
-  defaultLog.info("verifying token");
+  defaultLog.info("verifying token", token);
   // scopes/roles defined for the current endpoint
   var currentScopes = req.swagger.operation["x-security-scopes"];
   function sendError() {
@@ -20,52 +24,81 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
   if (token && token.indexOf("Bearer ") == 0) {
     var tokenString = token.split(" ")[1];
 
-    jwt.verify(tokenString, SECRET, function(
-      verificationError,
-      decodedToken
-    ) {
-      // check if the JWT was verified correctly
-      if (
-        verificationError == null &&
-        Array.isArray(currentScopes) &&
-        decodedToken &&
-        decodedToken.scopes
-      ) {
-        defaultLog.info("JWT decoded:", decodedToken);
-        // MBL: TODO - Check if JTI is revoked from other service?
+    // If Keycloak is enabled, get the JWKSURI and process accordingly.  Else
+    // use local environment JWT configuration.
+    if (KEYCLOAK_ENABLED === "true") {
+      defaultLog.info("Keycloak Enabled, remote JWT verification.");
+      const client = jwksClient({
+        strictSsl: true, // Default value
+        jwksUri: JWKSURI
+      });
+      
+      const kid = jwt.decode(tokenString, { complete: true }).header.kid;
 
-        // check if the role is valid for this endpoint
-        var roleMatch = currentScopes.some(r=> decodedToken.scopes.indexOf(r) >= 0)
-        defaultLog.info("currentScopes", currentScopes);
-        defaultLog.info("decodedToken.scopes", decodedToken.scopes);
-        defaultLog.info("role match", roleMatch);
-
-        // check if the issuer matches
-        var issuerMatch = decodedToken.iss == ISSUER;
-        defaultLog.info("decodedToken.iss", decodedToken.iss);
-        defaultLog.info("ISSUER", ISSUER);
-        defaultLog.info("issuerMatch", issuerMatch);
-
-        if (roleMatch && issuerMatch) {
-          // add the token to the request so that we can access it in the endpoint code if necessary
-          req.swagger.params.auth_payload = decodedToken;
-          defaultLog.info("JWT Verified.");
-          return callback();
+      client.getSigningKey(kid, (err, key) => {
+        if (err) {
+          defaultLog.error("Signing Key Error:", err);
+          callback(sendError());
         } else {
-          defaultLog.info("JWT Role/Issuer mismatch.");
-          return callback(sendError());
+          const signingKey = key.publicKey || key.rsaPublicKey;
+
+          _verifySecret(currentScopes, tokenString, signingKey, req, callback, sendError);
         }
-      } else {
-        // return the error in the callback if the JWT was not verified
-        defaultLog.info("JWT Verification Err:", verificationError);
-        return callback(sendError());
-      }
-    });
+      });
+    } else {
+      defaultLog.info("proceeding with local JWT verification:", tokenString);
+      _verifySecret(currentScopes, tokenString, SECRET, req, callback, sendError);
+    }
   } else {
-    defaultLog.info("Authorization Header Error.");
+    defaultLog.error("Token didn't have a bearer.");
     return callback(sendError());
   }
 };
+
+function _verifySecret (currentScopes, tokenString, secret, req, callback, sendError) {
+  jwt.verify(tokenString, secret, function(
+    verificationError,
+    decodedToken
+  ) {
+    // defaultLog.info("verificationError:", verificationError);
+    // defaultLog.info("decodedToken:", decodedToken);
+
+    // check if the JWT was verified correctly
+    if (verificationError == null &&
+        Array.isArray(currentScopes) &&
+        decodedToken &&
+        decodedToken.realm_access.roles
+    ) {
+      defaultLog.info("JWT decoded:", decodedToken);
+
+      // check if the role is valid for this endpoint
+      var roleMatch = currentScopes.some(r=> decodedToken.realm_access.roles.indexOf(r) >= 0)
+      defaultLog.info("currentScopes", currentScopes);
+      defaultLog.info("decodedToken.realm_access.roles", decodedToken.realm_access.roles);
+      defaultLog.info("role match", roleMatch);
+
+      // check if the dissuer matches
+      var issuerMatch = decodedToken.iss == ISSUER;
+      defaultLog.info("decodedToken.iss", decodedToken.iss);
+      defaultLog.info("ISSUER", ISSUER);
+      defaultLog.info("issuerMatch", issuerMatch);
+
+      if (roleMatch && issuerMatch) {
+        // add the token to the request so that we can access it in the endpoint code if necessary
+        req.swagger.params.auth_payload = decodedToken;
+        defaultLog.info("JWT Verified.");
+        return callback(null);
+      } else {
+        defaultLog.info("JWT Role/Issuer mismatch.");
+        return callback(sendError());
+      }
+    } else {
+      // return the error in the callback if the JWT was not verified
+      defaultLog.info("JWT Verification Err:", verificationError);
+      return callback(sendError());
+    }
+  });
+}
 
 exports.issueToken = function(user,
                               deviceId,
@@ -79,12 +112,15 @@ exports.issueToken = function(user,
   defaultLog.info("JTI:", jti);
 
   var payload = {
-    username: user.username,
+    name: user.username,
+    preferred_username: user.username,
     userID: user._id,
     deviceId: deviceId,
     jti: jti,
     iss: ISSUER,
-    scopes: scopes
+    realm_access: {
+      roles: scopes
+    }
   };
 
   var token = jwt.sign(payload,

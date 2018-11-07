@@ -23,11 +23,11 @@ exports.publicGet = function (args, res, next) {
 };
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.params.auth_payload.scopes;
+  self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Organization = mongoose.model('Organization');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.scopes);
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on orgId route
   var query = {};
@@ -35,7 +35,7 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.orgId.value, query);
   }
 
-  getOrganizations(args.swagger.params.auth_payload.scopes, query, args.swagger.params.fields.value)
+  getOrganizations(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -51,7 +51,7 @@ exports.protectedPost = function (args, res, next) {
   // Define security tag defaults
   app.tags = [['sysadmin']];
   // Update who did this?
-  app._addedBy = args.swagger.params.auth_payload.userID;
+  app._addedBy = args.swagger.params.auth_payload.preferred_username.value;
   app.save()
   .then(function (a) {
     // defaultLog.info("Saved new organization object:", a);
