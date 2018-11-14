@@ -78,7 +78,7 @@ exports.getSkipLimitParameters = function (pageSize, pageNum) {
     return params;
 };
 
-exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count) {
+exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps) {
     return new Promise(function (resolve, reject) {
         var theModel = mongoose.model(modelType);
         var projection = {};
@@ -143,6 +143,13 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
         { $skip: skip || 0 },
         { $limit: limit || MAX_LIMIT }
         ]);
+
+        // Pre-pend the aggregation with other pipeline steps if we are joining on another datasource
+        if (preQueryPipelineSteps && preQueryPipelineSteps.length > 0) {
+            for (let step of preQueryPipelineSteps) {
+                aggregations.unshift(step);
+            }
+        }
 
         theModel.aggregate(aggregations)
         .exec()

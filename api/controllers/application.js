@@ -5,31 +5,32 @@ var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
+var tagList     = ['agency',
+                    'areaHectares',
+                    'businessUnit',
+                    'centroid',
+                    'cl_file',
+                    'client',
+                    '_createdBy',
+                    'createdDate',
+                    'description',
+                    'internal',
+                    'legalDescription',
+                    'location',
+                    'name',
+                    '_proponent',
+                    'publishDate',
+                    'purpose',
+                    'status',
+                    'subpurpose',
+                    'subtype',
+                    'tantalisID',
+                    'tenureStage',
+                    'type'];
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
-    return (_.indexOf(['agency',
-                      'areaHectares',
-                      'businessUnit',
-                      'centroid',
-                      'cl_file',
-                      'client',
-                      '_createdBy',
-                      'createdDate',
-                      'description',
-                      'internal',
-                      'legalDescription',
-                      'location',
-                      'name',
-                      '_proponent',
-                      'publishDate',
-                      'purpose',
-                      'status',
-                      'subpurpose',
-                      'subtype',
-                      'tantalisID',
-                      'tenureStage',
-                      'type'], f) !== -1);
+    return (_.indexOf(tagList, f) !== -1);
   });
 }
 
@@ -61,24 +62,29 @@ exports.publicHead = function (args, res, next) {
 
   _.assignIn(query, { isDeleted: false });
 
-  Utils.runDataQuery('Application',
-                    ['public'],
-                    query,
-                    ['_id',
-                      'tags'], // Fields
-                    null, // sort warmup
-                    null, // sort
-                    skip, // skip
-                    limit, // limit
-                    true) // count
-  .then(function (data) {
-    // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data);
-    } else {
-      return Actions.sendResponse(res, 404, data);
-    }
+  handleCommentPeriodDateQueryParameters(args, [], function (commentPeriodPipeline) {
+    Utils.runDataQuery('Application',
+                      ['public'],
+                      query,
+                      ['_id',
+                        'tags'], // Fields
+                      null, // sort warmup
+                      null, // sort
+                      skip, // skip
+                      limit, // limit
+                      true,
+                      commentPeriodPipeline) // count
+      .then(function (data) {
+        // /api/comment/ route, return 200 OK with 0 items if necessary
+        if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+          res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+          return Actions.sendResponse(res, 200, data);
+        } else {
+          return Actions.sendResponse(res, 404, data);
+        }
+    });
+  }, function (error) {
+    return Actions.sendResponse(res, 400, error);
   });
 };
 
@@ -87,6 +93,7 @@ exports.publicGet = function (args, res, next) {
   var query   = {};
   var skip    = null;
   var limit   = null;
+  var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
 
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
@@ -106,17 +113,22 @@ exports.publicGet = function (args, res, next) {
 
   _.assignIn(query, { isDeleted: false });
 
-  Utils.runDataQuery('Application',
-                    ['public'],
-                    query,
-                    getSanitizedFields(args.swagger.params.fields.value), // Fields
-                    null, // sort warmup
-                    null, // sort
-                    skip, // skip
-                    limit, // limit
-                    false) // count
-  .then(function (data) {
-    return Actions.sendResponse(res, 200, data);
+  handleCommentPeriodDateQueryParameters(args, requestedFields, function (commentPeriodPipeline) {
+    Utils.runDataQuery('Application',
+                      ['public'],
+                      query,
+                      requestedFields, // Fields
+                      null, // sort warmup
+                      null, // sort
+                      skip, // skip
+                      limit, // limit
+                      false,
+                      commentPeriodPipeline) // count
+      .then(function (data) {
+        return Actions.sendResponse(res, 200, data);
+    });
+  }, function (error) {
+    return Actions.sendResponse(res, 400, error);
   });
 };
 
@@ -459,4 +471,71 @@ exports.protectedUnPublish = function (args, res, next) {
       return Actions.sendResponse(res, 404, {});
     }
   });
+};
+
+var handleCommentPeriodDateQueryParameters = function (args, requestedFields, callback, error) {
+  var pipelineSteps = null;
+  var commentPeriodDates = [];
+
+  // Date range logic
+  if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
+    var filterOperation = args.swagger.params.cpStart.value.charAt(0) == '-' ? 0 : 1;
+    var dateRange = new Date(args.swagger.params.cpStart.value.slice(1));
+    var findValues = [ { $lte: [ "$commentPeriods.startDate", dateRange ] }, { $gte: [ "$commentPeriods.startDate", dateRange ] }];
+    if (dateRange instanceof Date && !isNaN(dateRange)) {
+      commentPeriodDates.push(findValues[filterOperation]);
+    } else {
+      return error({ "Invalid cpStart parameter specified": args.swagger.params.cpStart.value });
+    }
+  }
+
+  if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
+    var filterOperation = args.swagger.params.cpEnd.value.charAt(0) == '-' ? 0 : 1;
+    var dateRange = new Date(args.swagger.params.cpEnd.value.slice(1));
+    var findValues = [ { $lte: [ "$commentPeriods.endDate", dateRange ] }, { $gte: [ "$commentPeriods.endDate", dateRange ] }];
+    if (dateRange instanceof Date && !isNaN(dateRange)) {
+      commentPeriodDates.push(findValues[filterOperation]);
+    } else {
+      return error({ "Invalid cpEnd parameter specified": args.swagger.params.cpEnd.value });
+    }
+  }
+
+  // Did we want to filter based on comment period?
+  if (commentPeriodDates.length > 0) {
+    // NB: These are in reverse order in order to unshift into the pipline in proper order,
+    // since we are querying commentPeriods and then left-joining the application query.
+    var projection = {};
+    var fields = [...['_id','isDeleted','tags'], ...requestedFields];
+    for (let f of fields) {
+      projection[f] = 1;
+    }
+
+    if (commentPeriodDates.length > 1) {
+      projection.result = { $and: [ commentPeriodDates.pop(), commentPeriodDates.pop() ]};
+    } else if (commentPeriodDates.length > 0) {
+      projection.result = commentPeriodDates.pop();
+    }
+
+    pipelineSteps = [
+      {
+        $match : { result : true }
+      },
+      {
+        $project: projection
+      },
+      {
+        $unwind: "$commentPeriods"
+      },
+      {
+        $lookup: {
+          from: "commentperiods",
+          localField: "_id",    // field in the orders collection
+          foreignField: "_application",  // field in the items collection
+          as: "commentPeriods"
+        }
+      }
+    ];
+  }
+
+  return callback(pipelineSteps);
 };
