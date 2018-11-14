@@ -871,6 +871,18 @@ paths:
           required: false
           description: "Number of results per page."
         - in: query
+          name: cpStart
+          type: string
+          format: date-time
+          required: false
+          description: "Get an Application filtered by comment period start date, prefix with +/- to get greater than/less than filtering."
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "Get an Application filtered by comment period end date, prefix with +/- to get greater than/less than filtering."
+        - in: query
           name: tantalisId
           type: number
           required: false
@@ -915,6 +927,18 @@ paths:
           type: number
           required: false
           description: "Number of results per page."
+        - in: query
+          name: cpStart
+          type: string
+          format: date-time
+          required: false
+          description: "Get an Application filtered by comment period start date, prefix with +/- to get greater than/less than filtering."
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "Get an Application filtered by comment period end date, prefix with +/- to get greater than/less than filtering."
         - in: query
           name: tantalisId
           type: number
