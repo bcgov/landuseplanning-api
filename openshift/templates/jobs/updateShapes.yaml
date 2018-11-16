@@ -27,6 +27,12 @@ spec:
               value: ''
             - name: API_PORT
               value: ''
+            - name: CLIENT_ID
+              value: ''
+            - name: GRANT_TYPE
+              value: ''
+            - name: AUTH_ENDPOINT
+              value: ''
             - name: JSON_PAYLOAD
               value: '{"text":"Shapes Import Job for nrts-prc-prod Completed Successfully!"}'
             - name: NOTIFICATION_URL
@@ -35,7 +41,7 @@ spec:
             command:
             - bash
             - -c
-            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" && echo "Shapes import complete"'
+            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" "${CLIENT_ID}" "${GRANT_TYPE}" "${AUTH_ENDPOINT}" && echo "Shapes import complete"'
             # - 'pwd && echo "Shapes import complete" && curl -X POST -H "Content-type: application/json"
               # --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}"'
             imagePullPolicy: Always
@@ -47,5 +53,5 @@ spec:
           schedulerName: default-scheduler
           securityContext: {}
           terminationGracePeriodSeconds: 30
-  schedule: "*/1 * * * *"
+  schedule: "1 2 * * *"
   suspend: false
