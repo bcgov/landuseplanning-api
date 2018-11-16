@@ -136,7 +136,6 @@ var getOrganizations = function (role, query, fields) {
 
     // Fields we always return
     var defaultFields = ['_id',
-                        'code',
                         'name',
                         'tags'];
     _.each(defaultFields, function (f) {
@@ -145,8 +144,7 @@ var getOrganizations = function (role, query, fields) {
 
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['name',
-                        'code'], f) !== -1);
+      return (_.indexOf(['name'], f) !== -1);
     });
     _.each(sanitizedFields, function (f) {
       projection[f] = 1;

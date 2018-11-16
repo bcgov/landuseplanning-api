@@ -108,7 +108,6 @@ definitions:
       - _createdBy
       - createdDate
       - description
-      - internal
       - legalDescription
       - location
       - name
@@ -256,12 +255,6 @@ definitions:
       _application:
         type: string
         example: ""
-      description:
-        type: string
-        example: "Description of comment period"
-      internal:
-        type: object
-        example: "Victoria"
       ## TODO: Add more fields here.
   CommentPeriodFields:
     type: string
@@ -271,8 +264,6 @@ definitions:
     enum: &commentperiodFields
       - startDate
       - endDate
-      - description
-      - internal
       - _application
       - _addedBy
 ### Decision Definitions
@@ -324,11 +315,10 @@ definitions:
   Organization:
     type: string
     description: "Optional fields to return."
-    example: name|code
+    example: name
     #TODO: Fix enums
     enum: &organizationFields
       - name
-      - code
 ### User Definitions
   UserId:
     type: object
