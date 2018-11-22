@@ -499,6 +499,64 @@ paths:
           type: number
           required: false
           description: "Get an Application that relates to this crown lands file."
+        - in: query
+          name: purpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this purpose."
+        - in: query
+          name: subpurpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this subpurpose."
+        - in: query
+          name: type
+          type: string
+          required: false
+          description: "Get an Application that relates to this type."
+        - in: query
+          name: subtype
+          type: string
+          required: false
+          description: "Get an Application that relates to this subtype."
+        - in: query
+          name: agency
+          type: string
+          required: false
+          description: "Get an Application that relates to this subagencytype."
+        - in: query
+          name: businessUnit
+          type: string
+          required: false
+          description: "Get an Application that relates to this businessUnit."
+        - in: query
+          name: client
+          type: string
+          required: false
+          description: "Get an Application that relates to this client."
+        - in: query
+          name: tenureStage
+          type: string
+          required: false
+          description: "Get an Application that relates to this tenureStage."
+        - in: query
+          name: areaHectares
+          collectionFormat: multi
+          type: string
+          required: false
+          description: "Get an Application that relates to size of areaHectares."
+        - in: query
+          name: centroid
+          required: false
+          description: "Query applications that have their centroid fall within the supplied coordinates."
+          type: string
+        - in: query
+          name: publishDate
+          collectionFormat: multi
+          required: false
+          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          type: string
+          format: date-time
       responses:
         "200":
           description: "Success"
@@ -554,6 +612,64 @@ paths:
           type: number
           required: false
           description: "Get an Application that relates to this crown lands file."
+        - in: query
+          name: purpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this purpose."
+        - in: query
+          name: subpurpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this subpurpose."
+        - in: query
+          name: type
+          type: string
+          required: false
+          description: "Get an Application that relates to this type."
+        - in: query
+          name: subtype
+          type: string
+          required: false
+          description: "Get an Application that relates to this subtype."
+        - in: query
+          name: agency
+          type: string
+          required: false
+          description: "Get an Application that relates to this subagencytype."
+        - in: query
+          name: businessUnit
+          type: string
+          required: false
+          description: "Get an Application that relates to this businessUnit."
+        - in: query
+          name: client
+          type: string
+          required: false
+          description: "Get an Application that relates to this client."
+        - in: query
+          name: tenureStage
+          type: string
+          required: false
+          description: "Get an Application that relates to this tenureStage."
+        - in: query
+          name: areaHectares
+          collectionFormat: multi
+          type: string
+          required: false
+          description: "Get an Application that relates to size of areaHectares."
+        - in: query
+          name: centroid
+          required: false
+          description: "Query applications that have their centroid fall within the supplied coordinates."
+          type: string
+        - in: query
+          name: publishDate
+          collectionFormat: multi
+          required: false
+          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          type: string
+          format: date-time
       responses:
         "200":
           description: "Success"
@@ -875,13 +991,13 @@ paths:
           type: string
           format: date-time
           required: false
-          description: "Get an Application filtered by comment period start date, prefix with +/- to get greater than/less than filtering."
+          description: "Get an Application filtered by comment period start date."
         - in: query
           name: cpEnd
           type: string
           format: date-time
           required: false
-          description: "Get an Application filtered by comment period end date, prefix with +/- to get greater than/less than filtering."
+          description: "Get an Application filtered by comment period end date."
         - in: query
           name: tantalisId
           type: number
@@ -892,6 +1008,64 @@ paths:
           type: number
           required: false
           description: "Get an Application that relates to this crown lands file."
+        - in: query
+          name: purpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this purpose."
+        - in: query
+          name: subpurpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this subpurpose."
+        - in: query
+          name: type
+          type: string
+          required: false
+          description: "Get an Application that relates to this type."
+        - in: query
+          name: subtype
+          type: string
+          required: false
+          description: "Get an Application that relates to this subtype."
+        - in: query
+          name: agency
+          type: string
+          required: false
+          description: "Get an Application that relates to this subagencytype."
+        - in: query
+          name: businessUnit
+          type: string
+          required: false
+          description: "Get an Application that relates to this businessUnit."
+        - in: query
+          name: client
+          type: string
+          required: false
+          description: "Get an Application that relates to this client."
+        - in: query
+          name: tenureStage
+          type: string
+          required: false
+          description: "Get an Application that relates to this tenureStage."
+        - in: query
+          name: areaHectares
+          collectionFormat: multi
+          type: string
+          required: false
+          description: "Get an Application that relates to size of areaHectares."
+        - in: query
+          name: centroid
+          required: false
+          description: "Query applications that have their centroid fall within the supplied coordinates."
+          type: string
+        - in: query
+          name: publishDate
+          collectionFormat: multi
+          required: false
+          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          type: string
+          format: date-time
       responses:
         "200":
           description: "Success"
@@ -932,13 +1106,13 @@ paths:
           type: string
           format: date-time
           required: false
-          description: "Get an Application filtered by comment period start date, prefix with +/- to get greater than/less than filtering."
+          description: "Get an Application filtered by comment period start date."
         - in: query
           name: cpEnd
           type: string
           format: date-time
           required: false
-          description: "Get an Application filtered by comment period end date, prefix with +/- to get greater than/less than filtering."
+          description: "Get an Application filtered by comment period end date."
         - in: query
           name: tantalisId
           type: number
@@ -949,6 +1123,63 @@ paths:
           type: number
           required: false
           description: "Get an Application that relates to this crown lands file."
+        - in: query
+          name: purpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this purpose."
+        - in: query
+          name: subpurpose
+          type: string
+          required: false
+          description: "Get an Application that relates to this subpurpose."
+        - in: query
+          name: type
+          type: string
+          required: false
+          description: "Get an Application that relates to this type."
+        - in: query
+          name: subtype
+          type: string
+          required: false
+          description: "Get an Application that relates to this subtype."
+        - in: query
+          name: agency
+          type: string
+          required: false
+          description: "Get an Application that relates to this subagencytype."
+        - in: query
+          name: businessUnit
+          type: string
+          required: false
+          description: "Get an Application that relates to this businessUnit."
+        - in: query
+          name: client
+          type: string
+          required: false
+          description: "Get an Application that relates to this client."
+        - in: query
+          name: tenureStage
+          type: string
+          required: false
+          description: "Get an Application that relates to this tenureStage."
+        - in: query
+          name: areaHectares
+          collectionFormat: multi
+          type: string
+          required: false
+          description: "Get an Application that relates to size of areaHectares."
+        - in: query
+          name: centroid
+          required: false
+          description: "Query applications that have their centroid fall within the supplied coordinates."
+          type: string
+        - in: query
+          name: publishDate
+          collectionFormat: multi
+          required: false
+          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          type: string
       responses:
         "200":
           description: "Success"
