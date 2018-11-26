@@ -1,29 +1,36 @@
 //
 // Example: node updateShapes.js admin admin https nrts-prc-dev.pathfinder.gov.bc.ca 443
 //
-var Promise     = require('es6-promise').Promise;
-var _           = require('lodash');
-var request     = require('request');
-var username    = '';
-var password    = '';
-var protocol    = 'http';
-var host        = 'localhost';
-var port        = '3000';
-var uri         = '';
+var Promise         = require('es6-promise').Promise;
+var _               = require('lodash');
+var request         = require('request');
+var querystring     = require('querystring');
+var username        = '';
+var password        = '';
+var protocol        = 'http';
+var host            = 'localhost';
+var port            = '3000';
+var uri             = '';
+var client_id       = '';
+var grant_type      = '';
+var auth_endpoint   = 'http://localhost:3000/api/login/token';
 
 var args = process.argv.slice(2);
-if (args.length !== 5) {
+if (args.length !== 8) {
     console.log('');
-    console.log('Please specify proper parameters: <username> <password> <protocol> <host> <port>');
+    console.log('Please specify proper parameters: <username> <password> <protocol> <host> <port> <client_id> <grant_type> <auth_endpoint>');
     console.log('');
-    console.log('eg: node updateShapes.js admin admin http localhost 3000');
+    console.log('eg: node updateShapes.js admin admin http localhost 3000 client_id grant_type auth_endpoint');
     return;
 } else {
-    username = args[0];
-    password = args[1];
-    protocol = args[2];
-    host     = args[3];
-    port     = args[4];
+    username        = args[0];
+    password        = args[1];
+    protocol        = args[2];
+    host            = args[3];
+    port            = args[4];
+    client_id       = args[5];
+    grant_type      = args[6];
+    auth_endpoint   = args[7];
     uri = protocol + '://' + host + ':' + port + '/';
     console.log('Using connection:', uri);
 }
@@ -32,14 +39,18 @@ if (args.length !== 5) {
 var jwt_login = null;
 var login = function (username, password) {
     return new Promise(function (resolve, reject) {
-        var body = JSON.stringify({
+        var body = querystring.stringify({
+            grant_type: grant_type,
+            client_id: client_id,
             username: username,
             password: password
         });
+        var contentLength = body.length;
         request.post({
-            url: uri + 'api/login/token',
+            url: auth_endpoint,
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Length': contentLength,
+                'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: body
         }, function (err, res, body) {
@@ -48,8 +59,8 @@ var login = function (username, password) {
                 reject(null);
             } else {
                 var data = JSON.parse(body);
-                jwt_login = data.accessToken;
-                resolve(data.accessToken);
+                jwt_login = data.access_token;
+                resolve(data.access_token);
             }
         });
     });
