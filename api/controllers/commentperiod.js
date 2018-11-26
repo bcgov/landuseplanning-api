@@ -10,10 +10,8 @@ var getSanitizedFields = function (fields) {
     return (_.indexOf(['name',
                         'startDate',
                         'endDate',
-                        'description',
                         '_addedBy',
                         '_application',
-                        'internal',
                         'isDeleted'], f) !== -1);
   });
 }
@@ -125,10 +123,6 @@ exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params._commentPeriod.value;
   defaultLog.info("Incoming new object:", obj);
   defaultLog.info("args.swagger.params.auth_payload:", args.swagger.params.auth_payload);
-  if (!obj.internal) {
-    obj.internal = {};
-  }
-  obj.internal._addedBy = args.swagger.params.auth_payload.preferred_username.value;
   obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
 
   var CommentPeriod = mongoose.model('CommentPeriod');
@@ -136,8 +130,6 @@ exports.protectedPost = function (args, res, next) {
 
   // Define security tag defaults
   commentperiod.tags = [['sysadmin']];
-  commentperiod.internal.tags = [['sysadmin']];
-  commentperiod.internal._addedBy = args.swagger.params.auth_payload.preferred_username;
   commentperiod._addedBy = args.swagger.params.auth_payload.preferred_username;
   commentperiod.save()
   .then(function (c) {
@@ -157,9 +149,6 @@ exports.protectedPut = function (args, res, next) {
 
   delete obj._addedBy;
 
-  // Since it's a sub-element, we need to ensure we keep it updated to what it is.
-  delete obj.internal.tags;
-  obj.internal.tags = [['sysadmin']];
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 

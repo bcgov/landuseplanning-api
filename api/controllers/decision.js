@@ -11,8 +11,7 @@ var getSanitizedFields = function (fields) {
                       '_addedBy',
                       '_application',
                       'description',
-                      'decisionDate',
-                    'code'], f) !== -1);
+                      'decisionDate'], f) !== -1);
   });
 }
 

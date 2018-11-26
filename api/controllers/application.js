@@ -14,7 +14,6 @@ var tagList     = ['agency',
                     '_createdBy',
                     'createdDate',
                     'description',
-                    'internal',
                     'legalDescription',
                     'location',
                     'name',
@@ -313,7 +312,6 @@ exports.protectedPost = function (args, res, next) {
   var app = new Application(obj);
   // Define security tag defaults
   app.tags = [['sysadmin']];
-  app.internal.tags = [['sysadmin']];
   app._createdBy = args.swagger.params.auth_payload.preferred_username;
   app.createdDate = Date.now();
   app.save()
@@ -396,17 +394,8 @@ exports.protectedPut = function (args, res, next) {
   var obj = args.swagger.params.AppObject.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
-  if (obj.internal && obj.internal.tags) {
-    delete obj.internal.tags;
-  }
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
-
-  // Never allow this to be updated
-  if (obj.internal) {
-    delete obj.internal.tags;
-    obj.internal.tags = [['sysadmin']];
-  }
 
   var Application = require('mongoose').model('Application');
   Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
