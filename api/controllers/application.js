@@ -2,6 +2,7 @@ var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
+var qs          = require('qs');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
@@ -40,22 +41,14 @@ exports.protectedOptions = function (args, res, rest) {
 exports.publicHead = function (args, res, next) {
   // Build match query if on appId route
   var query   = {};
-  var skip    = null;
-  var limit   = null;
 
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   } else {
-    // Could be a bunch of results - enable pagination
-    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
-    skip = processedParameters.skip;
-    limit = processedParameters.limit;
-
-    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
-    }
-    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
-      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    try {
+      query = addStandardQueryFilters(query, args);
+    } catch (error) {
+      return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
 
@@ -69,8 +62,8 @@ exports.publicHead = function (args, res, next) {
                         'tags'], // Fields
                       null, // sort warmup
                       null, // sort
-                      skip, // skip
-                      limit, // limit
+                      null, // skip
+                      null, // limit
                       true,
                       commentPeriodPipeline) // count
       .then(function (data) {
@@ -102,11 +95,10 @@ exports.publicGet = function (args, res, next) {
     skip = processedParameters.skip;
     limit = processedParameters.limit;
 
-    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
-    }
-    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
-      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    try {
+      query = addStandardQueryFilters(query, args);
+    } catch (error) {
+      return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
 
@@ -150,11 +142,10 @@ exports.protectedGet = function(args, res, next) {
     skip = processedParameters.skip;
     limit = processedParameters.limit;
 
-    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
-    }
-    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
-      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    try {
+      query = addStandardQueryFilters(query, args);
+    } catch (error) {
+      return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
 
@@ -187,11 +178,10 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   } else {
-    if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-      _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
-    }
-    if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
-      _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    try {
+      query = addStandardQueryFilters(query, args);
+    } catch (error) {
+      return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
 
@@ -468,24 +458,32 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
 
   // Date range logic
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
-    var filterOperation = args.swagger.params.cpStart.value.charAt(0) == '-' ? 0 : 1;
-    var dateRange = new Date(args.swagger.params.cpStart.value.slice(1));
-    var findValues = [ { $lte: [ "$commentPeriods.startDate", dateRange ] }, { $gte: [ "$commentPeriods.startDate", dateRange ] }];
-    if (dateRange instanceof Date && !isNaN(dateRange)) {
-      commentPeriodDates.push(findValues[filterOperation]);
+    var queryString = qs.parse(args.swagger.params.cpStart.value);
+    if (queryString.eq) {
+      commentPeriodDates.push({ $eq: [ "$commentPeriods.startDate", new Date(queryString.eq) ] });
     } else {
-      return error({ "Invalid cpStart parameter specified": args.swagger.params.cpStart.value });
+      // Which param was set?
+      if (queryString.since) {
+        commentPeriodDates.push({ $gte: [ "$commentPeriods.startDate", new Date(queryString.since) ] });
+      }
+      if (queryString.until) {
+        commentPeriodDates.push({ $lte: [ "$commentPeriods.startDate", new Date(queryString.until) ] });
+      }
     }
   }
 
   if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
-    var filterOperation = args.swagger.params.cpEnd.value.charAt(0) == '-' ? 0 : 1;
-    var dateRange = new Date(args.swagger.params.cpEnd.value.slice(1));
-    var findValues = [ { $lte: [ "$commentPeriods.endDate", dateRange ] }, { $gte: [ "$commentPeriods.endDate", dateRange ] }];
-    if (dateRange instanceof Date && !isNaN(dateRange)) {
-      commentPeriodDates.push(findValues[filterOperation]);
+    var queryString = qs.parse(args.swagger.params.cpEnd.value);
+    if (queryString.eq) {
+      commentPeriodDates.push({ $eq: [ "$commentPeriods.endDate", new Date(queryString.eq) ] });
     } else {
-      return error({ "Invalid cpEnd parameter specified": args.swagger.params.cpEnd.value });
+      // Which param was set?
+      if (queryString.since) {
+        commentPeriodDates.push({ $gte: [ "$commentPeriods.endDate", new Date(queryString.since) ] });
+      }
+      if (queryString.until) {
+        commentPeriodDates.push({ $lte: [ "$commentPeriods.endDate", new Date(queryString.until) ] });
+      }
     }
   }
 
@@ -528,3 +526,112 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
 
   return callback(pipelineSteps);
 };
+
+var addStandardQueryFilters = function (query, args) {
+  if (args.swagger.params.publishDate && args.swagger.params.publishDate.value !== undefined) {
+    var queryString = qs.parse(args.swagger.params.publishDate.value);
+    if (queryString.since && queryString.until) {
+      // Combine queries as logical AND for the dataset.
+      _.assignIn(query, {
+        $and: [
+          {
+            publishDate: { $gte: new Date(queryString.since) }
+          },
+          {
+            publishDate: { $lte: new Date(queryString.until) }
+          }
+        ]
+      });
+    } else if (queryString.eq) {
+      _.assignIn(query, {
+        publishDate: { $eq: new Date(queryString.eq)}
+      });
+    } else {
+      // Which param was set?
+      if (queryString.since) {
+        _.assignIn(query, {
+          publishDate: { $gte: new Date(queryString.since)}
+        });
+      }
+      if (queryString.until) {
+        _.assignIn(query, {
+          publishDate: { $lte: new Date(queryString.until)}
+        });
+      }
+    }
+  }
+  if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
+    _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
+  }
+  if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
+    _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+  }
+  if (args.swagger.params.purpose && args.swagger.params.purpose.value !== undefined) {
+    _.assignIn(query, { purpose: args.swagger.params.purpose.value });
+  }
+  if (args.swagger.params.subpurpose && args.swagger.params.subpurpose.value !== undefined) {
+    _.assignIn(query, { subpurpose: args.swagger.params.subpurpose.value });
+  }
+  if (args.swagger.params.type && args.swagger.params.type.value !== undefined) {
+    _.assignIn(query, { type: args.swagger.params.type.value });
+  }
+  if (args.swagger.params.subtype && args.swagger.params.subtype.value !== undefined) {
+    _.assignIn(query, { subtype: args.swagger.params.subtype.value });
+  }
+  if (args.swagger.params.status && args.swagger.params.status.value !== undefined) {
+    _.assignIn(query, { status: args.swagger.params.status.value });
+  }
+  if (args.swagger.params.agency && args.swagger.params.agency.value !== undefined) {
+    _.assignIn(query, { agency: args.swagger.params.agency.value });
+  }
+  if (args.swagger.params.businessUnit && args.swagger.params.businessUnit.value !== undefined) {
+    _.assignIn(query, { businessUnit: args.swagger.params.businessUnit.value });
+  }
+  if (args.swagger.params.client && args.swagger.params.client.value !== undefined) {
+    _.assignIn(query, { client: args.swagger.params.client.value });
+  }
+  if (args.swagger.params.tenureStage && args.swagger.params.tenureStage.value !== undefined) {
+    _.assignIn(query, { tenureStage: args.swagger.params.tenureStage.value });
+  }
+  if (args.swagger.params.areaHectares && args.swagger.params.areaHectares.value !== undefined) {
+    var queryString = qs.parse(args.swagger.params.areaHectares.value);
+    if (queryString.gte && queryString.lte) {
+      // Combine queries as logical AND to compute a Rnage of values.
+      _.assignIn(query, {
+        $and: [
+          {
+            areaHectares: { $gte: parseFloat(queryString.gte, 10) }
+          },
+          {
+            areaHectares: { $lte: parseFloat(queryString.lte, 10) }
+          }
+        ]
+      });
+    } else if (queryString.eq) {
+      // invalid or not specified, treat as equal
+      _.assignIn(query, {
+        areaHectares: { $eq: parseFloat(queryString.eq, 10)}
+      });
+    } else {
+      // Which param was set?
+      if (queryString.gte) {
+        _.assignIn(query, {
+          areaHectares: { $gte: parseFloat(queryString.gte, 10)}
+        });
+      }
+      if (queryString.lte) {
+        _.assignIn(query, {
+          areaHectares: { $lte: parseFloat(queryString.lte, 10)}
+        });
+      }
+    }
+  }
+  if (args.swagger.params.centroid && args.swagger.params.centroid.value !== undefined) {
+    // defaultLog.info("Looking up features based on coords:", args.swagger.params.centroid.value);
+    // Throws if parsing fails.
+    _.assignIn(query, {
+      centroid: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.centroid.value) } } }
+    });
+  }
+  return query;
+}
