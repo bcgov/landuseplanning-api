@@ -12,6 +12,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_SERVICE_HOST"
   },
 
@@ -20,6 +21,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_SERVICE_HOST"
   },
 
@@ -28,6 +30,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "DEMO_MONGODB_SERVICE_HOST"
   },
 
@@ -36,6 +39,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_SCALE_SERVICE_HOST"
   },
 
@@ -44,6 +48,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_BETA_SERVICE_HOST"
   },
 
@@ -52,6 +57,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_MASTER_SERVICE_HOST"
   },
 
@@ -60,6 +66,7 @@
     "database": {"ENV": "MONGODB_DATABASE"},
     "user": {"ENV": "MONGODB_USERNAME"},
     "password": {"ENV": "MONGODB_PASSWORD"},
+    "authSource": "admin",
     "host": "MONGODB_SERVICE_HOST"
   }
 }
