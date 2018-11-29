@@ -68,7 +68,7 @@ exports.publicHead = function (args, res, next) {
                       null, // sort warmup
                       null, // sort
                       null, // skip
-                      null, // limit
+                      1000000, // limit
                       true,
                       commentPeriodPipeline) // count
       .then(function (data) {
@@ -212,7 +212,7 @@ exports.protectedHead = function (args, res, next) {
                     null, // sort warmup
                     null, // sort
                     null, // skip
-                    null, // limit
+                    1000000, // limit
                     true) // count
   .then(function (data) {
     // /api/comment/ route, return 200 OK with 0 items if necessary
