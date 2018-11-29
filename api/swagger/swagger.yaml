@@ -490,11 +490,13 @@ paths:
           required: false
           description: "Get an Application that relates to this crown lands file."
         - in: query
+          collectionFormat: multi
           name: purpose
           type: string
           required: false
           description: "Get an Application that relates to this purpose."
         - in: query
+          collectionFormat: multi
           name: subpurpose
           type: string
           required: false
@@ -603,11 +605,13 @@ paths:
           required: false
           description: "Get an Application that relates to this crown lands file."
         - in: query
+          collectionFormat: multi
           name: purpose
           type: string
           required: false
           description: "Get an Application that relates to this purpose."
         - in: query
+          collectionFormat: multi
           name: subpurpose
           type: string
           required: false
@@ -999,11 +1003,13 @@ paths:
           required: false
           description: "Get an Application that relates to this crown lands file."
         - in: query
+          collectionFormat: multi
           name: purpose
           type: string
           required: false
           description: "Get an Application that relates to this purpose."
         - in: query
+          collectionFormat: multi
           name: subpurpose
           type: string
           required: false
@@ -1114,11 +1120,13 @@ paths:
           required: false
           description: "Get an Application that relates to this crown lands file."
         - in: query
+          collectionFormat: multi
           name: purpose
           type: string
           required: false
           description: "Get an Application that relates to this purpose."
         - in: query
+          collectionFormat: multi
           name: subpurpose
           type: string
           required: false
