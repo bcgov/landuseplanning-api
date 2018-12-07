@@ -589,7 +589,7 @@ var addStandardQueryFilters = function (query, args) {
     _.assignIn(query, { purpose: { $in: queryArray } });
   }
   if (args.swagger.params.subpurpose && args.swagger.params.subpurpose.value !== undefined) {
-    var queryString = qs.parse(args.swagger.params.purpose.value);
+    var queryString = qs.parse(args.swagger.params.subpurpose.value);
     var queryArray = [];
     if (Array.isArray(queryString.eq)) {
       queryArray = queryString.eq;
@@ -605,7 +605,14 @@ var addStandardQueryFilters = function (query, args) {
     _.assignIn(query, { subtype: args.swagger.params.subtype.value });
   }
   if (args.swagger.params.status && args.swagger.params.status.value !== undefined) {
-    _.assignIn(query, { status: args.swagger.params.status.value });
+    var queryString = qs.parse(args.swagger.params.status.value);
+    var queryArray = [];
+    if (Array.isArray(queryString.eq)) {
+      queryArray = queryString.eq;
+    } else {
+      queryArray.push(queryString.eq);
+    }
+    _.assignIn(query, { status: { $in: queryArray } });
   }
   if (args.swagger.params.agency && args.swagger.params.agency.value !== undefined) {
     _.assignIn(query, { agency: args.swagger.params.agency.value });
