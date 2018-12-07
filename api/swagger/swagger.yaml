@@ -502,6 +502,12 @@ paths:
           required: false
           description: "Get an Application that relates to this subpurpose."
         - in: query
+          collectionFormat: multi
+          name: status
+          type: string
+          required: false
+          description: "Get an Application that relates to this status."
+        - in: query
           name: type
           type: string
           required: false
@@ -616,6 +622,12 @@ paths:
           type: string
           required: false
           description: "Get an Application that relates to this subpurpose."
+        - in: query
+          collectionFormat: multi
+          name: status
+          type: string
+          required: false
+          description: "Get an Application that relates to this status."
         - in: query
           name: type
           type: string
@@ -1015,6 +1027,12 @@ paths:
           required: false
           description: "Get an Application that relates to this subpurpose."
         - in: query
+          collectionFormat: multi
+          name: status
+          type: string
+          required: false
+          description: "Get an Application that relates to this status."
+        - in: query
           name: type
           type: string
           required: false
@@ -1131,6 +1149,12 @@ paths:
           type: string
           required: false
           description: "Get an Application that relates to this subpurpose."
+        - in: query
+          collectionFormat: multi
+          name: status
+          type: string
+          required: false
+          description: "Get an Application that relates to this status."
         - in: query
           name: type
           type: string
