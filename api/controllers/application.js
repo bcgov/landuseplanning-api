@@ -318,69 +318,57 @@ exports.protectedPost = function (args, res, next) {
   app.createdDate = Date.now();
   app.save()
   .then(function (savedApp) {
-    // Get the shapes from BCGW for this DISPOSITION and save them into the feature collection
-    var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=";
-    defaultLog.info("SEARCHING:", searchURL+ "'" + savedApp.tantalisID + "'");
     return new Promise(function (resolve, reject) {
-      request({url: searchURL + "'" + savedApp.tantalisID + "'"}, function (err, res, body) {
-        if (err) {
-          reject(err);
-        } else if (res.statusCode !== 200) {
-          reject(res.statusCode+' '+body);
-        } else {
-          var obj = {};
-          try {
-            defaultLog.info ('BCGW Call Complete.', body);
-            obj = JSON.parse(body);
+      return Utils.loginWebADE()
+      .then(function (accessToken) {
+        _accessToken = accessToken;
+        console.log("TTLS API Logged in:", _accessToken);
+        // Disp lookup
+        return Utils.getApplicationByDispositionID(_accessToken, savedApp.tantalisID);
+      }).then(resolve, reject);
+    }).then(function (data) {
+      // Copy in the meta
+      savedApp.areaHectares = data.areaHectares;
+      savedApp.centroid     = data.centroid;
+      savedApp.purpose      = data.TENURE_PURPOSE;
+      savedApp.subpurpose   = data.TENURE_SUBPURPOSE;
+      savedApp.type         = data.TENURE_TYPE;
+      savedApp.subtype      = data.TENURE_SUBTYPE;
+      savedApp.status       = data.TENURE_STATUS;
+      savedApp.tenureStage  = data.TENURE_STAGE;
+      savedApp.location     = data.TENURE_LOCATION;
+      savedApp.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
+      savedApp.cl_file      = data.CROWN_LANDS_FILE;
+      savedApp.tantalisID   = data.DISPOSITION_TRANSACTION_SID;
 
-            // Store the features in the DB
-            var allFeaturesForDisp = [];
-            // don't clear previous value if no features
-            if (obj.features.length > 0) {
-              savedApp.areaHectares = 0.00;
-            }
-            var turf = require('@turf/turf');
-            var helpers = require('@turf/helpers');
-            var centroids = helpers.featureCollection([]);
-            _.each(obj.features, function (f) {
-                // Tags default public
-                f.tags = [['sysadmin'], ['public']];
-                allFeaturesForDisp.push(f);
-                // Get the polygon and put it for later centroid calculation
-                centroids.features.push(turf.centroid(f));
-                // Calculate Total Area (hectares) from all features
-                if (f.properties && f.properties.TENURE_AREA_IN_HECTARES) {
-                  savedApp.areaHectares += parseFloat(f.properties.TENURE_AREA_IN_HECTARES);
-                }
-            });
-            // Centroid of all the shapes.
-            var featureCollectionCentroid;
-            if (centroids.features.length > 0) {
-              featureCollectionCentroid = turf.centroid(centroids).geometry.coordinates;
-              // Store the centroid.
-              savedApp.centroid = featureCollectionCentroid;
-            }
-
-            Promise.resolve()
-            .then(function () {
-              return allFeaturesForDisp.reduce(function (previousItem, currentItem) {
-                return previousItem.then(function () {
-                  return doFeatureSave(currentItem, savedApp._id);
-                });
-              }, Promise.resolve());
-            }).then(function () {
-              // All done with promises in the array, return to the caller.
-              return savedApp.save();
-            })
-            .then(function (a) {
-              resolve(a);
-            });
-          } catch (e) {
-            defaultLog.error ('Parsing Failed.', e);
-            resolve(savedApp);
-          }
+      for(let [idx,client] of Object.entries(data.interestedParties)) {
+        if (idx > 0) {
+          savedApp.client += ", ";
         }
+        if (client.interestedPartyType == 'O') {
+          savedApp.client += client.legalName;
+        } else {
+          savedApp.client += client.firstName + " " + client.lastName;
+        }
+      }
+
+      Promise.resolve()
+      .then(function () {
+        return data.parcels.reduce(function (previousItem, currentItem) {
+          return previousItem.then(function () {
+            // publish
+            currentItem.tags = [['sysadmin'],['public']];
+            return doFeatureSave(currentItem, savedApp._id);
+          });
+        }, Promise.resolve());
+      }).then(function () {
+        // All done with promises in the array, return to the caller.
+        console.log("all done");
+        return savedApp.save();
       });
+    }).catch(function (err) {
+      console.log("Error in API:", err);
+      return Actions.sendResponse(res, 400, err);
     });
   }).then(function (theApp) {
     // defaultLog.info("Saved new application object:", a);

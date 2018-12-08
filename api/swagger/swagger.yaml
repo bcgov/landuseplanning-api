@@ -1899,7 +1899,102 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-
+  /ttlsapi/dispositionTransactionId/{dtId}:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Search Route"
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Tantalis Obj to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get application data from Tantalis API"
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      operationId: protectedTTLSGetApplicationByDisp
+      description: "Get application data from Tantalis API."
+      parameters:
+        - name: dtId
+          in: path
+          description: "ID of Tantalis Obj to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /ttlsapi/crownLandFileNumber/{fileNumber}:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Search Route"
+      parameters:
+        - name: fileNumber
+          in: path
+          description: "Crown Land File Number"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get applications that relate to a Crown Land File Number from Tantalis API"
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      operationId: protectedTTLSGetApplicationsByFileNumber
+      description: "Get application data from Tantalis API."
+      parameters:
+        - name: fileNumber
+          in: path
+          description: "Crown Land File Number"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
 ## Documents
   /document:
     x-swagger-router-controller: document
