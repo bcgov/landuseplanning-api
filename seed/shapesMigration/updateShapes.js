@@ -5,6 +5,7 @@ var Promise         = require('es6-promise').Promise;
 var _               = require('lodash');
 var request         = require('request');
 var querystring     = require('querystring');
+var Utils           = require('../../api/helpers/utils');
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -14,6 +15,7 @@ var uri             = '';
 var client_id       = '';
 var grant_type      = '';
 var auth_endpoint   = 'http://localhost:3000/api/login/token';
+var _accessToken    = '';
 
 var args = process.argv.slice(2);
 if (args.length !== 8) {
@@ -95,73 +97,65 @@ var getAllApplications = function (route) {
     });
 };
 
-var getAndSaveFeatures = function (item) {
-    // Get the shapes from BCGW for this DISPOSITION and save them into the feature collection
-    var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=";
+var getAndSaveFeatures = function (accessToken, item) {
     return new Promise(function (resolve, reject) {
-        request({ url: searchURL + "'" + item.tantalisID + "'" }, function (err, res, body) {
-            if (err) {
-                reject(err);
-            } else if (res.statusCode !== 200) {
-                reject(res.statusCode + ' ' + body);
-            } else {
-                var obj = {};
-                try {
-                    obj = JSON.parse(body);
-                } catch (e) {
-                    // Fall through cleanly.
-                    defaultLog.error('Parsing Failed.', e);
-                    resolve(item);
-                }
+      Utils.getApplicationByDispositionID(accessToken, item.tantalisID)
+      .then(function (obj) {
+        // console.log("returning:", obj);
+        // Store the features in the DB
+        var allFeaturesForDisp = [];
+        item.areaHectares = obj.areaHectares;
 
-                // Store the features in the DB
-                var allFeaturesForDisp = [];
-                // don't clear previous value if no features
-                if (obj.features.length > 0) {
-                  item.areaHectares = 0.00;
-                }
-                var turf = require('@turf/turf');
-                var helpers = require('@turf/helpers');
-                var centroids = helpers.featureCollection([]);
-                _.each(obj.features, function (f) {
-                    // Tags default public
-                    f.tags = [['sysadmin'], ['public']];
-                    allFeaturesForDisp.push(f);
-                    // Get the polygon and put it for later centroid calculation
-                    centroids.features.push(turf.centroid(f));
-                    // Calculate Total Area (hectares) from all features
-                    if (f.properties && f.properties.TENURE_AREA_IN_HECTARES) {
-                      item.areaHectares += parseFloat(f.properties.TENURE_AREA_IN_HECTARES);
-                    }
-                  });
-                // Centroid of all the shapes.
-                var featureCollectionCentroid;
-                if (centroids.features.length > 0) {
-                    featureCollectionCentroid = turf.centroid(centroids).geometry.coordinates;
-                }
+        var turf = require('@turf/turf');
+        var helpers = require('@turf/helpers');
+        var centroids = helpers.featureCollection([]);
+        _.each(obj.parcels, function (f) {
+            // Tags default public
+            f.tags = [['sysadmin'], ['public']];
+            // copy in all the app meta just to stay consistent.
+            f.properties.RESPONSIBLE_BUSINESS_UNIT      = obj.RESPONSIBLE_BUSINESS_UNIT;
+            f.properties.TENURE_PURPOSE                 = obj.TENURE_PURPOSE;
+            f.properties.TENURE_SUBPURPOSE              = obj.TENURE_SUBPURPOSE;
+            f.properties.TENURE_STATUS                  = obj.TENURE_STATUS;
+            f.properties.TENURE_TYPE                    = obj.TENURE_TYPE;
+            f.properties.TENURE_STAGE                   = obj.TENURE_STAGE;
+            f.properties.TENURE_SUBTYPE                 = obj.TENURE_SUBTYPE;
+            f.properties.TENURE_LOCATION                = obj.TENURE_LOCATION;
+            f.properties.DISPOSITION_TRANSACTION_SID    = obj.DISPOSITION_TRANSACTION_SID;
+            f.properties.CROWN_LANDS_FILE               = obj.CROWN_LANDS_FILE;
 
-                Promise.resolve()
-                .then(function () {
-                    return allFeaturesForDisp.reduce(function (previousItem, currentItem) {
-                        return previousItem.then(function () {
-                            return doFeatureSave(currentItem, item._id);
-                        });
-                    }, Promise.resolve());
-                }).then(function (f) {
-                    // All done with promises in the array, return last feature to the caller, NB:
-                    // Sometimes we won't have shapes in the in our DB, and sometimes the BCGW doesn't have shapes
-                    // So we must make sure that we have a shape that was pulled from the BCGW in order to do anything.
-                    if (f) {
-                        // adding the centroid of all shapes to the obj.
-                        if (featureCollectionCentroid) {
-                            f.featureCollectionCentroid = featureCollectionCentroid;
-                        }
-                        f.areaHectares = item.areaHectares;
-                    }
-                    resolve(f);
-                });
-            }
+            allFeaturesForDisp.push(f);
+            // Get the polygon and put it for later centroid calculation
+            centroids.features.push(turf.centroid(f));
         });
+        // Centroid of all the shapes.
+        var featureCollectionCentroid;
+        if (centroids.features.length > 0) {
+            item.centroid = turf.centroid(centroids).geometry.coordinates;
+        }
+        item.client = "";
+        for (let [idx, client] of Object.entries(obj.interestedParties)) {
+            if (idx > 0) {
+                item.client += ", ";
+            }
+            if (client.interestedPartyType == 'O') {
+                item.client += client.legalName;
+            } else {
+                item.client += client.firstName + " " + client.lastName;
+            }
+        }
+
+        Promise.resolve()
+        .then(function () {
+            return allFeaturesForDisp.reduce(function (previousItem, currentItem) {
+                return previousItem.then(function () {
+                    return doFeatureSave(currentItem, item._id);
+                });
+            }, Promise.resolve());
+        }).then(function () {
+            resolve(item);
+        });
+      });
     });
 };
 
@@ -210,19 +204,20 @@ var deleteAllApplicationFeatures = function (item) {
 var updateApplicationMeta = function (item) {
     return new Promise(function (resolve, reject) {
         var updatedAppObject = {};
-        updatedAppObject.businessUnit     = item.properties.RESPONSIBLE_BUSINESS_UNIT;
-        updatedAppObject.purpose          = item.properties.TENURE_PURPOSE;
-        updatedAppObject.subpurpose       = item.properties.TENURE_SUBPURPOSE;
-        updatedAppObject.status           = item.properties.TENURE_STATUS;
-        updatedAppObject.type             = item.properties.TENURE_TYPE;
-        updatedAppObject.tenureStage      = item.properties.TENURE_STAGE;
-        updatedAppObject.subtype          = item.properties.TENURE_SUBTYPE;
-        updatedAppObject.location         = item.properties.TENURE_LOCATION;
-        updatedAppObject.legalDescription = item.properties.TENURE_LEGAL_DESCRIPTION;
-        updatedAppObject.centroid         = item.featureCollectionCentroid;
+        updatedAppObject.businessUnit     = item.RESPONSIBLE_BUSINESS_UNIT;
+        updatedAppObject.purpose          = item.TENURE_PURPOSE;
+        updatedAppObject.subpurpose       = item.TENURE_SUBPURPOSE;
+        updatedAppObject.status           = item.TENURE_STATUS;
+        updatedAppObject.type             = item.TENURE_TYPE;
+        updatedAppObject.tenureStage      = item.TENURE_STAGE;
+        updatedAppObject.subtype          = item.TENURE_SUBTYPE;
+        updatedAppObject.location         = item.TENURE_LOCATION;
+        updatedAppObject.legalDescription = item.TENURE_LEGAL_DESCRIPTION;
+        updatedAppObject.centroid         = item.centroid;
         updatedAppObject.areaHectares     = item.areaHectares;
+        updatedAppObject.client           = item.client;
         request.put({
-            url: uri + 'api/application/' + item.applicationID,
+            url: uri + 'api/application/' + item._id,
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + jwt_login
@@ -242,43 +237,53 @@ var updateApplicationMeta = function (item) {
 
 console.log("Logging in and getting JWT.");
 login(username, password)
-    .then(function () {
-        console.log("Getting applications");
-        return getAllApplications('api/application');
-    })
-    .then(function (apps) {
-        // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
-        return new Promise(function (resolve, reject) {
-            Promise.resolve()
-                .then(function () {
-                    return apps.reduce(function (current, item) {
-                        return current.then(function () {
-                            console.log("-------------------------------------------------------");
-                            console.log("Deleting existing features.");
-                            // First delete all the application features.  We blindly overwrite.
-                            return deleteAllApplicationFeatures(item)
-                                .then(function () {
-                                    // Fetch and store the features in the feature collection for this
-                                    // application.
-                                    console.log("Fetching and storing features:", item._id);
-                                    return getAndSaveFeatures(item);
-                                })
-                                .then(function (lastFeature) {
-                                    if (lastFeature) {
-                                        // Update the application meta.
-                                        console.log("Updating application meta for DISP:", lastFeature.properties.DISPOSITION_TRANSACTION_SID);
-                                        return updateApplicationMeta(lastFeature);
-                                    } else {
-                                        // No feature - don't update meta.
-                                        console.log("No features found - not updating.");
-                                        return Promise.resolve();
-                                    }
-                                });
-                        });
-                    }, Promise.resolve());
-                }).then(resolve, reject);
-        });
-    })
-    .catch(function (err) {
-        console.log("ERR:", err);
+.then(function () {
+    // Get a token from webade for TTLS API calls (getAndSaveFeatures)
+    return Utils.loginWebADE()
+    .then(function (accessToken) {
+        console.log("TTLS API Logged in:", accessToken);
+        _accessToken = accessToken;
+        return _accessToken;
     });
+})
+.then(function () {
+    console.log("Getting applications");
+    return getAllApplications('api/application');
+})
+.then(function (apps) {
+    // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
+    return new Promise(function (resolve, reject) {
+        Promise.resolve()
+            .then(function () {
+                return apps.reduce(function (current, item) {
+                    return current.then(function () {
+                        console.log("-------------------------------------------------------");
+                        console.log("Deleting existing features.");
+                        // First delete all the application features.  We blindly overwrite.
+                        return deleteAllApplicationFeatures(item)
+                            .then(function () {
+                                // Fetch and store the features in the feature collection for this
+                                // application.
+                                console.log("Fetching and storing features:", item._id);
+                                return getAndSaveFeatures(_accessToken, item);
+                            })
+                            .then(function (app) {
+                                if (app) {
+                                    // Update the application meta.
+                                    console.log("Updating application meta for DISP:", app.tantalisID);
+                                    // change this to reference the item data coming from TTLSAPI
+                                    return updateApplicationMeta(app);
+                                } else {
+                                    // No feature - don't update meta.
+                                    console.log("No features found - not updating.");
+                                    return Promise.resolve();
+                                }
+                            });
+                    });
+                }, Promise.resolve());
+            }).then(resolve, reject);
+    });
+})
+.catch(function (err) {
+    console.log("ERR:", err);
+});
