@@ -308,6 +308,21 @@ var doFeatureSave = function (item, appId) {
 //  Create a new application
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.app.value;
+
+  // Get rid of the fields we don't need/setting later below.
+  delete(obj.areaHectares);
+  delete(obj.centroid);
+  delete(obj.purpose);
+  delete(obj.subpurpose);
+  delete(obj.type);
+  delete(obj.subtype);
+  delete(obj.status);
+  delete(obj.tenureStage);
+  delete(obj.location);
+  delete(obj.businessUnit);
+  delete(obj.cl_file);
+  delete(obj.client);
+
   defaultLog.info("Incoming new object:", obj);
 
   var Application = mongoose.model('Application');
@@ -365,15 +380,14 @@ exports.protectedPost = function (args, res, next) {
         // All done with promises in the array, return to the caller.
         console.log("all done");
         return savedApp.save();
+      }).then(function (theApp) {
+        return Actions.sendResponse(res, 200, theApp);
       });
     }).catch(function (err) {
       console.log("Error in API:", err);
       return Actions.sendResponse(res, 400, err);
     });
-  }).then(function (theApp) {
-    // defaultLog.info("Saved new application object:", a);
-    return Actions.sendResponse(res, 200, theApp);
-  })
+  });
 };
 
 // Update an existing application
