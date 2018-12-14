@@ -323,8 +323,8 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
                         }
 
                         // Interested Parties
-                        var partyObj = {};
                         for (let party of obj.interestedParties) {
+                            var partyObj = {};
                             partyObj.interestedPartyType = party.interestedPartyType;
 
                             if (party.interestedPartyType == 'I') {
