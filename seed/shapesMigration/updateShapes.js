@@ -23,6 +23,7 @@ if (args.length !== 8) {
     console.log('Please specify proper parameters: <username> <password> <protocol> <host> <port> <client_id> <grant_type> <auth_endpoint>');
     console.log('');
     console.log('eg: node updateShapes.js admin admin http localhost 3000 client_id grant_type auth_endpoint');
+    process.exit(1);
     return;
 } else {
     username        = args[0];
@@ -286,4 +287,5 @@ login(username, password)
 })
 .catch(function (err) {
     console.log("ERR:", err);
+    process.exit(1);
 });
