@@ -15,7 +15,6 @@
     legalDescription : { type: String },
     location         : { type: String, default: '' },
     name             : { type: String, trim: true },
-    _proponent       : { type:'ObjectId', ref:'Organization', default:null },
     publishDate      : { type: Date },
     purpose          : { type: String },
     status           : { type: String },

@@ -10,7 +10,6 @@ var request         = require('request');
 var fs              = require('fs');
 var _applications   = [];
 var _commentPeriods = [];
-var _organizations  = [];
 var _decisions      = [];
 var _comments       = [];
 var username        = '';
