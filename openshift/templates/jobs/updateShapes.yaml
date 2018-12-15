@@ -35,15 +35,17 @@ spec:
               value: ''
             - name: JSON_PAYLOAD
               value: '{"text":"Shapes Import Job for nrts-prc-prod Completed Successfully!"}'
+            - name: JSON_PAYLOAD_FAIL
+              value: '{"text":"Shapes Import Job for nrts-prc-prod Failed!"}'
             - name: NOTIFICATION_URL
               value: ''
             image: docker-registry.default.svc:5000/nrts-prc-tools/nrts-prc-api:master
             command:
             - bash
             - -c
-            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" "${CLIENT_ID}" "${GRANT_TYPE}" "${AUTH_ENDPOINT}" && echo "Shapes import complete"'
-            # - 'pwd && echo "Shapes import complete" && curl -X POST -H "Content-type: application/json"
-              # --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}"'
+            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" "${CLIENT_ID}" "${GRANT_TYPE}" "${AUTH_ENDPOINT}" ; if [ "${PIPESTATUS[0]}" -ne "1" ]; then curl -X
+              POST -H "Content-type: application/json" --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}";else curl -X POST -H "Content-type: application/json" --data "${JSON_PAYLOAD_FAIL}"
+              "${NOTIFICATION_URL}" fi'
             imagePullPolicy: Always
             resources: {}
             terminationMessagePath: /dev/termination-log
@@ -54,4 +56,5 @@ spec:
           securityContext: {}
           terminationGracePeriodSeconds: 30
   schedule: "1 2 * * *"
+  startingDeadlineSeconds: 999
   suspend: false
