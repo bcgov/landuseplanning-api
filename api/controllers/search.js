@@ -45,7 +45,7 @@ exports.protectedTTLSGetApplicationsByFileNumber = function (args, res, rest) {
     });
   }).catch(function (err) {
     console.log("Error in API:", err);
-    return Actions.sendResponse(res, 400, err);
+    return Actions.sendResponse(res, err.statusCode, err);
   });
 };
 
@@ -65,7 +65,7 @@ exports.protectedTTLSGetApplicationByDisp = function (args, res, rest) {
     return Actions.sendResponse(res, 200, data);
   }).catch(function (err) {
     console.log("Error in API:", err);
-    return Actions.sendResponse(res, 400, err);
+    return Actions.sendResponse(res, err.statusCode, err);
   });
 };
 

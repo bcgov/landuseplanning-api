@@ -253,6 +253,10 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
         function (err, res, body) {
             if (err || (res && res.statusCode !== 200)) {
                 console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+                if (!err && res && res.statusCode) {
+                    err = {};
+                    err.statusCode = res.statusCode;
+                }
                 reject(err);
             } else {
                 try {
@@ -288,27 +292,26 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
 
                                 // Convert for use in leaflet coords.
                                 repro       = reproject.toWgs84(geometry, 'EPSG:3005', epsg);
+                                var feature = {};
+                                feature.TENURE_LEGAL_DESCRIPTION    = geo.legalDescription;
+                                feature.TENURE_AREA_IN_HECTARES     = geo.areaInHectares;
+                                feature.INTRID_SID                  = geo.interestParcelId;
+                                feature.FEATURE_CODE                = geo.featureCode;
+                                feature.FEATURE_AREA_SQM            = geo.areaInSquareMetres;
+                                feature.FEATURE_LENGTH_M            = geo.areaLengthInMetres;
+                                feature.TENURE_EXPIRY               = geo.expiryDate;
+
+                                var crs             = {};
+                                crs.properties      = {};
+                                crs.properties.name = "urn:ogc:def:crs:EPSG::4326";
+
+                                application.parcels.push({
+                                    type: "Feature",
+                                    geometry: repro,
+                                    properties: feature,
+                                    crs: crs
+                                });
                             }
-
-                            var feature = {};
-                            feature.TENURE_LEGAL_DESCRIPTION    = geo.legalDescription;
-                            feature.TENURE_AREA_IN_HECTARES     = geo.areaInHectares;
-                            feature.INTRID_SID                  = geo.interestParcelId;
-                            feature.FEATURE_CODE                = geo.featureCode;
-                            feature.FEATURE_AREA_SQM            = geo.areaInSquareMetres;
-                            feature.FEATURE_LENGTH_M            = geo.areaLengthInMetres;
-                            feature.TENURE_EXPIRY               = geo.expiryDate;
-
-                            var crs             = {};
-                            crs.properties      = {};
-                            crs.properties.name = "urn:ogc:def:crs:EPSG::4326";
-
-                            application.parcels.push({
-                                type: "Feature",
-                                geometry: repro,
-                                properties: feature,
-                                crs: crs
-                            });
                         }
 
                         // Calculate areaHectares, prepare centroid calculation
