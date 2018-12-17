@@ -275,16 +275,20 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
 
                         // WKT conversion to GEOJSON
                         for (let geo of obj.interestParcels) {
-                            // convert to geojson
-                            var wkt = new Wkt.Wkt();
-                            wkt.read(geo.wktGeometry);
-                            var geometry = wkt.toJson();
 
-                            var epsg        = require('epsg');
-                            var reproject   = require('reproject');
+                            var repro = null;
+                            if (geo.wktGeometry) {
+                                // convert to geojson
+                                var wkt = new Wkt.Wkt();
+                                wkt.read(geo.wktGeometry);
+                                var geometry = wkt.toJson();
 
-                            // Convert for use in leaflet coords.
-                            var repro       = reproject.toWgs84(geometry, 'EPSG:3005', epsg);
+                                var epsg        = require('epsg');
+                                var reproject   = require('reproject');
+
+                                // Convert for use in leaflet coords.
+                                repro       = reproject.toWgs84(geometry, 'EPSG:3005', epsg);
+                            }
 
                             var feature = {};
                             feature.TENURE_LEGAL_DESCRIPTION    = geo.legalDescription;
@@ -312,7 +316,9 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
                         application.areaHectares = 0.00;
                         _.each(application.parcels, function (f) {
                             // Get the polygon and put it for later centroid calculation
-                            centroids.features.push(turf.centroid(f));
+                            if (f.geometry) {
+                                centroids.features.push(turf.centroid(f));
+                            }
                             if (f.properties && f.properties.TENURE_AREA_IN_HECTARES) {
                                 application.areaHectares += parseFloat(f.properties.TENURE_AREA_IN_HECTARES);
                             }
