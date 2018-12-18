@@ -1051,6 +1051,12 @@ paths:
           required: false
           description: "Get an Application that relates to size of areaHectares."
         - in: query
+          name: statusHistoryEffectiveDate
+          collectionFormat: multi
+          type: number
+          required: false
+          description: "Get an Application where the last status change was since this epoch time."
+        - in: query
           name: centroid
           required: false
           description: "Query applications that have their centroid fall within the supplied coordinates."
@@ -1167,6 +1173,12 @@ paths:
           type: string
           required: false
           description: "Get an Application that relates to size of areaHectares."
+        - in: query
+          name: statusHistoryEffectiveDate
+          collectionFormat: multi
+          type: number
+          required: false
+          description: "Get an Application where the last status change was since this epoch time."
         - in: query
           name: centroid
           required: false
