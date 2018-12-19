@@ -10,8 +10,8 @@ var helpers         = require('@turf/helpers');
 var Wkt             = require('wicket');
 var _serviceHost    = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
 var _servicePort    = process.env.CLAMAV_SERVICE_PORT || '3310';
-var _tantalisAPI    = process.env.TTLS_API_ENDPOINT || "https://i1api.nrs.gov.bc.ca/ttls-api/v1/";
-var webADEAPI       = process.env.WEBADE_AUTH_ENDPOINT || "https://i1api.nrs.gov.bc.ca/oauth2/v1/";
+var _tantalisAPI    = process.env.TTLS_API_ENDPOINT || "https://api.nrs.gov.bc.ca/ttls-api/v1/";
+var webADEAPI       = process.env.WEBADE_AUTH_ENDPOINT || "https://api.nrs.gov.bc.ca/oauth2/v1/";
 var username        = process.env.WEBADE_USERNAME || "TTLS-EXT";
 var password        = process.env.WEBADE_PASSWORD || "x";
 var MAX_LIMIT       = 1000;
@@ -276,6 +276,7 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
                         application.DISPOSITION_TRANSACTION_SID     = disp;
                         application.parcels                         = [];
                         application.interestedParties               = [];
+                        application.statusHistoryEffectiveDate      = (obj.statusHistory[0] != null) ? obj.statusHistory[0].effectiveDate : null;
 
                         // WKT conversion to GEOJSON
                         for (let geo of obj.interestParcels) {

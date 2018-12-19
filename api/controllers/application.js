@@ -16,6 +16,7 @@ var tagList     = ['agency',
                     'createdDate',
                     'description',
                     'legalDescription',
+                    'statusHistoryEffectiveDate',
                     'location',
                     'name',
                     '_proponent',
@@ -666,6 +667,13 @@ var addStandardQueryFilters = function (query, args) {
     // Throws if parsing fails.
     _.assignIn(query, {
       centroid: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.centroid.value) } } }
+    });
+  }
+  // Allows filtering of apps that have had their last status change greater than this epoch time.
+  if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate !== undefined) {
+    var queryString = qs.parse(args.swagger.params.statusHistoryEffectiveDate.value);
+    _.assignIn(query, {
+      $or: [ { statusHistoryEffectiveDate: null }, { statusHistoryEffectiveDate: { $gte: parseInt(queryString.gte, 10) } } ]
     });
   }
   return query;
