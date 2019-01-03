@@ -1,0 +1,79 @@
+{
+  "@type": "LandUseApplicationResources",
+  "links": [
+    {
+      "@type": "RelLink",
+      "rel": "self",
+      "href": "https://api.nrs.gov.bc.ca/ttls-api/v1/landUseApplications?fileNumber=7410005&stage=&status=&type=&purpose=&location=&received=&updated=&pageNumber=1&pageRowCount=1",
+      "method": "GET"
+    }
+  ],
+  "pageNumber": 1,
+  "pageRowCount": 1,
+  "totalRowCount": 1,
+  "totalPageCount": 1,
+  "elements": [
+    {
+      "@type": "LandUseApplicationResource",
+      "links": [],
+      "landUseApplicationId": 933056,
+      "clientReferenceNumber": "100246965",
+      "receivedDate": 1525417200000,
+      "fileNumber": "7410005",
+      "locationDescription": "ESKER LAKE",
+      "lastUpdated": 1533051208000,
+      "stageCode": {
+        "@type": "StageCodeResource",
+        "links": [],
+        "code": "T",
+        "description": "TENURE"
+      },
+      "businessUnit": {
+        "@type": "BusinessUnitResource",
+        "links": [],
+        "id": 7,
+        "name": "OM - LAND MGMNT - NORTHERN SERVICE REGION"
+      },
+      "statusCode": {
+        "@type": "StatusCodeResource",
+        "links": [],
+        "code": "GS",
+        "description": "DISPOSITION IN GOOD STANDING"
+      },
+      "landUseTypeCode": {
+        "@type": "LandUseTypeCodeResource",
+        "links": [],
+        "code": "7",
+        "description": "LICENCE",
+        "landUseSubTypeCodes": [
+          {
+            "@type": "LandUseSubTypeCodeResource",
+            "links": [],
+            "code": "2",
+            "description": "TEMPORARY LICENCE"
+          }
+        ]
+      },
+      "purposeCode": {
+        "@type": "PurposeCodeResource",
+        "links": [],
+        "code": "3",
+        "description": "INDUSTRIAL",
+        "subPurposeCodes": [
+          {
+            "@type": "SubPurposeCodeResource",
+            "links": [],
+            "code": "6",
+            "description": "MISCELLANEOUS"
+          }
+        ]
+      },
+      "documents": [],
+      "interestedParties": [],
+      "shapes": [],
+      "interestParcels": [],
+      "statusHistory": [],
+      "parkReasonHistory": []
+    }
+  ]
+}

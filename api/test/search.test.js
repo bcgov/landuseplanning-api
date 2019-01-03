@@ -7,6 +7,7 @@ const arcGisResponse = require('./fixtures/arcgis_response.json');
 const crownlandsResponse = require('./fixtures/crownlands_response.json');
 const tantalisResponse = require('./fixtures/tantalis_response.json');
 const fieldNames = [];
+const Utils = require('../helpers/utils');
 
 const _ = require('lodash');
 
@@ -20,6 +21,19 @@ require('../helpers/models/application');
 require('../helpers/models/feature');
 const Application = mongoose.model('Application');
 const Feature = mongoose.model('Feature');
+
+
+app.get('/api/search/ttlsapi/crownLandFileNumber/:id', function(req, res) {
+  let extraFields = test_helper.buildParams({'fileNumber': req.params.id});
+  let params = test_helper.createSwaggerParams(fieldNames, extraFields);
+  return searchController.protectedTTLSGetApplicationsByFileNumber(params, res);
+});
+
+app.get('/api/search/ttlsapi/dispositionTransactionId/:id', function(req, res) {
+  let extraFields = test_helper.buildParams({'dtId': req.params.id});
+  let params = test_helper.createSwaggerParams(fieldNames, extraFields);
+  return searchController.protectedTTLSGetApplicationByDisp(params, res);
+});
 
 app.get('/api/public/search/bcgw/getClientsInfoByDispositionId/:id', function(req, res) {
   return searchController.publicGetClientsInfoByDispositionId(publicParamsWithDtId(req), res);
@@ -39,6 +53,144 @@ app.get('/api/public/search/bcgw/dispositionTransactionId/:id', function(req, re
   return searchController.publicGetBCGWDispositionTransactionId(publicParamsWithDtId(req), res);
 });
 
+describe('GET /api/search/ttlsapi/crownLandFileNumber/', () => {
+  let clFileNumber = 555555;
+  const firstResult = {DISPOSITION_TRANSACTION_SID: 111111};
+  const secondResult = {DISPOSITION_TRANSACTION_SID: 222222};
+  const dispSearchResult = {};
+
+  describe('when the ttls api login call returns successfully', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      resolve('ACCESS_TOKEN');
+    });
+
+    let appFileNumSearchPromise = new Promise(function(resolve, reject) {
+      resolve([firstResult, secondResult]);
+    });
+
+    let appDispSearchPromise = new Promise(function(resolve, reject) {
+      resolve(dispSearchResult);
+    });
+
+    beforeEach(() => {
+      spyOn(Utils, 'loginWebADE').and.returnValue(loginPromise);
+
+      spyOn(Utils, 'getApplicationByFilenumber')
+        .and.returnValue(appFileNumSearchPromise);
+
+      spyOn(Utils, 'getApplicationByDispositionID')
+        .and.returnValue(appDispSearchPromise);
+    });
+
+    test('logs in and then searches TTLS by CLFileNumber with that access token', done => {
+      request(app).get('/api/search/ttlsapi/crownLandFileNumber/' + clFileNumber)
+        .expect(200)
+        .then(response => {
+          expect(Utils.loginWebADE).toHaveBeenCalled();
+          expect(Utils.getApplicationByFilenumber).toHaveBeenCalledWith('ACCESS_TOKEN', '555555');
+          done();
+        });
+    });
+
+    test('searches TTLS getApplicationByDispositionID once for each disp returned by the file number search', done => {
+      request(app).get('/api/search/ttlsapi/crownLandFileNumber/' + clFileNumber)
+        .expect(200)
+        .then(response => {
+          expect(Utils.getApplicationByFilenumber).toHaveBeenCalledWith('ACCESS_TOKEN', '555555');
+
+          expect(Utils.getApplicationByDispositionID).toHaveBeenCalledWith('ACCESS_TOKEN', 111111);
+          expect(Utils.getApplicationByDispositionID).toHaveBeenCalledWith('ACCESS_TOKEN', 222222);
+
+          done();
+        });
+    });
+
+    test('returns the search results from each getAppliationByDispositionID call', done => {
+      request(app).get('/api/search/ttlsapi/crownLandFileNumber/' + clFileNumber)
+        .expect(200)
+        .then(response => {
+          expect(response.body.length).toEqual(2);
+          expect(response.body).toEqual([dispSearchResult, dispSearchResult])
+
+          done();
+        });
+    });
+
+  });
+
+  describe('when the ttls api login call fails', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      reject({statusCode: 503, message: 'Ooh boy something went wrong'});
+    });
+
+    beforeEach(() => {
+      spyOn(Utils, 'loginWebADE').and.returnValue(loginPromise);
+    });
+
+    test('returns that error response', done => {
+      request(app).get('/api/search/ttlsapi/crownLandFileNumber/' + clFileNumber)
+        .expect(503)
+        .then(response => {
+          expect(response.body.message).toEqual('Ooh boy something went wrong');
+          done();
+        });
+    });
+  });
+});
+
+describe('GET /api/search/ttlsapi/dispositionTransactionId/', () => {
+  let dispositionId = 666666;
+  const searchResult = {
+    DISPOSITION_TRANSACTION_SID: 666666
+  };
+
+  describe('when the ttls api login call returns successfully', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      resolve('ACCESS_TOKEN');
+    });
+
+    let appDispSearchPromise = new Promise(function(resolve, reject) {
+      resolve(searchResult);
+    });
+
+    beforeEach(() => {
+      spyOn(Utils, 'loginWebADE')
+        .and.returnValue(loginPromise);
+
+      spyOn(Utils, 'getApplicationByDispositionID')
+        .and.returnValue(appDispSearchPromise);
+    });
+
+    test('logs in and then retrieves the application with that access token', done => {
+      request(app).get('/api/search/ttlsapi/dispositionTransactionId/' + dispositionId)
+        .expect(200)
+        .then(response => {
+          expect(Utils.loginWebADE).toHaveBeenCalled();
+          expect(Utils.getApplicationByDispositionID).toHaveBeenCalledWith('ACCESS_TOKEN', '666666');
+          done();
+        });
+    });
+  });
+
+  describe('when the ttls api login call fails', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      reject({statusCode: 503, message: 'Ooh boy something went wrong'});
+    });
+
+    beforeEach(() => {
+      spyOn(Utils, 'loginWebADE').and.returnValue(loginPromise);
+    });
+
+    test('returns that error response', done => {
+      request(app).get('/api/search/ttlsapi/dispositionTransactionId/' + dispositionId)
+        .expect(503)
+        .then(response => {
+          expect(response.body.message).toEqual('Ooh boy something went wrong');
+          done();
+        });
+    });
+  });
+});
 
 describe('GET /api/public/search/bcgw/getClientsInfoByDispositionId', () => {
   const arcGisDomain = 'http://maps.gov.bc.ca/';
