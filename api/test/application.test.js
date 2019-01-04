@@ -7,6 +7,7 @@ const nock = require('nock');
 const tantalisResponse = require('./fixtures/tantalis_response.json');
 const fieldNames = ['description', 'tantalisID'];
 const _ = require('lodash');
+const Utils = require('../helpers/utils');
 
 
 const applicationController = require('../controllers/application.js');
@@ -238,22 +239,82 @@ describe('DELETE /application/id', () => {
   });
 });
 
-describe.skip('POST /application', () => {
-
-  const bcgwDomain = 'https://openmaps.gov.bc.ca';
-  const searchPath = '/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=';
+describe('POST /application', () => {
   let applicationObj = {
     name: 'Victoria',
     description: 'victoria',
     tantalisID: 999999
   };
-  const bcgw = nock(bcgwDomain);
-  let urlEncodedTantalisId = `%27${applicationObj.tantalisID}%27`;
+  let searchResult = {
+    DISPOSITION_TRANSACTION_SID: 999999,
+    interestedParties: [
+      {
+        interestedPartyType: 'O',
+        legalName: 'Megacorp'
+      },
+      {
+        interestedPartyType: 'I',
+        firstName: 'Ajit',
+        lastName: 'Pai'
+      }
+    ],
+    parcels: [
+      {
+        type: 'Feature',
+        properties: {
+          TENURE_LEGAL_DESCRIPTION: 'READ THESE BORING LEGAL TERMS.',
+          TENURE_AREA_IN_HECTARES: 3.333,
+          INTRID_SID: 12345,
+          TENURE_EXPIRY: 1527878179000,
+          FEATURE_CODE: 'FL98000100',
+          FEATURE_AREA_SQM: 33855.6279054274,
+          FEATURE_LENGTH_M: 740.122691165678
+        },
+        crs: {
+          properties: {
+            name: 'urn:ogc:def:crs:EPSG::4326'
+          }
+        }
+      }
+      
+    ],
+    areaHectares: 80000,
+    centroid: [ -128.6704671493984, 58.28816863259513 ],
+    TENURE_PURPOSE: 'To rule the world',
+    TENURE_SUBPURPOSE: 'And all of the chocolates',
+    TENURE_TYPE: 'EVIL',
+    TENURE_SUBTYPE: 'LANDLORD',
+    TENURE_STATUS: 'PENDING',
+    TENURE_STAGE: 'LEFT',
+    TENURE_LOCATION: 'Megalopolis',
+    RESPONSIBLE_BUSINESS_UNIT: 'Not present',
+    CROWN_LANDS_FILE: 7654321,
+  };
+  describe('when the ttls api login call returns successfully', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      resolve('ACCESS_TOKEN');
+    });
 
-  describe('when bcgw finds a matching object', () => {
+    let appDispSearchPromise = new Promise(function(resolve, reject) {
+      resolve(searchResult);
+    });
+
     beforeEach(() => {
-      return bcgw.get(searchPath + urlEncodedTantalisId)
-        .reply(200, tantalisResponse);
+      spyOn(Utils, 'loginWebADE')
+        .and.returnValue(loginPromise);
+
+      spyOn(Utils, 'getApplicationByDispositionID')
+        .and.returnValue(appDispSearchPromise);
+    });
+
+    test('logs in and then retrieves the application with that access token', done => {
+      request(app).post('/api/application')
+        .send(applicationObj)
+        .expect(200).then(response => {
+          expect(Utils.loginWebADE).toHaveBeenCalled();
+          expect(Utils.getApplicationByDispositionID).toHaveBeenCalledWith('ACCESS_TOKEN', 999999);
+          done();
+        });
     });
 
     test('creates a new application', done => {
@@ -264,37 +325,6 @@ describe.skip('POST /application', () => {
           Application.findOne({description: 'victoria'}).exec(function(error, application) {
             expect(application).toBeDefined();
             expect(application.name).toBe('Victoria');
-            done();
-          });
-        });
-    });
-
-    test('sets geographical properties', done => {
-      request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findById(response.body['_id']).exec(function(error, application) {
-            expect(application.areaHectares).not.toBeNull();
-            expect(application.areaHectares).toBeGreaterThan(1);
-
-            expect(application.centroid).toBeDefined();
-            expect(application.centroid.length).toBe(2);
-
-            done();
-          });
-        });
-    });
-
-    test('it sets the _addedBy to the person creating the application', done => {
-      request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
-            expect(application).not.toBeNull();
-            expect(application._addedBy).not.toBeNull();
-            expect(application._addedBy).toEqual(idirUsername);
             done();
           });
         });
@@ -316,38 +346,159 @@ describe.skip('POST /application', () => {
         });
     });
 
-    test('saves features on the application', done => {
+    test('it sets the _createdBy to the person creating the application', done => {
       request(app).post('/api/application')
         .send(applicationObj)
         .expect(200).then(response => {
           expect(response.body).toHaveProperty('_id');
-          Feature.findOne({applicationID: response.body['_id']}).exec(function(error, feature) {
-            expect(feature).not.toBeNull();
-            expect(feature.INTRID_SID).not.toBeNull();
+          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+            expect(application).not.toBeNull();
+            expect(application._createdBy).not.toBeNull();
+            expect(application._createdBy).toEqual(idirUsername);
             done();
           });
         });
     });
+
+    describe('saved application properties', () => {
+      test('saves the tenure properties correctly', done => {
+        request(app).post('/api/application')
+        .send(applicationObj)
+        .expect(200).then(response => {
+          expect(response.body).toHaveProperty('_id');
+          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+            expect(application).toBeDefined();
+            expect(application.purpose).toBe('To rule the world');
+            expect(application.subpurpose).toBe('And all of the chocolates');
+            expect(application.type).toBe('EVIL');
+            expect(application.subtype).toBe('LANDLORD');
+            expect(application.status).toBe('PENDING');
+            expect(application.tenureStage).toBe('LEFT');
+            expect(application.location).toBe('Megalopolis');
+            done();
+          });
+        });
+      });
+
+      test('sets the geographical properties correctly', done => {
+        request(app).post('/api/application')
+        .send(applicationObj)
+        .expect(200).then(response => {
+          expect(response.body).toHaveProperty('_id');
+          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+            expect(application).toBeDefined();
+            expect(application.areaHectares).toBe(80000);
+            expect(application.centroid[0]).toEqual(-128.6704671493984);
+            expect(application.centroid[1]).toEqual(58.28816863259513);
+            done();
+          });
+        });
+      });
+
+      test('saves the additional properties correctly', done => {
+        request(app).post('/api/application')
+        .send(applicationObj)
+        .expect(200).then(response => {
+          expect(response.body).toHaveProperty('_id');
+          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+            expect(application).toBeDefined();
+            expect(application.businessUnit).toBe('Not present');
+            expect(application.cl_file).toBe(7654321);
+            expect(application.tantalisID).toBe(999999);
+            done();
+          });
+        });
+      });
+
+      test('sets the client to the interestedParties name fields', done => {
+        request(app).post('/api/application')
+        .send(applicationObj)
+        .expect(200).then(response => {
+          expect(response.body).toHaveProperty('_id');
+          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+            expect(application).toBeDefined();
+            expect(application.client).toEqual('Megacorp, Ajit Pai');
+
+            done();
+          });
+        });
+      });
+
+      test('saves features on the application', done => {
+        request(app).post('/api/application')
+          .send(applicationObj)
+          .expect(200).then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Feature.findOne({applicationID: response.body['_id']}).exec(function(error, feature) {
+              expect(feature).not.toBeNull();
+              console.log(feature);
+              let featureProperties = feature.properties;
+              expect(featureProperties).toBeDefined();
+              expect(featureProperties.INTRID_SID).toEqual(12345);
+              expect(featureProperties.TENURE_EXPIRY).toEqual('1527878179000');
+              expect(featureProperties.TENURE_LEGAL_DESCRIPTION).toEqual('READ THESE BORING LEGAL TERMS.');
+              
+              done();
+            });
+          });
+      });
+
+      test('strips unwanted attributes', done => {
+        let objectWithForbiddenAttrs = {
+          name: 'Evil plan',
+          description: 'Plan to corrupt this database! ',
+          tantalisID: 987654,
+          areaHectares: 10000000,
+          centroid: [[58], [58]],
+          purpose: 'To hack this app',
+          status: 'Beginning',
+          tenureStage: 'My stage',
+          location: 'Detroit',
+          businessUnit: 'Strata',
+          cl_file: 88888888,
+          client: 'Dr Strangelove'
+        };
+
+        request(app).post('/api/application')
+        .send(objectWithForbiddenAttrs)
+        .expect(200).then(response => {
+          expect(response.body).toHaveProperty('_id');
+          Application.findOne({name: 'Evil plan'}).exec(function(error, application) {
+            expect(application).toBeDefined();
+
+            expect(application.areaHectares).not.toEqual(10000000);
+            expect(application.purpose).not.toEqual('To hack this app');
+            expect(application.status).not.toEqual('Beginning');
+            expect(application.tenureStage).not.toEqual('My stage');
+            expect(application.location).not.toEqual('Detroit');
+            expect(application.businessUnit).not.toEqual('Strata');
+            expect(application.cl_file).not.toEqual(88888888);
+            expect(application.client).not.toEqual('Dr Strangelove');
+
+            done();
+          });
+        });
+      });
+    });
   });
 
-  describe('when bcgw returns an error response', () => {
-    beforeEach(() => {
-      return bcgw.get(searchPath + urlEncodedTantalisId)
-        .reply(500, {"error": "Something went wrong"});
+  describe('when the login call fails', () => {
+    let loginPromise = new Promise(function(resolve, reject) {
+      reject({statusCode: 503, message: 'Ooh boy something went wrong'});
     });
 
-    test.skip('throws 500 when an error is caught', done => {
+    beforeEach(() => {
+      spyOn(Utils, 'loginWebADE').and.returnValue(loginPromise);
+    });
 
+    test('returns that error response and a 400 status code', done => {
       request(app).post('/api/application')
         .send(applicationObj)
-        .expect(500)
-        .catch(errorResponse => {
+        .expect(400)
+        .then(response => {
+          expect(response.body.message).toEqual('Ooh boy something went wrong');
           done();
         });
-    });
-
-    test.skip('handles a 404 correctly', done => {
-      done();
     });
   });
 });
