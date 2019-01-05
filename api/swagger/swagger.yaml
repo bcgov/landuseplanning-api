@@ -120,6 +120,30 @@ definitions:
       - tantalisID
       - tenureStage
       - type
+    enum: &projectFields
+      - cEAAInvolvement
+      - cELead
+      - cELeadEmail
+      - cELeadPhone
+      - centroid
+      - currentPhase
+      - currentPhaseCode
+      - currentPhaseName
+      - description
+      - eacDecision
+      - location
+      - name
+      - projectLead
+      - projectLeadEmail
+      - projectLeadPhone
+      - proponent
+      - region
+      - responsibleEPD
+      - responsibleEPDEmail
+      - responsibleEPDPhone
+      - subtype
+      - type
+      - read
 
 ### Application Definitions
   FeatureId:
@@ -949,14 +973,14 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /public/application:
-    x-swagger-router-controller: application
+  /public/project:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application Route"
+      description: "Options on Project Route"
       responses:
         "200":
           description: "Success"
@@ -968,124 +992,135 @@ paths:
             $ref: "#/definitions/Error"
     head:
       tags:
-        - application
-      summary: "Retrieve META associated with applications"
+        - project
+      summary: "Retrieve META associated with projects"
       operationId: publicHead
       description: "Get META from the request, without returning the payload in question."
       parameters:
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
-          name: pageNum
-          type: number
-          required: false
-          description: "Page number."
-        - in: query
-          name: pageSize
-          type: number
-          required: false
-          description: "Number of results per page."
-        - in: query
-          name: cpStart
-          type: string
-          format: date-time
-          required: false
-          description: "Get an Application filtered by comment period start date."
-        - in: query
-          name: cpEnd
-          type: string
-          format: date-time
-          required: false
-          description: "Get an Application filtered by comment period end date."
-        - in: query
-          name: tantalisId
-          type: number
-          required: false
-          description: "Get an Application that contain this specific disposition."
-        - in: query
-          name: cl_file
-          type: number
-          required: false
-          description: "Get an Application that relates to this crown lands file."
-        - in: query
-          collectionFormat: multi
-          name: purpose
+          name: cEAAInvolvement
           type: string
           required: false
-          description: "Get an Application that relates to this purpose."
+          description: "CEAA Involvement"
         - in: query
-          collectionFormat: multi
-          name: subpurpose
+          name: cELead
           type: string
           required: false
-          description: "Get an Application that relates to this subpurpose."
+          description: "The Compliance and Enforcement Lead's name"
         - in: query
-          collectionFormat: multi
-          name: status
+          name: cELeadEmail
           type: string
           required: false
-          description: "Get an Application that relates to this status."
+          description: "The Compliance and Enforcement Lead's email"
         - in: query
-          name: type
+          name: cELeadPhone
           type: string
           required: false
-          description: "Get an Application that relates to this type."
-        - in: query
-          name: subtype
-          type: string
-          required: false
-          description: "Get an Application that relates to this subtype."
-        - in: query
-          name: agency
-          type: string
-          required: false
-          description: "Get an Application that relates to this subagencytype."
-        - in: query
-          name: businessUnit
-          type: string
-          required: false
-          description: "Get an Application that relates to this businessUnit."
-        - in: query
-          name: client
-          type: string
-          required: false
-          description: "Get an Application that relates to this client."
-        - in: query
-          name: tenureStage
-          type: string
-          required: false
-          description: "Get an Application that relates to this tenureStage."
-        - in: query
-          name: areaHectares
-          collectionFormat: multi
-          type: string
-          required: false
-          description: "Get an Application that relates to size of areaHectares."
-        - in: query
-          name: statusHistoryEffectiveDate
-          collectionFormat: multi
-          type: number
-          required: false
-          description: "Get an Application where the last status change was since this epoch time."
+          description: "The Compliance and Enforcement Lead's phone number"
         - in: query
           name: centroid
           required: false
-          description: "Query applications that have their centroid fall within the supplied coordinates."
+          description: "Query projects that have their centroid fall within the supplied coordinates."
           type: string
         - in: query
-          name: publishDate
-          collectionFormat: multi
+          name: currentPhase
           required: false
-          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          description: "A Phases object"
           type: string
-          format: date-time
+        - in: query
+          name: currentPhaseCode
+          required: false
+          description: "A code associated with the current project's phase"
+          type: string
+        - in: query
+          name: currentPhaseName
+          required: false
+          description: "The current phase's name"
+          type: string
+        - in: query
+          name: description
+          required: false
+          description: "A description of the project"
+          type: string
+        - in: query
+          name: eacDecision
+          required: false
+          description: "The decision determined by the EAO"
+          type: string
+        - in: query
+          name: location
+          required: false
+          description: "The location of the proposed project"
+          type: string
+        - in: query
+          name: name
+          required: false
+          description: "The name of the proposed project"
+          type: string
+        - in: query
+          name: projectLead
+          required: false
+          description: "The name of the lead of the project"
+          type: string
+        - in: query
+          name: projectLeadEmail
+          required: false
+          description: "The email of the lead of the project"
+          type: string
+        - in: query
+          name: projectLeadPhone
+          required: false
+          description: "The phone number of the lead of the project"
+          type: string
+        - in: query
+          name: proponent
+          required: false
+          description: "A reference to an organization object"
+          type: string
+        - in: query
+          name: region
+          required: false
+          description: "Region of the project"
+          type: string
+        - in: query
+          name: responsibleEPD
+          required: false
+          description: "Name of the EPD"
+          type: string
+        - in: query
+          name: responsibleEPDEmail
+          required: false
+          description: "Email of the EPD"
+          type: string
+        - in: query
+          name: responsibleEPDPhone
+          required: false
+          description: "Phone of the EPD"
+          type: string
+        - in: query
+          name: subtype
+          required: false
+          description: "The sub-type of the project"
+          type: string
+        - in: query
+          name: type
+          required: false
+          description: "Type of the project"
+          type: string
+        - in: query
+          name: read
+          required: false
+          description: "The read permissions of the project"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1097,122 +1132,134 @@ paths:
             $ref: "#/definitions/Error"
     get:
       tags:
-        - application
-      summary: "Get a list of public applications"
+        - project
+      summary: "Get a list of public projects"
       operationId: publicGet
-      description: "Retreiving public applications."
+      description: "Retreiving public projects."
       parameters:
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
-          name: pageNum
-          type: number
-          required: false
-          description: "Page number."
-        - in: query
-          name: pageSize
-          type: number
-          required: false
-          description: "Number of results per page."
-        - in: query
-          name: cpStart
-          type: string
-          format: date-time
-          required: false
-          description: "Get an Application filtered by comment period start date."
-        - in: query
-          name: cpEnd
-          type: string
-          format: date-time
-          required: false
-          description: "Get an Application filtered by comment period end date."
-        - in: query
-          name: tantalisId
-          type: number
-          required: false
-          description: "Get an Application that contain this specific disposition."
-        - in: query
-          name: cl_file
-          type: number
-          required: false
-          description: "Get an Application that relates to this crown lands file."
-        - in: query
-          collectionFormat: multi
-          name: purpose
+          name: cEAAInvolvement
           type: string
           required: false
-          description: "Get an Application that relates to this purpose."
+          description: "CEAA Involvement"
         - in: query
-          collectionFormat: multi
-          name: subpurpose
+          name: cELead
           type: string
           required: false
-          description: "Get an Application that relates to this subpurpose."
+          description: "The Compliance and Enforcement Lead's name"
         - in: query
-          collectionFormat: multi
-          name: status
+          name: cELeadEmail
           type: string
           required: false
-          description: "Get an Application that relates to this status."
+          description: "The Compliance and Enforcement Lead's email"
         - in: query
-          name: type
+          name: cELeadPhone
           type: string
           required: false
-          description: "Get an Application that relates to this type."
-        - in: query
-          name: subtype
-          type: string
-          required: false
-          description: "Get an Application that relates to this subtype."
-        - in: query
-          name: agency
-          type: string
-          required: false
-          description: "Get an Application that relates to this subagencytype."
-        - in: query
-          name: businessUnit
-          type: string
-          required: false
-          description: "Get an Application that relates to this businessUnit."
-        - in: query
-          name: client
-          type: string
-          required: false
-          description: "Get an Application that relates to this client."
-        - in: query
-          name: tenureStage
-          type: string
-          required: false
-          description: "Get an Application that relates to this tenureStage."
-        - in: query
-          name: areaHectares
-          collectionFormat: multi
-          type: string
-          required: false
-          description: "Get an Application that relates to size of areaHectares."
-        - in: query
-          name: statusHistoryEffectiveDate
-          collectionFormat: multi
-          type: number
-          required: false
-          description: "Get an Application where the last status change was since this epoch time."
+          description: "The Compliance and Enforcement Lead's phone number"
         - in: query
           name: centroid
           required: false
-          description: "Query applications that have their centroid fall within the supplied coordinates."
+          description: "Query projects that have their centroid fall within the supplied coordinates."
           type: string
         - in: query
-          name: publishDate
-          collectionFormat: multi
+          name: currentPhase
           required: false
-          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          description: "A Phases object"
+          type: string
+        - in: query
+          name: currentPhaseCode
+          required: false
+          description: "A code associated with the current project's phase"
+          type: string
+        - in: query
+          name: currentPhaseName
+          required: false
+          description: "The current phase's name"
+          type: string
+        - in: query
+          name: description
+          required: false
+          description: "A description of the project"
+          type: string
+        - in: query
+          name: eacDecision
+          required: false
+          description: "The decision determined by the EAO"
+          type: string
+        - in: query
+          name: location
+          required: false
+          description: "The location of the proposed project"
+          type: string
+        - in: query
+          name: name
+          required: false
+          description: "The name of the proposed project"
+          type: string
+        - in: query
+          name: projectLead
+          required: false
+          description: "The name of the lead of the project"
+          type: string
+        - in: query
+          name: projectLeadEmail
+          required: false
+          description: "The email of the lead of the project"
+          type: string
+        - in: query
+          name: projectLeadPhone
+          required: false
+          description: "The phone number of the lead of the project"
+          type: string
+        - in: query
+          name: proponent
+          required: false
+          description: "A reference to an organization object"
+          type: string
+        - in: query
+          name: region
+          required: false
+          description: "Region of the project"
+          type: string
+        - in: query
+          name: responsibleEPD
+          required: false
+          description: "Name of the EPD"
+          type: string
+        - in: query
+          name: responsibleEPDEmail
+          required: false
+          description: "Email of the EPD"
+          type: string
+        - in: query
+          name: responsibleEPDPhone
+          required: false
+          description: "Phone of the EPD"
+          type: string
+        - in: query
+          name: subtype
+          required: false
+          description: "The sub-type of the project"
+          type: string
+        - in: query
+          name: type
+          required: false
+          description: "Type of the project"
+          type: string
+        - in: query
+          name: read
+          required: false
+          description: "The read permissions of the project"
           type: string
       responses:
         "200":
@@ -1223,18 +1270,18 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /public/application/{appId}:
-    x-swagger-router-controller: application
+  /public/project/{appId}:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application GET Route"
+      description: "Options on Project GET Route"
       parameters:
         - name: appId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
       responses:
@@ -1248,25 +1295,25 @@ paths:
             $ref: "#/definitions/Error"
     get:
       tags:
-        - application
-      summary: "Get an application"
+        - project
+      summary: "Get an project"
       operationId: publicGet
-      description: "Public access to retreiving applications."
+      description: "Public access to retreiving projects."
       parameters:
         - name: appId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
       responses:
         "200":
           description: "Success"
