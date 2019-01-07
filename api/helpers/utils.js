@@ -99,7 +99,7 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
             // Fields we always return
             var defaultFields = ['_id',
                                 'code',
-                                'tags'];
+                                'read'];
             _.each(defaultFields, function (f) {
                 projection[f] = 1;
             });
@@ -123,13 +123,13 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
                     if: {
                         $anyElementTrue: {
                             $map: {
-                                input: "$tags" ,
+                                input: "$read" ,
                                 as: "fieldTag",
-                                in: { $setIsSubset: [ "$$fieldTag", role ] }
+                                in: { $setIsSubset: [["$$fieldTag"], role ] }
                             }
                         }
                     },
-                    then: "$$DESCEND",
+                    then: "$$KEEP",
                     else: "$$PRUNE"
                 }
             }

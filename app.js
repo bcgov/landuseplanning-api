@@ -17,7 +17,7 @@ var bodyParser    = require('body-parser');
 var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
                     + '/'
-                    + (process.env.MONGODB_DATABASE || 'esm-test');
+                    + (process.env.MONGODB_DATABASE || 'esm');
 var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
 
@@ -112,14 +112,11 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       // Load database models
       defaultLog.info("loading db models.");
       require('./api/helpers/models/user');
-      require('./api/helpers/models/application');
+      require('./api/helpers/models/project');
       require('./api/helpers/models/feature');
       require('./api/helpers/models/document');
       require('./api/helpers/models/comment');
       require('./api/helpers/models/commentperiod');
-      require('./api/helpers/models/decision');
-      require('./api/helpers/models/review');
-      require('./api/helpers/models/organization');
       defaultLog.info("db model loading done.");
 
       app.listen(3000, '0.0.0.0', function() {

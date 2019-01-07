@@ -6,28 +6,29 @@ var qs          = require('qs');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
-var tagList     = ['agency',
-                    'areaHectares',
-                    'businessUnit',
+var tagList     = ['cEAAInvolvement',
+                    'cELead',
+                    'cELeadEmail',
+                    'cELeadPhone',
                     'centroid',
-                    'cl_file',
-                    'client',
-                    '_createdBy',
-                    'createdDate',
+                    'currentPhase',
+                    'currentPhaseCode',
+                    'currentPhaseName',
                     'description',
-                    'legalDescription',
-                    'statusHistoryEffectiveDate',
+                    'eacDecision',
                     'location',
                     'name',
-                    '_proponent',
-                    'publishDate',
-                    'purpose',
-                    'status',
-                    'subpurpose',
+                    'projectLead',
+                    'projectLeadEmail',
+                    'projectLeadPhone',
+                    'proponent',
+                    'region',
+                    'responsibleEPD',
+                    'responsibleEPDEmail',
+                    'responsibleEPDPhone',
                     'subtype',
-                    'tantalisID',
-                    'tenureStage',
-                    'type'];
+                    'type',
+                    'read'];
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
@@ -94,7 +95,7 @@ exports.publicGet = function (args, res, next) {
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
-  tagList.push('tags');
+  tagList.push('read');
 
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
@@ -111,9 +112,9 @@ exports.publicGet = function (args, res, next) {
     }
   }
 
-  _.assignIn(query, { isDeleted: false });
+  // _.assignIn(query, {});
 
-  handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
+  handleCommentPeriodDateQueryParameters(args, tagList, function () {
     Utils.runDataQuery('Project',
                       ['public'],
                       query,
@@ -122,8 +123,7 @@ exports.publicGet = function (args, res, next) {
                       null, // sort
                       skip, // skip
                       limit, // limit
-                      false,
-                      commentPeriodPipeline) // count
+                      false) // count
       .then(function (data) {
         return Actions.sendResponse(res, 200, data);
     });
