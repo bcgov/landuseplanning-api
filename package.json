@@ -1,11 +1,11 @@
 {
-  "name": "nrts-prc-api",
-  "version": "1.0.7",
+  "name": "eagele-api",
+  "version": "1.0.0",
   "author": "Mark Lisé",
   "contributors": [
     "Mark Lisé <mark@digitalspace.ca>"
   ],
-  "description": "ACRFD API",
+  "description": "Eagle API",
   "keywords": [],
   "license": "Apache 2.0",
   "main": "app",

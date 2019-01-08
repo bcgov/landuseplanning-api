@@ -1,8 +1,6 @@
 // database migration script
 // copies publishDate value to createdDate
 // for existing applications where publishDate was actually date it was created
-// run this after API supports createdDate (PRC-741)
-// run this after Admin sets Publish Date correctly (PRC-746)
 // is safe to run multiple times
 // NOTE: code below requires MongoDB 3.4
 

@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   version: "1.0.6"
-  title: NRTS PRC API
+  title: EAGLE API
 host: localhost:3000
 basePath: /api
 tags:
@@ -9,37 +9,37 @@ tags:
   description: "Everything about Logging in"
   externalDocs:
     description: "Find out more"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "application"
   description: "Operations about applications"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "feature"
   description: "Operations about features"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "document"
   description: "Operations about documents"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "organization"
   description: "Operations about organizations"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "user"
   description: "Operations about users"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 - name: "search"
   description: "Operations about searching"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/eagle-api.git"
 schemes:
   - http
 securityDefinitions:

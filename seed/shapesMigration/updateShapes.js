@@ -1,5 +1,5 @@
 //
-// Example: node updateShapes.js admin admin https nrts-prc-dev.pathfinder.gov.bc.ca 443
+// Example: node updateShapes.js admin admin https eagle-dev.pathfinder.gov.bc.ca 443
 //
 var Promise         = require('es6-promise').Promise;
 var _               = require('lodash');

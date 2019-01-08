@@ -1,6 +1,5 @@
 // database migration script
 // renames _addedBy to _createdBy
-// run this any time after API supports _createdBy (PRC-741)
 // is safe to run multiple times
 
 // steps:

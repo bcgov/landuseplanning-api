@@ -1,4 +1,4 @@
-def sonarqubePodLabel = "prc-api-${UUID.randomUUID().toString()}"
+def sonarqubePodLabel = "eagle-api-${UUID.randomUUID().toString()}"
 podTemplate(label: sonarqubePodLabel, name: sonarqubePodLabel, serviceAccount: 'jenkins', cloud: 'openshift', containers: [
   containerTemplate(
     name: 'jnlp',
@@ -11,7 +11,7 @@ podTemplate(label: sonarqubePodLabel, name: sonarqubePodLabel, serviceAccount: '
     command: '',
     args: '${computer.jnlpmac} ${computer.name}',
     envVars: [
-      envVar(key: 'SONARQUBE_URL', value: 'https://sonarqube-prc-tools.pathfinder.gov.bc.ca')
+      envVar(key: 'SONARQUBE_URL', value: 'https://sonarqube-eagle-tools.pathfinder.gov.bc.ca')
     ]
   )
 ]) {
@@ -22,7 +22,7 @@ podTemplate(label: sonarqubePodLabel, name: sonarqubePodLabel, serviceAccount: '
     stage('exeucte sonar') {
       dir('sonar-runner') {
         try {
-          sh './gradlew sonarqube -Dsonar.host.url=https://sonarqube-prc-tools.pathfinder.gov.bc.ca -Dsonar.verbose=true --stacktrace --info'
+          sh './gradlew sonarqube -Dsonar.host.url=https://sonarqube-eagle-tools.pathfinder.gov.bc.ca -Dsonar.verbose=true --stacktrace --info'
         } finally {
 
         }
@@ -37,13 +37,13 @@ pipeline {
     skipDefaultCheckout()
   }
   stages {
-    stage('Building: nrts-prc-api master branch') {
+    stage('Building: eagle-api master branch') {
       steps {
         script {
           try {
             echo "Building: ${env.JOB_NAME} #${env.BUILD_ID}"
             notifyBuild("Building: ${env.JOB_NAME} #${env.BUILD_ID}", "YELLOW")
-            openshiftBuild bldCfg: 'nrts-prc-api-master', showBuildLogs: 'true'
+            openshiftBuild bldCfg: 'eagle-api-master', showBuildLogs: 'true'
           } catch (e) {
             notifyBuild("BUILD ${env.JOB_NAME} #${env.BUILD_ID} ABORTED", "RED")
             error('Stopping early…')

@@ -2,7 +2,7 @@
     {
         "username": "admin",
         "password": "admin",
-        "displayName": "PRC Admin",
+        "displayName": "Eagle Admin",
         "roles": ["sysadmin", "public"]
     }
 ]

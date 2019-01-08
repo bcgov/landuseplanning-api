@@ -4,7 +4,7 @@ metadata:
   labels:
     app: update-shapes-template
   name: update-shapes
-  namespace: nrts-prc-tools
+  namespace: eagle-tools
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:
@@ -34,12 +34,12 @@ spec:
             - name: AUTH_ENDPOINT
               value: ''
             - name: JSON_PAYLOAD
-              value: '{"text":"Shapes Import Job for nrts-prc-prod Completed Successfully!"}'
+              value: '{"text":"Shapes Import Job for eagle-prod Completed Successfully!"}'
             - name: JSON_PAYLOAD_FAIL
-              value: '{"text":"Shapes Import Job for nrts-prc-prod Failed!"}'
+              value: '{"text":"Shapes Import Job for eagle-prod Failed!"}'
             - name: NOTIFICATION_URL
               value: ''
-            image: docker-registry.default.svc:5000/nrts-prc-tools/nrts-prc-api:master
+            image: docker-registry.default.svc:5000/eagle-tools/eagle-api:master
             command:
             - bash
             - -c

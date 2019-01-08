@@ -101,7 +101,7 @@
       "name": "SOURCE_REPOSITORY_URL",
       "displayName": "Git Repository URL",
       "description": "The URL of the repository with your application source code.",
-      "value": "https://github.com/bcgov/nrts-prc-api.git"
+      "value": "https://github.com/bcgov/eagle-api.git"
     },
     {
       "name": "SOURCE_REPOSITORY_REF",

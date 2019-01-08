@@ -1,6 +1,6 @@
-<!-- ## ACRFD API (master)
+<!-- ## EAGLE API (master)
 
-Minimal API for the ACRFD [Public](https://github.com/bcgov/nrts-prc-public) and [Admin](https://github.com/bcgov/nrts-prc-admin) apps -->
+Minimal API for the EAGLE [Public](https://github.com/bcgov/eagle-public) and [Admin](https://github.com/bcgov/eagle-admin) apps -->
 
 ## How to run this
  

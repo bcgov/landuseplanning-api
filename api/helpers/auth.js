@@ -3,8 +3,8 @@
 var jwt             = require("jsonwebtoken");
 const jwksClient    = require('jwks-rsa');
 
-var ISSUER          = process.env.SSO_ISSUER || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc";
-var JWKSURI         = process.env.SSO_JWKSURI || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc/protocol/openid-connect/certs";
+var ISSUER          = process.env.SSO_ISSUER || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/eagle";
+var JWKSURI         = process.env.SSO_JWKSURI || "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/eagle/protocol/openid-connect/certs";
 var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.
 var SECRET          = process.env.SECRET || "defaultSecret";
 var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "false";

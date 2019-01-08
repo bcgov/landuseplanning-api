@@ -33,6 +33,6 @@
         SE_ANNO_CAD_DATA            : { type: String, default: '' }
     },
     isDeleted     : { type: Boolean, default: false },
-    // Which PRC application does this shape belong to?
+    // Which EAGLE application does this shape belong to?
     applicationID : { type:'ObjectId', ref:'Application', default:null}
 });
