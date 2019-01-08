@@ -11,15 +11,6 @@ var genSchema = function (name, definition) {
     definition.statics__ = definition.statics__ || {};
     definition.presave__ = definition.presave__ || null;
     //
-    // go through and pre-parse the definition
-    //
-    _.each (definition, function (v, k) {
-        if (k.substr(0,2) === '__') {
-            delete definition[k];
-            decorate[k] (name, definition, v);
-        }
-    });
-    //
     // put aside the stuff that must happen post schema creation
     //
     var m = definition.methods__;
