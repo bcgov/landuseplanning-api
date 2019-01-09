@@ -3,7 +3,6 @@
 var applist = require('./applist.json');
 var mongoose = require('mongoose');
 var User = mongoose.model('User');
-var Organization = mongoose.model('Organization');
 var Application = mongoose.model('Application');
 
 module.exports = function () {
@@ -21,20 +20,6 @@ module.exports = function () {
                         application.save().then(resolve, reject);
                     } else {
                         reject(Error('User does not exist'));
-                    }
-                });
-            });
-        };
-
-        var doOrgWork = function (application, _proponent) {
-            return new Promise(function (resolve, reject) {
-                Organization.findOne({ name: _proponent }, function (err, res) {
-                    if (res !== null) {
-                        // assume organization exists!
-                        application.proponent = res;
-                        application.save().then(resolve, reject);
-                    } else {
-                        reject(Error('Organization does not exist'));
                     }
                 });
             });
@@ -79,9 +64,6 @@ module.exports = function () {
                             // until the final then completes. Only then will this promise reduction 
                             // finally resolve for the .then of the original resolving Promise.resolve().
                             //
-                            .then(function (application) {
-                                return doOrgWork(application, currentItem._proponent);
-                            })
                             .then(function (application) {
                                 return doUserWork(application, currentItem._createdBy);
                             });

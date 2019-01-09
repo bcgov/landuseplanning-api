@@ -10,7 +10,6 @@ var request         = require('request');
 var fs              = require('fs');
 var _applications   = [];
 var _commentPeriods = [];
-var _organizations  = [];
 var _decisions      = [];
 var _comments       = [];
 var username        = '';
@@ -99,11 +98,6 @@ var doWork = function (e, route) {
         e._commentPeriod = f._id;
       }
       if (route === 'api/application') {
-        // console.log('org:1', e.proponent);
-        // console.log('org:2', _.find(_organizations, { name: e.proponent}));
-        // FOR NOW, USING CLIENT STRING INSTEAD OF REF TO ORGANIZATION
-        // var f = _.find(_organizations, { name: e.proponent});
-        // e._proponent = f._id;
         e.client = e.client;
       }
       if (route === 'api/decision') {
@@ -186,9 +180,6 @@ var doWork = function (e, route) {
               if (route === 'api/public/comment') {
                 _comments.push(data);
               }
-              if (route === 'api/organization') {
-                  _organizations.push(data);
-              }
               if (route === 'api/decision') {
                 _decisions.push(data);
               }
@@ -252,10 +243,6 @@ var updateAll = function (collectionName, entries) {
 console.log("Logging in and getting JWT:");
 login(username, password)
 .then(function () {
-  var orglist = require('./orglist.json');
-  return insertAll('api/organization', orglist);
-})
-.then(function () {
   var applist = require('./applist.json');
   return insertAll('api/application', applist);
 })
@@ -272,8 +259,8 @@ login(username, password)
   return insertAll('api/public/comment', clist);
 })
 .then(function () {
-  var orglist = require('./doclist.json');
-  return insertAll('api/document', orglist);
+  var doclist = require('./doclist.json');
+  return insertAll('api/document', doclist);
 })
 .catch(function (err) {
   console.log("ERR:", err);

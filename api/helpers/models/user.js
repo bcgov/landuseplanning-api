@@ -10,7 +10,6 @@ module.exports = require ('../models')('User', {
     roles                   : [{ type: String}],
     updated                 : { type: Date },
     created                 : { type: Date, default: Date.now },
-    org                     : { type:'ObjectId', ref:'Organization', default:null, index:true },
     title                   : { type:String, default: '' },
     phoneNumber             : { type:String, default: '' },
     salutation              : { type:String, default: '' },

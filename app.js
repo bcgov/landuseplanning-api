@@ -119,7 +119,6 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/commentperiod');
       require('./api/helpers/models/decision');
       require('./api/helpers/models/review');
-      require('./api/helpers/models/organization');
       defaultLog.info("db model loading done.");
 
       app.listen(3000, '0.0.0.0', function() {
