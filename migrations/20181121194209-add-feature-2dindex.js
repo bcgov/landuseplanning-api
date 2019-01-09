@@ -15,16 +15,13 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.addIndex( 'features',
-                      'featureGeometryIndex',
-                      { geometry: '2dsphere'},
-                      false,
-                      function (err) {
-                        if (err) {
-                          console.log('DB Up: featureGeometryIndex err:', err);
-                        }
-                      }
-  );
+  return db._run('updateMany',
+                  'projects', {
+                    query: {},
+                    update: {$unset: {userCan: ''}},
+                    options: {}
+                  }
+                );
 };
 
 exports.down = function(db) {
