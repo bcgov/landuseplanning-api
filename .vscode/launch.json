@@ -20,6 +20,22 @@
             "request": "launch",
             "name": "Launch API using Node",
             "program": "${workspaceFolder}/app.js"
-        }
-    ]
+        },
+        {
+          "type": "node",
+          "request": "launch",
+          "name": "Launch update script using Node",
+          "program": "${workspaceFolder}/seed/shapesMigration/updateShapes.js",
+          "args": [
+            "backend",
+            "xxx",
+            "http",
+            "localhost",
+            "3000",
+            "prc-admin-console",
+            "password",
+            "https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc/protocol/openid-connect/token"
+          ]
+      }
+  ]
 }

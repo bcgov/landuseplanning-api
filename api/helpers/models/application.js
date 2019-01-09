@@ -25,7 +25,7 @@
     type             : { type: String },
 
     // Used to track when the latest status was effective.
-    statusHistoryEffectiveDate : { type: Number, default: null },
+    statusHistoryEffectiveDate : { type: Date },
 
     // Note: Default on tag property is purely for display only, they have no real effect on the model.
     // This must be done in the code.
