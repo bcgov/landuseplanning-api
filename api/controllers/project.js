@@ -71,7 +71,7 @@ exports.publicHead = function (args, res, next) {
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
-  tagList.push('tags');
+  tagList.push('read');
 
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
 
@@ -85,7 +85,7 @@ exports.publicHead = function (args, res, next) {
     }
   }
 
-  _.assignIn(query, { isDeleted: false });
+  // _.assignIn(query, { isDeleted: false });
 
   handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
     Utils.runDataQuery('Project',

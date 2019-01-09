@@ -94,7 +94,7 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
         // Don't project unecessary fields if we are only counting objects.
         if (count) {
             projection._id = 1;
-            projection.tags = 1;
+            projection.read = 1;
         } else {
             // Fields we always return
             var defaultFields = ['_id',
