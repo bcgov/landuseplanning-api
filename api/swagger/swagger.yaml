@@ -1261,6 +1261,16 @@ paths:
           required: false
           description: "The read permissions of the project"
           type: string
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
       responses:
         "200":
           description: "Success"
