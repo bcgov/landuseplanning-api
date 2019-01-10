@@ -37,13 +37,13 @@ exports.up = function(db) {
       .then(function (arr) {
         for(let item of arr) {
           p.update(
-            {
-              _id: item._id
-            },
-            {
-              $set: { centroid: [item.lon,item.lat] }
-            }
-          );
+          {
+            _id: item._id
+          },
+          {
+            $set: { centroid: [item.lon,item.lat] },
+            $unset: { lon: "", lat: "" }
+          });
         }
         mClient.close();
       });
