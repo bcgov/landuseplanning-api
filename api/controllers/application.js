@@ -664,9 +664,34 @@ var addStandardQueryFilters = function (query, args) {
   if (args.swagger.params.centroid && args.swagger.params.centroid.value !== undefined) {
     // defaultLog.info("Looking up features based on coords:", args.swagger.params.centroid.value);
     // Throws if parsing fails.
-    _.assignIn(query, {
-      centroid: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.centroid.value) } } }
-    });
+    const coordinates = JSON.parse(args.swagger.params.centroid.value)[0];
+    if (coordinates.length == 2) {
+      // use geoWithin box query
+      _.assignIn(query, {
+        centroid: {
+          $geoWithin: {
+            $box: coordinates
+          }
+        }
+      });
+    } else {
+      // use geoIntersects polygon query
+      // specify custom MongoDB CRS to support queries with area larger than a single hemisphere
+      _.assignIn(query, {
+        centroid: {
+          $geoIntersects: {
+            $geometry: {
+              type: "Polygon",
+              coordinates: [coordinates],
+              crs: {
+                type: "name",
+                properties: { name: "urn:x-mongodb:crs:strictwinding:EPSG:4326" }
+              }
+            }
+          }
+        }
+      });
+    }
   }
   // Allows filtering of apps that have had their last status change greater than this epoch time.
   if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate !== undefined) {
