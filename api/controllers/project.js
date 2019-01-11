@@ -31,6 +31,7 @@ var tagList     = [
                   'CEAALink',
                   'code',
                   'commodity',
+                  'currentPhaseName',
                   'dateAdded',
                   'dateCommentsClosed',
                   'dateCommentsOpen',

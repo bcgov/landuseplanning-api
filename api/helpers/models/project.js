@@ -27,6 +27,7 @@
     CEAALink                : { type:String, default: '' },
     code                    : { type:String, default: '' },
     commodity               : { type:String, default: '' },
+    currentPhaseName        : { type:String, default: '' },
     dateAdded               : { type:String, default: '' },
     dateCommentsClosed      : { type:String, default: '' },
     dateCommentsOpen        : { type:String, default: '' },
