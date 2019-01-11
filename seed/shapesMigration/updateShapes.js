@@ -73,7 +73,8 @@ var getAllApplications = function (route) {
     return new Promise(function (resolve, reject) {
         console.log("calling:", uri + route + '?fields=tantalisID');
         request({
-            url: uri + route + '?fields=tantalisID', headers: {
+            // only update the ones that aren't deleted
+            url: uri + route + '?fields=tantalisID&isDeleted=false', headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + jwt_login
             }
@@ -145,6 +146,7 @@ var getAndSaveFeatures = function (accessToken, item) {
                 item.client += client.firstName + " " + client.lastName;
             }
         }
+        item.statusHistoryEffectiveDate = obj.statusHistoryEffectiveDate;
 
         Promise.resolve()
         .then(function () {
@@ -205,18 +207,19 @@ var deleteAllApplicationFeatures = function (item) {
 var updateApplicationMeta = function (item) {
     return new Promise(function (resolve, reject) {
         var updatedAppObject = {};
-        updatedAppObject.businessUnit     = item.RESPONSIBLE_BUSINESS_UNIT;
-        updatedAppObject.purpose          = item.TENURE_PURPOSE;
-        updatedAppObject.subpurpose       = item.TENURE_SUBPURPOSE;
-        updatedAppObject.status           = item.TENURE_STATUS;
-        updatedAppObject.type             = item.TENURE_TYPE;
-        updatedAppObject.tenureStage      = item.TENURE_STAGE;
-        updatedAppObject.subtype          = item.TENURE_SUBTYPE;
-        updatedAppObject.location         = item.TENURE_LOCATION;
-        updatedAppObject.legalDescription = item.TENURE_LEGAL_DESCRIPTION;
-        updatedAppObject.centroid         = item.centroid;
-        updatedAppObject.areaHectares     = item.areaHectares;
-        updatedAppObject.client           = item.client;
+        updatedAppObject.businessUnit               = item.RESPONSIBLE_BUSINESS_UNIT;
+        updatedAppObject.purpose                    = item.TENURE_PURPOSE;
+        updatedAppObject.subpurpose                 = item.TENURE_SUBPURPOSE;
+        updatedAppObject.status                     = item.TENURE_STATUS;
+        updatedAppObject.type                       = item.TENURE_TYPE;
+        updatedAppObject.tenureStage                = item.TENURE_STAGE;
+        updatedAppObject.subtype                    = item.TENURE_SUBTYPE;
+        updatedAppObject.location                   = item.TENURE_LOCATION;
+        updatedAppObject.legalDescription           = item.TENURE_LEGAL_DESCRIPTION;
+        updatedAppObject.centroid                   = item.centroid;
+        updatedAppObject.areaHectares               = item.areaHectares;
+        updatedAppObject.client                     = item.client;
+        updatedAppObject.statusHistoryEffectiveDate = item.statusHistoryEffectiveDate;
         request.put({
             url: uri + 'api/application/' + item._id,
             headers: {

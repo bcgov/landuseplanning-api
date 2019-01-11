@@ -355,7 +355,7 @@ describe('utils', () => {
       test('sets the statusHistoryEffectiveDate', done => {
         Utils.getApplicationByDispositionID(accessToken, dispId)
           .then(response => {
-            expect(response.statusHistoryEffectiveDate).toEqual(1527878179000);
+            expect(response.statusHistoryEffectiveDate).toEqual(new Date(1527878179000));
 
             done();
           });

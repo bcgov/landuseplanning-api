@@ -1042,10 +1042,10 @@ paths:
           description: "Get an Application that relates to size of areaHectares."
         - in: query
           name: statusHistoryEffectiveDate
-          collectionFormat: multi
-          type: number
+          type: string
+          format: date-time
           required: false
-          description: "Get an Application where the last status change was since this epoch time."
+          description: "Get an Application filtered by last status change date."
         - in: query
           name: centroid
           required: false
@@ -1171,10 +1171,10 @@ paths:
           description: "Get an Application that relates to size of areaHectares."
         - in: query
           name: statusHistoryEffectiveDate
-          collectionFormat: multi
-          type: number
+          type: string
+          format: date-time
           required: false
-          description: "Get an Application where the last status change was since this epoch time."
+          description: "Get an Application filtered by last status change date."
         - in: query
           name: centroid
           required: false
