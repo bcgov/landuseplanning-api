@@ -98,28 +98,6 @@ definitions:
     description: "Optional fields to return."
     example: name|type
     #TODO: Fix enums
-    enum: &applicationFields
-      - agency
-      - areaHectares
-      - businessUnit
-      - centroid
-      - cl_file
-      - client
-      - _createdBy
-      - createdDate
-      - description
-      - legalDescription
-      - location
-      - name
-      - _proponent
-      - publishDate
-      - purpose
-      - status
-      - subpurpose
-      - subtype
-      - tantalisID
-      - tenureStage
-      - type
     enum: &projectFields
       - cEAAInvolvement
       - cELead
@@ -141,7 +119,6 @@ definitions:
       - responsibleEPD
       - responsibleEPDEmail
       - responsibleEPDPhone
-      - subtype
       - type
       - read
 
@@ -487,7 +464,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
           name: isDeleted
           type: boolean
@@ -608,7 +585,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
           name: isDeleted
           type: boolean
@@ -757,7 +734,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
           name: isDeleted
           type: boolean
@@ -797,7 +774,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *applicationFields
+            enum: *projectFields
         - in: query
           name: isDeleted
           type: boolean
@@ -1107,11 +1084,6 @@ paths:
           description: "Phone of the EPD"
           type: string
         - in: query
-          name: subtype
-          required: false
-          description: "The sub-type of the project"
-          type: string
-        - in: query
           name: type
           required: false
           description: "Type of the project"
@@ -1245,11 +1217,6 @@ paths:
           name: responsibleEPDPhone
           required: false
           description: "Phone of the EPD"
-          type: string
-        - in: query
-          name: subtype
-          required: false
-          description: "The sub-type of the project"
           type: string
         - in: query
           name: type

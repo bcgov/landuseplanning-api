@@ -7,10 +7,10 @@ var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 var request     = require('request');
 var tagList     = [
-                  'cEAAInvolvement',
-                  'cELead',
-                  'cELeadEmail',
-                  'cELeadPhone',
+                  'CEAAInvolvement',
+                  'CELead',
+                  'CELeadEmail',
+                  'CELeadPhone',
                   'centroid',
                   'description',
                   'eacDecision',
