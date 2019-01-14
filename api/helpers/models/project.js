@@ -1,10 +1,10 @@
  module.exports = require ('../models')('Project', {
 
     //Needed for default view
-    cEAAInvolvement         : { type:String, default: '' },
-    cELead                  : { type:String, default: '' },
-    cELeadEmail             : { type:String, default: '' },
-    cELeadPhone             : { type:String, default: '' },
+    CEAAInvolvement         : { type:String, default: '' },
+    CELead                  : { type:String, default: '' },
+    CELeadEmail             : { type:String, default: '' },
+    CELeadPhone             : { type:String, default: '' },
     centroid                : [{ type: Number, default: 0.00}],
     description             : { type:String, default: '' },
     eacDecision             : { type:String, default: '' },
@@ -18,7 +18,6 @@
     responsibleEPD          : { type:String, default: '' },
     responsibleEPDEmail     : { type:String, default: '' },
     responsibleEPDPhone     : { type:String, default: '' },
-    subtype                 : { type: String },
     type                    : { type:String, default: '' },
 
     //Everything else
