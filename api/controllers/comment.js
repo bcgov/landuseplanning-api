@@ -7,7 +7,8 @@ var Utils       = require('../helpers/utils');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
-    return (_.indexOf(['name',
+    return (_.indexOf([
+                      'name',
                       'commentNumber',
                       'comment',
                       'internal',
@@ -18,7 +19,8 @@ var getSanitizedFields = function (fields) {
                       '_commentPeriod',
                       'review',
                       'commentStatus',
-                      'isDeleted'], f) !== -1);
+                      'isDeleted'
+                    ], f) !== -1);
   });
 }
 

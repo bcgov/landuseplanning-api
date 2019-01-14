@@ -7,12 +7,50 @@ var Utils       = require('../helpers/utils');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
-    return (_.indexOf(['name',
-                        'startDate',
-                        'endDate',
-                        '_addedBy',
-                        '_application',
-                        'isDeleted'], f) !== -1);
+    return (_.indexOf([
+      '__v',
+      '_schemaName',
+      'addedBy',
+      'additionalText',
+      'ceaaAdditionalText',
+      'ceaaInformationLabel',
+      'ceaaRelatedDocuments',
+      'classificationRoles',
+      'classifiedPercent',
+      'commenterRoles',
+      'dateAdded',
+      'dateCompleted',
+      'dateCompletedEst',
+      'dateStarted',
+      'dateStartedEst',
+      'dateUpdated',
+      'downloadRoles',
+      'informationLabel',
+      'instructions',
+      'isClassified',
+      'isPublished',
+      'isResolved',
+      'isVetted',
+      'milestone',
+      'openHouses',
+      'periodType',
+      'phase',
+      'phaseName',
+      'project',
+      'publishedPercent',
+      'rangeOption',
+      'rangeType',
+      'relatedDocuments',
+      'resolvedPercent',
+      'updatedBy',
+      'userCan',
+      'vettedPercent',
+      'vettingRoles',
+
+      'read',
+      'write',
+      'delete'
+    ], f) !== -1);
   });
 }
 
@@ -26,10 +64,9 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.CommentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
-  _.assignIn(query, { isDeleted: false });
 
   Utils.runDataQuery('CommentPeriod',
                     ['public'],
@@ -53,8 +90,8 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.CommentPeriodId && args.swagger.params.CommentPeriodId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
