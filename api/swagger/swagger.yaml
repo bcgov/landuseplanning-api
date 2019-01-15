@@ -263,10 +263,47 @@ definitions:
     example: startDate|endDate|description
     #TODO: Fix enums
     enum: &commentperiodFields
-      - startDate
-      - endDate
-      - _application
-      - _addedBy
+      - __v
+      - _schemaName
+      - addedBy
+      - additionalText
+      - ceaaAdditionalText
+      - ceaaInformationLabel
+      - ceaaRelatedDocuments
+      - classificationRoles
+      - classifiedPercent
+      - commenterRoles
+      - dateAdded
+      - dateCompleted
+      - dateCompletedEst
+      - dateStarted
+      - dateStartedEst
+      - dateUpdated
+      - downloadRoles
+      - informationLabel
+      - instructions
+      - isClassified
+      - isPublished
+      - isResolved
+      - isVetted
+      - milestone
+      - openHouses
+      - periodType
+      - phase
+      - phaseName
+      - project
+      - publishedPercent
+      - rangeOption
+      - rangeType
+      - relatedDocuments
+      - resolvedPercent
+      - updatedBy
+      - userCan
+      - vettedPercent
+      - vettingRoles
+      - read
+      - write
+      - delete
 ### Decision Definitions
   DecisionId:
     type: object
@@ -4459,11 +4496,6 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-        - in: query
-          name: isDeleted
-          type: boolean
-          required: false
-          description: "CommentPeriods that are deleted or not"
         - in: query
           name: fields
           description: "commentperiod fields to return."
