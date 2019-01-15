@@ -10,8 +10,8 @@ tags:
   externalDocs:
     description: "Find out more"
     url: "http://github.com/bcgov/eagle-api.git"
-- name: "application"
-  description: "Operations about applications"
+- name: "project"
+  description: "Operations about projects"
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/eagle-api.git"
@@ -76,14 +76,14 @@ definitions:
         type: string
         example: "password"
 
-### Application Definitions
-  AppId:
+### Project Definitions
+  ProjId:
     type: object
     properties:
       _id:
         type: string
         example: "54759eb3c090d83494e2d804"
-  AppObject:
+  ProjObject:
     type: object
     properties:
       _id:
@@ -93,7 +93,7 @@ definitions:
         type: string
         example: "[['public']]"
         ## TODO: Add more fields here.
-  Application:
+  Project:
     type: string
     description: "Optional fields to return."
     example: name|type
@@ -122,7 +122,7 @@ definitions:
       - type
       - read
 
-### Application Definitions
+### Project Definitions
   FeatureId:
     type: object
     properties:
@@ -152,27 +152,6 @@ definitions:
       - properties
       - isDeleted
       - applicationID
-
-### Search Definitions
-  crownLandsId:
-    type: string
-    example: "54759eb3c090d83494e2d804"
-  dtId:
-    type: string
-    example: "54759eb3c090d83494e2d804"
-  SearchObject:
-    type: object
-    properties:
-      _id:
-        type: string
-        example: "0230191"
-  Search:
-    type: string
-    description: "Optional fields to return."
-    example: name
-    # TODO: Fix enums
-    enum: &searchFields
-      - name
 
 ### Document Definitions
   DocId:
@@ -437,54 +416,54 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-### Application Routes
-  /application:
-    x-swagger-router-controller: application
+### Project Routes
+  /project:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application Route"
+      description: "Options on Project Route"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     post:
       tags:
-        - application
-      summary: "Create a new application"
+        - project
+      summary: "Create a new project"
       operationId: protectedPost
-      description: "Create a new application object."
+      description: "Create a new project object."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
-        - write:application
+        - write:project
       parameters:
         - name: app
           in: body
           required: true
           schema:
-            $ref: "#/definitions/AppId"
+            $ref: "#/definitions/ProjId"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     head:
       tags:
-        - application
-      summary: "Retrieve META associated with an application."
+        - project
+      summary: "Retrieve META associated with an project."
       operationId: protectedHead
       description: "Get META from the request, without returning the payload in question."
       security:
@@ -495,7 +474,7 @@ paths:
       parameters:
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
@@ -521,93 +500,93 @@ paths:
           name: tantalisId
           type: number
           required: false
-          description: "Get an Application that contain this specific disposition."
+          description: "Get a Project that contain this specific disposition."
         - in: query
           name: cl_file
           type: number
           required: false
-          description: "Get an Application that relates to this crown lands file."
+          description: "Get a Project that relates to this crown lands file."
         - in: query
           collectionFormat: multi
           name: purpose
           type: string
           required: false
-          description: "Get an Application that relates to this purpose."
+          description: "Get a Project that relates to this purpose."
         - in: query
           collectionFormat: multi
           name: subpurpose
           type: string
           required: false
-          description: "Get an Application that relates to this subpurpose."
+          description: "Get a Project that relates to this subpurpose."
         - in: query
           collectionFormat: multi
           name: status
           type: string
           required: false
-          description: "Get an Application that relates to this status."
+          description: "Get a Project that relates to this status."
         - in: query
           name: type
           type: string
           required: false
-          description: "Get an Application that relates to this type."
+          description: "Get a Project that relates to this type."
         - in: query
           name: subtype
           type: string
           required: false
-          description: "Get an Application that relates to this subtype."
+          description: "Get a Project that relates to this subtype."
         - in: query
           name: agency
           type: string
           required: false
-          description: "Get an Application that relates to this subagencytype."
+          description: "Get a Project that relates to this subagencytype."
         - in: query
           name: businessUnit
           type: string
           required: false
-          description: "Get an Application that relates to this businessUnit."
+          description: "Get a Project that relates to this businessUnit."
         - in: query
           name: client
           type: string
           required: false
-          description: "Get an Application that relates to this client."
+          description: "Get a Project that relates to this client."
         - in: query
           name: tenureStage
           type: string
           required: false
-          description: "Get an Application that relates to this tenureStage."
+          description: "Get a Project that relates to this tenureStage."
         - in: query
           name: areaHectares
           collectionFormat: multi
           type: string
           required: false
-          description: "Get an Application that relates to size of areaHectares."
+          description: "Get a Project that relates to size of areaHectares."
         - in: query
           name: centroid
           required: false
-          description: "Query applications that have their centroid fall within the supplied coordinates."
+          description: "Query projects that have their centroid fall within the supplied coordinates."
           type: string
         - in: query
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instaces is supported."
           type: string
           format: date-time
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     get:
       tags:
-        - application
-      summary: "Get a list of applications"
+        - project
+      summary: "Get a list of projects"
       operationId: protectedGet
-      description: "Authenticated access to retreiving applications."
+      description: "Authenticated access to retreiving projects."
       security:
         - Bearer: []
       x-security-scopes:
@@ -616,7 +595,7 @@ paths:
       parameters:
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
@@ -642,114 +621,114 @@ paths:
           name: tantalisId
           type: number
           required: false
-          description: "Get an Application that contain this specific disposition."
+          description: "Get a Project that contain this specific disposition."
         - in: query
           name: cl_file
           type: number
           required: false
-          description: "Get an Application that relates to this crown lands file."
+          description: "Get a Project that relates to this crown lands file."
         - in: query
           collectionFormat: multi
           name: purpose
           type: string
           required: false
-          description: "Get an Application that relates to this purpose."
+          description: "Get a Project that relates to this purpose."
         - in: query
           collectionFormat: multi
           name: subpurpose
           type: string
           required: false
-          description: "Get an Application that relates to this subpurpose."
+          description: "Get a Project that relates to this subpurpose."
         - in: query
           collectionFormat: multi
           name: status
           type: string
           required: false
-          description: "Get an Application that relates to this status."
+          description: "Get a Project that relates to this status."
         - in: query
           name: type
           type: string
           required: false
-          description: "Get an Application that relates to this type."
+          description: "Get a Project that relates to this type."
         - in: query
           name: subtype
           type: string
           required: false
-          description: "Get an Application that relates to this subtype."
+          description: "Get a Project that relates to this subtype."
         - in: query
           name: agency
           type: string
           required: false
-          description: "Get an Application that relates to this subagencytype."
+          description: "Get a Project that relates to this subagencytype."
         - in: query
           name: businessUnit
           type: string
           required: false
-          description: "Get an Application that relates to this businessUnit."
+          description: "Get a Project that relates to this businessUnit."
         - in: query
           name: client
           type: string
           required: false
-          description: "Get an Application that relates to this client."
+          description: "Get a Project that relates to this client."
         - in: query
           name: tenureStage
           type: string
           required: false
-          description: "Get an Application that relates to this tenureStage."
+          description: "Get a Project that relates to this tenureStage."
         - in: query
           name: areaHectares
           collectionFormat: multi
           type: string
           required: false
-          description: "Get an Application that relates to size of areaHectares."
+          description: "Get a Project that relates to size of areaHectares."
         - in: query
           name: centroid
           required: false
-          description: "Query applications that have their centroid fall within the supplied coordinates."
+          description: "Query projects that have their centroid fall within the supplied coordinates."
           type: string
         - in: query
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query application publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instaces is supported."
           type: string
           format: date-time
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /application/{appId}:
-    x-swagger-router-controller: application
+  /project/{projId}:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application GET Route"
+      description: "Options on Project GET Route"
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     head:
       tags:
-        - application
-      summary: "Retrieve META associated with an application."
+        - project
+      summary: "Retrieve META associated with an project."
       operationId: protectedHead
       description: "Get META from the request, without returning the payload in question."
       security:
@@ -758,14 +737,14 @@ paths:
         - sysadmin
         - user
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
@@ -781,31 +760,31 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     get:
       tags:
-        - application
-      summary: "Get an application"
+        - project
+      summary: "Get an project"
       operationId: protectedGet
-      description: "Authenticated access to retreiving applications."
+      description: "Authenticated access to retreiving projects."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
         - user
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
         - in: query
           name: fields
-          description: "Application fields to return."
+          description: "Project fields to return."
           required: false
           type: array
           collectionFormat: pipes
@@ -821,168 +800,168 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     put:
       tags:
-        - application
-      summary: "Update an application"
+        - project
+      summary: "Update an project"
       operationId: protectedPut
-      description: "Update an application object."
+      description: "Update an project object."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
-        - write:application
+        - write:project
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to update"
+          description: "ID of project to update"
           required: true
           type: "string"
-        - name: AppObject
+        - name: ProjObject
           in: body
           required: true
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     delete:
       tags:
-        - application
-      summary: "Delete an application"
+        - project
+      summary: "Delete an project"
       operationId: protectedDelete
-      description: "Delete an application object."
+      description: "Delete an project object."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to delete"
+          description: "ID of project to delete"
           required: true
           type: "string"
-        - name: AppObject
+        - name: ProjObject
           in: body
           required: true
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /application/{appId}/publish:
-    x-swagger-router-controller: application
+  /project/{projId}/publish:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application Route"
+      description: "Options on Project Route"
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     put:
       tags:
-        - application
-      summary: "Publish a application"
+        - project
+      summary: "Publish a project"
       operationId: protectedPublish
-      description: "Adds the singular instance of the 'public' role to a application."
+      description: "Adds the singular instance of the 'public' role to a project."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
-        - write:application
+        - write:project
         # TODO: Define publish roles.
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to update"
+          description: "ID of project to update"
           required: true
           type: "string"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /application/{appId}/unpublish:
-    x-swagger-router-controller: application
+  /project/{projId}/unpublish:
+    x-swagger-router-controller: project
     options:
       tags:
-        - application
+        - project
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on Application Route"
+      description: "Options on Project Route"
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to get"
+          description: "ID of project to get"
           required: true
           type: "string"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
     put:
       tags:
-        - application
-      summary: "UnPublish a application"
+        - project
+      summary: "UnPublish a project"
       operationId: protectedUnPublish
-      description: "Removes the singular instance of the 'public' role to a application."
+      description: "Removes the singular instance of the 'public' role to a project."
       security:
         - Bearer: []
       x-security-scopes:
         - sysadmin
-        - write:application
+        - write:project
         # TODO: Define publish roles.
       parameters:
-        - name: appId
+        - name: projId
           in: path
-          description: "ID of application to update"
+          description: "ID of project to update"
           required: true
           type: "string"
       responses:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
@@ -999,7 +978,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
@@ -1134,7 +1113,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
@@ -1279,12 +1258,12 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /public/project/{appId}:
+  /public/project/{projId}:
     x-swagger-router-controller: project
     options:
       tags:
@@ -1293,7 +1272,7 @@ paths:
       operationId: protectedOptions
       description: "Options on Project GET Route"
       parameters:
-        - name: appId
+        - name: projId
           in: path
           description: "ID of project to get"
           required: true
@@ -1302,7 +1281,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
@@ -1314,7 +1293,7 @@ paths:
       operationId: publicGet
       description: "Public access to retreiving projects."
       parameters:
-        - name: appId
+        - name: projId
           in: path
           description: "ID of project to get"
           required: true
@@ -1332,7 +1311,7 @@ paths:
         "200":
           description: "Success"
           schema:
-            $ref: "#/definitions/AppObject"
+            $ref: "#/definitions/ProjObject"
         "403":
           description: "Access Denied"
           schema:
@@ -1442,7 +1421,7 @@ paths:
           name: applicationId
           type: string
           required: false
-          description: "Get a Feature that is associated with a particular application."
+          description: "Get a Feature that is associated with a particular project."
         - in: query
           name: coordinates
           required: false
@@ -1723,7 +1702,7 @@ paths:
           name: applicationId
           type: string
           required: false
-          description: "Get a Feature that is associated with a particular application."
+          description: "Get a Feature that is associated with a particular project."
         - in: query
           name: coordinates
           required: false
@@ -1792,306 +1771,6 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
-## Search
-  /public/search/bcgw/crownLandsId/{crownLandsId}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: crownLandsId
-          in: path
-          description: "ID of Crown Tenures to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get a list of searchable things from the bcgw"
-      operationId: publicGetBCGW
-      description: "Retreiving search results."
-      parameters:
-        - name: crownLandsId
-          in: path
-          description: "ID of Crown Tenures to get"
-          required: true
-          type: "string"
-        - in: query
-          name: fields
-          description: "Search fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *searchFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /public/search/bcgw/getClientsInfoByDispositionId/{dtId}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Disposition ID to get client info on"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get a list of clients associated with this disposition"
-      operationId: publicGetClientsInfoByDispositionId
-      description: "Returns a list of client(s)."
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Disposition ID to get client info on"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /public/search/bcgw/dispositionTransactionId/{dtId}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get a list of searchable things from the bcgw"
-      operationId: publicGetBCGWDispositionTransactionId
-      description: "Retreiving search results."
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-        - in: query
-          name: fields
-          description: "Search fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *searchFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /public/search/dispositionTransactionId/{dtId}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get a list of searchable things from the bcgw"
-      operationId: publicGetDispositionTransactionId
-      description: "Retreiving search results."
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-        - in: query
-          name: fields
-          description: "Search fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *searchFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /ttlsapi/dispositionTransactionId/{dtId}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get application data from Tantalis API"
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-      operationId: protectedTTLSGetApplicationByDisp
-      description: "Get application data from Tantalis API."
-      parameters:
-        - name: dtId
-          in: path
-          description: "ID of Tantalis Obj to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /ttlsapi/crownLandFileNumber/{fileNumber}:
-    x-swagger-router-controller: search
-    options:
-      tags:
-        - search
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Search Route"
-      parameters:
-        - name: fileNumber
-          in: path
-          description: "Crown Land File Number"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - search
-      summary: "Get applications that relate to a Crown Land File Number from Tantalis API"
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-      operationId: protectedTTLSGetApplicationsByFileNumber
-      description: "Get application data from Tantalis API."
-      parameters:
-        - name: fileNumber
-          in: path
-          description: "Crown Land File Number"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/SearchObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
 ## Documents
   /document:
     x-swagger-router-controller: document
@@ -2173,7 +1852,7 @@ paths:
       parameters:
         - in: query
           name: _application
-          description: "Documents relating to a particular Application(s)"
+          description: "Documents relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -2576,7 +2255,7 @@ paths:
       parameters:
         - in: query
           name: _application
-          description: "Documents relating to a particular Application(s)"
+          description: "Documents relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -3296,7 +2975,7 @@ paths:
             enum: *decisionFields
         - in: query
           name: _application
-          description: "Decisions relating to a particular Application(s)"
+          description: "Decisions relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -3568,7 +3247,7 @@ paths:
             enum: *decisionFields
         - in: query
           name: _application
-          description: "Decisions relating to a particular Application(s)"
+          description: "Decisions relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -4169,7 +3848,7 @@ paths:
       parameters:
         - in: query
           name: _application
-          description: "CommentPeriods relating to a particular Application(s)"
+          description: "CommentPeriods relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -4240,7 +3919,7 @@ paths:
           type: "string"
         - in: query
           name: _application
-          description: "CommentPeriods relating to a particular Application(s)"
+          description: "CommentPeriods relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -4279,7 +3958,7 @@ paths:
           type: "string"
         - in: query
           name: _application
-          description: "CommentPeriods relating to a particular Application(s)"
+          description: "CommentPeriods relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -4490,7 +4169,7 @@ paths:
       parameters:
         - in: query
           name: _application
-          description: "CommentPeriods relating to a particular Application(s)"
+          description: "CommentPeriods relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes

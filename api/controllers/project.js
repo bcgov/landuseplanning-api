@@ -67,7 +67,7 @@ exports.protectedOptions = function (args, res, rest) {
 }
 
 exports.publicHead = function (args, res, next) {
-  // Build match query if on appId route
+  // Build match query if on ProjId route
   var query   = {};
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
@@ -76,8 +76,8 @@ exports.publicHead = function (args, res, next) {
 
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
 
-  if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  if (args.swagger.params.projId) {
+    query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -101,7 +101,7 @@ exports.publicHead = function (args, res, next) {
                       commentPeriodPipeline) // count
       .then(function (data) {
         // /api/comment/ route, return 200 OK with 0 items if necessary
-        if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+        if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
           res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
           return Actions.sendResponse(res, 200, data);
         } else {
@@ -114,7 +114,7 @@ exports.publicHead = function (args, res, next) {
 };
 
 exports.publicGet = function (args, res, next) {
-  // Build match query if on appId route
+  // Build match query if on projId route
   var query   = {};
   var skip    = null;
   var limit   = null;
@@ -123,8 +123,8 @@ exports.publicGet = function (args, res, next) {
   tagList.push('_id');
   tagList.push('read');
 
-  if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  if (args.swagger.params.projId) {
+    query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -162,15 +162,16 @@ exports.protectedGet = function(args, res, next) {
   var self        = this;
   var skip        = null;
   var limit       = null;
+  var role        = args.swagger.params.auth_payload.realm_access.roles;
 
   var Project = mongoose.model('Project');
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
-  // Build match query if on appId route
+  // Build match query if on projId route
   var query = {};
-  if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  if (args.swagger.params.projId) {
+    query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -185,14 +186,14 @@ exports.protectedGet = function(args, res, next) {
   }
 
   // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
-    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-    _.assignIn(query, { isDeleted: false });
-  }
+  // if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
+  //   _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  // } else {
+  //   _.assignIn(query, { isDeleted: false });
+  // }
 
   Utils.runDataQuery('Project',
-                    args.swagger.operation["x-security-scopes"],
+                    role,
                     query,
                     getSanitizedFields(args.swagger.params.fields.value), // Fields
                     null, // sort warmup
@@ -208,15 +209,15 @@ exports.protectedGet = function(args, res, next) {
 exports.protectedHead = function (args, res, next) {
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
-  // Build match query if on appId route
+  // Build match query if on projId route
   var query = {};
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
   tagList.push('tags');
 
-  if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+  if (args.swagger.params.projId) {
+    query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -243,7 +244,7 @@ exports.protectedHead = function (args, res, next) {
                     true) // count
   .then(function (data) {
     // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+    if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
       res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
       return Actions.sendResponse(res, 200, data);
     } else {
@@ -253,11 +254,11 @@ exports.protectedHead = function (args, res, next) {
 };
 
 exports.protectedDelete = function (args, res, next) {
-  var appId = args.swagger.params.appId.value;
-  defaultLog.info("Delete Project:", appId);
+  var projId = args.swagger.params.projId.value;
+  defaultLog.info("Delete Project:", projId);
 
   var Project = mongoose.model('Project');
-  Project.findOne({_id: appId}, function (err, o) {
+  Project.findOne({_id: projId}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
@@ -320,21 +321,21 @@ var doFeaturePubUnPub = function (action, objId) {
   });
 }
 
-var doFeatureSave = function (item, appId) {
+var doFeatureSave = function (item, projId) {
   return new Promise(function (resolve, reject) {
     // MBL TODO: What to do if feature was already in?
     var Feature = mongoose.model('Feature');
     var feat    = new Feature(item);
 
     // Bind reference to project Obj
-    feat.projectID = appId;
+    feat.projectID = projId;
     feat.save().then(resolve, reject);
   });
 };
 
 //  Create a new project
 exports.protectedPost = function (args, res, next) {
-  var obj = args.swagger.params.app.value;
+  var obj = args.swagger.params.project.value;
 
   // Get rid of the fields we don't need/setting later below.
   delete(obj.areaHectares);
@@ -353,44 +354,44 @@ exports.protectedPost = function (args, res, next) {
   defaultLog.info("Incoming new object:", obj);
 
   var Project = mongoose.model('Project');
-  var app = new Application(obj);
+  var project = new Project(obj);
   // Define security tag defaults
-  app.tags = [['sysadmin']];
-  app._createdBy = args.swagger.params.auth_payload.preferred_username;
-  app.createdDate = Date.now();
-  app.save()
-  .then(function (savedApp) {
+  project.tags = [['sysadmin']];
+  project._createdBy = args.swagger.params.auth_payload.preferred_username;
+  project.createdDate = Date.now();
+  project.save()
+  .then(function (savedProject) {
     return new Promise(function (resolve, reject) {
       return Utils.loginWebADE()
       .then(function (accessToken) {
         _accessToken = accessToken;
         console.log("TTLS API Logged in:", _accessToken);
         // Disp lookup
-        return Utils.getApplicationByDispositionID(_accessToken, savedApp.tantalisID);
+        return Utils.getApplicationByDispositionID(_accessToken, savedProject.tantalisID);
       }).then(resolve, reject);
     }).then(function (data) {
       // Copy in the meta
-      savedApp.areaHectares = data.areaHectares;
-      savedApp.centroid     = data.centroid;
-      savedApp.purpose      = data.TENURE_PURPOSE;
-      savedApp.subpurpose   = data.TENURE_SUBPURPOSE;
-      savedApp.type         = data.TENURE_TYPE;
-      savedApp.subtype      = data.TENURE_SUBTYPE;
-      savedApp.status       = data.TENURE_STATUS;
-      savedApp.tenureStage  = data.TENURE_STAGE;
-      savedApp.location     = data.TENURE_LOCATION;
-      savedApp.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
-      savedApp.cl_file      = data.CROWN_LANDS_FILE;
-      savedApp.tantalisID   = data.DISPOSITION_TRANSACTION_SID;
+      savedProject.areaHectares = data.areaHectares;
+      savedProject.centroid     = data.centroid;
+      savedProject.purpose      = data.TENURE_PURPOSE;
+      savedProject.subpurpose   = data.TENURE_SUBPURPOSE;
+      savedProject.type         = data.TENURE_TYPE;
+      savedProject.subtype      = data.TENURE_SUBTYPE;
+      savedProject.status       = data.TENURE_STATUS;
+      savedProject.tenureStage  = data.TENURE_STAGE;
+      savedProject.location     = data.TENURE_LOCATION;
+      savedProject.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
+      savedProject.cl_file      = data.CROWN_LANDS_FILE;
+      savedProject.tantalisID   = data.DISPOSITION_TRANSACTION_SID;
 
       for(let [idx,client] of Object.entries(data.interestedParties)) {
         if (idx > 0) {
-          savedApp.client += ", ";
+          savedProject.client += ", ";
         }
         if (client.interestedPartyType == 'O') {
-          savedApp.client += client.legalName;
+          savedProject.client += client.legalName;
         } else {
-          savedApp.client += client.firstName + " " + client.lastName;
+          savedProject.client += client.firstName + " " + client.lastName;
         }
       }
 
@@ -400,15 +401,15 @@ exports.protectedPost = function (args, res, next) {
           return previousItem.then(function () {
             // publish
             currentItem.tags = [['sysadmin'],['public']];
-            return doFeatureSave(currentItem, savedApp._id);
+            return doFeatureSave(currentItem, savedProject._id);
           });
         }, Promise.resolve());
       }).then(function () {
         // All done with promises in the array, return to the caller.
         console.log("all done");
-        return savedApp.save();
-      }).then(function (theApp) {
-        return Actions.sendResponse(res, 200, theApp);
+        return savedProject.save();
+      }).then(function (theProject) {
+        return Actions.sendResponse(res, 200, theProject);
       });
     }).catch(function (err) {
       console.log("Error in API:", err);
@@ -417,19 +418,19 @@ exports.protectedPost = function (args, res, next) {
   });
 };
 
-// Update an existing application
+// Update an existing project
 exports.protectedPut = function (args, res, next) {
-  var objId = args.swagger.params.appId.value;
-  defaultLog.info("ObjectID:", args.swagger.params.appId.value);
+  var objId = args.swagger.params.projId.value;
+  defaultLog.info("ObjectID:", args.swagger.params.projId.value);
 
-  var obj = args.swagger.params.AppObject.value;
+  var obj = args.swagger.params.ProjObject.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
 
-  var Application = require('mongoose').model('Application');
-  Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
+  var Project = require('mongoose').model('Project');
+  Project.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
       return Actions.sendResponse(res, 200, o);
@@ -440,19 +441,19 @@ exports.protectedPut = function (args, res, next) {
   });
 }
 
-// Publish/Unpublish the application
+// Publish/Unpublish the project
 exports.protectedPublish = function (args, res, next) {
-  var objId = args.swagger.params.appId.value;
-  defaultLog.info("Publish Application:", objId);
+  var objId = args.swagger.params.projId.value;
+  defaultLog.info("Publish Project:", objId);
 
-  var Application = require('mongoose').model('Application');
-  Application.findOne({_id: objId}, function (err, o) {
+  var Project = require('mongoose').model('Project');
+  Project.findOne({_id: objId}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
       // Go through the feature collection and publish the corresponding features.
       doFeaturePubUnPub('publish', objId).then(function () {
-        // Publish the application
+        // Publish the project
         return Actions.publish(o);
       }).then(function (published) {
         // Published successfully
@@ -468,11 +469,11 @@ exports.protectedPublish = function (args, res, next) {
   });
 };
 exports.protectedUnPublish = function (args, res, next) {
-  var objId = args.swagger.params.appId.value;
-  defaultLog.info("UnPublish Application:", objId);
+  var objId = args.swagger.params.projId.value;
+  defaultLog.info("UnPublish Project:", objId);
 
-  var Application = require('mongoose').model('Application');
-  Application.findOne({_id: objId}, function (err, o) {
+  var Project = require('mongoose').model('Project');
+  Project.findOne({_id: objId}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
@@ -531,7 +532,7 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   // Did we want to filter based on comment period?
   if (commentPeriodDates.length > 0) {
     // NB: These are in reverse order in order to unshift into the pipline in proper order,
-    // since we are querying commentPeriods and then left-joining the application query.
+    // since we are querying commentPeriods and then left-joining the project query.
     var projection = {};
     var fields = [...['_id','isDeleted','tags'], ...requestedFields];
     for (let f of fields) {
