@@ -31,7 +31,6 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
     _.assignIn(query, { 'properties.DISPOSITION_TRANSACTION_SID': args.swagger.params.tantalisId.value });
   }
-  _.assignIn(query, { isDeleted: false });
 
   getFeatures(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
@@ -71,7 +70,7 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    _.assignIn(query, { isDeleted: false });
+    
   }
 
   getFeatures(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)

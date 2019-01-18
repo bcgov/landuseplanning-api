@@ -8,18 +8,17 @@ var Utils       = require('../helpers/utils');
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
     return (_.indexOf([
-                      'name',
-                      'commentNumber',
-                      'comment',
-                      'internal',
-                      'dateAdded',
-                      'commentAuthor',
-                      'review',
-                      '_addedBy',
-                      '_commentPeriod',
-                      'review',
-                      'commentStatus',
-                      'isDeleted'
+                        'author',
+                        'comment',
+                        'commentId',
+                        'dateAdded',
+                        'dateUpdated',
+                        'isAnonymous',
+                        'location',
+                        'period',
+                        'read',
+                        'write',
+                        'delete'
                     ], f) !== -1);
   });
 }
@@ -45,15 +44,12 @@ exports.publicGet = function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
 
-  // Never return deleted comment(s).
-  _.assignIn(query, { isDeleted: false });
-
   // Build match query if on CommentId route.
   if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
   } else {
-    if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
-      query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentPeriod.value, query);
+    if (args.swagger.params.period && args.swagger.params.period.value) {
+      query = Utils.buildQuery("period", args.swagger.params.period.value, query);
     }
 
     if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
@@ -62,9 +58,8 @@ exports.publicGet = function (args, res, next) {
         var sort_by = value.slice(1);
         // only accept certain fields
         switch (sort_by) {
-          case 'commentStatus':
           case 'dateAdded':
-          case 'contactName':
+          case 'author':
             sort[sort_by] = order_by;
             break;
         }
@@ -107,7 +102,7 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    _.assignIn(query, { isDeleted: false });
+    
   }
 
   Utils.runDataQuery('Comment',
@@ -139,7 +134,7 @@ exports.protectedGet = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value === true) {
     _.assignIn(query, { isDeleted: true });
   } else {
-    _.assignIn(query, { isDeleted: false });
+    
   }
 
   // Build match query if on CommentId route.
