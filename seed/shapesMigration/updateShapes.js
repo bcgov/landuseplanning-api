@@ -5,7 +5,9 @@ var Promise         = require('es6-promise').Promise;
 var _               = require('lodash');
 var request         = require('request');
 var querystring     = require('querystring');
+var moment          = require('moment');
 var Utils           = require('../../api/helpers/utils');
+var Actions         = require('../../api/helpers/actions');
 var username        = '';
 var password        = '';
 var protocol        = 'http';
@@ -71,10 +73,11 @@ var login = function (username, password) {
 
 var getAllApplications = function (route) {
     return new Promise(function (resolve, reject) {
-        console.log("calling:", uri + route + '?fields=tantalisID');
+        // only update the ones that aren't deleted
+        const url = uri + route + '?fields=tantalisID&isDeleted=false'; 
+        console.log("Calling:", url);
         request({
-            // only update the ones that aren't deleted
-            url: uri + route + '?fields=tantalisID&isDeleted=false', headers: {
+            url: url, headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + jwt_login
             }
@@ -239,56 +242,132 @@ var updateApplicationMeta = function (item) {
     });
 };
 
+var isRetired = function (app) {
+  if (app.status) {
+    // check if retired status
+    let isRetiredStatus = false;
+    switch (app.status.toUpperCase()) {
+      case 'ABANDONED':
+      case 'CANCELLED':
+      case 'OFFER NOT ACCEPTED':
+      case 'OFFER RESCINDED':
+      case 'RETURNED':
+      case 'REVERTED':
+      case 'SOLD':
+      case 'SUSPENDED':
+      case 'WITHDRAWN':
+        isRetiredStatus = true; // ABANDONED
+        break;
+
+      case 'ACTIVE':
+      case 'COMPLETED':
+      case 'DISPOSITION IN GOOD STANDING':
+      case 'EXPIRED':
+      case 'HISTORIC':
+        isRetiredStatus = true; // APPROVED
+        break;
+
+      case 'DISALLOWED':
+        isRetiredStatus = true; // NOT APPROVED
+        break;
+    }
+
+    if (isRetiredStatus) {
+      // check if retired more than 6 months ago
+      return moment(app.statusHistoryEffectiveDate).endOf('day').add(6, 'months').isBefore();
+    }
+  }
+
+  return false;
+};
+
+var unpublishApplication = function (app) {
+  return new Promise(function (resolve, reject) {
+      request.put({
+          url: uri + 'api/application/' + app._id + '/unpublish',
+          headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + jwt_login
+          },
+          body: JSON.stringify(app),
+      }, function (err, res, body) {
+          if (err || res.statusCode !== 200) {
+              console.log("err:", err, res);
+              reject(null);
+          } else {
+              var data = JSON.parse(body);
+              resolve(data);
+          }
+      });
+  });
+};
+
+//
+// MAIN
+//
 console.log("Logging in and getting JWT.");
 login(username, password)
-.then(function () {
+  .then(function () {
     // Get a token from webade for TTLS API calls (getAndSaveFeatures)
     return Utils.loginWebADE()
-    .then(function (accessToken) {
-        console.log("TTLS API Logged in:", accessToken);
+      .then(function (accessToken) {
+        console.log("TTLS API login token:", accessToken);
         _accessToken = accessToken;
         return _accessToken;
-    });
-})
-.then(function () {
-    console.log("Getting applications");
-    return getAllApplications('api/application');
-})
-.then(function (apps) {
-    // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
-    return new Promise(function (resolve, reject) {
+      });
+    })
+    .then(function () {
+      console.log("Getting applications.");
+      return getAllApplications('api/application');
+    })
+    .then(function (apps) {
+      // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
+      return new Promise(function (resolve, reject) {
         Promise.resolve()
-            .then(function () {
-                return apps.reduce(function (current, item) {
-                    return current.then(function () {
-                        console.log("-------------------------------------------------------");
-                        console.log("Deleting existing features.");
-                        // First delete all the application features.  We blindly overwrite.
-                        return deleteAllApplicationFeatures(item)
-                            .then(function () {
-                                // Fetch and store the features in the feature collection for this
-                                // application.
-                                console.log("Fetching and storing features:", item._id);
-                                return getAndSaveFeatures(_accessToken, item);
-                            })
-                            .then(function (app) {
-                                if (app) {
-                                    // Update the application meta.
-                                    console.log("Updating application meta for DISP:", app.tantalisID);
-                                    // change this to reference the item data coming from TTLSAPI
-                                    return updateApplicationMeta(app);
-                                } else {
-                                    // No feature - don't update meta.
-                                    console.log("No features found - not updating.");
-                                    return Promise.resolve();
-                                }
-                            });
-                    });
-                }, Promise.resolve());
-            }).then(resolve, reject);
+          .then(function () {
+            return apps.reduce(function (current, item) {
+              return current.then(function () {
+                console.log("-------------------------------------------------------");
+                console.log("Deleting existing features.");
+                // First delete all the application features.  We blindly overwrite.
+                return deleteAllApplicationFeatures(item)
+                  .then(function () {
+                    // Fetch and store the features in the feature collection for this
+                    // application.
+                    console.log("Fetching and storing features for application ID:", item._id);
+                    return getAndSaveFeatures(_accessToken, item);
+                  })
+                  .then(function (app) {
+                    if (app) {
+                      // Update the application meta.
+                      console.log("Updating application meta for DISP:", app.tantalisID);
+                      // change this to reference the item data coming from TTLSAPI
+                      return updateApplicationMeta(app);
+                    } else {
+                      // No feature - don't update meta.
+                      console.log("No features found - not updating.");
+                      return Promise.resolve();
+                    }
+                  })
+                  .then(function (app) {
+                    // If application is retired then unpublish it.
+                    if (app && isRetired(app) && Actions.isPublished(app)) {
+                      console.log("Application is now retired - UNPUBLISHING.");
+                      return unpublishApplication(app);
+                    } else {
+                      return Promise.resolve();
+                    }
+                  });
+              });
+            }, Promise.resolve());
+          }).then(resolve, reject);
+      });
+    })
+    .then(function () {
+      console.log("-------------------------------------------------------");
+      console.log("Done!");
+    })
+    .catch(function (err) {
+      console.log("ERR:", err);
+      process.exit(1);
     });
-})
-.catch(function (err) {
-    console.log("ERR:", err);
-    process.exit(1);
-});
