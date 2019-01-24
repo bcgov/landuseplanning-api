@@ -79,8 +79,12 @@ exports.publicHead = function (args, res, next) {
         } else {
           return Actions.sendResponse(res, 404, data);
         }
-    });
-  }, function (error) {
+      })
+      .catch(function (err) {
+        console.log("Error in runDataQuery:", err);
+        return Actions.sendResponse(res, 400, err);
+      });
+    }, function (error) {
     return Actions.sendResponse(res, 400, error);
   });
 };
@@ -125,7 +129,11 @@ exports.publicGet = function (args, res, next) {
                       commentPeriodPipeline) // count
       .then(function (data) {
         return Actions.sendResponse(res, 200, data);
-    });
+      })
+      .catch(function (err) {
+        console.log("Error in runDataQuery:", err);
+        return Actions.sendResponse(res, 400, err);
+      });
   }, function (error) {
     return Actions.sendResponse(res, 400, error);
   });
@@ -175,6 +183,10 @@ exports.protectedGet = function(args, res, next) {
                     false) // count
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
+  })
+  .catch(function (err) {
+    console.log("Error in runDataQuery:", err);
+    return Actions.sendResponse(res, 400, err);
   });
 };
 
@@ -222,6 +234,10 @@ exports.protectedHead = function (args, res, next) {
     } else {
       return Actions.sendResponse(res, 404, data);
     }
+  })
+  .catch(function (err) {
+    console.log("Error in runDataQuery:", err);
+    return Actions.sendResponse(res, 400, err);
   });
 };
 
@@ -664,7 +680,15 @@ var addStandardQueryFilters = function (query, args) {
   if (args.swagger.params.centroid && args.swagger.params.centroid.value !== undefined) {
     // defaultLog.info("Looking up features based on coords:", args.swagger.params.centroid.value);
     // Throws if parsing fails.
-    const coordinates = JSON.parse(args.swagger.params.centroid.value)[0];
+    let coordinates = JSON.parse(args.swagger.params.centroid.value)[0];
+    // restrict lat and lng to valid bounds
+    // safety check: fallback for invalid lat or lng is 0
+    coordinates = coordinates.map(function (coord) {
+      const lng = Math.max(Math.min((coord[0] || 0), 179.9999), -180); // -180 to +179.9999
+      const lat = Math.max(Math.min((coord[1] || 0), 89.9999), -90); // -90 to +89.9999
+      return [lng, lat];
+    });
+
     if (coordinates.length == 2) {
       // use geoWithin box query
       _.assignIn(query, {
