@@ -86,8 +86,6 @@ exports.publicHead = function (args, res, next) {
     }
   }
 
-  // _.assignIn(query, { isDeleted: false });
-
   handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
     Utils.runDataQuery('Project',
                       ['public'],
@@ -189,7 +187,7 @@ exports.protectedGet = function(args, res, next) {
   // if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
   //   _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   // } else {
-  //   _.assignIn(query, { isDeleted: false });
+  //   
   // }
 
   Utils.runDataQuery('Project',
@@ -230,7 +228,7 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    _.assignIn(query, { isDeleted: false });
+    
   }
 
   Utils.runDataQuery('Project',
