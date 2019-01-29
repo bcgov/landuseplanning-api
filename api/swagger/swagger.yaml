@@ -287,6 +287,15 @@ definitions:
       - read
       - write
       - delete
+  CommentPeriodSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +commentStatus,-dateAdded
+    enum: &commentPeriodSortByFields
+      - +author
+      - -author
+      - +dateStarted
+      - -dateStarted
 ### Decision Definitions
   DecisionId:
     type: object
@@ -3359,11 +3368,6 @@ paths:
           items:
             type: string
         - in: query
-          name: isDeleted
-          type: boolean
-          required: false
-          description: "Comments that are deleted or not"
-        - in: query
           name: fields
           description: "Comment fields to return."
           required: false
@@ -3688,6 +3692,39 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    head:
+      tags:
+        - comment
+      summary: "Retrieve META associated with a comment ."
+      operationId: publicHead
+      description: "Get META from the request, without returning the payload in question."
+      parameters:
+        - in: query
+          name: period
+          description: "The ID of the period associated with the comments."
+          type: array
+          required: true
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Comment fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
     get:
       tags:
         - comment
@@ -3698,7 +3735,15 @@ paths:
         - in: query
           name: period
           description: "Comments relating to a particular Comment Period"
-          type: array
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: count
+          description: "Enables/Disables count. Query count=true to enable."
+          type: string
           required: false
           collectionFormat: pipes
           items:
@@ -3872,6 +3917,14 @@ paths:
           items:
             type: string
             enum: *commentperiodFields
+        - in: query
+          name: sortBy
+          description: "Comment fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *commentSortByFields
       responses:
         "200":
           description: "Success"
@@ -4174,7 +4227,7 @@ paths:
         - in: query
           name: project
           description: "CommentPeriods relating to a particular Project(s)"
-          type: array
+          type: string
           required: false
           collectionFormat: pipes
           items:
@@ -4188,6 +4241,14 @@ paths:
           items:
             type: string
             enum: *commentperiodFields
+        - in: query
+          name: sortBy
+          description: "Comment fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *commentPeriodSortByFields
       responses:
         "200":
           description: "Success"

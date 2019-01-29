@@ -91,25 +91,19 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
         var theModel = mongoose.model(modelType);
         var projection = {};
 
-        // Don't project unecessary fields if we are only counting objects.
-        if (count) {
-            projection._id = 1;
-            projection.read = 1;
-        } else {
-            // Fields we always return
-            var defaultFields = ['_id',
-                                'code',
-                                'read'];
-            _.each(defaultFields, function (f) {
-                projection[f] = 1;
-            });
+        // Fields we always return
+        var defaultFields = ['_id',
+                            'code',
+                            'read'];
+        _.each(defaultFields, function (f) {
+            projection[f] = 1;
+        });
+    
+        // Add requested fields - sanitize first by including only those that we can/want to return
+        _.each(fields, function (f) {
+            projection[f] = 1;
+        });
         
-            // Add requested fields - sanitize first by including only those that we can/want to return
-            _.each(fields, function (f) {
-                projection[f] = 1;
-            });
-        }
-
         var aggregations = _.compact([
         {
             "$match": query
@@ -145,11 +139,24 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
         count && {
             $group: {
                 _id: null,
-                total_items : { $sum : 1 }
+                total_items : { $sum : 1 },
+                results: { $push: '$$ROOT' }
             }
         },
-        { $skip: skip || 0 },
-        { $limit: limit || MAX_LIMIT }
+        count && {
+            $project: {
+                "total_items": 1,
+                "results": {
+                    $slice: [
+                        '$results',
+                        skip,
+                        limit
+                    ]
+                }
+            }
+        },
+        !count &&{ $skip: skip || 0 },
+        !count &&{ $limit: limit || MAX_LIMIT }
         ]);
 
         // Pre-pend the aggregation with other pipeline steps if we are joining on another datasource

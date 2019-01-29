@@ -27,7 +27,7 @@ module.exports = require('../models')('CommentPeriod', {
     periodType           : { type: String, default: "" },
     phase                : { type: String, default: "" },
     phaseName            : { type: String, default: "" },
-    project              : { type: String, default: "" },
+    project              : { type: 'ObjectId', ref: 'Project', default: null, index: true },
     publishedPercent     : { type: Number, default: "" },
     rangeOption          : { type: String, default: "" },
     rangeType            : { type: String, default: "" },
