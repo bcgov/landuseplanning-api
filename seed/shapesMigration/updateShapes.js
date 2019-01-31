@@ -41,7 +41,16 @@ if (args.length !== 8) {
 }
 
 // JWT Login
-var jwt_login = null;
+var jwt_login = null; // the ACRFD login token
+var jwt_expiry = null; // how long the token lasts before expiring
+var jwt_login_time = null; // time we last logged in
+/**
+ * Logs in to ACRFD.
+ *
+ * @param {String} username
+ * @param {String} password
+ * @returns {Promise} promise that resolves with the jwt_login token.
+ */
 var login = function (username, password) {
     return new Promise(function (resolve, reject) {
         var body = querystring.stringify({
@@ -65,16 +74,26 @@ var login = function (username, password) {
             } else {
                 var data = JSON.parse(body);
                 jwt_login = data.access_token;
+                jwt_expiry = data.expires_in;
+                jwt_login_time = new moment();
                 resolve(data.access_token);
             }
         });
     });
 };
 
-var getAllApplications = function (route) {
+/**
+ * Gets applications from ACRFD.
+ *
+ * @param {String} route the api route to call in the form: 'api/some/route'. (required)
+ * @param {number} batchNumber the pagination page to return, starting at 0. (optional)
+ * @param {number} batchSize the number of applications per page. (optional)
+ * @returns {Promise} promise that resolves with an array of applications.
+ */
+var getAllApplications = function (route, batchNumber=null, batchSize=null) {
     return new Promise(function (resolve, reject) {
         // only update the ones that aren't deleted
-        const url = uri + route + '?fields=tantalisID&isDeleted=false'; 
+        const url = uri + route + '?fields=tantalisID&isDeleted=false' + (batchNumber ? `&pageNum=${batchNumber}` : '') +  (batchSize ? `&pageSize=${batchSize}` : '');
         console.log("Calling:", url);
         request({
             url: url, headers: {
@@ -102,6 +121,100 @@ var getAllApplications = function (route) {
     });
 };
 
+/**
+ * Get the total count of applications in ACRFD.
+ *
+ * @param {String} route the api route to call in the form: 'api/some/route'. (required)
+ * @returns {number} count of applications.
+ */
+var getApplicationsCount = function (route) {
+  return new Promise(function (resolve, reject) {
+      // only update the ones that aren't deleted
+      const url = uri + route + '?isDeleted=false';
+      console.log("Calling:", url);
+      request.head({
+          url: url, headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + jwt_login
+          }
+      }, function (err, res, body) {
+          if (err) {
+              console.log("ERR:", err);
+              reject(err);
+          } else if (res.statusCode !== 200) {
+              console.log("res.statusCode:", res.statusCode);
+              reject(res.statusCode + ' ' + body);
+          } else {
+              try {
+                  const count = parseInt(res.headers['x-total-count'], 10)
+                  resolve(count);
+              } catch (e) {
+                  console.log("e:", e);
+              }
+          }
+      });
+  });
+};
+
+/**
+ * Updates the non-deleted applications in ACRFD.
+ * - Deletes old features for the application
+ * - Fetches the latest features and meta from Tantalis
+ * - Updates application features and meta.
+ * - Unpublishes the application if it is retired (statusHistoryEffectiveDate older than 6 months)
+ *
+ * @param {array} apps array of applications
+ */
+var updateApplications = function(apps) {
+  return new Promise(function (resolve, reject) {
+    Promise.resolve()
+      .then(function () {
+        return apps.reduce(function (current, item) {
+          return current.then(function () {
+            console.log("-------------------------------------------------------");
+            console.log("Deleting existing features.");
+            // First delete all the application features.  We blindly overwrite.
+            return deleteAllApplicationFeatures(item)
+              .then(function () {
+                // Fetch and store the features in the feature collection for this
+                // application.
+                console.log("Fetching and storing features for application ID:", item._id);
+                return getAndSaveFeatures(_accessToken, item);
+              })
+              .then(function (app) {
+                if (app) {
+                  // Update the application meta.
+                  console.log("Updating application meta for DISP:", app.tantalisID);
+                  // change this to reference the item data coming from TTLSAPI
+                  return updateApplicationMeta(app);
+                } else {
+                  // No feature - don't update meta.
+                  console.log("No features found - not updating.");
+                  return Promise.resolve();
+                }
+              })
+              .then(function (app) {
+                // If application is retired then unpublish it.
+                if (app && isRetired(app) && Actions.isPublished(app)) {
+                  console.log("Application is now retired - UNPUBLISHING.");
+                  return unpublishApplication(app);
+                } else {
+                  return Promise.resolve();
+                }
+              });
+          });
+        }, Promise.resolve());
+      }).then(resolve, reject);
+  });
+}
+
+/**
+ * Updates and saves the application features.
+ *
+ * @param {String} accessToken Tantalis api token
+ * @param {Application} item Application
+ * @returns {Promise}
+ */
 var getAndSaveFeatures = function (accessToken, item) {
     return new Promise(function (resolve, reject) {
       Utils.getApplicationByDispositionID(accessToken, item.tantalisID)
@@ -165,6 +278,13 @@ var getAndSaveFeatures = function (accessToken, item) {
     });
 };
 
+/**
+ * Updates and saves the application features.
+ *
+ * @param {Application} item Application
+ * @param {String} appId Application id
+ * @returns {Promise}
+ */
 var doFeatureSave = function (item, appId) {
     return new Promise(function (resolve, reject) {
         item.applicationID = appId;
@@ -187,6 +307,12 @@ var doFeatureSave = function (item, appId) {
     });
 };
 
+/**
+ * Deletes the existing application features.
+ *
+ * @param {Application} item Application
+ * @returns {Promise}
+ */
 var deleteAllApplicationFeatures = function (item) {
     return new Promise(function (resolve, reject) {
         request.delete({
@@ -207,6 +333,12 @@ var deleteAllApplicationFeatures = function (item) {
     });
 };
 
+/**
+ * Updates and saves the application meta.
+ *
+ * @param {Application} app Application
+ * @returns {Promise}
+ */
 var updateApplicationMeta = function (item) {
     return new Promise(function (resolve, reject) {
         var updatedAppObject = {};
@@ -242,6 +374,12 @@ var updateApplicationMeta = function (item) {
     });
 };
 
+/**
+ * Returns whether or not the application is retired or not (statusHistoryEffectiveDate older than 6 months).
+ *
+ * @param {Application} app
+ * @returns {Boolean} True if the application is retired, false otherwise.
+ */
 var isRetired = function (app) {
   if (app.status) {
     // check if retired status
@@ -281,6 +419,12 @@ var isRetired = function (app) {
   return false;
 };
 
+/**
+ * Unpublishes the application.
+ *
+ * @param {APplication} app
+ * @returns {Promise}
+ */
 var unpublishApplication = function (app) {
   return new Promise(function (resolve, reject) {
       request.put({
@@ -302,10 +446,55 @@ var unpublishApplication = function (app) {
   });
 };
 
-//
-// MAIN
-//
+/**
+ * Renews the jwt_login token if necessary.
+ *
+ * @returns {Promise}
+ */
+var renewJWTLogin = function () {
+  return new Promise(function(resolve, reject) {
+    var duration = moment.duration(new moment().diff(jwt_login_time)).asSeconds();
+    // less than 180 seconds left before token expiry
+    if (duration > jwt_expiry - 180) {
+      console.log('Requesting new login token');
+      return login(username, password)
+      .then(function () {
+        resolve()
+      })
+    } else {
+      resolve();
+    }
+  });
+}
+
+/**
+ * Returns an array of objects containing the optional batch parameters used by #getAllApplications.
+ * @param {number} applicationsCount
+ * @returns {array} batches array of objects used to facilitate calling #getAllApplications in batches.
+ */
+var getBatches = function (applicationsCount) {
+  var batches = [];
+
+  var batchNumber = 0;
+  const batchSize = 100;
+  while(applicationsCount > 0) {
+    batches.push({
+      batchNumber: batchNumber,
+      batchSize: Math.min(batchSize, applicationsCount)
+    })
+
+    batchNumber += 1;
+    applicationsCount -= batchSize;
+  }
+
+  return Promise.resolve(batches);
+}
+
 console.log("Logging in and getting JWT.");
+
+/**
+ *  Main call that updates applications.
+ */
 login(username, password)
   .then(function () {
     // Get a token from webade for TTLS API calls (getAndSaveFeatures)
@@ -317,51 +506,30 @@ login(username, password)
       });
     })
     .then(function () {
-      console.log("Getting applications.");
-      return getAllApplications('api/application');
+      console.log("Getting applications count.");
+      return getApplicationsCount('api/application');
     })
-    .then(function (apps) {
-      // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
-      return new Promise(function (resolve, reject) {
-        Promise.resolve()
-          .then(function () {
-            return apps.reduce(function (current, item) {
-              return current.then(function () {
-                console.log("-------------------------------------------------------");
-                console.log("Deleting existing features.");
-                // First delete all the application features.  We blindly overwrite.
-                return deleteAllApplicationFeatures(item)
-                  .then(function () {
-                    // Fetch and store the features in the feature collection for this
-                    // application.
-                    console.log("Fetching and storing features for application ID:", item._id);
-                    return getAndSaveFeatures(_accessToken, item);
-                  })
-                  .then(function (app) {
-                    if (app) {
-                      // Update the application meta.
-                      console.log("Updating application meta for DISP:", app.tantalisID);
-                      // change this to reference the item data coming from TTLSAPI
-                      return updateApplicationMeta(app);
-                    } else {
-                      // No feature - don't update meta.
-                      console.log("No features found - not updating.");
-                      return Promise.resolve();
-                    }
-                  })
-                  .then(function (app) {
-                    // If application is retired then unpublish it.
-                    if (app && isRetired(app) && Actions.isPublished(app)) {
-                      console.log("Application is now retired - UNPUBLISHING.");
-                      return unpublishApplication(app);
-                    } else {
-                      return Promise.resolve();
-                    }
-                  });
-              });
-            }, Promise.resolve());
-          }).then(resolve, reject);
-      });
+    .then(function (applicationsCount) {
+      console.log(`Applications count: ${applicationsCount}`);
+      return getBatches(applicationsCount);
+    })
+    .then(function (batches) {
+      console.log(batches);
+      return batches.reduce(function(previousItem, currentItem){
+        return previousItem
+        .then(function(){
+          console.log("-------------------------------------------------------");
+          return renewJWTLogin() // Each batch iteration, check if the login token needs to be re-fetched.
+          .then(function() {
+            console.log(`Getting applications - batch ${currentItem.batchNumber}.`);
+            return getAllApplications('api/application', currentItem.batchNumber, currentItem.batchSize)
+          })
+          .then(function (apps) {
+            // Now iterate through each application, grabbing the tantalisID and populating the shapes in the feature collection.
+            return updateApplications(apps);
+          });
+        })
+      }, Promise.resolve());
     })
     .then(function () {
       console.log("-------------------------------------------------------");
