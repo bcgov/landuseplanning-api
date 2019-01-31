@@ -40,6 +40,37 @@ exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 };
 
+exports.publicHead = function (args, res, next) {
+  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+
+  // Build match query if on CommentPeriodId route
+  var query = {};
+  if (args.swagger.params.period && args.swagger.params.period.value) {
+    query = Utils.buildQuery("period", args.swagger.params.period.value, query);
+  }
+
+  const fields = getSanitizedFields(args.swagger.params.fields.value);
+  
+  Utils.runDataQuery('Comment',
+                    ['public'],
+                    query,
+                    fields, // Fields
+                    null, // sort warmup
+                    null, // sort
+                    null, // skip
+                    null, // limit
+                    true) // count
+  .then(function (data) {
+    // /api/comment/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  });
+};
+
 exports.publicGet = function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
@@ -51,7 +82,6 @@ exports.publicGet = function (args, res, next) {
     if (args.swagger.params.period && args.swagger.params.period.value) {
       query = Utils.buildQuery("period", args.swagger.params.period.value, query);
     }
-
     if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
       args.swagger.params.sortBy.value.forEach(function (value) {
         var order_by = value.charAt(0) == '-' ? -1 : 1;
@@ -66,6 +96,11 @@ exports.publicGet = function (args, res, next) {
       }, this);
     }
 
+    var count = null;
+    if (args.swagger.params.count && args.swagger.params.count.value === 'true') {
+      count = true;
+    }
+
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
     skip = processedParameters.skip;
     limit = processedParameters.limit;
@@ -77,13 +112,18 @@ exports.publicGet = function (args, res, next) {
                     ['public'],
                     query,
                     fields, // Fields
-                    sortWarmUp(sort, fields),
+                    null,
                     sort, // sort
                     skip, // skip
                     limit, // limit
-                    false) // count
+                    count) // count
   .then(function (data) {
-    return Actions.sendResponse(res, 200, data);
+    if (count) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+      return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
+    } else {
+      return Actions.sendResponse(res, 200, data);
+    } 
   });
 };
 
@@ -120,7 +160,7 @@ exports.protectedHead = function (args, res, next) {
     if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
       res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
       return Actions.sendResponse(res, 200, data);
-    } else {s
+    } else {
       return Actions.sendResponse(res, 404, data);
     }
   });

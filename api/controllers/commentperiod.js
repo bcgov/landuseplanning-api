@@ -20,7 +20,7 @@ var getSanitizedFields = function (fields) {
       'commenterRoles',
       'dateAdded',
       'dateCompleted',
-      'dateCompletedEst',
+      'dateCompletedEst', 
       'dateStarted',
       'dateStartedEst',
       'dateUpdated',
@@ -60,12 +60,25 @@ exports.protectedOptions = function (args, res, rest) {
 
 exports.publicGet = function (args, res, next) {
   // Build match query if on CommentPeriodId route
-  var query = {};
+  var query = {}, sort = {};
   if (args.swagger.params.CommentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
+  }
+  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    args.swagger.params.sortBy.value.forEach(function (value) {
+      var order_by = value.charAt(0) == '-' ? -1 : 1;
+      var sort_by = value.slice(1);
+      // only accept certain fields
+      switch (sort_by) {
+        case 'dateStarted':
+        case 'author':
+          sort[sort_by] = order_by;
+          break;
+      }
+    }, this);
   }
 
   Utils.runDataQuery('CommentPeriod',
@@ -73,7 +86,7 @@ exports.publicGet = function (args, res, next) {
                     query,
                     getSanitizedFields(args.swagger.params.fields.value), // Fields
                     null, // sort warmup
-                    null, // sort
+                    sort, // sort
                     null, // skip
                     null, // limit
                     false) // count
