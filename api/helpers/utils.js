@@ -29,7 +29,7 @@ exports.buildQuery = function (property, values, query) {
     }
     return _.assignIn(query, { [property]: {
         $in: oids
-      } 
+      }
     });
 };
 
@@ -103,7 +103,7 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
             _.each(defaultFields, function (f) {
                 projection[f] = 1;
             });
-        
+
             // Add requested fields - sanitize first by including only those that we can/want to return
             _.each(fields, function (f) {
                 projection[f] = 1;
@@ -134,9 +134,9 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
                 }
             }
         },
-        
+
         sortWarmUp, // Used to setup the sort if a temporary projection is needed.
-        
+
         !_.isEmpty(sort) ? { $sort: sort } : null,
 
         sort ? { $project: projection } : null, // Reset the projection just in case the sortWarmUp changed it.
@@ -169,7 +169,7 @@ exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sor
 exports.loginWebADE = function () {
     // Login to webADE and return access_token for use in subsequent calls.
     return new Promise(function (resolve, reject) {
-      request({ url: webADEAPI + "oauth/token?grant_type=client_credentials&disableDeveloperFilter=true",
+      request.get({ url: webADEAPI + "oauth/token?grant_type=client_credentials&disableDeveloperFilter=true",
                 headers : {
                     "Authorization" : "Basic " + new Buffer(username + ":" + password).toString("base64")
                 }
@@ -196,7 +196,7 @@ exports.loginWebADE = function () {
 exports.getApplicationByFilenumber = function (accessToken, clFile) {
     return new Promise(function (resolve, reject) {
         console.log("Looking up file:", _tantalisAPI + "landUseApplications?fileNumber=" + clFile);
-        request({
+        request.get({
             url: _tantalisAPI + "landUseApplications?fileNumber=" + clFile,
             auth: {
                 bearer: accessToken
@@ -244,7 +244,7 @@ exports.getApplicationByFilenumber = function (accessToken, clFile) {
 exports.getApplicationByDispositionID = function (accessToken, disp) {
     return new Promise(function (resolve, reject) {
         console.log("Looking up disposition:", _tantalisAPI + "landUseApplications/" + disp);
-        request({
+        request.get({
             url: _tantalisAPI + "landUseApplications/" + disp,
             auth: {
                 bearer: accessToken
@@ -364,4 +364,62 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
             }
         });
     });
+};
+
+
+/**
+ * Fetches all application IDs from Tantalis given the params provided.
+ *
+ * @param {string} accessToken Tantalis API access token. (required)
+ * @param {object} [params={}] Object containing Tantalis query filters. (optional)
+ * @returns an array of matching Tantalis IDs.
+ */
+exports.getAllApplicationIDs = function (accessToken, params = {}) {
+  return new Promise(function (resolve, reject) {
+    // parse the optional params
+    var urlParams = '';
+    _.forEach(params, function (value, key) {
+      urlParams += `${key}=${value}&`;
+    })
+    urlParams = `?${urlParams.slice(0, -1)}` // Append an ? and remove the trailing &
+
+    console.log("Looking up all applications:", _tantalisAPI + "landUseApplications" + urlParams);
+
+    request.get({
+      url: _tantalisAPI + "landUseApplications" + urlParams,
+      auth: {
+        bearer: accessToken
+      }
+    },
+      function (err, res, body) {
+        if (err || (res && res.statusCode !== 200)) {
+          console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+          if (!err && res && res.statusCode) {
+            err = {};
+            err.statusCode = res.statusCode;
+          }
+          reject(err);
+        } else {
+          try {
+            var applicationIDs = [];
+
+            var response = JSON.parse(body);
+            _.forEach(response.elements, function (obj) {
+              if (obj) {
+                applicationIDs.push(obj.landUseApplicationId);
+              }
+            });
+            if (applicationIDs.length) {
+              resolve(applicationIDs);
+            } else {
+              console.log("No applications found.");
+              resolve([]);
+            }
+          } catch (e) {
+            console.log("Object Parsing Failed:", e);
+            reject(e);
+          }
+        }
+      });
+  });
 };
