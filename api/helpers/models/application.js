@@ -20,7 +20,7 @@
     status           : { type: String },
     subpurpose       : { type: String },
     subtype          : { type: String },
-    tantalisID       : { type: Number, default: 0 },
+    tantalisID       : { type: Number, unique: true, default: 0 },
     tenureStage      : { type: String },
     type             : { type: String },
 
