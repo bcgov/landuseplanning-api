@@ -7,7 +7,7 @@
         type        : { type: String, default: '' },
         coordinates : [[]]
     },
-    geometryName     : { type:String, default: '' },
+    geometryName     : { type: String, default: '' },
     properties  : { 
         INTRID_SID                  : { type: Number, default: 0 },
         TENURE_STAGE                : { type: String, default: '' },
@@ -34,5 +34,5 @@
     },
     isDeleted     : { type: Boolean, default: false },
     // Which PRC application does this shape belong to?
-    applicationID : { type:'ObjectId', ref:'Application', default:null}
+    applicationID : { type: 'ObjectId', ref: 'Application', default: null}
 });

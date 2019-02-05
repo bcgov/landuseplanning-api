@@ -46,8 +46,6 @@ exports.publicHead = function (args, res, next) {
   tagList.push('_id');
   tagList.push('tags');
 
-  var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
-
   if (args.swagger.params.appId) {
     query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
   } else {
@@ -64,7 +62,7 @@ exports.publicHead = function (args, res, next) {
     Utils.runDataQuery('Application',
                       ['public'],
                       query,
-                      requestedFields, // Fields
+                      null, // Fields
                       null, // sort warmup
                       null, // sort
                       null, // skip
