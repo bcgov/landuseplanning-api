@@ -3,7 +3,7 @@
 var _               = require('lodash');
 var mongoose        = require('mongoose');
 var clamav          = require('clamav.js');
-var fs              = require('fs');
+var qs          = require('qs');
 var request         = require('request');
 var turf            = require('@turf/turf');
 var helpers         = require('@turf/helpers');
@@ -368,25 +368,20 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
 
 
 /**
- * Fetches all application IDs from Tantalis given the params provided.
+ * Fetches all application IDs from Tantalis given the filter params provided.
  *
  * @param {string} accessToken Tantalis API access token. (required)
- * @param {object} [params={}] Object containing Tantalis query filters. (optional)
+ * @param {object} [filterParams={}] Object containing Tantalis query filters. See Tantalis API Spec. (optional)
  * @returns an array of matching Tantalis IDs.
  */
-exports.getAllApplicationIDs = function (accessToken, params = {}) {
+exports.getAllApplicationIDs = function (accessToken, filterParams = {}) {
   return new Promise(function (resolve, reject) {
-    // parse the optional params
-    var urlParams = '';
-    _.forEach(params, function (value, key) {
-      urlParams += `${key}=${value}&`;
-    })
-    urlParams = `?${urlParams.slice(0, -1)}` // Append an ? and remove the trailing &
+    const queryString = `?${qs.stringify(filterParams)}`;
 
-    console.log("Looking up all applications:", _tantalisAPI + "landUseApplications" + urlParams);
+    console.log("Looking up all applications:", _tantalisAPI + "landUseApplications" + queryString);
 
     request.get({
-      url: _tantalisAPI + "landUseApplications" + urlParams,
+      url: _tantalisAPI + "landUseApplications" + queryString,
       auth: {
         bearer: accessToken
       }
@@ -394,6 +389,7 @@ exports.getAllApplicationIDs = function (accessToken, params = {}) {
       function (err, res, body) {
         if (err || (res && res.statusCode !== 200)) {
           console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+          console.log("TTLS API ResponseCode:", body);
           if (!err && res && res.statusCode) {
             err = {};
             err.statusCode = res.statusCode;
