@@ -454,8 +454,6 @@ definitions:
       decisionDate:
         type: string
         example: "2019-01-19 00:20:47.053Z"
-      description:
-        type: string
       isDeleted:
         type: boolean
         example: false
@@ -473,7 +471,6 @@ definitions:
       - tags
       - name
       - decisionDate
-      - description
       - isDeleted
 
 ### User Definitions
