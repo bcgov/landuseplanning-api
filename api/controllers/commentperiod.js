@@ -114,7 +114,7 @@ exports.protectedHead = function (args, res, next) {
   }
 
   Utils.runDataQuery('CommentPeriod',
-                    args.swagger.operation["x-security-scopes"],
+                    args.swagger.params.auth_payload.realm_access.roles,
                     query,
                     ['_id',
                       'tags'], // Fields
@@ -135,31 +135,37 @@ exports.protectedHead = function (args, res, next) {
 }
 
 exports.protectedGet = function(args, res, next) {
-  var Comment = mongoose.model('CommentPeriod');
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route
-  var query = {};
+  var query = {}, sort = {};
   if (args.swagger.params.CommentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
   }
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) } );
   }
-  // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
-    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-    
+  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    args.swagger.params.sortBy.value.forEach(function (value) {
+      var order_by = value.charAt(0) == '-' ? -1 : 1;
+      var sort_by = value.slice(1);
+      // only accept certain fields
+      switch (sort_by) {
+        case 'dateStarted':
+        case 'author':
+          sort[sort_by] = order_by;
+          break;
+      }
+    }, this);
   }
 
   Utils.runDataQuery('CommentPeriod',
-                    args.swagger.operation["x-security-scopes"],
+                    args.swagger.params.auth_payload.realm_access.roles,
                     query,
                     getSanitizedFields(args.swagger.params.fields.value), // Fields
                     null, // sort warmup
-                    null, // sort
+                    sort, // sort
                     null, // skip
                     null, // limit
                     false) // count
