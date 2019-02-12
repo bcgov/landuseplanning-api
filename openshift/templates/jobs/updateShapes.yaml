@@ -43,9 +43,12 @@ spec:
             command:
             - bash
             - -c
-            - 'node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" "${CLIENT_ID}" "${GRANT_TYPE}" "${AUTH_ENDPOINT}" ; if [ "${PIPESTATUS[0]}" -ne "1" ]; then curl -X
-              POST -H "Content-type: application/json" --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}";else curl -X POST -H "Content-type: application/json" --data "${JSON_PAYLOAD_FAIL}"
-              "${NOTIFICATION_URL}" fi'
+            - 'npm install --prefix seed/;
+              node seed/shapesMigration/update.js "${API_USERNAME}" "${API_PASSWORD}" "${API_PROTOCOL}" "${API_HOST}" "${API_PORT}" "${CLIENT_ID}" "${GRANT_TYPE}" "${AUTH_ENDPOINT}";
+              if [ "${PIPESTATUS[0]}" -ne "1" ];
+              then curl -X POST -H "Content-type: application/json" --data "${JSON_PAYLOAD}" "${NOTIFICATION_URL}";
+              else curl -X POST -H "Content-type: application/json" --data "${JSON_PAYLOAD_FAIL}" "${NOTIFICATION_URL}"
+              fi'
             imagePullPolicy: Always
             resources: {}
             terminationMessagePath: /dev/termination-log
