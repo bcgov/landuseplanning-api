@@ -715,10 +715,19 @@ var addStandardQueryFilters = function (query, args) {
       });
     }
   }
-  // Allows filtering of apps that have had their last status change greater than this epoch time.
+
+  // Allows filtering of apps based on their last status change.
   if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.statusHistoryEffectiveDate.value);
-    if (queryString.since) {
+    if (queryString.since && queryString.until) {
+      _.assignIn(query, {
+        $and: [
+          { statusHistoryEffectiveDate: { $gte: new Date(queryString.since) } },
+          { statusHistoryEffectiveDate: { $lte: new Date(queryString.until) } }
+        ]
+      });
+    }
+    else if (queryString.since) {
       _.assignIn(query, {
         $or: [
           { statusHistoryEffectiveDate: null },
@@ -726,6 +735,15 @@ var addStandardQueryFilters = function (query, args) {
         ]
       });
     }
+    else if (queryString.until) {
+      _.assignIn(query, {
+        $or: [
+          { statusHistoryEffectiveDate: null },
+          { statusHistoryEffectiveDate: { $lte: new Date(queryString.until) } }
+        ]
+      });
+    }
   }
+
   return query;
 }
