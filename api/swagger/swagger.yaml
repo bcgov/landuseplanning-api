@@ -4024,7 +4024,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentFields
+            enum: *commentperiodFields
       responses:
         "200":
           description: "Success"
