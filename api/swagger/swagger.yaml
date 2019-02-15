@@ -324,6 +324,13 @@ definitions:
       - description
       - project
       - decisionDate
+### Search Definitions
+  SearchObject:
+    type: object
+    properties:
+      keywords:
+        type: string
+        example: "Project Name"
 
 ### Organization Definitions
   OrgId:
@@ -4302,6 +4309,47 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/search:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on search Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get a list of things related to these keywords"
+      operationId: publicGet
+      description: "Retreiving items relating to the givenm keywords."
+      parameters:
+        - in: query
+          name: keywords
+          description: "Full Text Search based on keywords"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
         "403":
           description: "Access Denied"
           schema:
