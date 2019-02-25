@@ -10,7 +10,6 @@ var getSanitizedFields = function (fields) {
     return (_.indexOf(['name',
                       '_addedBy',
                       '_application',
-                      'description',
                       'decisionDate'], f) !== -1);
   });
 }
