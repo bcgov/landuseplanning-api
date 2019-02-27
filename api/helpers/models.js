@@ -57,7 +57,7 @@ var genSchema = function (name, definition) {
     if (p) schema.pre ('save', p);
     if (s) _.extend (schema.statics, s);
     if (m) _.extend (schema.methods, m);
-    if (i) _.each (i, function (d) { schema.index (d); });
+    // if (i) _.each (i, function (d) { schema.index (d); });
     if (virtuals) {
         // http://mongoosejs.com/docs/2.7.x/docs/virtuals.html
         _.forEach(virtuals, function(virtual){
