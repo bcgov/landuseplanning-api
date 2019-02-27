@@ -4,7 +4,7 @@ module.exports = require ('../models')('User', {
     lastName                : { type: String, trim: true, default: ''},
     displayName             : { type: String, trim: true },
     email                   : { type: String, trim: true, default: '' },
-    username                : { type: String, unique: 'Username already exists', required: 'Please fill in a username', lowercase: true, trim: true },
+    username                : { type: String, required: 'Please fill in a username', lowercase: true, trim: true },
     password                : { type: String, required: 'Please fill in a password' },
     salt                    : { type: String },
     roles                   : [{ type: String}],
