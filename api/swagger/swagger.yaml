@@ -296,34 +296,6 @@ definitions:
       - -author
       - +dateStarted
       - -dateStarted
-### Decision Definitions
-  DecisionId:
-    type: object
-    properties:
-      name:
-        type: string
-        example: "Decision Name"
-  DecisionObject:
-    type: object
-    properties:
-      name:
-        type: string
-        example: "Decision Name"
-      description:
-        type: string
-        example: "Decision Description"
-        ## TODO: Add more fields here.
-  DecisionFields:
-    type: string
-    description: "Optional fields to return."
-    example: name|type
-    #TODO: Fix enums
-    enum: &decisionFields
-      - name
-      - date
-      - description
-      - project
-      - decisionDate
 ### Search Definitions
   SearchObject:
     type: object
@@ -1834,11 +1806,6 @@ paths:
           description: "The application to bind this document to."
           required: false
           type: string
-        - name: _decision
-          in: formData
-          description: "The decision to bind this document to."
-          required: false
-          type: string
         - name: _comment
           in: formData
           description: "The comment to bind this document to."
@@ -1873,14 +1840,6 @@ paths:
         - in: query
           name: project
           description: "Documents relating to a particular Project(s)"
-          type: array
-          required: false
-          collectionFormat: pipes
-          items:
-            type: string
-        - in: query
-          name: _decision
-          description: "Documents relating to a particular Decision(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -2002,11 +1961,6 @@ paths:
         - name: project
           in: formData
           description: "The application to bind this document to."
-          required: false
-          type: string
-        - name: _decision
-          in: formData
-          description: "The decision to bind this document to."
           required: false
           type: string
         - name: _comment
@@ -2242,11 +2196,6 @@ paths:
           description: "The application to bind this document to."
           required: false
           type: string
-        - name: _decision
-          in: formData
-          description: "The decision to bind this document to."
-          required: false
-          type: string
         - name: _comment
           in: formData
           description: "The comment to bind this document to."
@@ -2276,14 +2225,6 @@ paths:
         - in: query
           name: project
           description: "Documents relating to a particular Project(s)"
-          type: array
-          required: false
-          collectionFormat: pipes
-          items:
-            type: string
-        - in: query
-          name: _decision
-          description: "Documents relating to a particular Decision(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -2923,414 +2864,6 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/UserObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-
-### Decisions
-  /decision:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Decision Route"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    post:
-      tags:
-        - decision
-      summary: "Create a decision"
-      operationId: protectedPost
-      description: "Create a new decision object."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - write:decision
-      parameters:
-        - name: decision
-          in: body
-          required: true
-          schema:
-            $ref: "#/definitions/DecisionId"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - decision
-      summary: "Get a list of documents"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving decisions."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - user
-      parameters:
-        - in: query
-          name: fields
-          description: "Decision fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *decisionFields
-        - in: query
-          name: project
-          description: "Decisions relating to a particular Project(s)"
-          type: array
-          required: false
-          collectionFormat: pipes
-          items:
-            type: string
-        - in: query
-          name: isDeleted
-          type: boolean
-          required: false
-          description: "Decisions that are deleted or not"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /decision/{decisionId}:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Decision GET Route"
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - decision
-      summary: "Get a decision"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving decisions."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - user
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-        - in: query
-          name: fields
-          description: "Decision fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *decisionFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      tags:
-        - decision
-      summary: "Update a decision"
-      operationId: protectedPut
-      description: "Update a decision object."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - write:decision
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to update"
-          required: true
-          type: "string"
-        - name: decision
-          in: body
-          required: true
-          schema:
-            $ref: "#/definitions/DecisionObject"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    delete:
-      tags:
-        - decision
-      summary: "Delete a decision"
-      operationId: protectedDelete
-      description: "Delete a decision object."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - write:decision
-      consumes:
-        - application/json
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to delete"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /decision/{decisionId}/publish:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on decision GET Route"
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      tags:
-        - decision
-      summary: "Publish a decision"
-      operationId: protectedPublish
-      description: "Adds the singular instance of the 'public' role to a decision."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - write:decision
-        # TODO: Define publish roles.
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to update"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /decision/{decisionId}/unpublish:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on decision GET Route"
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      tags:
-        - decision
-      summary: "UnPublish a decision"
-      operationId: protectedUnPublish
-      description: "Removes the singular instance of the 'public' role to a decision."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - sysadmin
-        - write:decision
-        # TODO: Define publish roles.
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to update"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /public/decision:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Decision Route"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - decision
-      summary: "Get a list of documents"
-      operationId: publicGet
-      description: "Retreiving public decisions."
-      parameters:
-        - in: query
-          name: fields
-          description: "Decision fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *decisionFields
-        - in: query
-          name: project
-          description: "Decisions relating to a particular Project(s)"
-          type: array
-          required: false
-          collectionFormat: pipes
-          items:
-            type: string
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /public/decision/{decisionId}:
-    x-swagger-router-controller: decision
-    options:
-      tags:
-        - decision
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on Decision GET Route"
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - decision
-      summary: "Get a document"
-      operationId: publicGet
-      description: "Public access to retreiving decisions."
-      parameters:
-        - name: decisionId
-          in: path
-          description: "ID of decision to get"
-          required: true
-          type: "string"
-        - in: query
-          name: fields
-          description: "Decision fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *decisionFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/DecisionObject"
         "403":
           description: "Access Denied"
           schema:
@@ -4345,6 +3878,21 @@ paths:
           collectionFormat: pipes
           items:
             type: string
+        - in: query
+          name: dataset
+          description: "Dataset to search on"
+          type: string
+          required: false
+        - in: query
+          name: skip
+          description: "# Records to skip"
+          type: string
+          required: false
+        - in: query
+          name: limit
+          description: "# Records to limit"
+          type: string
+          required: false
       responses:
         "200":
           description: "Success"

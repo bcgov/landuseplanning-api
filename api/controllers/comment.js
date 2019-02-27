@@ -50,7 +50,10 @@ exports.publicHead = function (args, res, next) {
   }
 
   const fields = getSanitizedFields(args.swagger.params.fields.value);
-  
+
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Comment"});
+
   Utils.runDataQuery('Comment',
                     ['public'],
                     query,
@@ -107,6 +110,8 @@ exports.publicGet = function (args, res, next) {
   }
 
   const fields = getSanitizedFields(args.swagger.params.fields.value);
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Comment"});
 
   Utils.runDataQuery('Comment',
                     ['public'],
@@ -144,6 +149,8 @@ exports.protectedHead = function (args, res, next) {
   } else {
     
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Comment"});
 
   Utils.runDataQuery('Comment',
                     args.swagger.operation["x-security-scopes"],
@@ -206,6 +213,8 @@ exports.protectedGet = function (args, res, next) {
   }
 
   const fields = getSanitizedFields(args.swagger.params.fields.value);
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Comment"});
 
   Utils.runDataQuery('Comment',
                     args.swagger.operation["x-security-scopes"],

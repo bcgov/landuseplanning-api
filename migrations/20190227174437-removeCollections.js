@@ -20,44 +20,24 @@ exports.up = function(db) {
     .then((mClientInst) => {
       // mClientInst is an instance of MongoClient
       mClient = mClientInst;
-      var p = mClient.collection('esm');
-      p.aggregate([
-        {
-          $match: { _schemaName: "Project"}
-        },
-        {
-          $project: {
-            _id: 1,
-            lon: 1,
-            lat: 1
-          }
-        }
-      ])
-      .toArray()
-      .then(function (arr) {
-        for(let item of arr) {
-          p.update(
-          {
-            _id: item._id
-          },
-          {
-            $set: { centroid: [item.lon,item.lat] },
-            $unset: { lon: "", lat: "" }
-          });
-        }
-        mClient.close();
-      });
+      var defaults = mClient.collection('_defaults');
+      var permissions = mClient.collection('_permissions');
+      var roles = mClient.collection('_roles');
+      defaults.drop();
+      permissions.drop();
+      roles.drop();
     })
     .catch((e) => {
       console.log("e:", e);
       mClient.close()
     });
+    
 };
 
 exports.down = function(db) {
-  return true;
+  return null;
 };
 
 exports._meta = {
-  'version': 1
+  "version": 1
 };

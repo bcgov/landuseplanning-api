@@ -38,10 +38,10 @@ exports.publicGet = function (args, res, next) {
   if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
-  if (args.swagger.params._decision && args.swagger.params._decision.value) {
-    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
-  }
-  
+
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Document"});
+
   Utils.runDataQuery('Document',
                     ['public'],
                     query,
@@ -59,7 +59,6 @@ exports.unProtectedPost = function(args, res, next) {
   console.log("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
-  var _decision     = args.swagger.params._decision.value;
   var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
 
@@ -86,7 +85,6 @@ exports.unProtectedPost = function(args, res, next) {
         doc.tags = [['sysadmin']];
         doc._application = _application;
         doc._comment = _comment;
-        doc._decision = _decision;
         doc.displayName = displayName;
         doc.documentFileName = upfile.originalname;
         doc.internalMime = upfile.mimetype;
@@ -125,15 +123,14 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
-  if (args.swagger.params._decision && args.swagger.params._decision.value) {
-    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
-  }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
     
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
                     args.swagger.operation["x-security-scopes"],
@@ -175,15 +172,14 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
-  if (args.swagger.params._decision && args.swagger.params._decision.value) {
-    query = Utils.buildQuery("_decision", args.swagger.params._decision.value, query);
-  }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
     
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
                     args.swagger.operation["x-security-scopes"],
@@ -209,6 +205,8 @@ exports.publicDownload = function(args, res, next) {
   } else {
     return Actions.sendResponse(res, 404, {});
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
                     ['public'],
@@ -249,6 +247,8 @@ exports.protectedDownload = function(args, res, next) {
   if (args.swagger.params.docId) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
                     args.swagger.operation["x-security-scopes"],
@@ -281,7 +281,6 @@ exports.protectedPost = function (args, res, next) {
   console.log("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
-  var _decision     = args.swagger.params._decision.value;
   var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
 
@@ -309,7 +308,6 @@ exports.protectedPost = function (args, res, next) {
         doc.tags = [['sysadmin']];
         doc._application = _application;
         doc._comment = _comment;
-        doc._decision = _decision;
         doc.displayName = displayName;
         doc.documentFileName = upfile.originalname;
         doc.internalMime = upfile.mimetype;
@@ -412,7 +410,6 @@ exports.protectedPut = function (args, res, next) {
   var objId = args.swagger.params.docId.value;
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
-  var _decision     = args.swagger.params._decision.value;
   defaultLog.info("ObjectID:", args.swagger.params.docId.value);
 
   var guid = intformat(generator.next(), 'dec');
@@ -442,7 +439,6 @@ exports.protectedPut = function (args, res, next) {
         obj._addedBy = args.swagger.params.auth_payload.preferred_username;
         doc._application = _application;
         doc._comment = _comment;
-        doc._decision = _decision;
         doc.displayName = displayName;
         doc.passedAVCheck = true;
         var Document = require('mongoose').model('Document');

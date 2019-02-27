@@ -86,6 +86,9 @@ exports.publicHead = function (args, res, next) {
     }
   }
 
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Project"});
+
   handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
     Utils.runDataQuery('Project',
                       ['public'],
@@ -136,7 +139,8 @@ exports.publicGet = function (args, res, next) {
     }
   }
 
-  // _.assignIn(query, {});
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Project"});
 
   handleCommentPeriodDateQueryParameters(args, tagList, function () {
     Utils.runDataQuery('Project',
@@ -182,6 +186,9 @@ exports.protectedGet = function(args, res, next) {
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
+  
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Project"});
 
   // Unless they specifically ask for it, hide deleted results.
   // if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
@@ -231,6 +238,9 @@ exports.protectedHead = function (args, res, next) {
     
   }
 
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Project"});
+
   Utils.runDataQuery('Project',
                     args.swagger.operation["x-security-scopes"],
                     query,
@@ -276,61 +286,6 @@ exports.protectedDelete = function (args, res, next) {
   });
 }
 
-var doFeaturePubUnPub = function (action, objId) {
-  return new Promise(function (resolve, reject) {
-    var Feature = require('mongoose').model('Feature');
-
-    Feature.find({projectID: objId}, function (err, featureObjects) {
-      if (err) {
-        reject(err);
-      } else {
-        var promises = [];
-        _.each(featureObjects, function (f) {
-          promises.push(f);
-        });
-        // Iterate through all the promises before returning.
-        Promise.resolve()
-        .then(function () {
-          return promises.reduce(function (previousItem, currentItem) {
-            return previousItem.then(function () {
-              if (action == 'publish') {
-                if (!Actions.isPublished(currentItem)) {
-                  return Actions.publish(currentItem);
-                } else {
-                  return Promise.resolve();
-                }
-              } else {
-                // Default unpub
-                if (Actions.isPublished(currentItem)) {
-                  return Actions.unPublish(currentItem);
-                } else {
-                  return Promise.resolve();
-                }
-              }
-            });
-          }, Promise.resolve());
-        }).then(function () {
-          // All done with promises in the array, return to the caller.
-          defaultLog.info("done Pub/UnPub all features.");
-          resolve();
-        });
-      }
-    });
-  });
-}
-
-var doFeatureSave = function (item, projId) {
-  return new Promise(function (resolve, reject) {
-    // MBL TODO: What to do if feature was already in?
-    var Feature = mongoose.model('Feature');
-    var feat    = new Feature(item);
-
-    // Bind reference to project Obj
-    feat.projectID = projId;
-    feat.save().then(resolve, reject);
-  });
-};
-
 //  Create a new project
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.project.value;
@@ -358,61 +313,12 @@ exports.protectedPost = function (args, res, next) {
   project._createdBy = args.swagger.params.auth_payload.preferred_username;
   project.createdDate = Date.now();
   project.save()
-  .then(function (savedProject) {
-    return new Promise(function (resolve, reject) {
-      return Utils.loginWebADE()
-      .then(function (accessToken) {
-        _accessToken = accessToken;
-        console.log("TTLS API Logged in:", _accessToken);
-        // Disp lookup
-        return Utils.getApplicationByDispositionID(_accessToken, savedProject.tantalisID);
-      }).then(resolve, reject);
-    }).then(function (data) {
-      // Copy in the meta
-      savedProject.areaHectares = data.areaHectares;
-      savedProject.centroid     = data.centroid;
-      savedProject.purpose      = data.TENURE_PURPOSE;
-      savedProject.subpurpose   = data.TENURE_SUBPURPOSE;
-      savedProject.type         = data.TENURE_TYPE;
-      savedProject.subtype      = data.TENURE_SUBTYPE;
-      savedProject.status       = data.TENURE_STATUS;
-      savedProject.tenureStage  = data.TENURE_STAGE;
-      savedProject.location     = data.TENURE_LOCATION;
-      savedProject.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
-      savedProject.cl_file      = data.CROWN_LANDS_FILE;
-      savedProject.tantalisID   = data.DISPOSITION_TRANSACTION_SID;
-
-      for(let [idx,client] of Object.entries(data.interestedParties)) {
-        if (idx > 0) {
-          savedProject.client += ", ";
-        }
-        if (client.interestedPartyType == 'O') {
-          savedProject.client += client.legalName;
-        } else {
-          savedProject.client += client.firstName + " " + client.lastName;
-        }
-      }
-
-      Promise.resolve()
-      .then(function () {
-        return data.parcels.reduce(function (previousItem, currentItem) {
-          return previousItem.then(function () {
-            // publish
-            currentItem.tags = [['sysadmin'],['public']];
-            return doFeatureSave(currentItem, savedProject._id);
-          });
-        }, Promise.resolve());
-      }).then(function () {
-        // All done with promises in the array, return to the caller.
-        console.log("all done");
-        return savedProject.save();
-      }).then(function (theProject) {
-        return Actions.sendResponse(res, 200, theProject);
-      });
-    }).catch(function (err) {
-      console.log("Error in API:", err);
-      return Actions.sendResponse(res, 400, err);
-    });
+  .then(function (theProject) {
+    return Actions.sendResponse(res, 200, theProject);
+  })
+  .catch(function (err) {
+    console.log("Error in API:", err);
+    return Actions.sendResponse(res, 400, err);
   });
 };
 
@@ -448,16 +354,11 @@ exports.protectedPublish = function (args, res, next) {
   Project.findOne({_id: objId}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-
-      // Go through the feature collection and publish the corresponding features.
-      doFeaturePubUnPub('publish', objId).then(function () {
-        // Publish the project
-        return Actions.publish(o);
-      }).then(function (published) {
-        // Published successfully
+      return Actions.publish(o)
+      .then(function (published) {
         return Actions.sendResponse(res, 200, published);
-      }, function (err) {
-        // Error
+      })
+      .catch(function (err) {
         return Actions.sendResponse(res, err.code, err);
       });
     } else {
@@ -474,15 +375,11 @@ exports.protectedUnPublish = function (args, res, next) {
   Project.findOne({_id: objId}, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-
-      // Go through the feature collection and publish the corresponding features.
-      doFeaturePubUnPub('unpublish',objId).then(function () {
-        return Actions.unPublish(o);
-      }).then(function (unpublished) {
-        // UnPublished successfully
+      return Actions.unPublish(o)
+      .then(function (unpublished) {
         return Actions.sendResponse(res, 200, unpublished);
-      }, function (err) {
-        // Error
+      })
+      .catch(function (err) {
         return Actions.sendResponse(res, err.code, err);
       });
     } else {

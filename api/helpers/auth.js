@@ -7,7 +7,7 @@ var ISSUER          = process.env.SSO_ISSUER || "https://sso.pathfinder.gov.bc.c
 var JWKSURI         = process.env.SSO_JWKSURI || "https://sso.pathfinder.gov.bc.ca/auth/realms/eagle/protocol/openid-connect/certs";
 var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.
 var SECRET          = process.env.SECRET || "defaultSecret";
-var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "true";
+var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "false";
 var winston         = require('winston');
 var defaultLog      = winston.loggers.get('default');
 

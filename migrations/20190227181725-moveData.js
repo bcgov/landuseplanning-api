@@ -20,31 +20,15 @@ exports.up = function(db) {
     .then((mClientInst) => {
       // mClientInst is an instance of MongoClient
       mClient = mClientInst;
-      var p = mClient.collection('esm');
-      p.aggregate([
-        {
-          $match: { _schemaName: "Project"}
-        },
-        {
-          $project: {
-            _id: 1,
-            lon: 1,
-            lat: 1
-          }
-        }
-      ])
+      var p = mClient.collection('projects');
+      p.aggregate([ { $out: "epic" } ])
       .toArray()
-      .then(function (arr) {
-        for(let item of arr) {
-          p.update(
-          {
-            _id: item._id
-          },
-          {
-            $set: { centroid: [item.lon,item.lat] },
-            $unset: { lon: "", lat: "" }
-          });
-        }
+      .then(function () {
+        return mClient.collection('comments')
+        .aggregate([ { $out: "epic"}])
+        .toArray();
+      })
+      .then(function () {
         mClient.close();
       });
     })
@@ -55,9 +39,9 @@ exports.up = function(db) {
 };
 
 exports.down = function(db) {
-  return true;
+  return null;
 };
 
 exports._meta = {
-  'version': 1
+  "version": 1
 };

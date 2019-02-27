@@ -81,6 +81,9 @@ exports.publicGet = function (args, res, next) {
     }, this);
   }
 
+  // Set query type
+  _.assignIn(query, {"_schemaName": "CommentPeriod"});
+
   Utils.runDataQuery('CommentPeriod',
                     ['public'],
                     query,
@@ -112,6 +115,8 @@ exports.protectedHead = function (args, res, next) {
   } else {
     
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "CommentPeriod"});
 
   Utils.runDataQuery('CommentPeriod',
                     args.swagger.params.auth_payload.realm_access.roles,
@@ -159,6 +164,8 @@ exports.protectedGet = function(args, res, next) {
       }
     }, this);
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "CommentPeriod"});
 
   Utils.runDataQuery('CommentPeriod',
                     args.swagger.params.auth_payload.realm_access.roles,

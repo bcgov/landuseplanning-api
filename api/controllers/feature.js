@@ -32,6 +32,9 @@ exports.publicGet = function (args, res, next) {
     _.assignIn(query, { 'properties.DISPOSITION_TRANSACTION_SID': args.swagger.params.tantalisId.value });
   }
 
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Feature"});
+
   getFeatures(['public'], query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
@@ -72,6 +75,8 @@ exports.protectedGet = function(args, res, next) {
   } else {
     
   }
+  // Set query type
+  _.assignIn(query, {"_schemaName": "Feature"});
 
   getFeatures(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
   .then(function (data) {
