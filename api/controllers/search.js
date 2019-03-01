@@ -7,7 +7,7 @@ var Utils = require('../helpers/utils');
 var request = require('request');
 var _accessToken = null;
 
-var searchCollection = function (keywords, collection, skip, limit) {
+var searchCollection = async function (keywords, collection, skip, limit) {
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(
@@ -63,7 +63,7 @@ var searchCollection = function (keywords, collection, skip, limit) {
   });
 }
 
-exports.publicGet = function (args, res, next) {
+exports.publicGet = async function (args, res, next) {
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
   var skip = args.swagger.params.skip.value || 0;
@@ -74,7 +74,7 @@ exports.publicGet = function (args, res, next) {
   // TODO: Enable pagination/skip/limit.
   if (dataset === 'All') {
     var collectionObj = mongoose.model("Project");
-    collectionObj.aggregate([
+    var data = await collectionObj.aggregate([
       {
         // TODO Include only models to which we want to search against, ie, documents, VCs and projects.
         $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] }, $text: { $search: keywords } }
@@ -122,20 +122,10 @@ exports.publicGet = function (args, res, next) {
         }
       }
     ])
-      .exec()
-      .then(function (data) {
-        return Actions.sendResponse(res, 200, data);
-      });
+    return Actions.sendResponse(res, 200, data);
   } else {
-    return searchCollection(keywords, dataset, skip, limit)
-      .then(function (data) {
-        // console.log('200', data);
-        return Actions.sendResponse(res, 200, data);
-      })
-      .catch(function (err) {
-        console.log('400', err);
-        return Actions.sendResponse(res, 400, err);
-      });
+    var data = await searchCollection(keywords, dataset, skip, limit)
+    return Actions.sendResponse(res, 200, data);
   }
 };
 

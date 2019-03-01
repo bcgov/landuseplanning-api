@@ -1,25 +1,25 @@
-var auth        = require("../helpers/auth");
-var _           = require('lodash');
-var defaultLog  = require('winston').loggers.get('default');
-var mongoose    = require('mongoose');
-var Actions     = require('../helpers/actions');
-var Utils       = require('../helpers/utils');
+var auth = require("../helpers/auth");
+var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('default');
+var mongoose = require('mongoose');
+var Actions = require('../helpers/actions');
+var Utils = require('../helpers/utils');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
     return (_.indexOf([
-                        'author',
-                        'comment',
-                        'commentId',
-                        'dateAdded',
-                        'dateUpdated',
-                        'isAnonymous',
-                        'location',
-                        'period',
-                        'read',
-                        'write',
-                        'delete'
-                    ], f) !== -1);
+      'author',
+      'comment',
+      'commentId',
+      'dateAdded',
+      'dateUpdated',
+      'isAnonymous',
+      'location',
+      'period',
+      'read',
+      'write',
+      'delete'
+    ], f) !== -1);
   });
 }
 
@@ -29,7 +29,7 @@ var sortWarmUp = function (sort, fields) {
   if (sort) {
     var projection = {};
     _.each(fields, function (f) {
-        projection[f] = 1;
+      projection[f] = 1;
     });
     return sort.contactName ? { $project: Object.assign({ contactName: { $toLower: "$commentAuthor.contactName" } }, projection) } : null;
   }
@@ -40,7 +40,7 @@ exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 };
 
-exports.publicHead = function (args, res, next) {
+exports.publicHead = async function (args, res, next) {
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route
@@ -52,29 +52,25 @@ exports.publicHead = function (args, res, next) {
   const fields = getSanitizedFields(args.swagger.params.fields.value);
 
   // Set query type
-  _.assignIn(query, {"_schemaName": "Comment"});
+  _.assignIn(query, { "_schemaName": "Comment" });
 
-  Utils.runDataQuery('Comment',
-                    ['public'],
-                    query,
-                    fields, // Fields
-                    null, // sort warmup
-                    null, // sort
-                    null, // skip
-                    null, // limit
-                    true) // count
-  .then(function (data) {
-    // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data);
-    } else {
-      return Actions.sendResponse(res, 200, data);
-    }
-  });
+  var data = await Utils.runDataQuery('Comment',
+    ['public'],
+    query,
+    fields, // Fields
+    null, // sort warmup
+    null, // sort
+    null, // skip
+    null, // limit
+    true); // count
+  // /api/comment/ route, return 200 OK with 0 items if necessary
+  if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
+    res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    return Actions.sendResponse(res, 200, data);
+  }
 };
 
-exports.publicGet = function (args, res, next) {
+exports.publicGet = async function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
 
@@ -111,28 +107,26 @@ exports.publicGet = function (args, res, next) {
 
   const fields = getSanitizedFields(args.swagger.params.fields.value);
   // Set query type
-  _.assignIn(query, {"_schemaName": "Comment"});
+  _.assignIn(query, { "_schemaName": "Comment" });
 
-  Utils.runDataQuery('Comment',
-                    ['public'],
-                    query,
-                    fields, // Fields
-                    null,
-                    sort, // sort
-                    skip, // skip
-                    limit, // limit
-                    count) // count
-  .then(function (data) {
-    if (count) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
-    } else {
-      return Actions.sendResponse(res, 200, data);
-    } 
-  });
+  var data = await Utils.runDataQuery('Comment',
+    ['public'],
+    query,
+    fields, // Fields
+    null,
+    sort, // sort
+    skip, // skip
+    limit, // limit
+    count); // count
+  if (count) {
+    res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
+  } else {
+    return Actions.sendResponse(res, 200, data);
+  }
 };
 
-exports.protectedHead = function (args, res, next) {
+exports.protectedHead = async function (args, res, next) {
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route
@@ -147,33 +141,31 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    
+
   }
   // Set query type
-  _.assignIn(query, {"_schemaName": "Comment"});
+  _.assignIn(query, { "_schemaName": "Comment" });
 
-  Utils.runDataQuery('Comment',
-                    args.swagger.operation["x-security-scopes"],
-                    query,
-                    ['_id',
-                      'tags'], // Fields
-                    null, // sort warmup
-                    null, // sort
-                    null, // skip
-                    null, // limit
-                    true) // count
-  .then(function (data) {
-    // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data);
-    } else {
-      return Actions.sendResponse(res, 404, data);
-    }
-  });
+  var data = await Utils.runDataQuery('Comment',
+    args.swagger.operation["x-security-scopes"],
+    query,
+    ['_id',
+      'tags'], // Fields
+    null, // sort warmup
+    null, // sort
+    null, // skip
+    null, // limit
+    true); // count
+  // /api/comment/ route, return 200 OK with 0 items if necessary
+  if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
+    res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    return Actions.sendResponse(res, 200, data);
+  } else {
+    return Actions.sendResponse(res, 404, data);
+  }
 };
 
-exports.protectedGet = function (args, res, next) {
+exports.protectedGet = async function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
 
@@ -181,7 +173,7 @@ exports.protectedGet = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value === true) {
     _.assignIn(query, { isDeleted: true });
   } else {
-    
+
   }
 
   // Build match query if on CommentId route.
@@ -214,24 +206,22 @@ exports.protectedGet = function (args, res, next) {
 
   const fields = getSanitizedFields(args.swagger.params.fields.value);
   // Set query type
-  _.assignIn(query, {"_schemaName": "Comment"});
+  _.assignIn(query, { "_schemaName": "Comment" });
 
-  Utils.runDataQuery('Comment',
-                    args.swagger.operation["x-security-scopes"],
-                    query,
-                    fields, // Fields
-                    sortWarmUp(sort, fields),
-                    sort, // sort
-                    skip, // skip
-                    limit, // limit
-                    false) // count
-  .then(function (data) {
-    return Actions.sendResponse(res, 200, data);
-  });
+  var data = await Utils.runDataQuery('Comment',
+    args.swagger.operation["x-security-scopes"],
+    query,
+    fields, // Fields
+    sortWarmUp(sort, fields),
+    sort, // sort
+    skip, // skip
+    limit, // limit
+    false) // count
+  return Actions.sendResponse(res, 200, data);
 };
 
 //  Create a new Comment
-exports.unProtectedPost = function (args, res, next) {
+exports.unProtectedPost = async function (args, res, next) {
   var obj = args.swagger.params.comment.value;
   defaultLog.info("Incoming new object:", obj);
 
@@ -259,11 +249,9 @@ exports.unProtectedPost = function (args, res, next) {
   // Not needed until we tie user profiles in.
   // comment._addedBy = args.swagger.params.auth_payload.preferred_username;
 
-  comment.save()
-  .then(function (c) {
-    // defaultLog.info("Saved new Comment object:", c);
-    return Actions.sendResponse(res, 200, c);
-  });
+  var c = await comment.save()
+  // defaultLog.info("Saved new Comment object:", c);
+  return Actions.sendResponse(res, 200, c);
 };
 
 // Update an existing Comment
@@ -318,24 +306,19 @@ exports.protectedPut = function (args, res, next) {
 };
 
 // Publish the Comment
-exports.protectedPublish = function (args, res, next) {
+exports.protectedPublish = async function (args, res, next) {
   var objId = args.swagger.params.CommentId.value;
   defaultLog.info("Publish Comment:", objId);
 
   var Comment = require('mongoose').model('Comment');
-  Comment.findOne({ _id: objId }, function (err, o) {
+  Comment.findOne({ _id: objId }, async function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
       // Add public to the tag of this obj.
-      Actions.publish(o)
-      .then(function (published) {
-        // Published successfully
-        return Actions.sendResponse(res, 200, published);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, err.code, err);
-      });
+      var published = await Actions.publish(o);
+      // Published successfully
+      return Actions.sendResponse(res, 200, published);
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
@@ -344,24 +327,19 @@ exports.protectedPublish = function (args, res, next) {
 };
 
 // Unpublish the Comment
-exports.protectedUnPublish = function (args, res, next) {
+exports.protectedUnPublish = async function (args, res, next) {
   var objId = args.swagger.params.CommentId.value;
   defaultLog.info("UnPublish Comment:", objId);
 
   var Comment = require('mongoose').model('Comment');
-  Comment.findOne({ _id: objId }, function (err, o) {
+  Comment.findOne({ _id: objId }, async function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
       // Remove public to the tag of this obj.
-      Actions.unPublish(o)
-      .then(function (unpublished) {
-        // UnPublished successfully
-        return Actions.sendResponse(res, 200, unpublished);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, err.code, err);
-      });
+      var unpublished = await Actions.unPublish(o)
+      // UnPublished successfully
+      return Actions.sendResponse(res, 200, unpublished);
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
