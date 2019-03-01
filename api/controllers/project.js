@@ -323,7 +323,7 @@ exports.protectedPost = function (args, res, next) {
 };
 
 // Update an existing project
-exports.protectedPut = function (args, res, next) {
+exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.projId.value;
   defaultLog.info("ObjectID:", args.swagger.params.projId.value);
 
