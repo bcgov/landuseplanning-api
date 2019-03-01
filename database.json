@@ -3,7 +3,7 @@
 
   "local": {
     "driver": "mongodb",
-    "database": "esm",
+    "database": "epic",
     "host": "localhost"
   },
 

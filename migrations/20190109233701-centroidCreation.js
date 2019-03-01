@@ -20,7 +20,7 @@ exports.up = function(db) {
     .then((mClientInst) => {
       // mClientInst is an instance of MongoClient
       mClient = mClientInst;
-      var p = mClient.collection('esm');
+      var p = mClient.collection('epic');
       p.aggregate([
         {
           $match: { _schemaName: "Project"}
@@ -33,8 +33,8 @@ exports.up = function(db) {
           }
         }
       ])
-      .toArray()
-      .then(function (arr) {
+        .toArray()
+        .then(function (arr) {
         for(let item of arr) {
           p.update(
           {
