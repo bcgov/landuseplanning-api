@@ -40,6 +40,11 @@ tags:
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/eagle-api.git"
+- name: "topic"
+  description: "Operations about topic"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/eagle-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -328,6 +333,31 @@ definitions:
     #TODO: Fix enums
     enum: &organizationFields
       - name
+
+### Topic Definitions
+  TopicId:
+    type: object
+    properties:
+      comment:
+        type: string
+        example: "A cool user"
+  TopicObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+  TopicFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|commentAuthor
+    #TODO: Fix enums
+    enum: &topicFields
+      - 'description'
+      - 'name'
+      - 'pillar'
+      - 'parent'
+  
 ### User Definitions
   UserId:
     type: object
@@ -3469,7 +3499,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /commentperiod/{CommentPeriodId}:
+  /commentperiod/{commentPeriodId}:
     x-swagger-router-controller: commentperiod
     options:
       tags:
@@ -3478,7 +3508,7 @@ paths:
       operationId: protectedOptions
       description: "Options on commentperiod GET Route"
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3504,7 +3534,7 @@ paths:
         - sysadmin
         - user
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3543,7 +3573,7 @@ paths:
         - sysadmin
         - user
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3588,7 +3618,7 @@ paths:
       consumes:
         - application/json
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to update"
           required: true
@@ -3621,7 +3651,7 @@ paths:
       consumes:
         - application/json
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to delete"
           required: true
@@ -3635,7 +3665,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /commentperiod/{CommentPeriodId}/publish:
+  /commentperiod/{commentPeriodId}/publish:
     x-swagger-router-controller: commentperiod
     options:
       tags:
@@ -3644,7 +3674,7 @@ paths:
       operationId: protectedOptions
       description: "Options on commentperiod GET Route"
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3671,7 +3701,7 @@ paths:
         - write:commentperiod
         # TODO: Define publish roles.
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to update"
           required: true
@@ -3685,7 +3715,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /commentperiod/{CommentPeriodId}/unpublish:
+  /commentperiod/{commentPeriodId}/unpublish:
     x-swagger-router-controller: commentperiod
     options:
       tags:
@@ -3694,7 +3724,7 @@ paths:
       operationId: protectedOptions
       description: "Options on commentperiod GET Route"
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3721,7 +3751,7 @@ paths:
         - write:commentperiod
         # TODO: Define unpublish roles.
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to update"
           required: true
@@ -3793,7 +3823,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /public/commentperiod/{CommentPeriodId}:
+  /public/commentperiod/{commentPeriodId}:
     x-swagger-router-controller: commentperiod
     options:
       tags:
@@ -3802,7 +3832,7 @@ paths:
       operationId: protectedOptions
       description: "Options on commentperiod GET Route"
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3823,7 +3853,7 @@ paths:
       operationId: publicGet
       description: "Public access to retreiving comments."
       parameters:
-        - name: CommentPeriodId
+        - name: commentPeriodId
           in: path
           description: "ID of commentperiod to get"
           required: true
@@ -3898,6 +3928,197 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+### Topic Routes
+  /topic:
+    x-swagger-router-controller: topic
+    options:
+      tags:
+        - topic
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Topic Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - topic
+      summary: "Create a new topic"
+      operationId: protectedPost
+      description: "Create a new topic object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:topic
+      parameters:
+        - name: topic
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/TopicId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - topic
+      summary: "Get a list of topics"
+      operationId: protectedGet
+      description: "Authenticated access to retrieving topics."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - in: query
+          name: fields
+          description: "Topic fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *topicFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /topic/{topicId}:
+    x-swagger-router-controller: topic
+    options:
+      tags:
+        - topic
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on topic GET Route"
+      parameters:
+        - name: topicId
+          in: path
+          description: "ID of topic to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - topic
+      summary: "Get a topic"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving topics."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - user
+      parameters:
+        - name: topicId
+          in: path
+          description: "ID of topic to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Topic fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *topicFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - topic
+      summary: "Update/Upload a topic"
+      operationId: protectedPut
+      description: "Update a topic object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - write:topic
+      consumes:
+        - application/json
+      parameters:
+        - name: topicId
+          in: path
+          description: "ID of topic to update"
+          required: true
+          type: "string"
+        - name: cp
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/TopicObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - topic
+      summary: "Delete an topic"
+      operationId: protectedDelete
+      description: "Delete an topic object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      parameters:
+        - name: topicId
+          in: path
+          description: "ID of topic to delete"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/TopicObject"
         "403":
           description: "Access Denied"
           schema:

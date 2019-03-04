@@ -86,8 +86,8 @@ exports.getSkipLimitParameters = function (pageSize, pageNum) {
     return params;
 };
 
-exports.runDataQuery = function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps) {
-    return new Promise(function (resolve, reject) {
+exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps) {
+    return new Promise(async function (resolve, reject) {
         var theModel = mongoose.model(modelType);
         var projection = {};
 

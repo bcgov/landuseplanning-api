@@ -61,8 +61,8 @@ exports.protectedOptions = function (args, res, rest) {
 exports.publicGet = async function (args, res, next) {
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {};
-  if (args.swagger.params.CommentPeriodId) {
-    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
+  if (args.swagger.params.commentPeriodId) {
+    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
@@ -101,8 +101,8 @@ exports.protectedHead = async function (args, res, next) {
 
   // Build match query if on CommentPeriodId route
   var query = {};
-  if (args.swagger.params.CommentPeriodId && args.swagger.params.CommentPeriodId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
+  if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
@@ -127,7 +127,7 @@ exports.protectedHead = async function (args, res, next) {
     null, // limit
     true) // count
   // /api/commentperiod/ route, return 200 OK with 0 items if necessary
-  if (!(args.swagger.params.CommentPeriodId && args.swagger.params.CommentPeriodId.value) || (data && data.length > 0)) {
+  if (!(args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data);
   } else {
@@ -141,8 +141,8 @@ exports.protectedGet = async function (args, res, next) {
 
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {};
-  if (args.swagger.params.CommentPeriodId) {
-    query = Utils.buildQuery("_id", args.swagger.params.CommentPeriodId.value, query);
+  if (args.swagger.params.commentPeriodId) {
+    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
     _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
@@ -195,8 +195,8 @@ exports.protectedPost = async function (args, res, next) {
 
 // Update an existing CommentPeriod
 exports.protectedPut = function (args, res, next) {
-  var objId = args.swagger.params.CommentPeriodId.value;
-  defaultLog.info("ObjectID:", args.swagger.params.CommentPeriodId.value);
+  var objId = args.swagger.params.commentPeriodId.value;
+  defaultLog.info("ObjectID:", args.swagger.params.commentPeriodId.value);
   var obj = args.swagger.params.cp.value;
 
   // Strip security tags - these will not be updated on this route.
@@ -221,7 +221,7 @@ exports.protectedPut = function (args, res, next) {
 
 //  Delete a new CommentPeriod
 exports.protectedDelete = async function (args, res, next) {
-  var objId = args.swagger.params.CommentPeriodId.value;
+  var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info("Delete CommentPeriod:", objId);
 
   var commentperiod = require('mongoose').model('CommentPeriod');
@@ -242,7 +242,7 @@ exports.protectedDelete = async function (args, res, next) {
 
 // Publish/Unpublish the CommentPeriod
 exports.protectedPublish = async function (args, res, next) {
-  var objId = args.swagger.params.CommentPeriodId.value;
+  var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info("Publish CommentPeriod:", objId);
 
   var commentperiod = require('mongoose').model('CommentPeriod');
@@ -262,7 +262,7 @@ exports.protectedPublish = async function (args, res, next) {
 };
 
 exports.protectedUnPublish = async function (args, res, next) {
-  var objId = args.swagger.params.CommentPeriodId.value;
+  var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info("UnPublish CommentPeriod:", objId);
 
   var commentperiod = require('mongoose').model('CommentPeriod');
