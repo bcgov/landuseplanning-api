@@ -368,7 +368,7 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
 
 
 /**
- * Fetches all application IDs from Tantalis given the filter params provided.
+ * Fetches all application landUseApplicationIds (aka: dispositionID, tantalisID) from Tantalis given the filter params provided.
  *
  * @param {string} accessToken Tantalis API access token. (required)
  * @param {object} [filterParams={}] Object containing Tantalis query filters. See Tantalis API Spec. (optional)
