@@ -38,10 +38,16 @@ exports.protectedPost = async function (args, res, next) {
 };
 
 exports.protectedGet = async function (args, res, next) {
+    var skip = null, limit = null;
     var query = {};
+
     if (args.swagger.params.topicId && args.swagger.params.topicId.value) {
         query = Utils.buildQuery("_id", args.swagger.params.topicId.value, query);
     }
+
+    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+    skip = processedParameters.skip;
+    limit = processedParameters.limit;
 
     // Set query type
     _.assignIn(query, { "_schemaName": "Topic" });
@@ -52,9 +58,9 @@ exports.protectedGet = async function (args, res, next) {
         getSanitizedFields(args.swagger.params.fields.value), // Fields
         null, // sort warmup
         null, // sort
-        null, // skip
-        null, // limit
-        false) // count
+        skip, // skip
+        limit, // limit
+        true) // count
     return Actions.sendResponse(res, 200, data);
 };
 
