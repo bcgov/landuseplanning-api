@@ -1,4 +1,5 @@
 var mongoose = require ('mongoose');
+const defaultLog = require('winston').loggers.get('default');
 var _        = require ('lodash');
 
 var genSchema = function (name, definition) {
@@ -16,7 +17,7 @@ var genSchema = function (name, definition) {
     _.each (definition, function (v, k) {
         if (k.substr(0,2) === '__') {
             delete definition[k];
-            decorate[k] (name, definition, v);
+            decorate[k] (name, definition, v); //TODO decorate is not defined??
         }
     });
     //
@@ -47,7 +48,8 @@ var genSchema = function (name, definition) {
             },
             toJSON: {
                 virtuals: true
-            }
+            },
+            usePushEach: true // https://github.com/Automattic/mongoose/issues/5870
         };
     }
     //
@@ -86,7 +88,7 @@ var genSchema = function (name, definition) {
 
 module.exports = function (name, definition) {
     if (!name || !definition) {
-        console.error ('No name or definition supplied when building schema');
+        defaultLog.error('No name or definition supplied when building schema');
         return;
     }
     return mongoose.model (name, genSchema  (name, definition));

@@ -13,8 +13,6 @@ exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.operation["x-security-scopes"];
 
-  var User = mongoose.model('User');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on userId route
@@ -33,7 +31,6 @@ exports.protectedGet = function(args, res, next) {
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.user.value;
   defaultLog.info("Incoming new object:", obj);
-  console.log("Incoming updated object:", obj);
 
   var User = mongoose.model('User');
   var user = new User(obj);

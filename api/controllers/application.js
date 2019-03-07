@@ -1,11 +1,9 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
 var qs          = require('qs');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
-var request     = require('request');
 var tagList     = ['agency',
                     'areaHectares',
                     'businessUnit',
@@ -79,7 +77,7 @@ exports.publicHead = function (args, res, next) {
         }
       })
       .catch(function (err) {
-        console.log("Error in runDataQuery:", err);
+        defaultLog.error("Error in runDataQuery:", err);
         return Actions.sendResponse(res, 400, err);
       });
     }, function (error) {
@@ -129,7 +127,7 @@ exports.publicGet = function (args, res, next) {
         return Actions.sendResponse(res, 200, data);
       })
       .catch(function (err) {
-        console.log("Error in runDataQuery:", err);
+        defaultLog.error("Error in runDataQuery:", err);
         return Actions.sendResponse(res, 400, err);
       });
   }, function (error) {
@@ -138,11 +136,8 @@ exports.publicGet = function (args, res, next) {
 };
 
 exports.protectedGet = function(args, res, next) {
-  var self        = this;
   var skip        = null;
   var limit       = null;
-
-  var Application = mongoose.model('Application');
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
@@ -183,7 +178,7 @@ exports.protectedGet = function(args, res, next) {
     return Actions.sendResponse(res, 200, data);
   })
   .catch(function (err) {
-    console.log("Error in runDataQuery:", err);
+    defaultLog.error("Error in runDataQuery:", err);
     return Actions.sendResponse(res, 400, err);
   });
 };
@@ -234,7 +229,7 @@ exports.protectedHead = function (args, res, next) {
     }
   })
   .catch(function (err) {
-    console.log("Error in runDataQuery:", err);
+    defaultLog.error("Error in runDataQuery:", err);
     return Actions.sendResponse(res, 400, err);
   });
 };
@@ -350,10 +345,9 @@ exports.protectedPost = function (args, res, next) {
     return new Promise(function (resolve, reject) {
       return Utils.loginWebADE()
       .then(function (accessToken) {
-        _accessToken = accessToken;
-        console.log("TTLS API Logged in:", _accessToken);
+        defaultLog.debug("TTLS API Logged in:", accessToken);
         // Disp lookup
-        return Utils.getApplicationByDispositionID(_accessToken, savedApp.tantalisID);
+        return Utils.getApplicationByDispositionID(accessToken, savedApp.tantalisID);
       }).then(resolve, reject);
     }).then(function (data) {
       // Copy in the meta
@@ -392,13 +386,13 @@ exports.protectedPost = function (args, res, next) {
         }, Promise.resolve());
       }).then(function () {
         // All done with promises in the array, return to the caller.
-        console.log("all done");
+        defaultLog.debug("all done");
         return savedApp.save();
       }).then(function (theApp) {
         return Actions.sendResponse(res, 200, theApp);
       });
     }).catch(function (err) {
-      console.log("Error in API:", err);
+      defaultLog.error("Error in API:", err);
       return Actions.sendResponse(res, 400, err);
     });
   });
@@ -480,6 +474,7 @@ exports.protectedUnPublish = function (args, res, next) {
   });
 };
 
+/* eslint-disable no-redeclare */
 var handleCommentPeriodDateQueryParameters = function (args, requestedFields, callback, error) {
   var pipelineSteps = null;
   var commentPeriodDates = [];
@@ -747,3 +742,4 @@ var addStandardQueryFilters = function (query, args) {
 
   return query;
 }
+/* eslint-enable no-redeclare */

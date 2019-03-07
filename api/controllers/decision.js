@@ -1,4 +1,3 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
@@ -44,8 +43,6 @@ exports.publicGet = function (args, res, next) {
 };
 
 exports.protectedHead = function (args, res, next) {
-  var Decision = mongoose.model('Decision');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on decisionId route
@@ -85,8 +82,6 @@ exports.protectedHead = function (args, res, next) {
 }
 
 exports.protectedGet = function(args, res, next) {
-  var Decision = mongoose.model('Decision');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on decisionId route
