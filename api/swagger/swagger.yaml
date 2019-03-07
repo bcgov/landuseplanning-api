@@ -350,13 +350,14 @@ definitions:
   TopicFields:
     type: string
     description: "Optional fields to return."
-    example: name|commentAuthor
+    example: name|description
     #TODO: Fix enums
     enum: &topicFields
       - 'description'
       - 'name'
       - 'pillar'
       - 'parent'
+      - 'read'
   
 ### User Definitions
   UserId:
@@ -384,6 +385,38 @@ definitions:
       - lastName
       - username
       - roles
+
+### Vc Definitions
+  VcId:
+    type: object
+    properties:
+      comment:
+        type: string
+        example: "A cool user"
+  VcObject:
+    type: object
+    properties:
+      _id:
+        type: string
+        example: "54759eb3c090d83494e2d804"
+  VcFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|description
+    enum: &vcFields
+      - 'code'
+      - 'description'
+      - 'name'
+      - 'parent'
+      - 'pillar'
+      - 'project'
+      - 'stage'
+      - 'title'
+      - 'type'
+      - 'read'
+      - 'write'
+      - 'delete'
+
 ### Resource Definitions
   Coordinates:
     type: object
@@ -465,8 +498,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:project
+        - project-system-admin
       parameters:
         - name: app
           in: body
@@ -491,8 +523,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: fields
@@ -612,8 +643,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: fields
@@ -756,8 +786,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: projId
           in: path
@@ -796,8 +825,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: projId
           in: path
@@ -836,8 +864,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:project
+        - project-system-admin
       parameters:
         - name: projId
           in: path
@@ -867,7 +894,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
         - name: projId
           in: path
@@ -920,8 +947,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:project
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: projId
@@ -970,8 +996,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:project
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: projId
@@ -1366,8 +1391,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:feature
+        - project-system-admin
       parameters:
         - name: feature
           in: body
@@ -1392,7 +1416,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
           - name: applicationID
             in: query
@@ -1417,8 +1441,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: fields
@@ -1490,8 +1513,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: featureId
           in: path
@@ -1530,8 +1552,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:feature
+        - project-system-admin
       parameters:
         - name: featureId
           in: path
@@ -1561,7 +1582,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
         - name: featureId
           in: path
@@ -1614,8 +1635,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:feature
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: featureId
@@ -1664,8 +1684,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:feature
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: featureId
@@ -1821,8 +1840,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:document
+        - project-system-admin
       consumes:
         - multipart/form-data
       parameters:
@@ -1864,8 +1882,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: project
@@ -1938,8 +1955,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: docId
           in: path
@@ -1973,8 +1989,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:document
+        - project-system-admin
       consumes:
         - multipart/form-data
       parameters:
@@ -2021,8 +2036,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:document
+        - project-system-admin
       consumes:
         - application/json
       parameters:
@@ -2072,8 +2086,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:document
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: docId
@@ -2122,8 +2135,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:document
+        - project-system-admin
         # TODO: Define unpublish roles.
       parameters:
         - name: docId
@@ -2172,8 +2184,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: docId
           in: path
@@ -2410,8 +2421,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:organization
+        - project-system-admin
       parameters:
         - name: org
           in: body
@@ -2436,8 +2446,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: fields
@@ -2489,8 +2498,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: orgId
           in: path
@@ -2524,8 +2532,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:organization
+        - project-system-admin
       parameters:
         - name: orgId
           in: path
@@ -2573,8 +2580,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:organization
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: orgId
@@ -2623,8 +2629,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:organization
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: orgId
@@ -2764,8 +2769,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:user
+        - project-system-admin
       parameters:
         - name: user
           in: body
@@ -2790,7 +2794,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
         - in: query
           name: fields
@@ -2842,7 +2846,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
         - name: userId
           in: path
@@ -2876,8 +2880,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:user
+        - project-system-admin
       parameters:
         - name: userId
           in: path
@@ -2926,8 +2929,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: period
@@ -2982,8 +2984,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: period
@@ -3066,8 +3067,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: CommentId
           in: path
@@ -3101,8 +3101,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:comment
+        - project-system-admin
       consumes:
         - multipart/form-data
       parameters:
@@ -3436,8 +3435,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:commentperiod
+        - project-system-admin
       parameters:
         - name: period
           in: body
@@ -3462,8 +3460,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: project
@@ -3531,8 +3528,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: commentPeriodId
           in: path
@@ -3570,8 +3566,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: commentPeriodId
           in: path
@@ -3613,8 +3608,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:commentperiod
+        - project-system-admin
       consumes:
         - application/json
       parameters:
@@ -3646,8 +3640,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:commentperiod
+        - project-system-admin
       consumes:
         - application/json
       parameters:
@@ -3697,8 +3690,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:commentperiod
+        - project-system-admin
         # TODO: Define publish roles.
       parameters:
         - name: commentPeriodId
@@ -3747,8 +3739,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:commentperiod
+        - project-system-admin
         # TODO: Define unpublish roles.
       parameters:
         - name: commentPeriodId
@@ -3960,8 +3951,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:topic
+        - project-system-admin
       parameters:
         - name: topic
           in: body
@@ -3986,8 +3976,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - in: query
           name: pageNum
@@ -4049,8 +4038,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - user
+        - project-system-admin
       parameters:
         - name: topicId
           in: path
@@ -4084,8 +4072,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
-        - write:topic
+        - project-system-admin
       consumes:
         - application/json
       parameters:
@@ -4117,7 +4104,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - sysadmin
+        - project-system-admin
       parameters:
         - name: topicId
           in: path
@@ -4129,6 +4116,208 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/TopicObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+### Vc Routes
+  /vc:
+    x-swagger-router-controller: vc
+    options:
+      tags:
+        - vc
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Topic Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - vc
+      summary: "Create a new vc"
+      operationId: protectedPost
+      description: "Create a new vc object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - name: vc
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/VcId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - vc
+      summary: "Get a list of vcs"
+      operationId: protectedGet
+      description: "Authenticated access to retrieving vcs."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - in: query
+          name: projectId
+          type: string
+          required: false
+          description: "Id of the project"
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: fields
+          description: "Vc fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *vcFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /vc/{vcId}:
+    x-swagger-router-controller: vc
+    options:
+      tags:
+        - vc
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on vc GET Route"
+      parameters:
+        - name: vcId
+          in: path
+          description: "ID of vc to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - vc
+      summary: "Get a vc"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving vcs."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - name: vcId
+          in: path
+          description: "ID of vc to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Vc fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *vcFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - vc
+      summary: "Update/Upload a vc"
+      operationId: protectedPut
+      description: "Update a vc object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      consumes:
+        - application/json
+      parameters:
+        - name: vcId
+          in: path
+          description: "ID of vc to update"
+          required: true
+          type: "string"
+        - name: cp
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/VcObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - vc
+      summary: "Delete an vc"
+      operationId: protectedDelete
+      description: "Delete an vc object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - name: vcId
+          in: path
+          description: "ID of vc to delete"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/VcObject"
         "403":
           description: "Access Denied"
           schema:

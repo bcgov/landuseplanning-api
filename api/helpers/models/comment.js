@@ -9,7 +9,7 @@ module.exports = require('../models')('Comment', {
     period              : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
 
     // Permissions
-    read                : [[{ type: String, trim: true, default: '[["project-system-admin"]]' }]],
-    write               : [[{ type: String, trim: true, default: '[["project-system-admin"]]' }]],
-    delete              : [[{ type: String, trim: true, default: '[["project-system-admin"]]' }]]
+    write               : [{ type: String, trim: true, default: '["project-system-admin"]' }],
+    read                : [{ type: String, trim: true, default: '["project-system-admin"]' }],
+    delete              : [{ type: String, trim: true, default: '["project-system-admin"]' }]
 });
