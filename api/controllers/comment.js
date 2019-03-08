@@ -95,11 +95,6 @@ exports.publicGet = async function (args, res, next) {
       }, this);
     }
 
-    var count = null;
-    if (args.swagger.params.count && args.swagger.params.count.value === 'true') {
-      count = true;
-    }
-
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
     skip = processedParameters.skip;
     limit = processedParameters.limit;
@@ -117,8 +112,8 @@ exports.publicGet = async function (args, res, next) {
     sort, // sort
     skip, // skip
     limit, // limit
-    count); // count
-  if (count) {
+    args.swagger.params.count.value); // count
+  if (args.swagger.params.count.value) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
   } else {
