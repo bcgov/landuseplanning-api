@@ -3409,7 +3409,7 @@ paths:
 
 ## CommentPeriods
   /commentperiod:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
@@ -3497,7 +3497,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   /commentperiod/{commentPeriodId}:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
@@ -3659,7 +3659,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   /commentperiod/{commentPeriodId}/publish:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
@@ -3708,7 +3708,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   /commentperiod/{commentPeriodId}/unpublish:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
@@ -3757,7 +3757,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   /public/commentperiod:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
@@ -3815,7 +3815,7 @@ paths:
           schema:
             $ref: "#/definitions/Error"
   /public/commentperiod/{commentPeriodId}:
-    x-swagger-router-controller: commentPeriod
+    x-swagger-router-controller: commentperiod
     options:
       tags:
         - commentperiod
