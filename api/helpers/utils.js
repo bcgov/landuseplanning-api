@@ -1,22 +1,22 @@
 "use strict";
 
-var _               = require('lodash');
-var mongoose        = require('mongoose');
-var clamav          = require('clamav.js');
-var qs          = require('qs');
-var request         = require('request');
-var turf            = require('@turf/turf');
-var helpers         = require('@turf/helpers');
-var Wkt             = require('wicket');
-var _serviceHost    = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
-var _servicePort    = process.env.CLAMAV_SERVICE_PORT || '3310';
-var _tantalisAPI    = process.env.TTLS_API_ENDPOINT || "https://api.nrs.gov.bc.ca/ttls-api/v1/";
-var webADEAPI       = process.env.WEBADE_AUTH_ENDPOINT || "https://api.nrs.gov.bc.ca/oauth2/v1/";
-var username        = process.env.WEBADE_USERNAME || "TTLS-EXT";
-var password        = process.env.WEBADE_PASSWORD || "x";
-var MAX_LIMIT       = 1000;
-
-var DEFAULT_PAGESIZE  = 100;
+var _                = require('lodash');
+var mongoose         = require('mongoose');
+var clamav           = require('clamav.js');
+var qs               = require('qs');
+var request          = require('request');
+var turf             = require('@turf/turf');
+var helpers          = require('@turf/helpers');
+var Wkt              = require('wicket');
+const defaultLog     = require('winston').loggers.get('default');
+var _serviceHost     = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
+var _servicePort     = process.env.CLAMAV_SERVICE_PORT || '3310';
+var _tantalisAPI     = process.env.TTLS_API_ENDPOINT || "https://api.nrs.gov.bc.ca/ttls-api/v1/";
+var webADEAPI        = process.env.WEBADE_AUTH_ENDPOINT || "https://api.nrs.gov.bc.ca/oauth2/v1/";
+var username         = process.env.WEBADE_USERNAME || "TTLS-EXT";
+var password         = process.env.WEBADE_PASSWORD || "x";
+var MAX_LIMIT        = 1000;
+var DEFAULT_PAGESIZE = 100;
 
 exports.buildQuery = function (property, values, query) {
     var oids = [];
@@ -44,22 +44,22 @@ exports.avScan = function (buffer) {
 
         clamav.ping(_servicePort, _serviceHost, 1000, function(err) {
             if (err) {
-                console.log('ClamAV service: ' + _serviceHost + ':' + _servicePort + ' is not available['+err+']');
+                defaultLog.error('ClamAV service: ' + _serviceHost + ':' + _servicePort + ' is not available['+err+']');
                 resolve(false);
             } else {
-                console.log('ClamAV service is alive: ' + _serviceHost + ':' + _servicePort);
+                defaultLog.info('ClamAV service is alive: ' + _serviceHost + ':' + _servicePort);
                 clamav.createScanner(_servicePort, _serviceHost)
                 .scan(bufferStream, function(err, object, malicious) {
                     if (err) {
-                        console.log(err);
+                        defaultLog.error(err);
                         resolve(false);
                     }
                     else if (malicious) {
-                        console.log('Malicious object FOUND');
+                        defaultLog.warn('Malicious object FOUND');
                         resolve(false);
                     }
                     else {
-                        console.log('Virus scan OK');
+                        defaultLog.info('Virus scan OK');
                         resolve(true);
                     }
                 });
@@ -195,7 +195,7 @@ exports.loginWebADE = function () {
 // Tantalis API
 exports.getApplicationByFilenumber = function (accessToken, clFile) {
     return new Promise(function (resolve, reject) {
-        console.log("Looking up file:", _tantalisAPI + "landUseApplications?fileNumber=" + clFile);
+        defaultLog.info("Looking up file:", _tantalisAPI + "landUseApplications?fileNumber=" + clFile);
         request.get({
             url: _tantalisAPI + "landUseApplications?fileNumber=" + clFile,
             auth: {
@@ -204,17 +204,17 @@ exports.getApplicationByFilenumber = function (accessToken, clFile) {
         },
         function (err, res, body) {
             if (err || (res && res.statusCode !== 200)) {
-                console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+                defaultLog.error("TTLS API ResponseCode:", err == null ? res.statusCode : err);
                 reject(err);
             } else {
                 try {
                     var obj = JSON.parse(body);
-                    // console.log("obj:", obj);
+                    // defaultLog.info("obj:", obj);
                     var applications = [];
                     if (obj && obj.elements && obj.elements.length > 0) {
-                        // console.log("obj.elements:", obj.elements);
+                        // defaultLog.info("obj.elements:", obj.elements);
                         for(let app of obj.elements) {
-                            // console.log("app:", app);
+                            // defaultLog.info("app:", app);
                             var application = {};
                             application.TENURE_PURPOSE                  = app.purposeCode['description'];
                             application.TENURE_SUBPURPOSE               = app.purposeCode.subPurposeCodes[0]['description'];
@@ -229,11 +229,11 @@ exports.getApplicationByFilenumber = function (accessToken, clFile) {
                             applications.push(application);
                         }
                     } else {
-                        console.log("No results found.");
+                      defaultLog.info("No results found.");
                     }
                     resolve(applications);
                 } catch (e) {
-                    console.log("Object Parsing Failed:", e);
+                    defaultLog.error("Object Parsing Failed:", e);
                     reject(e);
                 }
             }
@@ -243,7 +243,7 @@ exports.getApplicationByFilenumber = function (accessToken, clFile) {
 
 exports.getApplicationByDispositionID = function (accessToken, disp) {
     return new Promise(function (resolve, reject) {
-        console.log("Looking up disposition:", _tantalisAPI + "landUseApplications/" + disp);
+        defaultLog.info("Looking up disposition:", _tantalisAPI + "landUseApplications/" + disp);
         request.get({
             url: _tantalisAPI + "landUseApplications/" + disp,
             auth: {
@@ -252,7 +252,7 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
         },
         function (err, res, body) {
             if (err || (res && res.statusCode !== 200)) {
-                console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+                defaultLog.error("TTLS API ResponseCode:", err == null ? res.statusCode : err);
                 if (!err && res && res.statusCode) {
                     err = {};
                     err.statusCode = res.statusCode;
@@ -354,11 +354,11 @@ exports.getApplicationByDispositionID = function (accessToken, disp) {
                         }
                         resolve(application);
                     } else {
-                        console.log("Nothing found.");
+                        defaultLog.info("Nothing found.");
                         resolve(null);
                     }
                 } catch (e) {
-                    console.log("Object Parsing Failed:", e);
+                    defaultLog.error("Object Parsing Failed:", e);
                     reject(e);
                 }
             }
@@ -378,7 +378,7 @@ exports.getAllApplicationIDs = function (accessToken, filterParams = {}) {
   return new Promise(function (resolve, reject) {
     const queryString = `?${qs.stringify(filterParams)}`;
 
-    console.log("Looking up all applications:", _tantalisAPI + "landUseApplications" + queryString);
+    defaultLog.info("Looking up all applications:", _tantalisAPI + "landUseApplications" + queryString);
 
     request.get({
       url: _tantalisAPI + "landUseApplications" + queryString,
@@ -388,8 +388,8 @@ exports.getAllApplicationIDs = function (accessToken, filterParams = {}) {
     },
       function (err, res, body) {
         if (err || (res && res.statusCode !== 200)) {
-          console.log("TTLS API ResponseCode:", err == null ? res.statusCode : err);
-          console.log("TTLS API ResponseCode:", body);
+          defaultLog.error("TTLS API ResponseCode:", err == null ? res.statusCode : err);
+          defaultLog.error("TTLS API ResponseCode:", body);
           if (!err && res && res.statusCode) {
             err = {};
             err.statusCode = res.statusCode;
@@ -408,11 +408,11 @@ exports.getAllApplicationIDs = function (accessToken, filterParams = {}) {
             if (applicationIDs.length) {
               resolve(applicationIDs);
             } else {
-              console.log("No applications found.");
+              defaultLog.info("No applications found.");
               resolve([]);
             }
           } catch (e) {
-            console.log("Object Parsing Failed:", e);
+            defaultLog.error("Object Parsing Failed:", e);
             reject(e);
           }
         }

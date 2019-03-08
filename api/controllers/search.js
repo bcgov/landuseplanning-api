@@ -1,7 +1,5 @@
-var auth         = require("../helpers/auth");
 var _            = require('lodash');
 var defaultLog   = require('winston').loggers.get('default');
-var mongoose     = require('mongoose');
 var Actions      = require('../helpers/actions');
 var Utils        = require('../helpers/utils');
 var request      = require('request');
@@ -14,12 +12,12 @@ exports.protectedTTLSGetApplicationsByFileNumber = function (args, res, rest) {
     return Utils.loginWebADE()
     .then(function (accessToken) {
       _accessToken = accessToken;
-      console.log("TTLS API Logged in:", _accessToken);
+      defaultLog.info("TTLS API Logged in:", _accessToken);
       // fileNumber lookup
       return Utils.getApplicationByFilenumber(_accessToken, fileNumber);
     }).then(r, j);
   }).then(function (promises) {
-    console.log("returning number of items:", promises.length);
+    defaultLog.info("returning number of items:", promises.length);
 
     // Call the api again but this time grab all the related information on each app
     // returned form the CL file lookup.
@@ -29,7 +27,7 @@ exports.protectedTTLSGetApplicationsByFileNumber = function (args, res, rest) {
       return promises.reduce(function (previousItem, currentItem) {
         return previousItem.then(function () {
               // return Actions.publish(currentItem);
-              console.log("executing disp:", currentItem.DISPOSITION_TRANSACTION_SID);
+              defaultLog.info("executing disp:", currentItem.DISPOSITION_TRANSACTION_SID);
               return Utils.getApplicationByDispositionID(_accessToken, currentItem.DISPOSITION_TRANSACTION_SID)
               .then(function (appData) {
                 allApps.push(appData);
@@ -40,11 +38,11 @@ exports.protectedTTLSGetApplicationsByFileNumber = function (args, res, rest) {
     }).then(function () {
       // All done with promises in the array, return to the caller.
       defaultLog.info("------------------------done with promises------------------------");
-      console.log(allApps);
+      defaultLog.info(allApps);
       return Actions.sendResponse(res, 200, allApps);
     });
   }).catch(function (err) {
-    console.log("Error in API:", err);
+    defaultLog.error("Error in API:", err);
     return Actions.sendResponse(res, err.statusCode, err);
   });
 };
@@ -56,15 +54,15 @@ exports.protectedTTLSGetApplicationByDisp = function (args, res, rest) {
     return Utils.loginWebADE()
     .then(function (accessToken) {
       _accessToken = accessToken;
-      console.log("TTLS API Logged in:", _accessToken);
+      defaultLog.info("TTLS API Logged in:", _accessToken);
       // Disp lookup
       return Utils.getApplicationByDispositionID(_accessToken, dtId);
     }).then(resolve, reject);
   }).then(function (data) {
-    console.log("returning:", data.DISPOSITION_TRANSACTION_SID);
+    defaultLog.info("returning:", data.DISPOSITION_TRANSACTION_SID);
     return Actions.sendResponse(res, 200, data);
   }).catch(function (err) {
-    console.log("Error in API:", err);
+    defaultLog.error("Error in API:", err);
     return Actions.sendResponse(res, err.statusCode, err);
   });
 };
@@ -156,7 +154,7 @@ exports.publicGetBCGW = function (args, res, next) {
                   if (o) {
                     obj.sidsFound.push(code.SID); // NB: SID is string (tantalisID is number)
                   } else {
-                    console.log("Nothing found");
+                    defaultLog.info("Nothing found");
                   }
                   complete();
                 });
@@ -254,7 +252,7 @@ exports.publicGetBCGWDispositionTransactionId = function (args, res, next) {
                   if (o) {
                     obj.sidsFound.push(code.SID); // NB: SID is string (tantalisID is number)
                   } else {
-                    console.log("Nothing found");
+                    defaultLog.info("Nothing found");
                   }
                   complete();
                 });

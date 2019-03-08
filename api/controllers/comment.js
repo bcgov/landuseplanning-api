@@ -1,4 +1,3 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
@@ -123,7 +122,7 @@ exports.protectedHead = function (args, res, next) {
     if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
       res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
       return Actions.sendResponse(res, 200, data);
-    } else {s
+    } else {
       return Actions.sendResponse(res, 404, data);
     }
   });

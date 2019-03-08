@@ -6,32 +6,24 @@ var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
 var hostname      = process.env.API_HOSTNAME || "localhost:3000";
 var swaggerTools  = require("swagger-tools");
 var YAML          = require("yamljs");
-var mongoose      = require("mongoose");
-var passport      = require("passport");
-var auth          = require("./api/helpers/auth");
-var models        = require("./api/helpers/models");
 var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
-var winston       = require('winston');
+var mongoose      = require("mongoose");
 var bodyParser    = require('body-parser');
 
-var dbConnection  = 'mongodb://'
-                    + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
-                    + '/'
-                    + (process.env.MONGODB_DATABASE || 'nrts-dev');
-var db_username = process.env.MONGODB_USERNAME || '';
-var db_password = process.env.MONGODB_PASSWORD || '';
-
-// Logging middleware
-winston.loggers.add('default', {
-    console: {
-        colorize: 'true',
-        handleExceptions: true,
-        json: false,
-        level: 'silly',
-        label: 'default',
-    }
+// winston logger needs to be created before any local classes (that use the logger) are loaded.
+const winston     = require('winston')
+const defaultLog  = winston.loggers.add('default', {
+  transports: [new winston.transports.Console({ level: 'silly', handleExceptions: true })]
 });
-var defaultLog = winston.loggers.get('default');
+
+var auth          = require("./api/helpers/auth");
+
+var dbConnection  = 'mongodb://'
+                  + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
+                  + '/'
+                  + (process.env.MONGODB_DATABASE || 'nrts-dev');
+var db_username   = process.env.MONGODB_USERNAME || '';
+var db_password   = process.env.MONGODB_PASSWORD || '';
 
 // Increase postbody sizing
 app.use(bodyParser.json({limit: '10mb', extended: true}))
@@ -70,7 +62,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       Bearer: auth.verifyToken
     })
   );
-  
+
   var routerConfig = {
     controllers: "./api/controllers",
     useStubs: false
@@ -91,7 +83,6 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   }
   // Load up DB
   var options = {
-    useMongoClient: true,
     poolSize: 10,
     user: db_username,
     pass: db_password,
@@ -101,11 +92,13 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     // If not connected, return errors immediately rather than waiting for reconnect
     bufferMaxEntries: 0,
     connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
-    socketTimeoutMS: 45000 // Close sockets after 45 seconds of inactivity
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    useNewUrlParser: true,
+    useCreateIndex: true
   };
   defaultLog.info("Connecting to:", dbConnection);
   mongoose.Promise  = global.Promise;
-  var db = mongoose.connect(dbConnection, options).then(
+  var db = mongoose.connect(encodeURI(dbConnection), options).then(
     () => {
       defaultLog.info("Database connected");
 

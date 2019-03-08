@@ -1,4 +1,3 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
@@ -85,8 +84,6 @@ exports.protectedHead = function (args, res, next) {
 }
 
 exports.protectedGet = function(args, res, next) {
-  var Comment = mongoose.model('CommentPeriod');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route

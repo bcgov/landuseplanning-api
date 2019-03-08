@@ -1,4 +1,3 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
@@ -57,7 +56,7 @@ exports.publicGet = function (args, res, next) {
   });
 };
 exports.unProtectedPost = function(args, res, next) {
-  console.log("Creating new object");
+  defaultLog.info("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
   var _decision     = args.swagger.params._decision.value;
@@ -111,8 +110,6 @@ exports.unProtectedPost = function(args, res, next) {
 };
 
 exports.protectedHead = function (args, res, next) {
-  var Document = mongoose.model('Document');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
@@ -161,8 +158,6 @@ exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.operation["x-security-scopes"];
 
-  var Document = mongoose.model('Document');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
@@ -200,9 +195,6 @@ exports.protectedGet = function(args, res, next) {
   });
 };
 exports.publicDownload = function(args, res, next) {
-  var self        = this;
-  var Document = mongoose.model('Document');
-
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId) {
@@ -241,8 +233,6 @@ exports.protectedDownload = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.operation["x-security-scopes"];
 
-  var Document = mongoose.model('Document');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on docId route
@@ -279,7 +269,7 @@ exports.protectedDownload = function(args, res, next) {
 
 //  Create a new document
 exports.protectedPost = function (args, res, next) {
-  console.log("Creating new object");
+  defaultLog.info("Creating new object");
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
   var _decision     = args.swagger.params._decision.value;
@@ -414,6 +404,7 @@ exports.protectedPut = function (args, res, next) {
   var _application  = args.swagger.params._application.value;
   var _comment      = args.swagger.params._comment.value;
   var _decision     = args.swagger.params._decision.value;
+  var displayName   = args.swagger.params.displayName.value;
   defaultLog.info("ObjectID:", args.swagger.params.docId.value);
 
   var guid = intformat(generator.next(), 'dec');
@@ -441,11 +432,11 @@ exports.protectedPut = function (args, res, next) {
         obj.internalURL = uploadDir+guid+"."+ext;
         // Update who did this?
         obj._addedBy = args.swagger.params.auth_payload.preferred_username;
-        doc._application = _application;
-        doc._comment = _comment;
-        doc._decision = _decision;
-        doc.displayName = displayName;
-        doc.passedAVCheck = true;
+        obj._application = _application;
+        obj._comment = _comment;
+        obj._decision = _decision;
+        obj.displayName = displayName;
+        obj.passedAVCheck = true;
         var Document = require('mongoose').model('Document');
         Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
           if (o) {

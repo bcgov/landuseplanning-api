@@ -1,4 +1,3 @@
-var auth        = require("../helpers/auth");
 var _           = require('lodash');
 var defaultLog  = require('winston').loggers.get('default');
 var mongoose    = require('mongoose');
@@ -19,8 +18,8 @@ exports.publicGet = function (args, res, next) {
       defaultLog.info("Looking up features based on coords:", args.swagger.params.coordinates.value);
       try {
         query = { geometry: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.coordinates.value) } } }};
-      } catch (e) {
-        defaultLog.info("Parsing Error:", e);
+      } catch (err) {
+        defaultLog.info("Parsing Error:", err);
         return Actions.sendResponse(res, 400, err);
       }
     }
@@ -42,8 +41,6 @@ exports.protectedGet = function(args, res, next) {
   var self        = this;
   self.scopes     = args.swagger.operation["x-security-scopes"];
 
-  var Feature = mongoose.model('Feature');
-
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   var query = {};
@@ -55,8 +52,8 @@ exports.protectedGet = function(args, res, next) {
       defaultLog.info("Looking up features based on coords:", args.swagger.params.coordinates.value);
       try {
         query = { geometry: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.coordinates.value) } } }};
-      } catch (e) {
-        defaultLog.info("Parsing Error:", e);
+      } catch (err) {
+        defaultLog.info("Parsing Error:", err);
         return Actions.sendResponse(res, 400, err);
       }
     }
@@ -263,7 +260,7 @@ var getFeatures = function (role, query, fields) {
       // Strip the tags from any object because this is geoJSON
       _.each(data, function (d) {
         function removeTags(obj) {
-          for(prop in obj) {
+          for(const prop in obj) {
             if (prop === 'tags')
               delete obj[prop];
             else if (typeof obj[prop] === 'object')
