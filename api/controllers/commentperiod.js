@@ -160,6 +160,11 @@ exports.protectedGet = async function (args, res, next) {
       }
     }, this);
   }
+
+  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+  skip = processedParameters.skip;
+  limit = processedParameters.limit;
+
   // Set query type
   _.assignIn(query, { "_schemaName": "CommentPeriod" });
 
@@ -169,9 +174,9 @@ exports.protectedGet = async function (args, res, next) {
     getSanitizedFields(args.swagger.params.fields.value), // Fields
     null, // sort warmup
     sort, // sort
-    null, // skip
-    null, // limit
-    false) // count
+    skip, // skip
+    limit, // limit
+    true) // count
   return Actions.sendResponse(res, 200, data);
 };
 

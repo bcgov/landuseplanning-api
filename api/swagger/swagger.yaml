@@ -3471,14 +3471,15 @@ paths:
           items:
             type: string
         - in: query
-          name: fields
-          description: "commentperiod fields to return."
+          name: pageNum
+          type: number
           required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *commentperiodFields
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
         - in: query
           name: sortBy
           description: "Comment fields to sort by."
@@ -3487,6 +3488,15 @@ paths:
           items:
             type: string
             enum: *commentSortByFields
+        - in: query
+          name: fields
+          description: "commentperiod fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *commentperiodFields
       responses:
         "200":
           description: "Success"
