@@ -20,9 +20,7 @@
         "name": "${DATABASE_SERVICE_NAME}data"
       },
       "spec": {
-        "accessModes": [
-          "ReadWriteOnce"
-        ],
+        "accessModes": ["ReadWriteOnce"],
         "resources": {
           "requests": {
             "storage": "${DATABASE_VOLUME_CAPACITY}"
@@ -37,9 +35,7 @@
         "name": "${NAME}-docs-pvc"
       },
       "spec": {
-        "accessModes": [
-          "ReadWriteOnce"
-        ],
+        "accessModes": ["ReadWriteOnce"],
         "resources": {
           "requests": {
             "storage": "${DOCUMENT_VOLUME_CAPACITY}"
@@ -101,9 +97,7 @@
             "type": "ImageChange",
             "imageChangeParams": {
               "automatic": true,
-              "containerNames": [
-                "${NAME}"
-              ],
+              "containerNames": ["${NAME}"],
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "${APP_IMAGE_NAMESPACE}",
@@ -235,9 +229,7 @@
             "type": "ImageChange",
             "imageChangeParams": {
               "automatic": true,
-              "containerNames": [
-                "mongodb"
-              ],
+              "containerNames": ["mongodb"],
               "from": {
                 "kind": "ImageStreamTag",
                 "namespace": "${MONGO_IMAGE_NAMESPACE}",

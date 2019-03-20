@@ -14,7 +14,7 @@ var _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
 var _tantalisAPI = process.env.TTLS_API_ENDPOINT || 'https://api.nrs.gov.bc.ca/ttls-api/v1/';
 var webADEAPI = process.env.WEBADE_AUTH_ENDPOINT || 'https://api.nrs.gov.bc.ca/oauth2/v1/';
 var username = process.env.WEBADE_USERNAME || 'TTLS-EXT';
-var password = process.env.WEBADE_PASSWORD || 'X';
+var password = process.env.WEBADE_PASSWORD || 'x';
 var MAX_LIMIT = 1000;
 var DEFAULT_PAGESIZE = 100;
 
