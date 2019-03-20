@@ -1,51 +1,53 @@
-var _           = require('lodash');
-var defaultLog  = require('winston').loggers.get('default');
-var mongoose    = require('mongoose');
-var qs          = require('qs');
-var Actions     = require('../helpers/actions');
-var Utils       = require('../helpers/utils');
-var tagList     = ['agency',
-                    'areaHectares',
-                    'businessUnit',
-                    'centroid',
-                    'cl_file',
-                    'client',
-                    '_createdBy',
-                    'createdDate',
-                    'description',
-                    'legalDescription',
-                    'statusHistoryEffectiveDate',
-                    'location',
-                    'name',
-                    'publishDate',
-                    'purpose',
-                    'status',
-                    'subpurpose',
-                    'subtype',
-                    'tantalisID',
-                    'tenureStage',
-                    'type'];
+var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('default');
+var mongoose = require('mongoose');
+var qs = require('qs');
+var Actions = require('../helpers/actions');
+var Utils = require('../helpers/utils');
+var tagList = [
+  'agency',
+  'areaHectares',
+  'businessUnit',
+  'centroid',
+  'cl_file',
+  'client',
+  '_createdBy',
+  'createdDate',
+  'description',
+  'legalDescription',
+  'statusHistoryEffectiveDate',
+  'location',
+  'name',
+  'publishDate',
+  'purpose',
+  'status',
+  'subpurpose',
+  'subtype',
+  'tantalisID',
+  'tenureStage',
+  'type'
+];
 
-var getSanitizedFields = function (fields) {
-  return _.remove(fields, function (f) {
-    return (_.indexOf(tagList, f) !== -1);
+var getSanitizedFields = function(fields) {
+  return _.remove(fields, function(f) {
+    return _.indexOf(tagList, f) !== -1;
   });
-}
+};
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function(args, res, next) {
   res.status(200).send();
-}
+};
 
-exports.publicHead = function (args, res, next) {
+exports.publicHead = function(args, res, next) {
   // Build match query if on appId route
-  var query   = {};
+  var query = {};
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
   tagList.push('tags');
 
   if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.appId.value, query);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -56,47 +58,54 @@ exports.publicHead = function (args, res, next) {
 
   _.assignIn(query, { isDeleted: false });
 
-  handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
-    Utils.runDataQuery('Application',
-                      ['public'],
-                      query,
-                      null, // Fields
-                      null, // sort warmup
-                      null, // sort
-                      null, // skip
-                      1000000, // limit
-                      true,
-                      commentPeriodPipeline) // count
-      .then(function (data) {
-        // /api/comment/ route, return 200 OK with 0 items if necessary
-        if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
-          res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-          return Actions.sendResponse(res, 200, data);
-        } else {
-          return Actions.sendResponse(res, 404, data);
-        }
-      })
-      .catch(function (err) {
-        defaultLog.error("Error in runDataQuery:", err);
-        return Actions.sendResponse(res, 400, err);
-      });
-    }, function (error) {
-    return Actions.sendResponse(res, 400, error);
-  });
+  handleCommentPeriodDateQueryParameters(
+    args,
+    tagList,
+    function(commentPeriodPipeline) {
+      Utils.runDataQuery(
+        'Application',
+        ['public'],
+        query,
+        null, // Fields
+        null, // sort warmup
+        null, // sort
+        null, // skip
+        1000000, // limit
+        true,
+        commentPeriodPipeline
+      ) // count
+        .then(function(data) {
+          // /api/comment/ route, return 200 OK with 0 items if necessary
+          if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+            res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+            return Actions.sendResponse(res, 200, data);
+          } else {
+            return Actions.sendResponse(res, 404, data);
+          }
+        })
+        .catch(function(err) {
+          defaultLog.error('Error in runDataQuery:', err);
+          return Actions.sendResponse(res, 400, err);
+        });
+    },
+    function(error) {
+      return Actions.sendResponse(res, 400, error);
+    }
+  );
 };
 
-exports.publicGet = function (args, res, next) {
+exports.publicGet = function(args, res, next) {
   // Build match query if on appId route
-  var query   = {};
-  var skip    = null;
-  var limit   = null;
+  var query = {};
+  var skip = null;
+  var limit = null;
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
   tagList.push('tags');
 
   if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.appId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -112,39 +121,46 @@ exports.publicGet = function (args, res, next) {
 
   _.assignIn(query, { isDeleted: false });
 
-  handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
-    Utils.runDataQuery('Application',
-                      ['public'],
-                      query,
-                      requestedFields, // Fields
-                      null, // sort warmup
-                      null, // sort
-                      skip, // skip
-                      limit, // limit
-                      false,
-                      commentPeriodPipeline) // count
-      .then(function (data) {
-        return Actions.sendResponse(res, 200, data);
-      })
-      .catch(function (err) {
-        defaultLog.error("Error in runDataQuery:", err);
-        return Actions.sendResponse(res, 400, err);
-      });
-  }, function (error) {
-    return Actions.sendResponse(res, 400, error);
-  });
+  handleCommentPeriodDateQueryParameters(
+    args,
+    tagList,
+    function(commentPeriodPipeline) {
+      Utils.runDataQuery(
+        'Application',
+        ['public'],
+        query,
+        requestedFields, // Fields
+        null, // sort warmup
+        null, // sort
+        skip, // skip
+        limit, // limit
+        false,
+        commentPeriodPipeline
+      ) // count
+        .then(function(data) {
+          return Actions.sendResponse(res, 200, data);
+        })
+        .catch(function(err) {
+          defaultLog.error('Error in runDataQuery:', err);
+          return Actions.sendResponse(res, 400, err);
+        });
+    },
+    function(error) {
+      return Actions.sendResponse(res, 400, error);
+    }
+  );
 };
 
 exports.protectedGet = function(args, res, next) {
-  var skip        = null;
-  var limit       = null;
+  var skip = null;
+  var limit = null;
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
 
   // Build match query if on appId route
   var query = {};
   if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.appId.value, query);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -165,26 +181,28 @@ exports.protectedGet = function(args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  Utils.runDataQuery('Application',
-                    args.swagger.operation["x-security-scopes"],
-                    query,
-                    getSanitizedFields(args.swagger.params.fields.value), // Fields
-                    null, // sort warmup
-                    null, // sort
-                    skip, // skip
-                    limit, // limit
-                    false) // count
-  .then(function (data) {
-    return Actions.sendResponse(res, 200, data);
-  })
-  .catch(function (err) {
-    defaultLog.error("Error in runDataQuery:", err);
-    return Actions.sendResponse(res, 400, err);
-  });
+  Utils.runDataQuery(
+    'Application',
+    args.swagger.operation['x-security-scopes'],
+    query,
+    getSanitizedFields(args.swagger.params.fields.value), // Fields
+    null, // sort warmup
+    null, // sort
+    skip, // skip
+    limit, // limit
+    false
+  ) // count
+    .then(function(data) {
+      return Actions.sendResponse(res, 200, data);
+    })
+    .catch(function(err) {
+      defaultLog.error('Error in runDataQuery:', err);
+      return Actions.sendResponse(res, 400, err);
+    });
 };
 
-exports.protectedHead = function (args, res, next) {
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+exports.protectedHead = function(args, res, next) {
+  defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
 
   // Build match query if on appId route
   var query = {};
@@ -194,7 +212,7 @@ exports.protectedHead = function (args, res, next) {
   tagList.push('tags');
 
   if (args.swagger.params.appId) {
-    query = Utils.buildQuery("_id", args.swagger.params.appId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.appId.value, query);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -210,103 +228,108 @@ exports.protectedHead = function (args, res, next) {
     _.assignIn(query, { isDeleted: false });
   }
 
-  Utils.runDataQuery('Application',
-                    args.swagger.operation["x-security-scopes"],
-                    query,
-                    tagList, // Fields
-                    null, // sort warmup
-                    null, // sort
-                    null, // skip
-                    1000000, // limit
-                    true) // count
-  .then(function (data) {
-    // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data);
-    } else {
-      return Actions.sendResponse(res, 404, data);
-    }
-  })
-  .catch(function (err) {
-    defaultLog.error("Error in runDataQuery:", err);
-    return Actions.sendResponse(res, 400, err);
-  });
+  Utils.runDataQuery(
+    'Application',
+    args.swagger.operation['x-security-scopes'],
+    query,
+    tagList, // Fields
+    null, // sort warmup
+    null, // sort
+    null, // skip
+    1000000, // limit
+    true
+  ) // count
+    .then(function(data) {
+      // /api/comment/ route, return 200 OK with 0 items if necessary
+      if (!(args.swagger.params.appId && args.swagger.params.appId.value) || (data && data.length > 0)) {
+        res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+        return Actions.sendResponse(res, 200, data);
+      } else {
+        return Actions.sendResponse(res, 404, data);
+      }
+    })
+    .catch(function(err) {
+      defaultLog.error('Error in runDataQuery:', err);
+      return Actions.sendResponse(res, 400, err);
+    });
 };
 
-exports.protectedDelete = function (args, res, next) {
+exports.protectedDelete = function(args, res, next) {
   var appId = args.swagger.params.appId.value;
-  defaultLog.info("Delete Application:", appId);
+  defaultLog.info('Delete Application:', appId);
 
   var Application = mongoose.model('Application');
-  Application.findOne({_id: appId}, function (err, o) {
+  Application.findOne({ _id: appId }, function(err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      defaultLog.info('o:', o);
 
       // Set the deleted flag.
-      Actions.delete(o)
-      .then(function (deleted) {
-        // Deleted successfully
-        return Actions.sendResponse(res, 200, deleted);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, 400, err);
-      });
+      Actions.delete(o).then(
+        function(deleted) {
+          // Deleted successfully
+          return Actions.sendResponse(res, 200, deleted);
+        },
+        function(err) {
+          // Error
+          return Actions.sendResponse(res, 400, err);
+        }
+      );
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
   });
-}
+};
 
-var doFeaturePubUnPub = function (action, objId) {
-  return new Promise(function (resolve, reject) {
+var doFeaturePubUnPub = function(action, objId) {
+  return new Promise(function(resolve, reject) {
     var Feature = require('mongoose').model('Feature');
 
-    Feature.find({applicationID: objId}, function (err, featureObjects) {
+    Feature.find({ applicationID: objId }, function(err, featureObjects) {
       if (err) {
         reject(err);
       } else {
         var promises = [];
-        _.each(featureObjects, function (f) {
+        _.each(featureObjects, function(f) {
           promises.push(f);
         });
         // Iterate through all the promises before returning.
         Promise.resolve()
-        .then(function () {
-          return promises.reduce(function (previousItem, currentItem) {
-            return previousItem.then(function () {
-              if (action == 'publish') {
-                if (!Actions.isPublished(currentItem)) {
-                  return Actions.publish(currentItem);
+          .then(function() {
+            return promises.reduce(function(previousItem, currentItem) {
+              return previousItem.then(function() {
+                if (action == 'publish') {
+                  if (!Actions.isPublished(currentItem)) {
+                    return Actions.publish(currentItem);
+                  } else {
+                    return Promise.resolve();
+                  }
                 } else {
-                  return Promise.resolve();
+                  // Default unpub
+                  if (Actions.isPublished(currentItem)) {
+                    return Actions.unPublish(currentItem);
+                  } else {
+                    return Promise.resolve();
+                  }
                 }
-              } else {
-                // Default unpub
-                if (Actions.isPublished(currentItem)) {
-                  return Actions.unPublish(currentItem);
-                } else {
-                  return Promise.resolve();
-                }
-              }
-            });
-          }, Promise.resolve());
-        }).then(function () {
-          // All done with promises in the array, return to the caller.
-          defaultLog.info("done Pub/UnPub all features.");
-          resolve();
-        });
+              });
+            }, Promise.resolve());
+          })
+          .then(function() {
+            // All done with promises in the array, return to the caller.
+            defaultLog.info('done Pub/UnPub all features.');
+            resolve();
+          });
       }
     });
   });
-}
+};
 
-var doFeatureSave = function (item, appId) {
-  return new Promise(function (resolve, reject) {
+var doFeatureSave = function(item, appId) {
+  return new Promise(function(resolve, reject) {
     // MBL TODO: What to do if feature was already in?
     var Feature = mongoose.model('Feature');
-    var feat    = new Feature(item);
+    var feat = new Feature(item);
 
     // Bind reference to application Obj
     feat.applicationID = appId;
@@ -315,24 +338,24 @@ var doFeatureSave = function (item, appId) {
 };
 
 //  Create a new application
-exports.protectedPost = function (args, res, next) {
+exports.protectedPost = function(args, res, next) {
   var obj = args.swagger.params.app.value;
 
   // Get rid of the fields we don't need/setting later below.
-  delete(obj.areaHectares);
-  delete(obj.centroid);
-  delete(obj.purpose);
-  delete(obj.subpurpose);
-  delete(obj.type);
-  delete(obj.subtype);
-  delete(obj.status);
-  delete(obj.tenureStage);
-  delete(obj.location);
-  delete(obj.businessUnit);
-  delete(obj.cl_file);
-  delete(obj.client);
+  delete obj.areaHectares;
+  delete obj.centroid;
+  delete obj.purpose;
+  delete obj.subpurpose;
+  delete obj.type;
+  delete obj.subtype;
+  delete obj.status;
+  delete obj.tenureStage;
+  delete obj.location;
+  delete obj.businessUnit;
+  delete obj.cl_file;
+  delete obj.client;
 
-  defaultLog.info("Incoming new object:", obj);
+  defaultLog.info('Incoming new object:', obj);
 
   var Application = mongoose.model('Application');
   var app = new Application(obj);
@@ -340,133 +363,147 @@ exports.protectedPost = function (args, res, next) {
   app.tags = [['sysadmin']];
   app._createdBy = args.swagger.params.auth_payload.preferred_username;
   app.createdDate = Date.now();
-  app.save()
-  .then(function (savedApp) {
-    return new Promise(function (resolve, reject) {
+  app.save().then(function(savedApp) {
+    return new Promise(function(resolve, reject) {
       return Utils.loginWebADE()
-      .then(function (accessToken) {
-        defaultLog.debug("TTLS API Logged in:", accessToken);
-        // Disp lookup
-        return Utils.getApplicationByDispositionID(accessToken, savedApp.tantalisID);
-      }).then(resolve, reject);
-    }).then(function (data) {
-      // Copy in the meta
-      savedApp.areaHectares = data.areaHectares;
-      savedApp.centroid     = data.centroid;
-      savedApp.purpose      = data.TENURE_PURPOSE;
-      savedApp.subpurpose   = data.TENURE_SUBPURPOSE;
-      savedApp.type         = data.TENURE_TYPE;
-      savedApp.subtype      = data.TENURE_SUBTYPE;
-      savedApp.status       = data.TENURE_STATUS;
-      savedApp.tenureStage  = data.TENURE_STAGE;
-      savedApp.location     = data.TENURE_LOCATION;
-      savedApp.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
-      savedApp.cl_file      = data.CROWN_LANDS_FILE;
-      savedApp.tantalisID   = data.DISPOSITION_TRANSACTION_SID;
+        .then(function(accessToken) {
+          defaultLog.debug('TTLS API Logged in:', accessToken);
+          // Disp lookup
+          return Utils.getApplicationByDispositionID(accessToken, savedApp.tantalisID);
+        })
+        .then(resolve, reject);
+    })
+      .then(function(data) {
+        // Copy in the meta
+        savedApp.areaHectares = data.areaHectares;
+        savedApp.centroid = data.centroid;
+        savedApp.purpose = data.TENURE_PURPOSE;
+        savedApp.subpurpose = data.TENURE_SUBPURPOSE;
+        savedApp.type = data.TENURE_TYPE;
+        savedApp.subtype = data.TENURE_SUBTYPE;
+        savedApp.status = data.TENURE_STATUS;
+        savedApp.tenureStage = data.TENURE_STAGE;
+        savedApp.location = data.TENURE_LOCATION;
+        savedApp.businessUnit = data.RESPONSIBLE_BUSINESS_UNIT;
+        savedApp.cl_file = data.CROWN_LANDS_FILE;
+        savedApp.tantalisID = data.DISPOSITION_TRANSACTION_SID;
 
-      for(let [idx,client] of Object.entries(data.interestedParties)) {
-        if (idx > 0) {
-          savedApp.client += ", ";
+        for (let [idx, client] of Object.entries(data.interestedParties)) {
+          if (idx > 0) {
+            savedApp.client += ', ';
+          }
+          if (client.interestedPartyType == 'O') {
+            savedApp.client += client.legalName;
+          } else {
+            savedApp.client += client.firstName + ' ' + client.lastName;
+          }
         }
-        if (client.interestedPartyType == 'O') {
-          savedApp.client += client.legalName;
-        } else {
-          savedApp.client += client.firstName + " " + client.lastName;
-        }
-      }
 
-      Promise.resolve()
-      .then(function () {
-        return data.parcels.reduce(function (previousItem, currentItem) {
-          return previousItem.then(function () {
-            // publish
-            currentItem.tags = [['sysadmin'],['public']];
-            return doFeatureSave(currentItem, savedApp._id);
+        Promise.resolve()
+          .then(function() {
+            return data.parcels.reduce(function(previousItem, currentItem) {
+              return previousItem.then(function() {
+                // publish
+                currentItem.tags = [['sysadmin'], ['public']];
+                return doFeatureSave(currentItem, savedApp._id);
+              });
+            }, Promise.resolve());
+          })
+          .then(function() {
+            // All done with promises in the array, return to the caller.
+            defaultLog.debug('all done');
+            return savedApp.save();
+          })
+          .then(function(theApp) {
+            return Actions.sendResponse(res, 200, theApp);
           });
-        }, Promise.resolve());
-      }).then(function () {
-        // All done with promises in the array, return to the caller.
-        defaultLog.debug("all done");
-        return savedApp.save();
-      }).then(function (theApp) {
-        return Actions.sendResponse(res, 200, theApp);
+      })
+      .catch(function(err) {
+        defaultLog.error('Error in API:', err);
+        return Actions.sendResponse(res, 400, err);
       });
-    }).catch(function (err) {
-      defaultLog.error("Error in API:", err);
-      return Actions.sendResponse(res, 400, err);
-    });
   });
 };
 
 // Update an existing application
-exports.protectedPut = function (args, res, next) {
+exports.protectedPut = function(args, res, next) {
   var objId = args.swagger.params.appId.value;
-  defaultLog.info("ObjectID:", args.swagger.params.appId.value);
+  defaultLog.info('ObjectID:', args.swagger.params.appId.value);
 
   var obj = args.swagger.params.AppObject.value;
   // Strip security tags - these will not be updated on this route.
   delete obj.tags;
-  defaultLog.info("Incoming updated object:", obj);
+  defaultLog.info('Incoming updated object:', obj);
   // TODO sanitize/update audits.
 
   var Application = require('mongoose').model('Application');
-  Application.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
+  Application.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function(err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      defaultLog.info('o:', o);
       return Actions.sendResponse(res, 200, o);
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
   });
-}
+};
 
 // Publish/Unpublish the application
-exports.protectedPublish = function (args, res, next) {
+exports.protectedPublish = function(args, res, next) {
   var objId = args.swagger.params.appId.value;
-  defaultLog.info("Publish Application:", objId);
+  defaultLog.info('Publish Application:', objId);
 
   var Application = require('mongoose').model('Application');
-  Application.findOne({_id: objId}, function (err, o) {
+  Application.findOne({ _id: objId }, function(err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      defaultLog.info('o:', o);
 
       // Go through the feature collection and publish the corresponding features.
-      doFeaturePubUnPub('publish', objId).then(function () {
-        // Publish the application
-        return Actions.publish(o);
-      }).then(function (published) {
-        // Published successfully
-        return Actions.sendResponse(res, 200, published);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, err.code, err);
-      });
+      doFeaturePubUnPub('publish', objId)
+        .then(function() {
+          // Publish the application
+          return Actions.publish(o);
+        })
+        .then(
+          function(published) {
+            // Published successfully
+            return Actions.sendResponse(res, 200, published);
+          },
+          function(err) {
+            // Error
+            return Actions.sendResponse(res, err.code, err);
+          }
+        );
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
   });
 };
-exports.protectedUnPublish = function (args, res, next) {
+exports.protectedUnPublish = function(args, res, next) {
   var objId = args.swagger.params.appId.value;
-  defaultLog.info("UnPublish Application:", objId);
+  defaultLog.info('UnPublish Application:', objId);
 
   var Application = require('mongoose').model('Application');
-  Application.findOne({_id: objId}, function (err, o) {
+  Application.findOne({ _id: objId }, function(err, o) {
     if (o) {
-      defaultLog.info("o:", o);
+      defaultLog.info('o:', o);
 
       // Go through the feature collection and publish the corresponding features.
-      doFeaturePubUnPub('unpublish',objId).then(function () {
-        return Actions.unPublish(o);
-      }).then(function (unpublished) {
-        // UnPublished successfully
-        return Actions.sendResponse(res, 200, unpublished);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, err.code, err);
-      });
+      doFeaturePubUnPub('unpublish', objId)
+        .then(function() {
+          return Actions.unPublish(o);
+        })
+        .then(
+          function(unpublished) {
+            // UnPublished successfully
+            return Actions.sendResponse(res, 200, unpublished);
+          },
+          function(err) {
+            // Error
+            return Actions.sendResponse(res, err.code, err);
+          }
+        );
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
@@ -475,7 +512,7 @@ exports.protectedUnPublish = function (args, res, next) {
 };
 
 /* eslint-disable no-redeclare */
-var handleCommentPeriodDateQueryParameters = function (args, requestedFields, callback, error) {
+var handleCommentPeriodDateQueryParameters = function(args, requestedFields, callback, error) {
   var pipelineSteps = null;
   var commentPeriodDates = [];
 
@@ -483,14 +520,14 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpStart.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: [ "$commentPeriods.startDate", new Date(queryString.eq) ] });
+      commentPeriodDates.push({ $eq: ['$commentPeriods.startDate', new Date(queryString.eq)] });
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: [ "$commentPeriods.startDate", new Date(queryString.since) ] });
+        commentPeriodDates.push({ $gte: ['$commentPeriods.startDate', new Date(queryString.since)] });
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: [ "$commentPeriods.startDate", new Date(queryString.until) ] });
+        commentPeriodDates.push({ $lte: ['$commentPeriods.startDate', new Date(queryString.until)] });
       }
     }
   }
@@ -498,14 +535,14 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpEnd.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: [ "$commentPeriods.endDate", new Date(queryString.eq) ] });
+      commentPeriodDates.push({ $eq: ['$commentPeriods.endDate', new Date(queryString.eq)] });
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: [ "$commentPeriods.endDate", new Date(queryString.since) ] });
+        commentPeriodDates.push({ $gte: ['$commentPeriods.endDate', new Date(queryString.since)] });
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: [ "$commentPeriods.endDate", new Date(queryString.until) ] });
+        commentPeriodDates.push({ $lte: ['$commentPeriods.endDate', new Date(queryString.until)] });
       }
     }
   }
@@ -515,33 +552,33 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
     // NB: These are in reverse order in order to unshift into the pipline in proper order,
     // since we are querying commentPeriods and then left-joining the application query.
     var projection = {};
-    var fields = [...['_id','isDeleted','tags'], ...requestedFields];
+    var fields = [...['_id', 'isDeleted', 'tags'], ...requestedFields];
     for (let f of fields) {
       projection[f] = 1;
     }
 
     if (commentPeriodDates.length > 1) {
-      projection.result = { $and: [ commentPeriodDates.pop(), commentPeriodDates.pop() ]};
+      projection.result = { $and: [commentPeriodDates.pop(), commentPeriodDates.pop()] };
     } else if (commentPeriodDates.length > 0) {
       projection.result = commentPeriodDates.pop();
     }
 
     pipelineSteps = [
       {
-        $match : { result : true }
+        $match: { result: true }
       },
       {
         $project: projection
       },
       {
-        $unwind: "$commentPeriods"
+        $unwind: '$commentPeriods'
       },
       {
         $lookup: {
-          from: "commentperiods",
-          localField: "_id",    // field in the orders collection
-          foreignField: "_application",  // field in the items collection
-          as: "commentPeriods"
+          from: 'commentperiods',
+          localField: '_id', // field in the orders collection
+          foreignField: '_application', // field in the items collection
+          as: 'commentPeriods'
         }
       }
     ];
@@ -550,7 +587,7 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   return callback(pipelineSteps);
 };
 
-var addStandardQueryFilters = function (query, args) {
+var addStandardQueryFilters = function(query, args) {
   if (args.swagger.params.publishDate && args.swagger.params.publishDate.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.publishDate.value);
     if (queryString.since && queryString.until) {
@@ -567,18 +604,18 @@ var addStandardQueryFilters = function (query, args) {
       });
     } else if (queryString.eq) {
       _.assignIn(query, {
-        publishDate: { $eq: new Date(queryString.eq)}
+        publishDate: { $eq: new Date(queryString.eq) }
       });
     } else {
       // Which param was set?
       if (queryString.since) {
         _.assignIn(query, {
-          publishDate: { $gte: new Date(queryString.since)}
+          publishDate: { $gte: new Date(queryString.since) }
         });
       }
       if (queryString.until) {
         _.assignIn(query, {
-          publishDate: { $lte: new Date(queryString.until)}
+          publishDate: { $lte: new Date(queryString.until) }
         });
       }
     }
@@ -654,18 +691,18 @@ var addStandardQueryFilters = function (query, args) {
     } else if (queryString.eq) {
       // invalid or not specified, treat as equal
       _.assignIn(query, {
-        areaHectares: { $eq: parseFloat(queryString.eq, 10)}
+        areaHectares: { $eq: parseFloat(queryString.eq, 10) }
       });
     } else {
       // Which param was set?
       if (queryString.gte) {
         _.assignIn(query, {
-          areaHectares: { $gte: parseFloat(queryString.gte, 10)}
+          areaHectares: { $gte: parseFloat(queryString.gte, 10) }
         });
       }
       if (queryString.lte) {
         _.assignIn(query, {
-          areaHectares: { $lte: parseFloat(queryString.lte, 10)}
+          areaHectares: { $lte: parseFloat(queryString.lte, 10) }
         });
       }
     }
@@ -676,9 +713,9 @@ var addStandardQueryFilters = function (query, args) {
     let coordinates = JSON.parse(args.swagger.params.centroid.value)[0];
     // restrict lat and lng to valid bounds
     // safety check: fallback for invalid lat or lng is 0
-    coordinates = coordinates.map(function (coord) {
-      const lng = Math.max(Math.min((coord[0] || 0), 179.9999), -180); // -180 to +179.9999
-      const lat = Math.max(Math.min((coord[1] || 0), 89.9999), -90); // -90 to +89.9999
+    coordinates = coordinates.map(function(coord) {
+      const lng = Math.max(Math.min(coord[0] || 0, 179.9999), -180); // -180 to +179.9999
+      const lat = Math.max(Math.min(coord[1] || 0, 89.9999), -90); // -90 to +89.9999
       return [lng, lat];
     });
 
@@ -698,11 +735,11 @@ var addStandardQueryFilters = function (query, args) {
         centroid: {
           $geoIntersects: {
             $geometry: {
-              type: "Polygon",
+              type: 'Polygon',
               coordinates: [coordinates],
               crs: {
-                type: "name",
-                properties: { name: "urn:x-mongodb:crs:strictwinding:EPSG:4326" }
+                type: 'name',
+                properties: { name: 'urn:x-mongodb:crs:strictwinding:EPSG:4326' }
               }
             }
           }
@@ -712,7 +749,10 @@ var addStandardQueryFilters = function (query, args) {
   }
 
   // Allows filtering of apps based on their last status change.
-  if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate.value !== undefined) {
+  if (
+    args.swagger.params.statusHistoryEffectiveDate &&
+    args.swagger.params.statusHistoryEffectiveDate.value !== undefined
+  ) {
     var queryString = qs.parse(args.swagger.params.statusHistoryEffectiveDate.value);
     if (queryString.since && queryString.until) {
       _.assignIn(query, {
@@ -721,16 +761,14 @@ var addStandardQueryFilters = function (query, args) {
           { statusHistoryEffectiveDate: { $lte: new Date(queryString.until) } }
         ]
       });
-    }
-    else if (queryString.since) {
+    } else if (queryString.since) {
       _.assignIn(query, {
         $or: [
           { statusHistoryEffectiveDate: null },
           { statusHistoryEffectiveDate: { $gte: new Date(queryString.since) } }
         ]
       });
-    }
-    else if (queryString.until) {
+    } else if (queryString.until) {
       _.assignIn(query, {
         $or: [
           { statusHistoryEffectiveDate: null },
@@ -741,5 +779,5 @@ var addStandardQueryFilters = function (query, args) {
   }
 
   return query;
-}
+};
 /* eslint-enable no-redeclare */
