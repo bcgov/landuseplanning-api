@@ -153,9 +153,6 @@ exports.protectedHead = function(args, res, next) {
 };
 
 exports.protectedGet = function(args, res, next) {
-  var self = this;
-  self.scopes = args.swagger.operation['x-security-scopes'];
-
   defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
 
   // Build match query if on docId route
@@ -232,9 +229,6 @@ exports.publicDownload = function(args, res, next) {
 };
 
 exports.protectedDownload = function(args, res, next) {
-  var self = this;
-  self.scopes = args.swagger.operation['x-security-scopes'];
-
   defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
 
   // Build match query if on docId route

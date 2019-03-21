@@ -10,9 +10,6 @@ exports.protectedOptions = function(args, res, rest) {
 };
 
 exports.protectedGet = function(args, res, next) {
-  var self = this;
-  self.scopes = args.swagger.operation['x-security-scopes'];
-
   defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
 
   // Build match query if on userId route

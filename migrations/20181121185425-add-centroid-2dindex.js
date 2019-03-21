@@ -1,8 +1,8 @@
 'use strict';
 
 var dbm;
-var type;
-var seed;
+var type; // eslint-disable-line no-unused-vars
+var seed; // eslint-disable-line no-unused-vars
 
 /**
  * We receive the dbmigrate dependency from dbmigrate initially.

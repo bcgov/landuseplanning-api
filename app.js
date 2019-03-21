@@ -84,7 +84,6 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   }
   // Load up DB
   var options = {
-    poolSize: 10,
     user: db_username,
     pass: db_password,
     reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
@@ -99,7 +98,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   };
   defaultLog.info('Connecting to:', dbConnection);
   mongoose.Promise = global.Promise;
-  var db = mongoose.connect(encodeURI(dbConnection), options).then(
+  mongoose.connect(encodeURI(dbConnection), options).then(
     () => {
       defaultLog.info('Database connected');
 

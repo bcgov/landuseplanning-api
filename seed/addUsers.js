@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 //
 // Example: node addUsers.js username password http localhost 3000
 //
