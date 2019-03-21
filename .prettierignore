@@ -1,1 +1,9 @@
+node_modules
+
 dist
+
+openshift
+sonar-runner
+uploads
+
+.vscode

@@ -15,9 +15,9 @@
     "tests": "UPLOAD_DIRECTORY='./api/test/uploads/' jest api --runInBand",
     "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api",
-    "lint": "eslint -c .eslintrc api/**/*.js --ignore-path .eslintignore",
-    "lint-fix:1": "eslint -c .eslintrc api/**/*.js --ignore-path .eslintignore --fix",
-    "lint-fix:2": "prettier api/**/*.js --write --loglevel warn",
+    "lint": "eslint .",
+    "lint-fix:1": "eslint ./**/*.js --fix",
+    "lint-fix:2": "prettier ./**/*.js --write --loglevel warn",
     "lint-fix": "npm-run-all -l -s -c lint-fix:*"
   },
   "dependencies": {
@@ -73,7 +73,7 @@
   },
   "lint-staged": {
     "*.js": [
-      "eslint -c .eslintrc --ignore-path .eslintignore --fix",
+      "eslint --fix",
       "prettier --write --loglevel warn",
       "git add"
     ]

@@ -32,7 +32,9 @@ var _accessToken = '';
 var args = process.argv.slice(2);
 console.log('=======================================================');
 if (args.length !== 8) {
-  console.log('Please specify proper parameters: <username> <password> <protocol> <host> <port> <client_id> <grant_type> <auth_endpoint>');
+  console.log(
+    'Please specify proper parameters: <username> <password> <protocol> <host> <port> <client_id> <grant_type> <auth_endpoint>'
+  );
   console.log('Example: node updateShapes.js admin admin http localhost 3000 client_id grant_type auth_endpoint');
   console.log('=======================================================');
   process.exit(1);
@@ -538,13 +540,21 @@ loginToACRFD(username, password)
   })
   .then(function(recentlyUpdatedApplicationIDs) {
     console.log('-----------------------------------------------');
-    console.log('5. Fetching all non-deleted ACRFD applications and cross referencing with recently updated Tantalis applications.');
+    console.log(
+      '5. Fetching all non-deleted ACRFD applications and cross referencing with recently updated Tantalis applications.'
+    );
     return getAllApplicationIDs().then(function(allACRFDApplicationIDs) {
-      return allACRFDApplicationIDs.map(app => app.tantalisID).filter(tantalisID => recentlyUpdatedApplicationIDs.includes(tantalisID));
+      return allACRFDApplicationIDs
+        .map(app => app.tantalisID)
+        .filter(tantalisID => recentlyUpdatedApplicationIDs.includes(tantalisID));
     });
   })
   .then(function(applicationIDsToUpdate) {
-    console.log(` - Found ${applicationIDsToUpdate.length} ACRFD Applications with matching recently updated Tantalis application.`);
+    console.log(
+      ` - Found ${
+        applicationIDsToUpdate.length
+      } ACRFD Applications with matching recently updated Tantalis application.`
+    );
     // For each ACRFD application with a matching recently updated application from Tantalis, fetch the matching record in ACRFD and update it
     return applicationIDsToUpdate.reduce(function(previousItem, currentItem) {
       return previousItem.then(function() {
