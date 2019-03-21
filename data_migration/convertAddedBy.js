@@ -8,4 +8,4 @@
 // 2. paste the following in a shell
 // 3. press F5 to execute
 
-db.applications.updateMany({}, { $rename: { '_addedBy': '_createdBy' } });
+db.applications.updateMany({}, { $rename: { _addedBy: '_createdBy' } });

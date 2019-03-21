@@ -18,19 +18,21 @@ beforeAll(async () => {
   mongoServer = new mongoDbMemoryServer.default({
     instance: {},
     binary: {
-      version: '3.2.21', // Mongo Version
-    },
+      version: '3.2.21' // Mongo Version
+    }
   });
   const mongoUri = await mongoServer.getConnectionString();
-  await mongoose.connect(mongoUri, mongooseOpts, (err) => {
-    if (err) console.error(err);
+  await mongoose.connect(mongoUri, mongooseOpts, err => {
+    if (err) {
+      throw Error(err);
+    }
   });
 });
 
 afterEach(done => {
   if (mongoose.connection && mongoose.connection.db) {
     dbCleaner.clean(mongoose.connection.db, () => {
-      done()
+      done();
     });
   } else {
     done();
@@ -43,9 +45,11 @@ afterAll(async () => {
 });
 
 function setupAppServer() {
-  app.use(bodyParser.urlencoded({
-    extended: true
-  }));
+  app.use(
+    bodyParser.urlencoded({
+      extended: true
+    })
+  );
   app.use(bodyParser.json());
 }
 
@@ -54,11 +58,11 @@ function createSwaggerParams(fieldNames, additionalValues = {}, username = null)
   let swaggerObject = {
     swagger: {
       params: _.merge(defaultParams, additionalValues),
-      operation:  {
+      operation: {
         'x-security-scopes': ['sysadmin', 'public']
       }
     }
-  }
+  };
   return swaggerObject;
 }
 
@@ -68,7 +72,7 @@ function createPublicSwaggerParams(fieldNames, additionalValues = {}) {
     swagger: {
       params: _.merge(defaultParams, additionalValues)
     }
-  }
+  };
   return swaggerObject;
 }
 
@@ -94,7 +98,7 @@ function defaultPublicParams(fieldNames) {
 }
 
 function buildParams(nameValueMapping) {
-  let paramObj = {}
+  let paramObj = {};
   _.mapKeys(nameValueMapping, function(value, key) {
     paramObj[key] = { value: value };
   });

@@ -5,9 +5,9 @@ var type;
 var seed;
 
 /**
-  * We receive the dbmigrate dependency from dbmigrate initially.
-  * This enables us to not have to rely on NODE_PATH.
-  */
+ * We receive the dbmigrate dependency from dbmigrate initially.
+ * This enables us to not have to rely on NODE_PATH.
+ */
 exports.setup = function(options, seedLink) {
   dbm = options.dbmigrate;
   type = dbm.dataType;
@@ -15,29 +15,21 @@ exports.setup = function(options, seedLink) {
 };
 
 exports.up = function(db) {
-  return db.addIndex( 'applications',
-                      'applicationCentroidIndex',
-                      { centroid: "2dsphere"},
-                      false,
-                      function (err) {
-                        if (err) {
-                          console.log("DB Up: applicationCentroidIndex err:", err);
-                        }
-                      }
-  );
+  return db.addIndex('applications', 'applicationCentroidIndex', { centroid: '2dsphere' }, false, function(err) {
+    if (err) {
+      console.log('DB Up: applicationCentroidIndex err:', err);
+    }
+  });
 };
 
 exports.down = function(db) {
-  return db.removeIndex( 'applications',
-                         'applicationCentroidIndex',
-                         function (err) {
-                          if (err) {
-                            console.log("DB Down: applicationCentroidIndex err:", err);
-                          }
-                        }
-  );
+  return db.removeIndex('applications', 'applicationCentroidIndex', function(err) {
+    if (err) {
+      console.log('DB Down: applicationCentroidIndex err:', err);
+    }
+  });
 };
 
 exports._meta = {
-  'version': 1
+  version: 1
 };

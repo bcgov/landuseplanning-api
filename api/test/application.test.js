@@ -3,12 +3,11 @@ const applicationFactory = require('./factories/application_factory').factory;
 const app = test_helper.app;
 const mongoose = require('mongoose');
 const request = require('supertest');
-const nock = require('nock');
-const tantalisResponse = require('./fixtures/tantalis_response.json');
+// const nock = require('nock');
+// const tantalisResponse = require('./fixtures/tantalis_response.json');
 const fieldNames = ['description', 'tantalisID'];
 const _ = require('lodash');
 const Utils = require('../helpers/utils');
-
 
 const applicationController = require('../controllers/application.js');
 require('../helpers/models/application');
@@ -18,12 +17,12 @@ const Feature = mongoose.model('Feature');
 const idirUsername = 'idir/i_am_a_bot';
 
 function paramsWithAppId(req) {
-  let params = test_helper.buildParams({'appId': req.params.id});
+  let params = test_helper.buildParams({ appId: req.params.id });
   return test_helper.createSwaggerParams(fieldNames, params);
 }
 
 function publicParamsWithAppId(req) {
-  let params = test_helper.buildParams({'appId': req.params.id});
+  let params = test_helper.buildParams({ appId: req.params.id });
   return test_helper.createPublicSwaggerParams(fieldNames, params);
 }
 
@@ -46,7 +45,7 @@ app.get('/api/public/application/:id', function(req, res) {
 });
 
 app.post('/api/application/', function(req, res) {
-  let extraFields = test_helper.buildParams({'app': req.body});
+  let extraFields = test_helper.buildParams({ app: req.body });
   let params = test_helper.createSwaggerParams(fieldNames, extraFields, idirUsername);
   return applicationController.protectedPost(params, res);
 });
@@ -56,7 +55,7 @@ app.delete('/api/application/:id', function(req, res) {
 });
 
 app.put('/api/application/:id', function(req, res) {
-  let extraFields = test_helper.buildParams({'appId': req.params.id, 'AppObject': req.body});
+  let extraFields = test_helper.buildParams({ appId: req.params.id, AppObject: req.body });
   let params = test_helper.createSwaggerParams(fieldNames, extraFields);
   return applicationController.protectedPut(params, res);
 });
@@ -70,49 +69,53 @@ app.put('/api/application/:id/unpublish', function(req, res) {
 });
 
 const applicationsData = [
-  {description: 'SPECIAL', name: 'Special Application', tags: [['public'], ['sysadmin']], isDeleted: false},
-  {description: 'VANILLA', name: 'Vanilla Ice Cream', tags: [['public']], isDeleted: false},
-  {description: 'TOP_SECRET', name: 'Confidential Application', tags: [['sysadmin']], isDeleted: false},
-  {description: 'DELETED', name: 'Deleted Application', tags: [['public'], ['sysadmin']], isDeleted: true},
+  { description: 'SPECIAL', name: 'Special Application', tags: [['public'], ['sysadmin']], isDeleted: false },
+  { description: 'VANILLA', name: 'Vanilla Ice Cream', tags: [['public']], isDeleted: false },
+  { description: 'TOP_SECRET', name: 'Confidential Application', tags: [['sysadmin']], isDeleted: false },
+  { description: 'DELETED', name: 'Deleted Application', tags: [['public'], ['sysadmin']], isDeleted: true }
 ];
-
 
 function setupApplications(applicationsData) {
   return new Promise(function(resolve, reject) {
-    applicationFactory.createMany('application', applicationsData).then(applicationArray => {
-      resolve(applicationArray);
-    }).catch(error => {
-      reject(error);
-    });
+    applicationFactory
+      .createMany('application', applicationsData)
+      .then(applicationArray => {
+        resolve(applicationArray);
+      })
+      .catch(error => {
+        reject(error);
+      });
   });
-};
+}
 
 describe('GET /application', () => {
   test('returns a list of non-deleted, public and sysadmin Applications', done => {
-    setupApplications(applicationsData).then((documents) => {
-      request(app).get('/api/application')
+    setupApplications(applicationsData).then(documents => {
+      request(app)
+        .get('/api/application')
         .expect(200)
         .then(response => {
           expect(response.body.length).toEqual(3);
-          
-          let firstApplication = _.find(response.body, {description: 'SPECIAL'});
+
+          let firstApplication = _.find(response.body, { description: 'SPECIAL' });
           expect(firstApplication).toHaveProperty('_id');
-          expect(firstApplication['tags']).toEqual(expect.arrayContaining([["public"], ["sysadmin"]]));
+          expect(firstApplication['tags']).toEqual(expect.arrayContaining([['public'], ['sysadmin']]));
 
-          let secondApplication = _.find(response.body, {description: 'VANILLA'});
+          let secondApplication = _.find(response.body, { description: 'VANILLA' });
           expect(secondApplication).toHaveProperty('_id');
-          expect(secondApplication['tags']).toEqual(expect.arrayContaining([["public"]]));
+          expect(secondApplication['tags']).toEqual(expect.arrayContaining([['public']]));
 
-          let secretApplication = _.find(response.body, {description: 'TOP_SECRET'});
+          let secretApplication = _.find(response.body, { description: 'TOP_SECRET' });
           expect(secretApplication).toHaveProperty('_id');
-          expect(secretApplication['tags']).toEqual(expect.arrayContaining([["sysadmin"]]));
-          done()
+          expect(secretApplication['tags']).toEqual(expect.arrayContaining([['sysadmin']]));
+          done();
         });
     });
   });
 
   test('returns an empty array when there are no Applications', done => {
-    request(app).get('/api/application')
+    request(app)
+      .get('/api/application')
       .expect(200)
       .then(response => {
         expect(response.body.length).toBe(0);
@@ -129,8 +132,8 @@ describe('GET /application', () => {
 
 describe('GET /application/{id}', () => {
   test('returns a single Application ', done => {
-    setupApplications(applicationsData).then((documents) => {
-      Application.findOne({description: 'SPECIAL'}).exec(function(error, application) {
+    setupApplications(applicationsData).then(documents => {
+      Application.findOne({ description: 'SPECIAL' }).exec(function(error, application) {
         let specialAppId = application._id.toString();
         let uri = '/api/application/' + specialAppId;
 
@@ -141,40 +144,42 @@ describe('GET /application/{id}', () => {
             expect(response.body.length).toBe(1);
             let responseObject = response.body[0];
             expect(responseObject).toMatchObject({
-              '_id': specialAppId,
-              'tags': expect.arrayContaining([['public'], ['sysadmin']]),
+              _id: specialAppId,
+              tags: expect.arrayContaining([['public'], ['sysadmin']]),
               description: 'SPECIAL'
             });
             done();
           });
-      });;
+      });
     });
   });
 });
 
 describe('GET /public/application', () => {
   test('returns a list of public Applications', done => {
-    setupApplications(applicationsData).then((documents) => {
-      request(app).get('/api/public/application')
+    setupApplications(applicationsData).then(documents => {
+      request(app)
+        .get('/api/public/application')
         .expect(200)
         .then(response => {
           expect(response.body.length).toEqual(2);
 
-          let firstApplication = _.find(response.body, {description: 'SPECIAL'});
+          let firstApplication = _.find(response.body, { description: 'SPECIAL' });
           expect(firstApplication).toHaveProperty('_id');
-          expect(firstApplication['tags']).toEqual(expect.arrayContaining([["public"], ["sysadmin"]]));
+          expect(firstApplication['tags']).toEqual(expect.arrayContaining([['public'], ['sysadmin']]));
 
-          let secondApplication = _.find(response.body, {description: 'VANILLA'});
+          let secondApplication = _.find(response.body, { description: 'VANILLA' });
           expect(secondApplication).toHaveProperty('_id');
           expect(secondApplication.description).toBe('VANILLA');
-          expect(secondApplication['tags']).toEqual(expect.arrayContaining([["public"]]));
-          done()
+          expect(secondApplication['tags']).toEqual(expect.arrayContaining([['public']]));
+          done();
         });
     });
   });
 
   test('returns an empty array when there are no Applications', done => {
-    request(app).get('/api/public/application')
+    request(app)
+      .get('/api/public/application')
       .expect(200)
       .then(response => {
         expect(response.body.length).toBe(0);
@@ -186,8 +191,8 @@ describe('GET /public/application', () => {
 
 describe('GET /public/application/{id}', () => {
   test('returns a single public application ', done => {
-    setupApplications(applicationsData).then((documents) => {
-      Application.findOne({description: 'SPECIAL'}).exec(function(error, application) {
+    setupApplications(applicationsData).then(documents => {
+      Application.findOne({ description: 'SPECIAL' }).exec(function(error, application) {
         let specialAppId = application._id.toString();
         let uri = '/api/public/application/' + specialAppId;
 
@@ -198,28 +203,28 @@ describe('GET /public/application/{id}', () => {
             expect(response.body.length).toBe(1);
             let responseObj = response.body[0];
             expect(responseObj).toMatchObject({
-              '_id': specialAppId,
-              'tags': expect.arrayContaining([['public'], ['sysadmin']]),
+              _id: specialAppId,
+              tags: expect.arrayContaining([['public'], ['sysadmin']]),
               description: 'SPECIAL'
             });
             done();
           });
-      });;
+      });
     });
   });
 });
 
 describe('DELETE /application/id', () => {
   test('It soft deletes an application', done => {
-    setupApplications(applicationsData).then((documents) => {
-      Application.findOne({description: 'VANILLA'}).exec(function(error, application) {
+    setupApplications(applicationsData).then(documents => {
+      Application.findOne({ description: 'VANILLA' }).exec(function(error, application) {
         let vanillaAppId = application._id.toString();
         let uri = '/api/application/' + vanillaAppId;
         request(app)
           .delete(uri)
           .expect(200)
           .then(response => {
-            Application.findOne({description: 'VANILLA'}).exec(function(error, application) {
+            Application.findOne({ description: 'VANILLA' }).exec(function(error, application) {
               expect(application.isDeleted).toBe(true);
               done();
             });
@@ -276,10 +281,9 @@ describe('POST /application', () => {
           }
         }
       }
-      
     ],
     areaHectares: 80000,
-    centroid: [ -128.6704671493984, 58.28816863259513 ],
+    centroid: [-128.6704671493984, 58.28816863259513],
     TENURE_PURPOSE: 'To rule the world',
     TENURE_SUBPURPOSE: 'And all of the chocolates',
     TENURE_TYPE: 'EVIL',
@@ -288,7 +292,7 @@ describe('POST /application', () => {
     TENURE_STAGE: 'LEFT',
     TENURE_LOCATION: 'Megalopolis',
     RESPONSIBLE_BUSINESS_UNIT: 'Not present',
-    CROWN_LANDS_FILE: 7654321,
+    CROWN_LANDS_FILE: 7654321
   };
   describe('when the ttls api login call returns successfully', () => {
     let loginPromise = new Promise(function(resolve, reject) {
@@ -300,17 +304,17 @@ describe('POST /application', () => {
     });
 
     beforeEach(() => {
-      spyOn(Utils, 'loginWebADE')
-        .and.returnValue(loginPromise);
+      spyOn(Utils, 'loginWebADE').and.returnValue(loginPromise);
 
-      spyOn(Utils, 'getApplicationByDispositionID')
-        .and.returnValue(appDispSearchPromise);
+      spyOn(Utils, 'getApplicationByDispositionID').and.returnValue(appDispSearchPromise);
     });
 
     test('logs in and then retrieves the application with that access token', done => {
-      request(app).post('/api/application')
+      request(app)
+        .post('/api/application')
         .send(applicationObj)
-        .expect(200).then(response => {
+        .expect(200)
+        .then(response => {
           expect(Utils.loginWebADE).toHaveBeenCalled();
           expect(Utils.getApplicationByDispositionID).toHaveBeenCalledWith('ACCESS_TOKEN', 999999);
           done();
@@ -318,11 +322,13 @@ describe('POST /application', () => {
     });
 
     test('creates a new application', done => {
-      request(app).post('/api/application')
+      request(app)
+        .post('/api/application')
         .send(applicationObj)
-        .expect(200).then(response => {
+        .expect(200)
+        .then(response => {
           expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+          Application.findOne({ description: 'victoria' }).exec(function(error, application) {
             expect(application).toBeDefined();
             expect(application.name).toBe('Victoria');
             done();
@@ -331,14 +337,16 @@ describe('POST /application', () => {
     });
 
     test('defaults to sysadmin for tags and review tags', done => {
-      request(app).post('/api/application')
+      request(app)
+        .post('/api/application')
         .send(applicationObj)
-        .expect(200).then(response => {
+        .expect(200)
+        .then(response => {
           expect(response.body).toHaveProperty('_id');
           Application.findById(response.body['_id']).exec(function(error, application) {
             expect(application).not.toBeNull();
 
-            expect(application.tags.length).toEqual(1)
+            expect(application.tags.length).toEqual(1);
             expect(application.tags[0]).toEqual(expect.arrayContaining(['sysadmin']));
 
             done();
@@ -347,11 +355,13 @@ describe('POST /application', () => {
     });
 
     test('it sets the _createdBy to the person creating the application', done => {
-      request(app).post('/api/application')
+      request(app)
+        .post('/api/application')
         .send(applicationObj)
-        .expect(200).then(response => {
+        .expect(200)
+        .then(response => {
           expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
+          Application.findOne({ description: 'victoria' }).exec(function(error, application) {
             expect(application).not.toBeNull();
             expect(application._createdBy).not.toBeNull();
             expect(application._createdBy).toEqual(idirUsername);
@@ -362,82 +372,91 @@ describe('POST /application', () => {
 
     describe('saved application properties', () => {
       test('saves the tenure properties correctly', done => {
-        request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
-            expect(application).toBeDefined();
-            expect(application.purpose).toBe('To rule the world');
-            expect(application.subpurpose).toBe('And all of the chocolates');
-            expect(application.type).toBe('EVIL');
-            expect(application.subtype).toBe('LANDLORD');
-            expect(application.status).toBe('PENDING');
-            expect(application.tenureStage).toBe('LEFT');
-            expect(application.location).toBe('Megalopolis');
-            done();
+        request(app)
+          .post('/api/application')
+          .send(applicationObj)
+          .expect(200)
+          .then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Application.findOne({ description: 'victoria' }).exec(function(error, application) {
+              expect(application).toBeDefined();
+              expect(application.purpose).toBe('To rule the world');
+              expect(application.subpurpose).toBe('And all of the chocolates');
+              expect(application.type).toBe('EVIL');
+              expect(application.subtype).toBe('LANDLORD');
+              expect(application.status).toBe('PENDING');
+              expect(application.tenureStage).toBe('LEFT');
+              expect(application.location).toBe('Megalopolis');
+              done();
+            });
           });
-        });
       });
 
       test('sets the geographical properties correctly', done => {
-        request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
-            expect(application).toBeDefined();
-            expect(application.areaHectares).toBe(80000);
-            expect(application.centroid[0]).toEqual(-128.6704671493984);
-            expect(application.centroid[1]).toEqual(58.28816863259513);
-            done();
+        request(app)
+          .post('/api/application')
+          .send(applicationObj)
+          .expect(200)
+          .then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Application.findOne({ description: 'victoria' }).exec(function(error, application) {
+              expect(application).toBeDefined();
+              expect(application.areaHectares).toBe(80000);
+              expect(application.centroid[0]).toEqual(-128.6704671493984);
+              expect(application.centroid[1]).toEqual(58.28816863259513);
+              done();
+            });
           });
-        });
       });
 
       test('saves the additional properties correctly', done => {
-        request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
-            expect(application).toBeDefined();
-            expect(application.businessUnit).toBe('Not present');
-            expect(application.cl_file).toBe(7654321);
-            expect(application.tantalisID).toBe(999999);
-            done();
+        request(app)
+          .post('/api/application')
+          .send(applicationObj)
+          .expect(200)
+          .then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Application.findOne({ description: 'victoria' }).exec(function(error, application) {
+              expect(application).toBeDefined();
+              expect(application.businessUnit).toBe('Not present');
+              expect(application.cl_file).toBe(7654321);
+              expect(application.tantalisID).toBe(999999);
+              done();
+            });
           });
-        });
       });
 
       test('sets the client to the interestedParties name fields', done => {
-        request(app).post('/api/application')
-        .send(applicationObj)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({description: 'victoria'}).exec(function(error, application) {
-            expect(application).toBeDefined();
-            expect(application.client).toEqual('Megacorp, Ajit Pai');
+        request(app)
+          .post('/api/application')
+          .send(applicationObj)
+          .expect(200)
+          .then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Application.findOne({ description: 'victoria' }).exec(function(error, application) {
+              expect(application).toBeDefined();
+              expect(application.client).toEqual('Megacorp, Ajit Pai');
 
-            done();
+              done();
+            });
           });
-        });
       });
 
       test('saves features on the application', done => {
-        request(app).post('/api/application')
+        request(app)
+          .post('/api/application')
           .send(applicationObj)
-          .expect(200).then(response => {
+          .expect(200)
+          .then(response => {
             expect(response.body).toHaveProperty('_id');
-            Feature.findOne({applicationID: response.body['_id']}).exec(function(error, feature) {
+            Feature.findOne({ applicationID: response.body['_id'] }).exec(function(error, feature) {
               expect(feature).not.toBeNull();
-              console.log(feature);
               let featureProperties = feature.properties;
               expect(featureProperties).toBeDefined();
               expect(featureProperties.INTRID_SID).toEqual(12345);
               expect(featureProperties.TENURE_EXPIRY).toEqual('1527878179000');
               expect(featureProperties.TENURE_LEGAL_DESCRIPTION).toEqual('READ THESE BORING LEGAL TERMS.');
-              
+
               done();
             });
           });
@@ -459,32 +478,34 @@ describe('POST /application', () => {
           client: 'Dr Strangelove'
         };
 
-        request(app).post('/api/application')
-        .send(objectWithForbiddenAttrs)
-        .expect(200).then(response => {
-          expect(response.body).toHaveProperty('_id');
-          Application.findOne({name: 'Evil plan'}).exec(function(error, application) {
-            expect(application).toBeDefined();
+        request(app)
+          .post('/api/application')
+          .send(objectWithForbiddenAttrs)
+          .expect(200)
+          .then(response => {
+            expect(response.body).toHaveProperty('_id');
+            Application.findOne({ name: 'Evil plan' }).exec(function(error, application) {
+              expect(application).toBeDefined();
 
-            expect(application.areaHectares).not.toEqual(10000000);
-            expect(application.purpose).not.toEqual('To hack this app');
-            expect(application.status).not.toEqual('Beginning');
-            expect(application.tenureStage).not.toEqual('My stage');
-            expect(application.location).not.toEqual('Detroit');
-            expect(application.businessUnit).not.toEqual('Strata');
-            expect(application.cl_file).not.toEqual(88888888);
-            expect(application.client).not.toEqual('Dr Strangelove');
+              expect(application.areaHectares).not.toEqual(10000000);
+              expect(application.purpose).not.toEqual('To hack this app');
+              expect(application.status).not.toEqual('Beginning');
+              expect(application.tenureStage).not.toEqual('My stage');
+              expect(application.location).not.toEqual('Detroit');
+              expect(application.businessUnit).not.toEqual('Strata');
+              expect(application.cl_file).not.toEqual(88888888);
+              expect(application.client).not.toEqual('Dr Strangelove');
 
-            done();
+              done();
+            });
           });
-        });
       });
     });
   });
 
   describe('when the login call fails', () => {
     let loginPromise = new Promise(function(resolve, reject) {
-      reject({statusCode: 503, message: 'Ooh boy something went wrong'});
+      reject({ statusCode: 503, message: 'Ooh boy something went wrong' });
     });
 
     beforeEach(() => {
@@ -492,7 +513,8 @@ describe('POST /application', () => {
     });
 
     test('returns that error response and a 400 status code', done => {
-      request(app).post('/api/application')
+      request(app)
+        .post('/api/application')
         .send(applicationObj)
         .expect(400)
         .then(response => {
@@ -514,10 +536,11 @@ describe('PUT /application/:id', () => {
     };
     existingApplication.save().then(application => {
       let uri = '/api/application/' + application._id;
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .send(updateData)
         .then(response => {
-          Application.findOne({name: 'Exciting Application'}).exec(function(error, application) {
+          Application.findOne({ name: 'Exciting Application' }).exec(function(error, application) {
             expect(application).toBeDefined();
             expect(application).not.toBeNull();
             done();
@@ -528,8 +551,9 @@ describe('PUT /application/:id', () => {
 
   test('404s if the application does not exist', done => {
     let uri = '/api/application/' + 'NON_EXISTENT_ID';
-    request(app).put(uri)
-      .send({name: 'hacker_man'})
+    request(app)
+      .put(uri)
+      .send({ name: 'hacker_man' })
       .expect(404)
       .then(response => {
         done();
@@ -546,11 +570,12 @@ describe('PUT /application/:id', () => {
     };
     existingApplication.save().then(application => {
       let uri = '/api/application/' + application._id;
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .send(updateData)
         .then(response => {
           Application.findById(existingApplication._id).exec(function(error, updatedApplication) {
-            expect(updatedApplication.tags.length).toEqual(1)
+            expect(updatedApplication.tags.length).toEqual(1);
             done();
           });
         });
@@ -563,14 +588,15 @@ describe('PUT /application/:id/publish', () => {
   beforeEach(() => {
     existingApplication = new Application({
       description: 'Existing',
-      name: 'Boring application',
+      name: 'Boring application'
     });
     return existingApplication.save();
   });
 
   test('publishes an application', done => {
     let uri = '/api/application/' + existingApplication._id + '/publish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .expect(200)
       .send({})
       .then(response => {
@@ -585,7 +611,8 @@ describe('PUT /application/:id/publish', () => {
 
   test('404s if the application does not exist', done => {
     let uri = '/api/application/' + 'NON_EXISTENT_ID' + '/publish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .send({})
       .expect(404)
       .then(response => {
@@ -600,7 +627,8 @@ describe('PUT /application/:id/publish', () => {
     });
     applicationFeature.save().then(appFeature => {
       let uri = '/api/application/' + existingApplication._id + '/publish';
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .expect(200)
         .send({})
         .then(response => {
@@ -627,7 +655,8 @@ describe('PUT /application/:id/unpublish', () => {
 
   test('unpublishes an application', done => {
     let uri = '/api/application/' + existingApplication._id + '/unpublish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .expect(200)
       .send({})
       .then(response => {
@@ -641,7 +670,8 @@ describe('PUT /application/:id/unpublish', () => {
 
   test('404s if the application does not exist', done => {
     let uri = '/api/application/' + 'NON_EXISTENT_ID' + '/unpublish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .send({})
       .expect(404)
       .then(response => {
@@ -651,14 +681,14 @@ describe('PUT /application/:id/unpublish', () => {
 
   test('handles feature unpublish', done => {
     let applicationFeature = new Feature({
-      tags: [],
       applicationID: existingApplication._id,
       tags: [['public']]
     });
 
     applicationFeature.save().then(appFeature => {
       let uri = '/api/application/' + existingApplication._id + '/unpublish';
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .expect(200)
         .send({})
         .then(response => {

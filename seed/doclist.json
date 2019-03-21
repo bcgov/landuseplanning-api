@@ -1,386 +1,218 @@
 [
-    {
-        "addedBy": "admin",
-        "_application": "6406200",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6406200_Geomark.pdf",
-        "displayName": "Geomark",
-        "internalURL": "./documents/6406200_Geomark.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6406200",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6406200_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6406200_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6406200",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6406200_Referral_Map.pdf",
-        "displayName": "Referral Map",
-        "internalURL": "./documents/6406200_Referral_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408232",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408232_Area_Overview.pdf",
-        "displayName": "Area Overview",
-        "internalURL": "./documents/6408232_Area_Overview.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408232",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408232_Proponent_Maps.pdf",
-        "displayName": "Proponent Maps",
-        "internalURL": "./documents/6408232_Proponent_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408232",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408232_Referral_Maps.pdf",
-        "displayName": "Referral Maps",
-        "internalURL": "./documents/6408232_Referral_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408427",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408427_Document_Map.pdf",
-        "displayName": "Document Map",
-        "internalURL": "./documents/6408427_Document_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408427",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408427_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6408427_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408427",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6408427_Referral_Mapbook.pdf",
-        "displayName": "Referral Mapbook",
-        "internalURL": "./documents/6408427_Referral_Mapbook.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409020",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409020_Document_Map.pdf",
-        "displayName": "Document Map",
-        "internalURL": "./documents/6409020_Document_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409020",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409020_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409020_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409020",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409020_Referral_Map.pdf",
-        "displayName": "Referral Map",
-        "internalURL": "./documents/6409020_Referral_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409021",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409021_Document_Map.pdf",
-        "displayName": "Document Map",
-        "internalURL": "./documents/6409021_Document_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409021",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409021_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409021_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409021",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409021_Referral_Mapbook.pdf",
-        "displayName": "Referral Mapbook",
-        "internalURL": "./documents/6409021_Referral_Mapbook.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409023",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409023_Document_Maps.pdf",
-        "displayName": "Document Maps",
-        "internalURL": "./documents/6409023_Document_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409023",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409023_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409023_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409023",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409023_Referral_Maps.pdf",
-        "displayName": "Referral Maps",
-        "internalURL": "./documents/6409023_Referral_Maps.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409030",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409030_Document_Map.pdf",
-        "displayName": "Document Map",
-        "internalURL": "./documents/6409030_Document_Map.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409030",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409030_Management_Plan.pdf",
-        "displayName": "Management Plan",
-        "internalURL": "./documents/6409030_Management_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409030",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409030_Referral_Mapbook.pdf",
-        "displayName": "Referral Mapbook",
-        "internalURL": "./documents/6409030_Referral_Mapbook.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6409030",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "6409030_Site_Specific_Plan.pdf",
-        "displayName": "Site Specific Plan",
-        "internalURL": "./documents/6409030_Site_Specific_Plan.pdf",
-        "internalMime": "application/pdf"
-    },
-    {
-        "addedBy": "admin",
-        "_comment": "comment-1-1",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
-        "displayName": "Rick Astley",
-        "internalURL": "./documents/4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
-        "internalMime": "image/jpeg"
-    },
-    {
-        "addedBy": "admin",
-        "_decision": "decision-1",
-        "tags": [
-            [
-                "public"
-            ],
-            [
-                "sysadmin"
-            ]
-        ],
-        "documentFileName": "yes-its-allowed.jpg",
-        "displayName": "Document of Acceptance",
-        "internalURL": "./documents/yes-its-allowed.jpg",
-        "internalMime": "image/jpeg"
-    }
+  {
+    "addedBy": "admin",
+    "_application": "6406200",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6406200_Geomark.pdf",
+    "displayName": "Geomark",
+    "internalURL": "./documents/6406200_Geomark.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6406200",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6406200_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6406200_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6406200",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6406200_Referral_Map.pdf",
+    "displayName": "Referral Map",
+    "internalURL": "./documents/6406200_Referral_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408232",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408232_Area_Overview.pdf",
+    "displayName": "Area Overview",
+    "internalURL": "./documents/6408232_Area_Overview.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408232",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408232_Proponent_Maps.pdf",
+    "displayName": "Proponent Maps",
+    "internalURL": "./documents/6408232_Proponent_Maps.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408232",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408232_Referral_Maps.pdf",
+    "displayName": "Referral Maps",
+    "internalURL": "./documents/6408232_Referral_Maps.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408427",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408427_Document_Map.pdf",
+    "displayName": "Document Map",
+    "internalURL": "./documents/6408427_Document_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408427",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408427_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6408427_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408427",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6408427_Referral_Mapbook.pdf",
+    "displayName": "Referral Mapbook",
+    "internalURL": "./documents/6408427_Referral_Mapbook.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409020",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409020_Document_Map.pdf",
+    "displayName": "Document Map",
+    "internalURL": "./documents/6409020_Document_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409020",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409020_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6409020_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409020",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409020_Referral_Map.pdf",
+    "displayName": "Referral Map",
+    "internalURL": "./documents/6409020_Referral_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409021",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409021_Document_Map.pdf",
+    "displayName": "Document Map",
+    "internalURL": "./documents/6409021_Document_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409021",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409021_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6409021_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409021",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409021_Referral_Mapbook.pdf",
+    "displayName": "Referral Mapbook",
+    "internalURL": "./documents/6409021_Referral_Mapbook.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409023",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409023_Document_Maps.pdf",
+    "displayName": "Document Maps",
+    "internalURL": "./documents/6409023_Document_Maps.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409023",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409023_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6409023_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409023",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409023_Referral_Maps.pdf",
+    "displayName": "Referral Maps",
+    "internalURL": "./documents/6409023_Referral_Maps.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409030",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409030_Document_Map.pdf",
+    "displayName": "Document Map",
+    "internalURL": "./documents/6409030_Document_Map.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409030",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409030_Management_Plan.pdf",
+    "displayName": "Management Plan",
+    "internalURL": "./documents/6409030_Management_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409030",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409030_Referral_Mapbook.pdf",
+    "displayName": "Referral Mapbook",
+    "internalURL": "./documents/6409030_Referral_Mapbook.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6409030",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "6409030_Site_Specific_Plan.pdf",
+    "displayName": "Site Specific Plan",
+    "internalURL": "./documents/6409030_Site_Specific_Plan.pdf",
+    "internalMime": "application/pdf"
+  },
+  {
+    "addedBy": "admin",
+    "_comment": "comment-1-1",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
+    "displayName": "Rick Astley",
+    "internalURL": "./documents/4b123d1a0ba53e5a0ee9982d40de07819a793530.jpg",
+    "internalMime": "image/jpeg"
+  },
+  {
+    "addedBy": "admin",
+    "_decision": "decision-1",
+    "tags": [["public"], ["sysadmin"]],
+    "documentFileName": "yes-its-allowed.jpg",
+    "displayName": "Document of Acceptance",
+    "internalURL": "./documents/yes-its-allowed.jpg",
+    "internalMime": "image/jpeg"
+  }
 ]

@@ -11,23 +11,23 @@
  *    c. For each ACRFD application with a matching Tantalis application:
  *      i. Updates the ACRFD application features and meta to match whatever is in Tantalis (the source of truth).
  */
-var Promise       = require('es6-promise').Promise;
-var _             = require('lodash');
-var request       = require('request');
-var querystring   = require('querystring');
-var moment        = require('moment');
-var Utils         = require('../../api/helpers/utils');
-var Actions       = require('../../api/helpers/actions');
-var username      = '';
-var password      = '';
-var protocol      = 'http';
-var host          = 'localhost';
-var port          = '3000';
-var uri           = '';
-var client_id     = '';
-var grant_type    = '';
+var Promise = require('es6-promise').Promise;
+var _ = require('lodash');
+var request = require('request');
+var querystring = require('querystring');
+var moment = require('moment');
+var Utils = require('../../api/helpers/utils');
+var Actions = require('../../api/helpers/actions');
+var username = '';
+var password = '';
+var protocol = 'http';
+var host = 'localhost';
+var port = '3000';
+var uri = '';
+var client_id = '';
+var grant_type = '';
 var auth_endpoint = 'http://localhost:3000/api/login/token';
-var _accessToken  = '';
+var _accessToken = '';
 
 var args = process.argv.slice(2);
 console.log('=======================================================');
@@ -38,23 +38,37 @@ if (args.length !== 8) {
   process.exit(1);
   return;
 } else {
-  username      = args[0];
-  password      = args[1];
-  protocol      = args[2];
-  host          = args[3];
-  port          = args[4];
-  client_id     = args[5];
-  grant_type    = args[6];
+  username = args[0];
+  password = args[1];
+  protocol = args[2];
+  host = args[3];
+  port = args[4];
+  client_id = args[5];
+  grant_type = args[6];
   auth_endpoint = args[7];
-  uri           = protocol + '://' + host + ':' + port + '/';
+  uri = protocol + '://' + host + ':' + port + '/';
   console.log('Using connection:', uri);
   console.log('-----------------------------------------------');
 }
 
 // Used when unpublishing retired applications.
-var retiredStatuses = ['ABANDONED', 'CANCELLED', 'OFFER NOT ACCEPTED', 'OFFER RESCINDED', 'RETURNED', 'REVERTED', 'SOLD',
-'SUSPENDED', 'WITHDRAWN', 'ACTIVE', 'COMPLETED', 'DISPOSITION IN GOOD STANDING', 'EXPIRED', 'HISTORIC', 'DISALLOWED'];
-
+var retiredStatuses = [
+  'ABANDONED',
+  'CANCELLED',
+  'OFFER NOT ACCEPTED',
+  'OFFER RESCINDED',
+  'RETURNED',
+  'REVERTED',
+  'SOLD',
+  'SUSPENDED',
+  'WITHDRAWN',
+  'ACTIVE',
+  'COMPLETED',
+  'DISPOSITION IN GOOD STANDING',
+  'EXPIRED',
+  'HISTORIC',
+  'DISALLOWED'
+];
 
 // Used to renew the ACRFD login tokes before it expires if the update script takes longer than the lifespan of the token.
 var jwt_login = null; // the ACRFD login token
@@ -213,16 +227,16 @@ var updateFeatures = function(acrfdApp, tantalisApp) {
       // Tags default public
       f.tags = [['sysadmin'], ['public']];
       // copy in all the app meta just to stay consistent.
-      f.properties.RESPONSIBLE_BUSINESS_UNIT   = tantalisApp.RESPONSIBLE_BUSINESS_UNIT;
-      f.properties.TENURE_PURPOSE              = tantalisApp.TENURE_PURPOSE;
-      f.properties.TENURE_SUBPURPOSE           = tantalisApp.TENURE_SUBPURPOSE;
-      f.properties.TENURE_STATUS               = tantalisApp.TENURE_STATUS;
-      f.properties.TENURE_TYPE                 = tantalisApp.TENURE_TYPE;
-      f.properties.TENURE_STAGE                = tantalisApp.TENURE_STAGE;
-      f.properties.TENURE_SUBTYPE              = tantalisApp.TENURE_SUBTYPE;
-      f.properties.TENURE_LOCATION             = tantalisApp.TENURE_LOCATION;
+      f.properties.RESPONSIBLE_BUSINESS_UNIT = tantalisApp.RESPONSIBLE_BUSINESS_UNIT;
+      f.properties.TENURE_PURPOSE = tantalisApp.TENURE_PURPOSE;
+      f.properties.TENURE_SUBPURPOSE = tantalisApp.TENURE_SUBPURPOSE;
+      f.properties.TENURE_STATUS = tantalisApp.TENURE_STATUS;
+      f.properties.TENURE_TYPE = tantalisApp.TENURE_TYPE;
+      f.properties.TENURE_STAGE = tantalisApp.TENURE_STAGE;
+      f.properties.TENURE_SUBTYPE = tantalisApp.TENURE_SUBTYPE;
+      f.properties.TENURE_LOCATION = tantalisApp.TENURE_LOCATION;
       f.properties.DISPOSITION_TRANSACTION_SID = tantalisApp.DISPOSITION_TRANSACTION_SID;
-      f.properties.CROWN_LANDS_FILE            = tantalisApp.CROWN_LANDS_FILE;
+      f.properties.CROWN_LANDS_FILE = tantalisApp.CROWN_LANDS_FILE;
 
       allFeaturesForDisp.push(f);
       // Get the polygon and put it for later centroid calculation
@@ -301,18 +315,18 @@ var saveFeatures = function(feature, acrfdAppId) {
 var updateApplicationMeta = function(acrfdApp, tantalisApp) {
   return new Promise(function(resolve, reject) {
     var updatedAppObject = {};
-    updatedAppObject.businessUnit               = tantalisApp.RESPONSIBLE_BUSINESS_UNIT;
-    updatedAppObject.purpose                    = tantalisApp.TENURE_PURPOSE;
-    updatedAppObject.subpurpose                 = tantalisApp.TENURE_SUBPURPOSE;
-    updatedAppObject.status                     = tantalisApp.TENURE_STATUS;
-    updatedAppObject.type                       = tantalisApp.TENURE_TYPE;
-    updatedAppObject.tenureStage                = tantalisApp.TENURE_STAGE;
-    updatedAppObject.subtype                    = tantalisApp.TENURE_SUBTYPE;
-    updatedAppObject.location                   = tantalisApp.TENURE_LOCATION;
-    updatedAppObject.legalDescription           = tantalisApp.TENURE_LEGAL_DESCRIPTION;
-    updatedAppObject.centroid                   = acrfdApp.centroid;
-    updatedAppObject.areaHectares               = acrfdApp.areaHectares;
-    updatedAppObject.client                     = acrfdApp.client;
+    updatedAppObject.businessUnit = tantalisApp.RESPONSIBLE_BUSINESS_UNIT;
+    updatedAppObject.purpose = tantalisApp.TENURE_PURPOSE;
+    updatedAppObject.subpurpose = tantalisApp.TENURE_SUBPURPOSE;
+    updatedAppObject.status = tantalisApp.TENURE_STATUS;
+    updatedAppObject.type = tantalisApp.TENURE_TYPE;
+    updatedAppObject.tenureStage = tantalisApp.TENURE_STAGE;
+    updatedAppObject.subtype = tantalisApp.TENURE_SUBTYPE;
+    updatedAppObject.location = tantalisApp.TENURE_LOCATION;
+    updatedAppObject.legalDescription = tantalisApp.TENURE_LEGAL_DESCRIPTION;
+    updatedAppObject.centroid = acrfdApp.centroid;
+    updatedAppObject.areaHectares = acrfdApp.areaHectares;
+    updatedAppObject.client = acrfdApp.client;
     updatedAppObject.statusHistoryEffectiveDate = acrfdApp.statusHistoryEffectiveDate;
 
     request.put(
@@ -343,7 +357,7 @@ var updateApplicationMeta = function(acrfdApp, tantalisApp) {
  * @param {string} applicationIDToUpdate a tantalisID
  * @returns {Promise}
  */
-var updateApplication = function (applicationIDToUpdate) {
+var updateApplication = function(applicationIDToUpdate) {
   return renewJWTLogin()
     .then(function() {
       return getApplicationByID('api/application', applicationIDToUpdate);
@@ -351,27 +365,26 @@ var updateApplication = function (applicationIDToUpdate) {
     .then(function(applicationsToUpdate) {
       // Only expecting 1 result, but the API returns an array
       return applicationsToUpdate.reduce(function(previousApp, currentApp) {
-        return previousApp.then(function () {
+        return previousApp.then(function() {
           console.log('-----------------------------------------------');
           console.log(`6. Updating ACRFD Application, tantalisID: ${currentApp.tantalisID}`);
           console.log(' - Fetching Tantalis application');
-          return Utils.getApplicationByDispositionID(_accessToken, currentApp.tantalisID)
-            .then(function(tantalisApp) {
-              if (!tantalisApp) {
-                console.log(' - No Tantalis application found - not updating.');
-                return Promise.resolve();
-              }
-              console.log(' - Deleting existing application features');
-              return deleteAllApplicationFeatures(currentApp)
-                .then(function() {
-                  console.log(' - Updating new application features');
-                  return updateFeatures(currentApp, tantalisApp)
-                })
-                .then(function(updatedApp) {
-                  console.log(' - Updating new application meta');
-                  return updateApplicationMeta(updatedApp, tantalisApp);
-                })
-            });
+          return Utils.getApplicationByDispositionID(_accessToken, currentApp.tantalisID).then(function(tantalisApp) {
+            if (!tantalisApp) {
+              console.log(' - No Tantalis application found - not updating.');
+              return Promise.resolve();
+            }
+            console.log(' - Deleting existing application features');
+            return deleteAllApplicationFeatures(currentApp)
+              .then(function() {
+                console.log(' - Updating new application features');
+                return updateFeatures(currentApp, tantalisApp);
+              })
+              .then(function(updatedApp) {
+                console.log(' - Updating new application meta');
+                return updateApplicationMeta(updatedApp, tantalisApp);
+              });
+          });
         });
       }, Promise.resolve());
     });
