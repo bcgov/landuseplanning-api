@@ -331,7 +331,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "nrts-prc-api-beta"
+      "value": "gcpe-lup-api-dev"
     },
     {
       "name": "MONGO_IMAGE_NAMESPACE",
@@ -355,12 +355,12 @@
       "name": "APPLICATION_DOMAIN",
       "displayName": "Application Hostname",
       "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
-      "value": "nrts-prc-beta.pathfinder.gov.bc.ca/api"
+      "value": "gcpe-lup-dev.pathfinder.gov.bc.ca/api"
     },
     {
       "name": "DATABASE_SERVICE_NAME",
       "displayName": "Database Service Name",
-      "value": "mongodb-beta"
+      "value": "mongodb-dev"
     },
     {
       "name": "DATABASE_USER",
@@ -379,7 +379,7 @@
     {
       "name": "DATABASE_NAME",
       "displayName": "Database Name",
-      "value": "prc-prod"
+      "value": "lup-prod"
     },
     {
       "name": "DATABASE_ADMIN_PASSWORD",
@@ -413,21 +413,21 @@
       "name": "APP_IMAGE_NAME",
       "displayName": "Application image name.",
       "description": "Application image name.",
-      "value": "nrts-prc-api",
+      "value": "gcpe-lup-api",
       "required": true
     },
     {
       "name": "APP_IMAGE_NAMESPACE",
       "displayName": "Namespace containing application images.",
       "description": "Namespace containing application images.",
-      "value": "nrts-prc-tools",
+      "value": "gcpe-lup-tools",
       "required": true
     },
     {
       "name": "APP_DEPLOYMENT_TAG",
       "displayName": "Image tag to watch for changes and trigger deployment.",
       "description": "Image tag to watch for changes and trigger deployment.",
-      "value": "beta",
+      "value": "dev",
       "required": true
     },
     {

@@ -1,10 +1,10 @@
-# bcgov/nrts-prc-api
+# bcgov/gcpe-lup-api
 
-Minimal API for the ACRFD (formerly: PRC) application.
+Minimal API for the Land Use Planning application. Based on the PRC Application [bcgov/nrts-prc-api](https://github.com/bcgov/nrts-prc-api).
 
-* [Admin](https://github.com/bcgov/nrts-prc-admin) - front-end for admin users.
-* [Public](https://github.com/bcgov/nrts-prc-public) - front-end for public users.
-* [Api](https://github.com/bcgov/nrts-prc-api) - back-end that serves both admin and public requests.
+* [Admin](https://github.com/bcgov/gcpe-lup-admin) - front-end for admin users.
+* [Public](https://github.com/bcgov/gcpe-lup-public) - front-end for public users.
+* [Api](https://github.com/bcgov/gcpe-lup-api) - back-end that serves both admin and public requests.
 
 # Prerequisites
 
@@ -99,7 +99,7 @@ npm run lint-fix
 
 The API is defined in `swagger.yaml`.
 
-If the this nrts-prc-api is running locally, you can view the api docs at: `http://localhost:3000/api/docs/`
+If the this gcpe-lup-api is running locally, you can view the api docs at: `http://localhost:3000/api/docs/`
 
 This project uses npm package `swagger-tools` via `./app.js` to automatically generate the express server and its routes.
 
