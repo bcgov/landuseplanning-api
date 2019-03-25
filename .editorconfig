@@ -1,3 +1,5 @@
+# prettier vscode extension + .prettierrc config takes presedence over .editorconfig config
+
 # Editor configuration, see http://editorconfig.org
 root = true
 

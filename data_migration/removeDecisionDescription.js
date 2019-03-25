@@ -9,4 +9,4 @@
 // 2. paste the following in a shell
 // 3. press F5 to execute
 
-db.decisions.updateMany( {}, { $unset: { description: 1 } } );
+db.decisions.updateMany({}, { $unset: { description: 1 } });

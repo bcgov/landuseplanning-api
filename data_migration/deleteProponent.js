@@ -8,15 +8,13 @@
 // 2. paste the following in a shell
 // 3. press F5 to execute
 
-db.applications.aggregate(
-  [
-    // delete field
-    { "$project": { _proponent: false } },
-    // save as new collection
-    { "$out": "applications2" }
-  ]
-);
+db.applications.aggregate([
+  // delete field
+  { $project: { _proponent: false } },
+  // save as new collection
+  { $out: 'applications2' }
+]);
 
 // 4. if OK, run the following:
 
-db.applications2.renameCollection("applications", true);
+db.applications2.renameCollection('applications', true);

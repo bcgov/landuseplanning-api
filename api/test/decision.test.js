@@ -15,12 +15,12 @@ const Decision = mongoose.model('Decision');
 const fieldNames = ['name', 'description'];
 
 function paramsWithDecId(req) {
-  let params = test_helper.buildParams({'decisionId': req.params.id});
+  let params = test_helper.buildParams({ decisionId: req.params.id });
   return test_helper.createSwaggerParams(fieldNames, params);
 }
 
 function publicParamsWithDecId(req) {
-  let params = test_helper.buildParams({'decisionId': req.params.id});
+  let params = test_helper.buildParams({ decisionId: req.params.id });
   return test_helper.createPublicSwaggerParams(fieldNames, params);
 }
 
@@ -43,7 +43,7 @@ app.get('/api/public/decision/:id', function(req, res) {
 });
 
 app.post('/api/decision/', function(req, res) {
-  let extraFields = test_helper.buildParams({'decision': req.body});
+  let extraFields = test_helper.buildParams({ decision: req.body });
   let params = test_helper.createSwaggerParams(fieldNames, extraFields);
   return decisionController.protectedPost(params, res);
 });
@@ -61,51 +61,61 @@ app.delete('/api/decision/:id', function(req, res) {
 });
 
 const decisionsData = [
-  {name: 'Special Decision', description: 'We have decided to save the environment', tags: [['public'], ['sysadmin']], isDeleted: false},
-  {name: 'Vanilla Ice Cream', description: 'Ice cream store will be built', tags: [['public']], isDeleted: false},
-  {name: 'Confidential Decision', description: 'No comment', tags: [['sysadmin']], isDeleted: false},
-  {name: 'Deleted Decision', description: 'Trolling for suckers', tags: [['public'], ['sysadmin']], isDeleted: true},
+  {
+    name: 'Special Decision',
+    description: 'We have decided to save the environment',
+    tags: [['public'], ['sysadmin']],
+    isDeleted: false
+  },
+  { name: 'Vanilla Ice Cream', description: 'Ice cream store will be built', tags: [['public']], isDeleted: false },
+  { name: 'Confidential Decision', description: 'No comment', tags: [['sysadmin']], isDeleted: false },
+  { name: 'Deleted Decision', description: 'Trolling for suckers', tags: [['public'], ['sysadmin']], isDeleted: true }
 ];
 
 function setupDecisions(decisionsData) {
   return new Promise(function(resolve, reject) {
-    decisionFactory.createMany('decision', decisionsData).then(decisionsArray => {
-      resolve(decisionsArray);
-    }).catch(error => {
-      reject(error);
-    });
+    decisionFactory
+      .createMany('decision', decisionsData)
+      .then(decisionsArray => {
+        resolve(decisionsArray);
+      })
+      .catch(error => {
+        reject(error);
+      });
   });
 }
 
 describe('GET /decision', () => {
   test('returns a list of non-deleted, public and sysadmin decision', done => {
-    setupDecisions(decisionsData).then((documents) => {
-      request(app).get('/api/decision')
+    setupDecisions(decisionsData).then(documents => {
+      request(app)
+        .get('/api/decision')
         .expect(200)
         .then(response => {
           expect(response.body.length).toEqual(3);
 
-          let firstDecision = _.find(response.body, {name: 'Special Decision'});
+          let firstDecision = _.find(response.body, { name: 'Special Decision' });
           expect(firstDecision).toHaveProperty('_id');
           expect(firstDecision.description).toBe('We have decided to save the environment');
-          expect(firstDecision['tags']).toEqual(expect.arrayContaining([["public"], ["sysadmin"]]));
+          expect(firstDecision['tags']).toEqual(expect.arrayContaining([['public'], ['sysadmin']]));
 
-          let secondDecision = _.find(response.body, {name: 'Vanilla Ice Cream'});
+          let secondDecision = _.find(response.body, { name: 'Vanilla Ice Cream' });
           expect(secondDecision).toHaveProperty('_id');
           expect(secondDecision.description).toBe('Ice cream store will be built');
-          expect(secondDecision['tags']).toEqual(expect.arrayContaining([["public"]]));
+          expect(secondDecision['tags']).toEqual(expect.arrayContaining([['public']]));
 
-          let secretDecision = _.find(response.body, {name: 'Confidential Decision'});
+          let secretDecision = _.find(response.body, { name: 'Confidential Decision' });
           expect(secretDecision).toHaveProperty('_id');
           expect(secretDecision.description).toBe('No comment');
-          expect(secretDecision['tags']).toEqual(expect.arrayContaining([["sysadmin"]]));
+          expect(secretDecision['tags']).toEqual(expect.arrayContaining([['sysadmin']]));
           done();
         });
     });
   });
 
   test('returns an empty array when there are no decisions', done => {
-    request(app).get('/api/decision')
+    request(app)
+      .get('/api/decision')
       .expect(200)
       .then(response => {
         expect(response.body.length).toBe(0);
@@ -115,37 +125,33 @@ describe('GET /decision', () => {
   });
 
   test('can search based on application', done => {
-    applicationFactory
-      .create('application', {name: 'Detailed application with decision'})
-      .then(application => {
-        let decisionAttrs = {
-          _application: application.id, 
-          description: 'Decision with Attachment', 
-          name: 'Important Decision'
-        };
-        decisionFactory
-          .create('decision', decisionAttrs, {public: false})
-          .then(decision => {
-            request(app)
-              .get('/api/decision')
-              .query({_application: application.id})
-              .expect(200)
-              .then(response => {
-                expect(response.body.length).toBe(1);
-                let resultingDecision = response.body[0];
-                expect(resultingDecision).not.toBeNull();
-                expect(resultingDecision.description).toBe('Decision with Attachment');
-                done();
-              });
+    applicationFactory.create('application', { name: 'Detailed application with decision' }).then(application => {
+      let decisionAttrs = {
+        _application: application.id,
+        description: 'Decision with Attachment',
+        name: 'Important Decision'
+      };
+      decisionFactory.create('decision', decisionAttrs, { public: false }).then(decision => {
+        request(app)
+          .get('/api/decision')
+          .query({ _application: application.id })
+          .expect(200)
+          .then(response => {
+            expect(response.body.length).toBe(1);
+            let resultingDecision = response.body[0];
+            expect(resultingDecision).not.toBeNull();
+            expect(resultingDecision.description).toBe('Decision with Attachment');
+            done();
           });
       });
+    });
   });
 });
 
 describe('GET /decision/{id}', () => {
   test('returns a single Decision ', done => {
-    setupDecisions(decisionsData).then((documents) => {
-      Decision.findOne({name: 'Special Decision'}).exec(function(error, decision) {
+    setupDecisions(decisionsData).then(documents => {
+      Decision.findOne({ name: 'Special Decision' }).exec(function(error, decision) {
         let decisionId = decision._id.toString();
         let uri = '/api/decision/' + decisionId;
 
@@ -156,68 +162,66 @@ describe('GET /decision/{id}', () => {
             expect(response.body.length).toBe(1);
             let responseObject = response.body[0];
             expect(responseObject).toMatchObject({
-              '_id': decisionId,
-              'tags': expect.arrayContaining([['public'], ['sysadmin']]),
-              'name': 'Special Decision'
+              _id: decisionId,
+              tags: expect.arrayContaining([['public'], ['sysadmin']]),
+              name: 'Special Decision'
             });
             done();
           });
-      });;
+      });
     });
   });
 });
 
 describe('GET /public/decision', () => {
   test('returns a list of public decisions', done => {
-    setupDecisions(decisionsData).then((documents) => {
-      request(app).get('/api/public/decision')
+    setupDecisions(decisionsData).then(documents => {
+      request(app)
+        .get('/api/public/decision')
         .expect(200)
         .then(response => {
           expect(response.body.length).toEqual(2);
 
-          let firstDecision = _.find(response.body, {name: 'Special Decision'});
+          let firstDecision = _.find(response.body, { name: 'Special Decision' });
           expect(firstDecision).toHaveProperty('_id');
           expect(firstDecision.description).toBe('We have decided to save the environment');
-          expect(firstDecision['tags']).toEqual(expect.arrayContaining([["public"], ["sysadmin"]]));
+          expect(firstDecision['tags']).toEqual(expect.arrayContaining([['public'], ['sysadmin']]));
 
-          let secondDecision = _.find(response.body, {name: 'Vanilla Ice Cream'});
+          let secondDecision = _.find(response.body, { name: 'Vanilla Ice Cream' });
           expect(secondDecision).toHaveProperty('_id');
           expect(secondDecision.description).toBe('Ice cream store will be built');
-          expect(secondDecision['tags']).toEqual(expect.arrayContaining([["public"]]));
-          done()
+          expect(secondDecision['tags']).toEqual(expect.arrayContaining([['public']]));
+          done();
         });
     });
   });
 
   test('can search based on application', done => {
-    applicationFactory
-      .create('application', {name: 'Detailed application with decision'})
-      .then(application => {
-        let decisionAttrs = {
-          _application: application.id, 
-          description: 'Decision with Attachment', 
-          name: 'Important Decision'
-        };
-        decisionFactory
-          .create('decision', decisionAttrs, {public: true})
-          .then(decision => {
-            request(app)
-              .get('/api/public/decision')
-              .query({_application: application.id})
-              .expect(200)
-              .then(response => {
-                expect(response.body.length).toBe(1);
-                let resultingDecision = response.body[0];
-                expect(resultingDecision).not.toBeNull();
-                expect(resultingDecision.description).toBe('Decision with Attachment');
-                done();
-              });
+    applicationFactory.create('application', { name: 'Detailed application with decision' }).then(application => {
+      let decisionAttrs = {
+        _application: application.id,
+        description: 'Decision with Attachment',
+        name: 'Important Decision'
+      };
+      decisionFactory.create('decision', decisionAttrs, { public: true }).then(decision => {
+        request(app)
+          .get('/api/public/decision')
+          .query({ _application: application.id })
+          .expect(200)
+          .then(response => {
+            expect(response.body.length).toBe(1);
+            let resultingDecision = response.body[0];
+            expect(resultingDecision).not.toBeNull();
+            expect(resultingDecision.description).toBe('Decision with Attachment');
+            done();
           });
       });
+    });
   });
 
   test('returns an empty array when there are no Decisions', done => {
-    request(app).get('/api/public/decision')
+    request(app)
+      .get('/api/public/decision')
       .expect(200)
       .then(response => {
         expect(response.body.length).toBe(0);
@@ -229,11 +233,10 @@ describe('GET /public/decision', () => {
 
 describe('GET /public/decision/{id}', () => {
   test('returns a single public decision ', done => {
-    setupDecisions(decisionsData).then((documents) => {
-      Decision.findOne({name: 'Special Decision'}).exec(function(error, decision) {
+    setupDecisions(decisionsData).then(documents => {
+      Decision.findOne({ name: 'Special Decision' }).exec(function(error, decision) {
         if (error) {
-          console.log(error);
-          throw error
+          throw error;
         }
         let specialDecisionId = decision._id.toString();
         let uri = '/api/public/decision/' + specialDecisionId;
@@ -245,13 +248,13 @@ describe('GET /public/decision/{id}', () => {
             expect(response.body.length).toBe(1);
             let responseObj = response.body[0];
             expect(responseObj).toMatchObject({
-              '_id': specialDecisionId,
-              'tags': expect.arrayContaining([['public'], ['sysadmin']]),
+              _id: specialDecisionId,
+              tags: expect.arrayContaining([['public'], ['sysadmin']]),
               name: 'Special Decision'
             });
             done();
           });
-      });;
+      });
     });
   });
 });
@@ -263,9 +266,11 @@ describe('POST /decision', () => {
       description: 'Victoria is a great place'
     };
 
-    request(app).post('/api/decision')
+    request(app)
+      .post('/api/decision')
       .send(decisionObj)
-      .expect(200).then(response => {
+      .expect(200)
+      .then(response => {
         expect(response.body).toHaveProperty('_id');
         Decision.findById(response.body['_id']).exec(function(error, decision) {
           expect(decision).not.toBeNull();
@@ -281,21 +286,22 @@ describe('POST /decision', () => {
       name: 'Victoria',
       description: 'Victoria is a great place'
     };
-    request(app).post('/api/decision')
+    request(app)
+      .post('/api/decision')
       .send(decisionObj)
-      .expect(200).then(response => {
+      .expect(200)
+      .then(response => {
         expect(response.body).toHaveProperty('_id');
         Decision.findById(response.body['_id']).exec(function(error, decision) {
           expect(decision).not.toBeNull();
 
-          expect(decision.tags.length).toEqual(1)
+          expect(decision.tags.length).toEqual(1);
           expect(decision.tags[0]).toEqual(expect.arrayContaining(['sysadmin']));
 
           done();
         });
       });
   });
-
 });
 
 describe('PUT /decision/:id', () => {
@@ -313,10 +319,11 @@ describe('PUT /decision/:id', () => {
       description: 'This decision is pending'
     };
     let uri = '/api/decision/' + existingDecision._id;
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .send(updateData)
       .then(response => {
-        Decision.findOne({description: 'The decision has been approved.'}).exec(function(error, decision) {
+        Decision.findOne({ description: 'The decision has been approved.' }).exec(function(error, decision) {
           expect(decision).toBeDefined();
           expect(decision).not.toBeNull();
           done();
@@ -326,8 +333,9 @@ describe('PUT /decision/:id', () => {
 
   test('404s if the decision does not exist', done => {
     let uri = '/api/decision/' + 'NON_EXISTENT_ID';
-    request(app).put(uri)
-      .send({description: 'hacker_man', internal: {tags: []}})
+    request(app)
+      .put(uri)
+      .send({ description: 'hacker_man', internal: { tags: [] } })
       .expect(404)
       .then(response => {
         done();
@@ -344,12 +352,13 @@ describe('PUT /decision/:id', () => {
     };
     existingDecision.save().then(decision => {
       let uri = '/api/decision/' + decision._id;
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .send(updateData)
         .then(response => {
           Decision.findById(decision._id).exec(function(error, updatedDecision) {
             expect(updatedDecision.tags.length).toEqual(1);
-            expect(updatedDecision.tags[0]).toEqual(expect.arrayContaining(["sysadmin"]));
+            expect(updatedDecision.tags[0]).toEqual(expect.arrayContaining(['sysadmin']));
 
             done();
           });
@@ -367,11 +376,12 @@ describe('PUT /decision/:id/publish', () => {
     });
     existingDecision.save().then(decision => {
       let uri = '/api/decision/' + decision._id + '/publish';
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .expect(200)
         .send({})
         .then(response => {
-          Decision.findOne({name: 'EXISTING'}).exec(function(error, updatedDecision) {
+          Decision.findOne({ name: 'EXISTING' }).exec(function(error, updatedDecision) {
             expect(updatedDecision).toBeDefined();
             expect(updatedDecision.tags[0]).toEqual(expect.arrayContaining(['public']));
             done();
@@ -382,7 +392,8 @@ describe('PUT /decision/:id/publish', () => {
 
   test('404s if the decision does not exist', done => {
     let uri = '/api/decision/' + 'NON_EXISTENT_ID' + '/publish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .send({})
       .expect(404)
       .then(response => {
@@ -400,11 +411,12 @@ describe('PUT /decision/:id/unpublish', () => {
     });
     existingDecision.save().then(decision => {
       let uri = '/api/decision/' + decision._id + '/unpublish';
-      request(app).put(uri)
+      request(app)
+        .put(uri)
         .expect(200)
         .send({})
         .then(response => {
-          Decision.findOne({name: 'EXISTING'}).exec(function(error, updatedDecision) {
+          Decision.findOne({ name: 'EXISTING' }).exec(function(error, updatedDecision) {
             expect(updatedDecision).toBeDefined();
             expect(updatedDecision.tags[0]).toEqual(expect.arrayContaining([]));
             done();
@@ -415,7 +427,8 @@ describe('PUT /decision/:id/unpublish', () => {
 
   test('404s if the decision does not exist', done => {
     let uri = '/api/decision/' + 'NON_EXISTENT_ID' + '/unpublish';
-    request(app).put(uri)
+    request(app)
+      .put(uri)
       .send({})
       .expect(404)
       .then(response => {
@@ -426,15 +439,15 @@ describe('PUT /decision/:id/unpublish', () => {
 
 describe('DELETE /decision/id', () => {
   test('It soft deletes a decision', done => {
-    setupDecisions(decisionsData).then((documents) => {
-      Decision.findOne({name: 'Vanilla Ice Cream'}).exec(function(error, decision) {
+    setupDecisions(decisionsData).then(documents => {
+      Decision.findOne({ name: 'Vanilla Ice Cream' }).exec(function(error, decision) {
         let vanillaDecisionId = decision._id.toString();
         let uri = '/api/decision/' + vanillaDecisionId;
         request(app)
           .delete(uri)
           .expect(200)
           .then(response => {
-            Decision.findOne({name: 'Vanilla Ice Cream'}).exec(function(error, decision) {
+            Decision.findOne({ name: 'Vanilla Ice Cream' }).exec(function(error, decision) {
               expect(decision.isDeleted).toBe(true);
               done();
             });

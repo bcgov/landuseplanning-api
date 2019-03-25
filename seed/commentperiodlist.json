@@ -1,33 +1,33 @@
 [
-    {
-        "addedBy": "admin",
-        "_application": "6406200",
-        "code": "comment-period-1",
-        "name": "Comment Period 1",
-        "startDate": "2018-06-01T00:00:00-08:00",
-        "endDate": "2018-06-30T00:00:00-08:00",
-        "description": "This is the comment period for Application # 6406200.",
-        "internal": {
-            "notes": "These notes are only visible on the admin site.",
-            "addedBy": "admin"
-        }
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6407573",
-        "code": "comment-period-2",
-        "name": "Comment Period 2",
-        "startDate": "2018-07-01T00:00:00-08:00",
-        "endDate": "2018-08-31T00:00:00-08:00",
-        "description": "This is the comment period for Application # 6407573."
-    },
-    {
-        "addedBy": "admin",
-        "_application": "6408232",
-        "code": "comment-period-3",
-        "name": "Comment Period 3",
-        "startDate": "2018-09-01T00:00:00-08:00",
-        "endDate": "2018-09-30T00:00:00-08:00",
-        "description": "This is the comment period for Application # 6408232."
+  {
+    "addedBy": "admin",
+    "_application": "6406200",
+    "code": "comment-period-1",
+    "name": "Comment Period 1",
+    "startDate": "2018-06-01T00:00:00-08:00",
+    "endDate": "2018-06-30T00:00:00-08:00",
+    "description": "This is the comment period for Application # 6406200.",
+    "internal": {
+      "notes": "These notes are only visible on the admin site.",
+      "addedBy": "admin"
     }
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6407573",
+    "code": "comment-period-2",
+    "name": "Comment Period 2",
+    "startDate": "2018-07-01T00:00:00-08:00",
+    "endDate": "2018-08-31T00:00:00-08:00",
+    "description": "This is the comment period for Application # 6407573."
+  },
+  {
+    "addedBy": "admin",
+    "_application": "6408232",
+    "code": "comment-period-3",
+    "name": "Comment Period 3",
+    "startDate": "2018-09-01T00:00:00-08:00",
+    "endDate": "2018-09-30T00:00:00-08:00",
+    "description": "This is the comment period for Application # 6408232."
+  }
 ]
