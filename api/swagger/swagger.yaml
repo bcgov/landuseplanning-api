@@ -301,6 +301,8 @@ definitions:
       - -author
       - +dateStarted
       - -dateStarted
+      - +dateCompleted
+      - -dateCompleted
 ### Search Definitions
   SearchObject:
     type: object

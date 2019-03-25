@@ -74,6 +74,7 @@ exports.publicGet = async function (args, res, next) {
       // only accept certain fields
       switch (sort_by) {
         case 'dateStarted':
+        case 'dateCompleted':
         case 'author':
           sort[sort_by] = order_by;
           break;
@@ -154,6 +155,7 @@ exports.protectedGet = async function (args, res, next) {
       // only accept certain fields
       switch (sort_by) {
         case 'dateStarted':
+        case 'dateCompleted':
         case 'author':
           sort[sort_by] = order_by;
           break;
