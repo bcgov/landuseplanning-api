@@ -416,6 +416,13 @@ definitions:
       - 'read'
       - 'write'
       - 'delete'
+  VcSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +Type,-Type
+    enum: &vcSortByFields
+      - +Type
+      - -Type
 
 ### Resource Definitions
   Coordinates:
@@ -4209,6 +4216,14 @@ paths:
           items:
             type: string
             enum: *vcFields
+        - in: query
+          name: sortBy
+          description: "VC fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *vcSortByFields
       responses:
         "200":
           description: "Success"
