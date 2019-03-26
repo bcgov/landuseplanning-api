@@ -360,6 +360,19 @@ definitions:
       - 'pillar'
       - 'parent'
       - 'read'
+  TopicSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +name,-name
+    enum: &topicSortByFields
+      - +name
+      - -name
+      - +description
+      - -description
+      - +type
+      - -type
+      - +pillar
+      - -pillar
   
 ### User Definitions
   UserId:
@@ -4016,6 +4029,14 @@ paths:
           items:
             type: string
             enum: *topicFields
+        - in: query
+          name: sortBy
+          description: "Topic fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *topicSortByFields
       responses:
         "200":
           description: "Success"

@@ -38,13 +38,19 @@ exports.protectedPost = async function (args, res, next) {
 };
 
 exports.protectedGet = async function (args, res, next) {
-    var skip = null, limit = null;
+    var skip = null, limit = null, sort = {};
     var query = {};
 
     if (args.swagger.params.topicId && args.swagger.params.topicId.value) {
         query = Utils.buildQuery("_id", args.swagger.params.topicId.value, query);
     }
-
+    if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+        args.swagger.params.sortBy.value.forEach(function (value) {
+            var order_by = value.charAt(0) == '-' ? -1 : 1;
+            var sort_by = value.slice(1);
+            sort[sort_by] = order_by;
+        }, this);
+    }
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
     skip = processedParameters.skip;
     limit = processedParameters.limit;
@@ -57,7 +63,7 @@ exports.protectedGet = async function (args, res, next) {
         query,
         getSanitizedFields(args.swagger.params.fields.value), // Fields
         null, // sort warmup
-        null, // sort
+        sort, // sort
         skip, // skip
         limit, // limit
         true) // count
