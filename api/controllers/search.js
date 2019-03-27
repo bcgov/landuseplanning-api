@@ -7,12 +7,30 @@ var Utils = require('../helpers/utils');
 var request = require('request');
 var _accessToken = null;
 
-var searchCollection = async function (keywords, collection, skip, limit) {
+var searchCollection = async function (keywords, collection, pageNum, pageSize, project, sortField, sortDirection) {
+  var properties = undefined;
+  if (project) {
+    properties = { project: mongoose.Types.ObjectId(project) };
+  }
+
+  // optional search keys
+  var searchProperties = undefined;
+  if (keywords) {
+    searchProperties = { $text: { $search: keywords } };
+  }
+
+  var sortingValue = {};
+  sortingValue[sortField] = sortDirection;
+  console.log("sort:", sortingValue);
+  console.log("pageNum:", pageNum);
+  console.log("pageSize:", pageSize);
+  // TODO MAKE ROLES COME IN HERE
+
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(
       [
-        { $match: { _schemaName: collection, $text: { $search: keywords } } },
+        { $match: { _schemaName: collection, ...(searchProperties ? searchProperties : undefined), ...(properties ? properties : undefined) } },
         {
           $redact: {
             $cond: {
@@ -39,13 +57,13 @@ var searchCollection = async function (keywords, collection, skip, limit) {
           $facet: {
             searchResults: [
               {
-                $sort: { score: -1 }
+                $sort: sortingValue
               },
               {
-                $skip: skip
+                $skip: pageNum * pageSize
               },
               {
-                $limit: limit
+                $limit: pageSize
               }
             ],
             meta: [
@@ -66,12 +84,35 @@ var searchCollection = async function (keywords, collection, skip, limit) {
 exports.publicGet = async function (args, res, next) {
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
-  var skip = args.swagger.params.skip.value || 0;
-  var limit = args.swagger.params.limit.value || 25;
+  var project = args.swagger.params.project.value;
+  var pageNum = args.swagger.params.pageNum.value || 0;
+  var pageSize = args.swagger.params.pageSize.value || 25;
+  var sortBy = args.swagger.params.sortBy.value || ['-score'];
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
+  defaultLog.info("Searching project:", project);
+  defaultLog.info("pageNum:", pageNum);
+  defaultLog.info("pageSize:", pageSize);
+  defaultLog.info("sortBy:", sortBy);
 
-  // TODO: Enable pagination/skip/limit.
+  var sortDirection = undefined;
+  var sortField = undefined;
+
+  // TODO: Change away from array.  Only support 1.
+  sortBy.map((value) => {
+    sortDirection = value.charAt(0) == '-' ? -1 : 1;
+    sortField = value.slice(1);
+  });
+
+  var sortingValue = {};
+  sortingValue[sortField] = sortDirection;
+  console.log("sort:", sortingValue);
+  console.log("pageNum:", pageNum);
+  console.log("pageSize:", pageSize);
+
+  defaultLog.info("sortField:", sortField);
+  defaultLog.info("sortDirection:", sortDirection);
+
   if (dataset === 'All') {
     var collectionObj = mongoose.model("Project");
     var data = await collectionObj.aggregate([
@@ -105,13 +146,13 @@ exports.publicGet = async function (args, res, next) {
         $facet: {
           searchResults: [
             {
-              $sort: { score: -1 }
+              $sort: sortingValue
             },
             {
-              $skip: skip
+              $skip: pageNum * pageSize
             },
             {
-              $limit: limit
+              $limit: pageSize
             }
           ],
           meta: [
@@ -124,7 +165,7 @@ exports.publicGet = async function (args, res, next) {
     ])
     return Actions.sendResponse(res, 200, data);
   } else {
-    var data = await searchCollection(keywords, dataset, skip, limit)
+    var data = await searchCollection(keywords, dataset, pageNum, pageSize, project, sortField, sortDirection)
     return Actions.sendResponse(res, 200, data);
   }
 };

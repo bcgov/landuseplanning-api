@@ -325,6 +325,22 @@ definitions:
       keywords:
         type: string
         example: "Project Name"
+  SearchSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +score,-score
+    enum: &searchSortByFields
+      - +score
+      - -score
+      - +displayName
+      - -displayName
+      - +datePosted
+      - -datePosted
+      - +documentType
+      - -documentType
+      - +documentFileSize
+      - -documentFileSize
+
 
 ### Organization Definitions
   OrgId:
@@ -3960,15 +3976,28 @@ paths:
           type: string
           required: false
         - in: query
-          name: skip
-          description: "# Records to skip"
+          name: project
+          description: "Project to specifically query"
           type: string
           required: false
         - in: query
-          name: limit
-          description: "# Records to limit"
-          type: string
+          name: pageNum
+          description: "Page number to skip to."
+          type: number
           required: false
+        - in: query
+          name: pageSize
+          description: "# Records to limit"
+          type: number
+          required: false
+        - in: query
+          name: sortBy
+          description: "Fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *searchSortByFields
       responses:
         "200":
           description: "Success"
