@@ -162,43 +162,55 @@ exports.publicGet = function (args, res, next) {
 
 exports.protectedGet = async function (args, res, next) {
   var skip = null, limit = null, sort = {};
+  var count = false;
   var query = {};
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
-  // Build match query if on projId route
   if (args.swagger.params.projId) {
+    // Getting a single project
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
+    // Getting multiple projects
     try {
+      // Filters
       query = addStandardQueryFilters(query, args);
+
+      // Sorting
+      if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+        args.swagger.params.sortBy.value.forEach(function (value) {
+          var order_by = value.charAt(0) == '-' ? -1 : 1;
+          var sort_by = value.slice(1);
+          sort[sort_by] = order_by;
+        }, this);
+        
+      }
+      
+      // Pagination
+      var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+      skip = processedParameters.skip;
+      limit = processedParameters.limit;
+      
+      // Enable Count
+      count = true
+
     } catch (error) {
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
-  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-    args.swagger.params.sortBy.value.forEach(function (value) {
-      var order_by = value.charAt(0) == '-' ? -1 : 1;
-      var sort_by = value.slice(1);
-      sort[sort_by] = order_by;
-    }, this);
-  }
-  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
-  skip = processedParameters.skip;
-  limit = processedParameters.limit;
 
   // Set query type
   _.assignIn(query, { "_schemaName": "Project" });
 
   var data = await Utils.runDataQuery('Project',
-  args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.realm_access.roles,
     query,
     getSanitizedFields(args.swagger.params.fields.value), // Fields
     null, // sort warmup
     sort, // sort
     skip, // skip
     limit, // limit
-    true) // count
+    count) // count
   return Actions.sendResponse(res, 200, data);
 };
 
