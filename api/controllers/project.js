@@ -1,60 +1,60 @@
-var auth        = require("../helpers/auth");
-var _           = require('lodash');
-var defaultLog  = require('winston').loggers.get('default');
-var mongoose    = require('mongoose');
-var qs          = require('qs');
-var Actions     = require('../helpers/actions');
-var Utils       = require('../helpers/utils');
-var request     = require('request');
-var tagList     = [
-                  'CEAAInvolvement',
-                  'CELead',
-                  'CELeadEmail',
-                  'CELeadPhone',
-                  'centroid',
-                  'description',
-                  'eacDecision',
-                  'location',
-                  'name',
-                  'projectLead',
-                  'projectLeadEmail',
-                  'projectLeadPhone',
-                  'proponent',
-                  'region',
-                  'responsibleEPD',
-                  'responsibleEPDEmail',
-                  'responsibleEPDPhone',
-                  'subtype',
-                  'type',
-                  'addedBy',
-                  'build',
-                  'CEAALink',
-                  'code',
-                  'commodity',
-                  'currentPhaseName',
-                  'dateAdded',
-                  'dateCommentsClosed',
-                  'dateCommentsOpen',
-                  'dateUpdated',
-                  'decisionDate',
-                  'duration',
-                  'eaoMember',
-                  'epicProjectID',
-                  'fedElecDist',
-                  'isTermsAgreed',
-                  'overallProgress',
-                  'primaryContact',
-                  'proMember',
-                  'provElecDist',
-                  'sector',
-                  'shortName',
-                  'status',
-                  'substitution',
-                  'updatedBy',
-                  'read',
-                  'write',
-                  'delete'
-                  ];
+var auth = require("../helpers/auth");
+var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('default');
+var mongoose = require('mongoose');
+var qs = require('qs');
+var Actions = require('../helpers/actions');
+var Utils = require('../helpers/utils');
+var request = require('request');
+var tagList = [
+  'CEAAInvolvement',
+  'CELead',
+  'CELeadEmail',
+  'CELeadPhone',
+  'centroid',
+  'description',
+  'eacDecision',
+  'location',
+  'name',
+  'projectLead',
+  'projectLeadEmail',
+  'projectLeadPhone',
+  'proponent',
+  'region',
+  'responsibleEPD',
+  'responsibleEPDEmail',
+  'responsibleEPDPhone',
+  'subtype',
+  'type',
+  'addedBy',
+  'build',
+  'CEAALink',
+  'code',
+  'commodity',
+  'currentPhaseName',
+  'dateAdded',
+  'dateCommentsClosed',
+  'dateCommentsOpen',
+  'dateUpdated',
+  'decisionDate',
+  'duration',
+  'eaoMember',
+  'epicProjectID',
+  'fedElecDist',
+  'isTermsAgreed',
+  'overallProgress',
+  'primaryContact',
+  'proMember',
+  'provElecDist',
+  'sector',
+  'shortName',
+  'status',
+  'substitution',
+  'updatedBy',
+  'read',
+  'write',
+  'delete'
+];
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
@@ -68,7 +68,7 @@ exports.protectedOptions = function (args, res, rest) {
 
 exports.publicHead = function (args, res, next) {
   // Build match query if on ProjId route
-  var query   = {};
+  var query = {};
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
@@ -87,28 +87,28 @@ exports.publicHead = function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, {"_schemaName": "Project"});
+  _.assignIn(query, { "_schemaName": "Project" });
 
   handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
     Utils.runDataQuery('Project',
-                      ['public'],
-                      query,
-                      requestedFields, // Fields
-                      null, // sort warmup
-                      null, // sort
-                      null, // skip
-                      1000000, // limit
-                      true,
-                      commentPeriodPipeline) // count
+      ['public'],
+      query,
+      requestedFields, // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      1000000, // limit
+      true,
+      commentPeriodPipeline) // count
       .then(function (data) {
         // /api/comment/ route, return 200 OK with 0 items if necessary
         if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
-          res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
+          res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
           return Actions.sendResponse(res, 200, data);
         } else {
           return Actions.sendResponse(res, 404, data);
         }
-    });
+      });
   }, function (error) {
     return Actions.sendResponse(res, 400, error);
   });
@@ -116,9 +116,9 @@ exports.publicHead = function (args, res, next) {
 
 exports.publicGet = function (args, res, next) {
   // Build match query if on projId route
-  var query   = {};
-  var skip    = null;
-  var limit   = null;
+  var query = {};
+  var skip = null;
+  var limit = null;
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
   tagList.push('_id');
@@ -140,75 +140,66 @@ exports.publicGet = function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, {"_schemaName": "Project"});
+  _.assignIn(query, { "_schemaName": "Project" });
 
   handleCommentPeriodDateQueryParameters(args, tagList, function () {
     Utils.runDataQuery('Project',
-                      ['public'],
-                      query,
-                      requestedFields, // Fields
-                      null, // sort warmup
-                      null, // sort
-                      skip, // skip
-                      limit, // limit
-                      false) // count
+      ['public'],
+      query,
+      requestedFields, // Fields
+      null, // sort warmup
+      null, // sort
+      skip, // skip
+      limit, // limit
+      false) // count
       .then(function (data) {
         return Actions.sendResponse(res, 200, data);
-    });
+      });
   }, function (error) {
     return Actions.sendResponse(res, 400, error);
   });
 };
 
-exports.protectedGet = function(args, res, next) {
-  var self        = this;
-  var skip        = null;
-  var limit       = null;
-  var role        = args.swagger.params.auth_payload.realm_access.roles;
-
-  var Project = mongoose.model('Project');
+exports.protectedGet = async function (args, res, next) {
+  var skip = null, limit = null, sort = {};
+  var query = {};
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on projId route
-  var query = {};
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
-    // Could be a bunch of results - enable pagination
-    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
-    skip = processedParameters.skip;
-    limit = processedParameters.limit;
-
     try {
       query = addStandardQueryFilters(query, args);
     } catch (error) {
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
-  
+  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    args.swagger.params.sortBy.value.forEach(function (value) {
+      var order_by = value.charAt(0) == '-' ? -1 : 1;
+      var sort_by = value.slice(1);
+      sort[sort_by] = order_by;
+    }, this);
+  }
+  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+  skip = processedParameters.skip;
+  limit = processedParameters.limit;
+
   // Set query type
-  _.assignIn(query, {"_schemaName": "Project"});
+  _.assignIn(query, { "_schemaName": "Project" });
 
-  // Unless they specifically ask for it, hide deleted results.
-  // if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
-  //   _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  // } else {
-  //   
-  // }
-
-  Utils.runDataQuery('Project',
-                    role,
-                    query,
-                    getSanitizedFields(args.swagger.params.fields.value), // Fields
-                    null, // sort warmup
-                    null, // sort
-                    skip, // skip
-                    limit, // limit
-                    false) // count
-  .then(function (data) {
-    return Actions.sendResponse(res, 200, data);
-  });
+  var data = await Utils.runDataQuery('Project',
+  args.swagger.params.auth_payload.realm_access.roles,
+    query,
+    getSanitizedFields(args.swagger.params.fields.value), // Fields
+    null, // sort warmup
+    sort, // sort
+    skip, // skip
+    limit, // limit
+    true) // count
+  return Actions.sendResponse(res, 200, data);
 };
 
 exports.protectedHead = function (args, res, next) {
@@ -235,30 +226,30 @@ exports.protectedHead = function (args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    
+
   }
 
   // Set query type
-  _.assignIn(query, {"_schemaName": "Project"});
+  _.assignIn(query, { "_schemaName": "Project" });
 
   Utils.runDataQuery('Project',
-                    args.swagger.operation["x-security-scopes"],
-                    query,
-                    tagList, // Fields
-                    null, // sort warmup
-                    null, // sort
-                    null, // skip
-                    1000000, // limit
-                    true) // count
-  .then(function (data) {
-    // /api/comment/ route, return 200 OK with 0 items if necessary
-    if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
-      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items: 0);
-      return Actions.sendResponse(res, 200, data);
-    } else {
-      return Actions.sendResponse(res, 404, data);
-    }
-  });
+    args.swagger.operation["x-security-scopes"],
+    query,
+    tagList, // Fields
+    null, // sort warmup
+    null, // sort
+    null, // skip
+    1000000, // limit
+    true) // count
+    .then(function (data) {
+      // /api/comment/ route, return 200 OK with 0 items if necessary
+      if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
+        res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+        return Actions.sendResponse(res, 200, data);
+      } else {
+        return Actions.sendResponse(res, 404, data);
+      }
+    });
 };
 
 exports.protectedDelete = function (args, res, next) {
@@ -266,19 +257,19 @@ exports.protectedDelete = function (args, res, next) {
   defaultLog.info("Delete Project:", projId);
 
   var Project = mongoose.model('Project');
-  Project.findOne({_id: projId}, function (err, o) {
+  Project.findOne({ _id: projId }, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
 
       // Set the deleted flag.
       Actions.delete(o)
-      .then(function (deleted) {
-        // Deleted successfully
-        return Actions.sendResponse(res, 200, deleted);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, 400, err);
-      });
+        .then(function (deleted) {
+          // Deleted successfully
+          return Actions.sendResponse(res, 200, deleted);
+        }, function (err) {
+          // Error
+          return Actions.sendResponse(res, 400, err);
+        });
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
@@ -291,18 +282,18 @@ exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.project.value;
 
   // Get rid of the fields we don't need/setting later below.
-  delete(obj.areaHectares);
-  delete(obj.centroid);
-  delete(obj.purpose);
-  delete(obj.subpurpose);
-  delete(obj.type);
-  delete(obj.subtype);
-  delete(obj.status);
-  delete(obj.tenureStage);
-  delete(obj.location);
-  delete(obj.businessUnit);
-  delete(obj.cl_file);
-  delete(obj.client);
+  delete (obj.areaHectares);
+  delete (obj.centroid);
+  delete (obj.purpose);
+  delete (obj.subpurpose);
+  delete (obj.type);
+  delete (obj.subtype);
+  delete (obj.status);
+  delete (obj.tenureStage);
+  delete (obj.location);
+  delete (obj.businessUnit);
+  delete (obj.cl_file);
+  delete (obj.client);
 
   defaultLog.info("Incoming new object:", obj);
 
@@ -313,13 +304,13 @@ exports.protectedPost = function (args, res, next) {
   project._createdBy = args.swagger.params.auth_payload.preferred_username;
   project.createdDate = Date.now();
   project.save()
-  .then(function (theProject) {
-    return Actions.sendResponse(res, 200, theProject);
-  })
-  .catch(function (err) {
-    console.log("Error in API:", err);
-    return Actions.sendResponse(res, 400, err);
-  });
+    .then(function (theProject) {
+      return Actions.sendResponse(res, 200, theProject);
+    })
+    .catch(function (err) {
+      console.log("Error in API:", err);
+      return Actions.sendResponse(res, 400, err);
+    });
 };
 
 // Update an existing project
@@ -334,7 +325,7 @@ exports.protectedPut = async function (args, res, next) {
   // TODO sanitize/update audits.
 
   var Project = require('mongoose').model('Project');
-  Project.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
+  Project.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
       return Actions.sendResponse(res, 200, o);
@@ -351,16 +342,16 @@ exports.protectedPublish = function (args, res, next) {
   defaultLog.info("Publish Project:", objId);
 
   var Project = require('mongoose').model('Project');
-  Project.findOne({_id: objId}, function (err, o) {
+  Project.findOne({ _id: objId }, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
       return Actions.publish(o)
-      .then(function (published) {
-        return Actions.sendResponse(res, 200, published);
-      })
-      .catch(function (err) {
-        return Actions.sendResponse(res, err.code, err);
-      });
+        .then(function (published) {
+          return Actions.sendResponse(res, 200, published);
+        })
+        .catch(function (err) {
+          return Actions.sendResponse(res, err.code, err);
+        });
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
@@ -372,16 +363,16 @@ exports.protectedUnPublish = function (args, res, next) {
   defaultLog.info("UnPublish Project:", objId);
 
   var Project = require('mongoose').model('Project');
-  Project.findOne({_id: objId}, function (err, o) {
+  Project.findOne({ _id: objId }, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
       return Actions.unPublish(o)
-      .then(function (unpublished) {
-        return Actions.sendResponse(res, 200, unpublished);
-      })
-      .catch(function (err) {
-        return Actions.sendResponse(res, err.code, err);
-      });
+        .then(function (unpublished) {
+          return Actions.sendResponse(res, 200, unpublished);
+        })
+        .catch(function (err) {
+          return Actions.sendResponse(res, err.code, err);
+        });
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
@@ -397,14 +388,14 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpStart.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: [ "$commentPeriods.startDate", new Date(queryString.eq) ] });
+      commentPeriodDates.push({ $eq: ["$commentPeriods.startDate", new Date(queryString.eq)] });
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: [ "$commentPeriods.startDate", new Date(queryString.since) ] });
+        commentPeriodDates.push({ $gte: ["$commentPeriods.startDate", new Date(queryString.since)] });
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: [ "$commentPeriods.startDate", new Date(queryString.until) ] });
+        commentPeriodDates.push({ $lte: ["$commentPeriods.startDate", new Date(queryString.until)] });
       }
     }
   }
@@ -412,14 +403,14 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpEnd.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: [ "$commentPeriods.endDate", new Date(queryString.eq) ] });
+      commentPeriodDates.push({ $eq: ["$commentPeriods.endDate", new Date(queryString.eq)] });
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: [ "$commentPeriods.endDate", new Date(queryString.since) ] });
+        commentPeriodDates.push({ $gte: ["$commentPeriods.endDate", new Date(queryString.since)] });
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: [ "$commentPeriods.endDate", new Date(queryString.until) ] });
+        commentPeriodDates.push({ $lte: ["$commentPeriods.endDate", new Date(queryString.until)] });
       }
     }
   }
@@ -429,20 +420,20 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
     // NB: These are in reverse order in order to unshift into the pipline in proper order,
     // since we are querying commentPeriods and then left-joining the project query.
     var projection = {};
-    var fields = [...['_id','isDeleted','tags'], ...requestedFields];
+    var fields = [...['_id', 'isDeleted', 'tags'], ...requestedFields];
     for (let f of fields) {
       projection[f] = 1;
     }
 
     if (commentPeriodDates.length > 1) {
-      projection.result = { $and: [ commentPeriodDates.pop(), commentPeriodDates.pop() ]};
+      projection.result = { $and: [commentPeriodDates.pop(), commentPeriodDates.pop()] };
     } else if (commentPeriodDates.length > 0) {
       projection.result = commentPeriodDates.pop();
     }
 
     pipelineSteps = [
       {
-        $match : { result : true }
+        $match: { result: true }
       },
       {
         $project: projection
@@ -481,18 +472,18 @@ var addStandardQueryFilters = function (query, args) {
       });
     } else if (queryString.eq) {
       _.assignIn(query, {
-        publishDate: { $eq: new Date(queryString.eq)}
+        publishDate: { $eq: new Date(queryString.eq) }
       });
     } else {
       // Which param was set?
       if (queryString.since) {
         _.assignIn(query, {
-          publishDate: { $gte: new Date(queryString.since)}
+          publishDate: { $gte: new Date(queryString.since) }
         });
       }
       if (queryString.until) {
         _.assignIn(query, {
-          publishDate: { $lte: new Date(queryString.until)}
+          publishDate: { $lte: new Date(queryString.until) }
         });
       }
     }
@@ -568,18 +559,18 @@ var addStandardQueryFilters = function (query, args) {
     } else if (queryString.eq) {
       // invalid or not specified, treat as equal
       _.assignIn(query, {
-        areaHectares: { $eq: parseFloat(queryString.eq, 10)}
+        areaHectares: { $eq: parseFloat(queryString.eq, 10) }
       });
     } else {
       // Which param was set?
       if (queryString.gte) {
         _.assignIn(query, {
-          areaHectares: { $gte: parseFloat(queryString.gte, 10)}
+          areaHectares: { $gte: parseFloat(queryString.gte, 10) }
         });
       }
       if (queryString.lte) {
         _.assignIn(query, {
-          areaHectares: { $lte: parseFloat(queryString.lte, 10)}
+          areaHectares: { $lte: parseFloat(queryString.lte, 10) }
         });
       }
     }
@@ -595,7 +586,7 @@ var addStandardQueryFilters = function (query, args) {
   if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate !== undefined) {
     var queryString = qs.parse(args.swagger.params.statusHistoryEffectiveDate.value);
     _.assignIn(query, {
-      $or: [ { statusHistoryEffectiveDate: null }, { statusHistoryEffectiveDate: { $gte: parseInt(queryString.gte, 10) } } ]
+      $or: [{ statusHistoryEffectiveDate: null }, { statusHistoryEffectiveDate: { $gte: parseInt(queryString.gte, 10) } }]
     });
   }
   return query;
