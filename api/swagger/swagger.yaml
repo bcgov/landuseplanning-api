@@ -126,6 +126,21 @@ definitions:
       - responsibleEPDPhone
       - type
       - read
+  TopicSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +name,-name
+    enum: &projectSortByFields
+      - +name
+      - -name
+      - +type
+      - -type
+      - +region
+      - -region
+      - +currentPhaseName
+      - -currentPhaseName
+      - +eacDecision
+      - -eacDecision
 
 ### Project Definitions
   FeatureId:
@@ -767,6 +782,14 @@ paths:
           description: "Query project publish dates.  Multiple parameter instaces is supported."
           type: string
           format: date-time
+        - in: query
+          name: sortBy
+          description: "Projects to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *projectSortByFields
       responses:
         "200":
           description: "Success"
