@@ -8,6 +8,8 @@ module.exports = require('../models')('Audit', {
     deletedBy     : { type: String, default: null },
     performedBy   : { type: String, default: null },
 
+    timestamp     : { type: Date, default: Date.now() },
+
     // Permissions
     write         : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     read          : [{ type: String, trim: true, default: '["project-system-admin"]' }],
