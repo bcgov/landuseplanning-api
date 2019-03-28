@@ -3,6 +3,8 @@ module.exports = require('../models')('Audit', {
     action        : { type: String, default: null },
     meta          : { type: String, default: null },
 
+    _objectSchema : { type: String, default: null },
+
     addedBy       : { type: String, default: null },
     updatedBy     : { type: String, default: null },
     deletedBy     : { type: String, default: null },
