@@ -32,6 +32,9 @@ exports.protectedPost = async function (args, res, next) {
     topic._schemaName = 'Topic';
     topic.read = ['project-system-admin']
 
+    // Change this to use guid instead of idir/user
+    topic._addedBy = args.swagger.params.auth_payload.preferred_username;
+
     // Define security tag defaults
     var theTopic = await topic.save()
     return Actions.sendResponse(res, 200, theTopic);
@@ -80,8 +83,12 @@ exports.protectedPut = async function (args, res, next) {
 
     defaultLog.info("Incoming updated object:", obj);
 
-    var commentperiod = require('mongoose').model('Topic');
-    var data = await commentperiod.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
+    var topic = require('mongoose').model('Topic');
+
+    // Change this to use guid instead of idir/user
+    topic._updatedBy = args.swagger.params.auth_payload.preferred_username;
+
+    var data = await topic.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
     return Actions.sendResponse(res, 200, data);
 }
 
@@ -89,7 +96,11 @@ exports.protectedDelete = async function (args, res, next) {
     var objId = args.swagger.params.topicId.value;
     defaultLog.info("Delete Topic:", objId);
 
-    var commentperiod = require('mongoose').model('Topic');
-    var data = await commentperiod.remove({ _id: objId }).exec();
+    var topic = require('mongoose').model('Topic');
+
+    // Change this to use guid instead of idir/user
+    topic._deletedBy = args.swagger.params.auth_payload.preferred_username;
+
+    var data = await topic.remove({ _id: objId }).exec();
     return Actions.sendResponse(res, 200, data);
 };

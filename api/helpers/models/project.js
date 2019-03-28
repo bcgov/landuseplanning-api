@@ -47,10 +47,9 @@
     shortName               : { type: String, default: '' },
     status                  : { type: String, default: '' },
     substitution            : { type: Boolean, default: false },
-    updatedBy               : { type: String, default: '' },
 
     // Permissions
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     write                   : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     delete                  : [{ type: String, trim: true, default: '["project-system-admin"]' }],
-});
+}, 'epic');

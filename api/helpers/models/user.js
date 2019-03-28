@@ -24,4 +24,4 @@ module.exports = require ('../models')('User', {
     country                 : { type:String, default: '' },
     postalCode              : { type:String, default: '' },
     notes                   : { type:String, default: '' },
-});
+}, 'epic');

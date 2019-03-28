@@ -35,4 +35,4 @@
     isDeleted     : { type: Boolean, default: false },
     // Which EAGLE application does this shape belong to?
     applicationID : { type:'ObjectId', ref:'Application', default:null}
-});
+}, 'epic');

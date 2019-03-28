@@ -17,7 +17,8 @@ var genSchema = function (name, definition) {
     var virtuals = definition.virtuals__;
     var i = definition.indexes__;
     var s = definition.statics__;
-    var p = definition.presave__;
+    var pre = definition.presave__;
+    var post = definition.postsave__;
     definition.methods__ = null;
     definition.virtuals__ = null;
     definition.indexes__ = null;
@@ -47,6 +48,7 @@ var genSchema = function (name, definition) {
     // ids are unbound from their model types
     //
     definition._schemaName = {type:String, default:name};
+
     //
     // create the schema
     //
@@ -54,7 +56,32 @@ var genSchema = function (name, definition) {
     //
     // perform post process stuff
     //
-    if (p) schema.pre ('save', p);
+    // Postsave hook
+    if (pre) {
+      schema.pre('save', pre);
+    }
+    if (post) {
+      schema.post ('save', post);
+    } else {
+      // Default - no save hook for audit
+      if (name !== 'Audit') {
+        // Add the middle ware info
+        definition._updatedBy = { type:String, default: "system" };
+        definition._addedBy = { type:String, default: "system" };
+        definition._deletedBy = { type:String, default: "system" };
+
+        schema.post('save', function (doc) {
+          var Audit = mongoose.model('Audit');
+          var audit = new Audit({
+                                  _objectSchema: doc._schemaName,
+                                  objId: doc._id,
+                                  updatedBy: doc._updatedBy,
+                                  addedBy: doc._addedBy
+                                });
+          audit.save();
+        });
+      }
+    }
     if (s) _.extend (schema.statics, s);
     if (m) _.extend (schema.methods, m);
     // if (i) _.each (i, function (d) { schema.index (d); });
@@ -75,10 +102,10 @@ var genSchema = function (name, definition) {
     return schema;
 };
 
-module.exports = function (name, definition) {
+module.exports = function (name, definition, collection) {
     if (!name || !definition) {
         console.error ('No name or definition supplied when building schema');
         return;
     }
-    return mongoose.model (name, genSchema  (name, definition), 'epic');
+    return mongoose.model (name, genSchema  (name, definition), collection);
 };

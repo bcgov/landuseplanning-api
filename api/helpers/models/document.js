@@ -1,5 +1,4 @@
  module.exports = require ('../models')('Document', {
-    _addedBy         : { type: String, default:null },
     _application     : { type:'ObjectId', ref:'Application', default:null },
     _comment         : { type:'ObjectId', ref:'CommentPeriod', default:null },
     documentFileName : { type:String, default:'' },
@@ -11,4 +10,4 @@
     isDeleted        : { type: Boolean, default: false },
     passedAVCheck    : { type: Boolean, default: false },
     internalMime     : { type:String, default:'' }
-});
+}, 'epic');
