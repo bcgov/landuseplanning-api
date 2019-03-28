@@ -1,7 +1,6 @@
 module.exports = require('../models')('CommentPeriod', {
     __v                  : { type: Number, default: "" },
     _schemaName          : { type: String, default: "" },
-    addedBy              : { type: String, default: "" },
     additionalText       : { type: String, default: "" },
     ceaaAdditionalText   : { type: String, default: "" },
     ceaaInformationLabel : { type: String, default: "" },
@@ -33,7 +32,6 @@ module.exports = require('../models')('CommentPeriod', {
     rangeType            : { type: String, default: "" },
     relatedDocuments     : { type: String, default: "" },
     resolvedPercent      : { type: Number, default: "" },
-    updatedBy            : { type: String, default: "" },
     userCan              : { type: String, default: "" },
     vettedPercent        : { type: Number, default: "" },
     vettingRoles         : [{ type: String, default: "" }],
@@ -42,4 +40,4 @@ module.exports = require('../models')('CommentPeriod', {
     read                : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     write               : [{ type: String, trim: true, default: '[["project-system-admin"]]' }],
     delete              : [{ type: String, trim: true, default: '[["project-system-admin"]]' }]
-});
+}, 'epic');

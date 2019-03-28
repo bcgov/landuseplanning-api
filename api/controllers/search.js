@@ -7,7 +7,7 @@ var Utils = require('../helpers/utils');
 var request = require('request');
 var _accessToken = null;
 
-var searchCollection = async function (keywords, collection, pageNum, pageSize, project, sortField, sortDirection) {
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -21,10 +21,6 @@ var searchCollection = async function (keywords, collection, pageNum, pageSize, 
 
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
-  console.log("sort:", sortingValue);
-  console.log("pageNum:", pageNum);
-  console.log("pageSize:", pageSize);
-  // TODO MAKE ROLES COME IN HERE
 
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
@@ -39,7 +35,7 @@ var searchCollection = async function (keywords, collection, pageNum, pageSize, 
                   $map: {
                     input: "$read",
                     as: "fieldTag",
-                    in: { $setIsSubset: [["$$fieldTag"], ['public']] }
+                    in: { $setIsSubset: [["$$fieldTag"], roles] }
                   }
                 }
               },
@@ -82,6 +78,14 @@ var searchCollection = async function (keywords, collection, pageNum, pageSize, 
 }
 
 exports.publicGet = async function (args, res, next) {
+  executeQuery(args, res, next);
+};
+
+exports.protectedGet = function (args, res, next) {
+  executeQuery(args, res, next);
+};
+
+var executeQuery = async function (args, res, next) {
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
   var project = args.swagger.params.project.value;
@@ -95,6 +99,10 @@ exports.publicGet = async function (args, res, next) {
   defaultLog.info("pageSize:", pageSize);
   defaultLog.info("sortBy:", sortBy);
 
+  var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  Utils.recordAction('search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
+
   var sortDirection = undefined;
   var sortField = undefined;
 
@@ -106,9 +114,6 @@ exports.publicGet = async function (args, res, next) {
 
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
-  console.log("sort:", sortingValue);
-  console.log("pageNum:", pageNum);
-  console.log("pageSize:", pageSize);
 
   defaultLog.info("sortField:", sortField);
   defaultLog.info("sortDirection:", sortDirection);
@@ -128,7 +133,7 @@ exports.publicGet = async function (args, res, next) {
                 $map: {
                   input: "$read",
                   as: "fieldTag",
-                  in: { $setIsSubset: [["$$fieldTag"], ['public']] }
+                  in: { $setIsSubset: [["$$fieldTag"], roles] }
                 }
               }
             },
@@ -165,7 +170,7 @@ exports.publicGet = async function (args, res, next) {
     ])
     return Actions.sendResponse(res, 200, data);
   } else {
-    var data = await searchCollection(keywords, dataset, pageNum, pageSize, project, sortField, sortDirection)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection)
     return Actions.sendResponse(res, 200, data);
   }
 };

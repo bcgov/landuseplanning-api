@@ -3938,6 +3938,81 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+
+  /search:
+    x-swagger-router-controller: search
+    options:
+      tags:
+        - search
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on search Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - search
+      summary: "Get a list of things related to these keywords"
+      operationId: protectedGet
+      description: "Retreiving items relating to the given keywords."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - in: query
+          name: keywords
+          description: "Full Text Search based on keywords"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: dataset
+          description: "Dataset to search on"
+          type: string
+          required: false
+        - in: query
+          name: project
+          description: "Project to specifically query"
+          type: string
+          required: false
+        - in: query
+          name: pageNum
+          description: "Page number to skip to."
+          type: number
+          required: false
+        - in: query
+          name: pageSize
+          description: "# Records to limit"
+          type: number
+          required: false
+        - in: query
+          name: sortBy
+          description: "Fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *searchSortByFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SearchObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
   /public/search:
     x-swagger-router-controller: search
     options:
@@ -3960,7 +4035,7 @@ paths:
         - search
       summary: "Get a list of things related to these keywords"
       operationId: publicGet
-      description: "Retreiving items relating to the givenm keywords."
+      description: "Retreiving items relating to the given keywords."
       parameters:
         - in: query
           name: keywords
