@@ -44,7 +44,7 @@
     proMember               : { type: String, default: '' },
     provElecDist            : { type: String, default: '' },
     sector                  : { type: String, default: '' },
-    shortName               : { type: String, default: '' },
+    shortName               : { type: String, default: '', index: true },
     status                  : { type: String, default: '' },
     substitution            : { type: Boolean, default: false },
 

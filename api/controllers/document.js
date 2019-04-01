@@ -176,8 +176,10 @@ exports.protectedGet = function(args, res, next) {
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   } else {
-    
+    _.assignIn(query, { isDeleted: { $exists: true, $ne: true } });
   }
+
+  console.log("QUERY:", query);
   // Set query type
   _.assignIn(query, {"_schemaName": "Document"});
 
@@ -441,7 +443,7 @@ exports.protectedPut = function (args, res, next) {
         doc._comment = _comment;
         doc.displayName = displayName;
         doc.passedAVCheck = true;
-        var Document = require('mongoose').model('Document');
+        var Document = mongoose.model('Document');
         Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
           if (o) {
             // defaultLog.info("o:", o);
@@ -460,3 +462,24 @@ exports.protectedPut = function (args, res, next) {
     return Actions.sendResponse(res, 400, e);
   }
 }
+
+//  Delete a Document
+exports.protectedDelete = async function (args, res, next) {
+  var objId = args.swagger.params.docId.value;
+  defaultLog.info("Delete Document:", objId);
+
+  var document = mongoose.model('Document');
+  document.findOne({ _id: objId }, async function (err, o) {
+    if (o) {
+      defaultLog.info("o:", o);
+
+      // Set the deleted flag.
+      var deleted = await Actions.delete(o)
+      // Deleted successfully
+      return Actions.sendResponse(res, 200, deleted);
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
+};

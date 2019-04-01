@@ -26,7 +26,15 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(
       [
-        { $match: { _schemaName: collection, ...(searchProperties ? searchProperties : undefined), ...(properties ? properties : undefined) } },
+        { $match: { _schemaName: collection,
+                    ...(searchProperties ? searchProperties : undefined),
+                    ...(properties ? properties : undefined),
+                    $or: [
+                        { isDeleted: { $exists:false } },
+                        { isDeleted: false }
+                      ]
+                  }
+        },
         {
           $redact: {
             $cond: {
@@ -100,6 +108,10 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortBy:", sortBy);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  console.log("******************************************************************");
+  console.log(roles);
+  console.log("******************************************************************");
 
   Utils.recordAction('search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
 
