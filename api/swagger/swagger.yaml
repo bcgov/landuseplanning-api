@@ -341,6 +341,43 @@ definitions:
       - +documentFileSize
       - -documentFileSize
 
+  AuditObject:
+    type: object
+    properties:
+      keywords:
+        type: string
+        example: "Project Name"
+  AuditSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +score,-score
+    enum: &auditSortByFields
+      - +score
+      - -score
+      - +displayName
+      - -displayName
+      - +datePosted
+      - -datePosted
+      - +documentType
+      - -documentType
+      - +documentFileSize
+      - -documentFileSize
+  AuditFields:
+    type: string
+    description: "Optional fields to return."
+    example: startDate|endDate|description
+    #TODO: Fix enums
+    enum: &auditFields
+      - _schemaName
+      - objId
+      - action
+      - meta
+      - _objectSchema
+      - addedBy
+      - updatedBy
+      - deletedBy
+      - performedBy
+      - timestamp
 
 ### Organization Definitions
   OrgId:
