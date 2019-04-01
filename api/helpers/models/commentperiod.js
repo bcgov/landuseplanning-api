@@ -1,6 +1,5 @@
 module.exports = require('../models')('CommentPeriod', {
     __v                  : { type: Number, default: "" },
-    _schemaName          : { type: String, default: "" },
     additionalText       : { type: String, default: "" },
     ceaaAdditionalText   : { type: String, default: "" },
     ceaaInformationLabel : { type: String, default: "" },

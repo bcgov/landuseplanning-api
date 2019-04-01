@@ -4083,6 +4083,91 @@ paths:
           schema:
             $ref: "#/definitions/Error"
 
+### Audit
+  /audit:
+    x-swagger-router-controller: audit
+    options:
+      tags:
+        - audit
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on audit Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AuditObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - audit
+      summary: "Get a list of things related to these keywords"
+      operationId: protectedGet
+      description: "Retreiving items relating to the given keywords."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+      parameters:
+        - in: query
+          name: keywords
+          description: "Full Text Audit based on keywords"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Audit fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *auditFields
+        - in: query
+          name: action
+          description: "Dataset to search on"
+          type: string
+          required: false
+        - in: query
+          name: timestamp
+          description: "Timestamp filtering"
+          type: string
+          required: false
+        - in: query
+          name: pageNum
+          description: "Page number to skip to."
+          type: number
+          required: false
+        - in: query
+          name: pageSize
+          description: "# Records to limit"
+          type: number
+          required: false
+        - in: query
+          name: sortBy
+          description: "Fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *auditSortByFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/AuditObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
 ### Topic Routes
   /topic:
     x-swagger-router-controller: topic
