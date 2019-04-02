@@ -131,7 +131,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortDirection:", sortDirection);
 
   if (dataset === 'All') {
-    var collectionObj = mongoose.model("Audit");
+    var collectionObj = mongoose.model("Project");
     var data = await collectionObj.aggregate([
       {
         // TODO Include only models to which we want to search against, ie, documents, VCs and projects.
