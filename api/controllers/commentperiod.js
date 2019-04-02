@@ -141,7 +141,7 @@ exports.protectedGet = async function (args, res, next) {
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on CommentPeriodId route
-  var query = {}, sort = {};
+  var query = {}, sort = {}, count = false;
   if (args.swagger.params.commentPeriodId) {
     query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
   }
@@ -162,6 +162,10 @@ exports.protectedGet = async function (args, res, next) {
       }
     }, this);
   }
+  if (args.swagger.params.count && args.swagger.params.count.value) {
+    console.log(args.swagger.params.sortBy.value);
+    count = args.swagger.params.sortBy.value;
+  }
 
   var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
   skip = processedParameters.skip;
@@ -178,7 +182,7 @@ exports.protectedGet = async function (args, res, next) {
     sort, // sort
     skip, // skip
     limit, // limit
-    true) // count
+    count) // count
   return Actions.sendResponse(res, 200, data);
 };
 

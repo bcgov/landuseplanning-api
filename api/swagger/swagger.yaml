@@ -265,7 +265,7 @@ definitions:
     description: "Optional fields to return."
     example: startDate|endDate|description
     #TODO: Fix enums
-    enum: &commentperiodFields
+    enum: &commentPeriodFields
       - __v
       - _schemaName
       - addedBy
@@ -3579,6 +3579,11 @@ paths:
           required: false
           description: "Number of results per page (if 'pageNum' is specified)."
         - in: query
+          name: count
+          description: "Comment fields to sort by."
+          required: false
+          type: boolean
+        - in: query
           name: sortBy
           description: "Comment fields to sort by."
           required: false
@@ -3594,7 +3599,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentperiodFields
+            enum: *commentPeriodFields
       responses:
         "200":
           description: "Success"
@@ -3697,7 +3702,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentperiodFields
+            enum: *commentPeriodFields
       responses:
         "200":
           description: "Success"
@@ -3904,7 +3909,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentperiodFields
+            enum: *commentPeriodFields
         - in: query
           name: sortBy
           description: "Comment fields to sort by."
