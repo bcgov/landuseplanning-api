@@ -15,6 +15,7 @@ var getSanitizedFields = function (fields) {
       'dateUpdated',
       'isAnonymous',
       'location',
+      'eaoStatus',
       'period',
       'read',
       'write',
@@ -122,10 +123,9 @@ exports.publicGet = async function (args, res, next) {
 };
 
 exports.protectedHead = async function (args, res, next) {
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  var skip = null, limit = null;
+  var sort = {}, query = {};
 
-  // Build match query if on CommentPeriodId route
-  var query = {};
   if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
   }
@@ -163,55 +163,45 @@ exports.protectedHead = async function (args, res, next) {
 exports.protectedGet = async function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
-
-  // Unless they specifically ask for it, don't return deleted comment(s).
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value === true) {
-    _.assignIn(query, { isDeleted: true });
-  } else {
-
-  }
+  var count = false;
 
   // Build match query if on CommentId route.
-  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.CommentId.value, query);
-  } else {
-    if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
-      query = Utils.buildQuery("_commentPeriod", args.swagger.params._commentPeriod.value, query);
-    }
+  if (args.swagger.params.commentId && args.swagger.params.commentId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.commentId.value, query);
+  }
+  if (args.swagger.params.period && args.swagger.params.period.value) {
 
-    if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-      args.swagger.params.sortBy.value.forEach(function (value) {
-        var order_by = value.charAt(0) == '-' ? -1 : 1;
-        var sort_by = value.slice(1);
-        // only accept certain fields
-        switch (sort_by) {
-          case 'commentStatus':
-          case 'dateAdded':
-          case 'contactName':
-            sort[sort_by] = order_by;
-            break;
-        }
-      }, this);
-    }
-
-    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
-    skip = processedParameters.skip;
-    limit = processedParameters.limit;
+    _.assignIn(query, { period: mongoose.Types.ObjectId(args.swagger.params.period.value) });
+  }
+  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    args.swagger.params.sortBy.value.forEach(function (value) {
+      var order_by = value.charAt(0) == '-' ? -1 : 1;
+      var sort_by = value.slice(1);
+      sort[sort_by] = order_by;
+    }, this);
   }
 
-  const fields = getSanitizedFields(args.swagger.params.fields.value);
+  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+  skip = processedParameters.skip;
+  limit = processedParameters.limit;
+
+  if (args.swagger.params.count && args.swagger.params.count.value) {
+    count = args.swagger.params.count.value;
+  }
+
   // Set query type
   _.assignIn(query, { "_schemaName": "Comment" });
 
+
   var data = await Utils.runDataQuery('Comment',
-    args.swagger.operation["x-security-scopes"],
+    args.swagger.params.auth_payload.realm_access.roles,
     query,
-    fields, // Fields
-    sortWarmUp(sort, fields),
+    getSanitizedFields(args.swagger.params.fields.value), // Fields
+    null,
     sort, // sort
     skip, // skip
     limit, // limit
-    false) // count
+    count); // count
   return Actions.sendResponse(res, 200, data);
 };
 
@@ -340,4 +330,4 @@ exports.protectedUnPublish = async function (args, res, next) {
       return Actions.sendResponse(res, 404, {});
     }
   });
-};
+}
