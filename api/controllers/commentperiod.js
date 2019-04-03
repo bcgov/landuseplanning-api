@@ -163,8 +163,7 @@ exports.protectedGet = async function (args, res, next) {
     }, this);
   }
   if (args.swagger.params.count && args.swagger.params.count.value) {
-    console.log(args.swagger.params.sortBy.value);
-    count = args.swagger.params.sortBy.value;
+    count = args.swagger.params.count.value;
   }
 
   var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);

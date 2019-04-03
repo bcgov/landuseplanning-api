@@ -232,6 +232,7 @@ definitions:
       - 'dateUpdated'
       - 'isAnonymous'
       - 'location'
+      - 'eaoStatus'
       - 'period'
       - 'read'
       - 'write'
@@ -3087,16 +3088,11 @@ paths:
         - in: query
           name: period
           description: "Comments relating to a particular Comment Period"
-          type: array
+          type: string
           required: false
           collectionFormat: pipes
           items:
             type: string
-        - in: query
-          name: isDeleted
-          type: boolean
-          required: false
-          description: "Comments that are deleted or not"
         - in: query
           name: fields
           description: "Comment fields to return."
@@ -3116,6 +3112,11 @@ paths:
           type: number
           required: false
           description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: count
+          description: "Enables/Disables count. Query count=true to enable."
+          required: false
+          type: boolean
         - in: query
           name: sortBy
           description: "Comment fields to sort by."
@@ -3580,7 +3581,7 @@ paths:
           description: "Number of results per page (if 'pageNum' is specified)."
         - in: query
           name: count
-          description: "Comment fields to sort by."
+          description: "Enables/Disables count. Query count=true to enable."
           required: false
           type: boolean
         - in: query

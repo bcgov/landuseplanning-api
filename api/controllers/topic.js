@@ -41,8 +41,7 @@ exports.protectedPost = async function (args, res, next) {
 };
 
 exports.protectedGet = async function (args, res, next) {
-    var skip = null, limit = null, sort = {};
-    var query = {};
+    var skip = null, limit = null, sort = {}, query = {};
 
     if (args.swagger.params.topicId && args.swagger.params.topicId.value) {
         query = Utils.buildQuery("_id", args.swagger.params.topicId.value, query);
