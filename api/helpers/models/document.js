@@ -1,13 +1,22 @@
  module.exports = require ('../models')('Document', {
-    _application     : { type:'ObjectId', ref:'Application', default:null },
+    project     : { type:'ObjectId', ref:'Project', default:null },
     _comment         : { type:'ObjectId', ref:'CommentPeriod', default:null },
     documentFileName : { type:String, default:'' },
     // Note: Default on tag property is purely for display only, they have no real effect on the model
     // This must be done in the code.
-    tags             : [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
+    read             : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
+    write            : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
+    delete           : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
     displayName      : { type:String, default:'' },
+    documentName      : { type:String, default:'' },
     internalURL      : { type:String, default:'' },
-    isDeleted        : { type: Boolean, default: false },
     passedAVCheck    : { type: Boolean, default: false },
-    internalMime     : { type:String, default:'' }
+    internalMime     : { type:String, default:'' },
+    documentDate     : { type: Date, default: Date.now() },
+    uploadDate       : { type: Date, default: Date.now() },
+    milestone        : { type:String, default:'' },
+    type             : { type:String, default:'' },
+
+    documentAuthor   : { type:String, default:'' } // LEGACY
+
 }, 'epic');

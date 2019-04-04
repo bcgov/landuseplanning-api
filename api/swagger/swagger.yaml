@@ -1950,7 +1950,42 @@ paths:
           type: file
         - name: project
           in: formData
-          description: "The application to bind this document to."
+          description: "The project to bind this document to."
+          required: false
+          type: string
+        - name: type
+          in: formData
+          description: "The type of this document."
+          required: false
+          type: string
+        - name: milestone
+          in: formData
+          description: "The milestone of this document."
+          required: false
+          type: string
+        - name: documentDate
+          in: formData
+          description: "The documentDate of this document."
+          required: false
+          type: string
+        - name: uploadDate
+          in: formData
+          description: "The uploadDate of this document."
+          required: false
+          type: string
+        - name: documentName
+          in: formData
+          description: "The documentName of this document."
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: "The description of this document."
+          required: false
+          type: string
+        - name: labels
+          in: formData
+          description: "The labels of this document."
           required: false
           type: string
         - name: _comment
