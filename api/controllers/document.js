@@ -280,12 +280,11 @@ exports.protectedDownload = function(args, res, next) {
 
 //  Create a new document
 exports.protectedPost = function (args, res, next) {
-  console.log("Creating new object");
-  var _application  = args.swagger.params._application.value;
+  console.log("Creating new protected document object");
+  var project  = args.swagger.params.project.value;
   var _comment      = args.swagger.params._comment.value;
   var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
-
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
@@ -307,9 +306,20 @@ exports.protectedPost = function (args, res, next) {
         var Document = mongoose.model('Document');
         var doc = new Document();
         // Define security tag defaults
-        doc.tags = [['sysadmin']];
-        doc._application = _application;
+        doc.read = [['sysadmin']];
+        doc.write = [['sysadmin']];
+        doc.delete = [['sysadmin']];
+        doc.project = mongoose.Types.ObjectId(project);
         doc._comment = _comment;
+
+        doc.type = args.swagger.params.type.value;
+        doc.milestone = args.swagger.params.milestone.value;
+        doc.documentDate = args.swagger.params.documentDate.value;
+        doc.uploadDate = args.swagger.params.uploadDate.value;
+        doc.documentName = args.swagger.params.documentName.value;
+        doc.description = args.swagger.params.description.value;
+        doc.labels = args.swagger.params.labels.value;
+
         doc.displayName = displayName;
         doc.documentFileName = upfile.originalname;
         doc.internalMime = upfile.mimetype;
