@@ -94,6 +94,7 @@ exports.protectedGet = function (args, res, next) {
 };
 
 var executeQuery = async function (args, res, next) {
+  var _id = args.swagger.params._id.value;
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
   var project = args.swagger.params.project.value;
@@ -131,6 +132,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortDirection:", sortDirection);
 
   if (dataset === 'All') {
+    console.log("Searching Collection:", dataset);
     var collectionObj = mongoose.model("Project");
     var data = await collectionObj.aggregate([
       {
@@ -181,9 +183,40 @@ var executeQuery = async function (args, res, next) {
       }
     ])
     return Actions.sendResponse(res, 200, data);
-  } else {
+  } else if (dataset !== 'Item'){
+    console.log("Searching Collection:", dataset);
     var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection)
     return Actions.sendResponse(res, 200, data);
+  } else if (dataset === 'Item') {
+    var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
+    console.log({_id: args.swagger.params._id.value})
+    var data = await collectionObj.aggregate([
+      {
+          "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
+      },
+      {
+          $redact: {
+              $cond: {
+                  if: {
+                      $anyElementTrue: {
+                          $map: {
+                              input: "$read" ,
+                              as: "fieldTag",
+                              in: { $setIsSubset: [["$$fieldTag"], roles ] }
+                          }
+                      }
+                  },
+                  then: "$$KEEP",
+                  else: "$$PRUNE"
+              }
+          }
+      }
+    ]);
+    console.log("data:", data);
+    return Actions.sendResponse(res, 200, data);
+  } else {
+    console.log('Bad Request');
+    return Actions.sendResponse(res, 400, {});
   }
 };
 

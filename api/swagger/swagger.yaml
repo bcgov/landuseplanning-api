@@ -4051,6 +4051,13 @@ paths:
         - project-system-admin
       parameters:
         - in: query
+          name: _id
+          description: "Grab (via _id) specific document"
+          type: string
+          required: false
+          items:
+            type: string
+        - in: query
           name: keywords
           description: "Full Text Search based on keywords"
           type: string
@@ -4061,6 +4068,11 @@ paths:
         - in: query
           name: dataset
           description: "Dataset to search on"
+          type: string
+          required: false
+        - in: query
+          name: _schemaName
+          description: "Schema to search on"
           type: string
           required: false
         - in: query
