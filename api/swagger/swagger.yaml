@@ -1963,6 +1963,11 @@ paths:
           description: "The milestone of this document."
           required: false
           type: string
+        - name: documentAuthor
+          in: formData
+          description: "The documentAuthor of this document."
+          required: false
+          type: string
         - name: documentDate
           in: formData
           description: "The documentDate of this document."

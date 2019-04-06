@@ -16,6 +16,9 @@
     uploadDate       : { type: Date, default: Date.now() },
     milestone        : { type:String, default:'' },
     type             : { type:String, default:'' },
+    description      : { type:String, default:'' },
+
+    // TODO: Labels array
 
     documentAuthor   : { type:String, default:'' } // LEGACY
 

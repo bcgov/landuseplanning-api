@@ -313,6 +313,7 @@ exports.protectedPost = function (args, res, next) {
         doc._comment = _comment;
 
         doc.type = args.swagger.params.type.value;
+        doc.documentAuthor = args.swagger.params.documentAuthor.value;
         doc.milestone = args.swagger.params.milestone.value;
         doc.documentDate = args.swagger.params.documentDate.value;
         doc.uploadDate = args.swagger.params.uploadDate.value;
