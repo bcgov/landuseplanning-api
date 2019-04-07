@@ -3574,13 +3574,19 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: period
           in: body
           required: true
           schema:
             $ref: "#/definitions/CommentPeriodObject"
+        - in: query
+          name: projectId
+          type: string
+          required: true
+          description: "Id of the project"
       responses:
         "200":
           description: "Success"
