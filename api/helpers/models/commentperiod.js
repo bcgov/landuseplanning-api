@@ -1,3 +1,6 @@
+var mongoose = require('mongoose');
+var Mixed = mongoose.Schema.Types.Mixed;
+
 module.exports = require('../models')('CommentPeriod', {
     __v                  : { type: Number, default: "" },
     additionalText       : { type: String, default: "" },
@@ -21,7 +24,7 @@ module.exports = require('../models')('CommentPeriod', {
     isResolved           : { type: Boolean, default: "" },
     isVetted             : { type: String, default: "" },
     milestone            : { type: String, default: "" },
-    openHouses           : [{ type: Object, default: "" }],
+    openHouses           : [{ type: Mixed, default: {} }],
     periodType           : { type: String, default: "" },
     phase                : { type: String, default: "" },
     phaseName            : { type: String, default: "" },
@@ -36,7 +39,7 @@ module.exports = require('../models')('CommentPeriod', {
     vettingRoles         : [{ type: String, default: "" }],
 
     // Permissions
-    read                : [{ type: String, trim: true, default: '["project-system-admin"]' }],
-    write               : [{ type: String, trim: true, default: '[["project-system-admin"]]' }],
-    delete              : [{ type: String, trim: true, default: '[["project-system-admin"]]' }]
+    read                : [{ type: String, trim: true, default: 'sysadmin' }],
+    write               : [{ type: String, trim: true, default: 'sysadmin' }],
+    delete              : [{ type: String, trim: true, default: 'sysadmin' }]
 }, 'epic');

@@ -187,18 +187,29 @@ exports.protectedGet = async function (args, res, next) {
 
 //  Create a new CommentPeriod
 exports.protectedPost = async function (args, res, next) {
-  var obj = args.swagger.params._commentPeriod.value;
+  var obj = args.swagger.params.period.value;
+
   defaultLog.info("Incoming new object:", obj);
-  defaultLog.info("args.swagger.params.auth_payload:", args.swagger.params.auth_payload);
-  obj._addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  
 
   var CommentPeriod = mongoose.model('CommentPeriod');
-  var commentperiod = new CommentPeriod(obj);
 
-  // Define security tag defaults
-  commentperiod.tags = [['sysadmin']];
-  commentperiod._addedBy = args.swagger.params.auth_payload.preferred_username;
-  var c = await commentperiod.save()
+  var commentPeriod = new CommentPeriod({
+    _schemaName: 'CommentPeriod',
+    addedBy: args.swagger.params.auth_payload.preferred_username.value,
+    dateAdded: new Date(),
+    dateCompleted: obj.dateCompleted,
+    dateStarted: obj.dateStarted,
+    instructions: obj.instructions,
+    milestones: obj.milestones,
+    openHouses: obj.openHouses,
+    project: mongoose.Types.ObjectId(obj.project),
+    read: obj.read,
+    write: obj.write,
+    delete: obj.delete
+  });
+
+  var c = await commentPeriod.save();
   // defaultLog.info("Saved new CommentPeriod object:", c);
   return Actions.sendResponse(res, 200, c);
 };
