@@ -271,9 +271,9 @@ exports.protectedPublish = async function (args, res, next) {
     if (o) {
       defaultLog.info("o:", o);
 
-      // Add public to the tag of this obj.
+      // Add public to read array.
       var published = await Actions.publish(o)
-      // Published successfully
+      // Publish successful
       return Actions.sendResponse(res, 200, published);
     } else {
       defaultLog.info("Couldn't find that object!");
@@ -291,9 +291,9 @@ exports.protectedUnPublish = async function (args, res, next) {
     if (o) {
       defaultLog.info("o:", o);
 
-      // Remove public to the tag of this obj.
-      var unpublished = await Actions.unPublish(o)
-      // UnPublished successfully
+      // Remove public from read array.
+      var unpublished = await Actions.unPublish(o);
+      // Un-publish successful
       return Actions.sendResponse(res, 200, unpublished);
     } else {
       defaultLog.info("Couldn't find that object!");
