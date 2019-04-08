@@ -3768,7 +3768,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       consumes:
         - application/json
       parameters:

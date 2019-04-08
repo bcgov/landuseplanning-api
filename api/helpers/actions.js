@@ -1,54 +1,38 @@
 "use strict";
-var _           = require('lodash');
-var defaultLog  = require('winston').loggers.get('default');
+var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('default');
 
-exports.publish = function (o) {
+exports.publish = async function (o) {
     return new Promise(function (resolve, reject) {
-        var exists = _.find(o.tags, function (item) {
-            return _.isEqual(item, ['public']);
-        });
-
-        // Object was already published?
-        if (exists) {
-            defaultLog.info("HTTP 409, Object already published:", exists);
-            reject({
-                code: 409,
-                message: "Object already published" }
-            );
+        // Object wasn't already published?
+        if (!o.read.includes('public')) {
+            var newReadArray = o.read;
+            newReadArray.push('public');
+            o.read = newReadArray;
+            // Remove publish, save then return.
+            resolve(o.save());
         } else {
-            // Add publish, save then return.
-            o.tags.push(["public"]);
-            o.save().then(resolve, function (err) {
-                reject({code: 400, message: err.message});
-            });
+            resolve(o);
         }
     });
 };
 
-exports.isPublished = function (o) {
+exports.isPublished = async function (o) {
     return _.find(o.tags, function (item) {
         return _.isEqual(item, ['public']);
     });
 };
 
-exports.unPublish = function (o) {
+exports.unPublish = async function (o) {
     return new Promise(function (resolve, reject) {
-        var exists = _.remove(o.tags, function (item) {
-            return _.isEqual(item, ['public']);
-        });
         // Object wasn't already published?
-        if (exists.length === 0) {
-            defaultLog.info("HTTP 409, Object already unpublished:", exists);
-            reject({
-                code: 409,
-                message: "Object already unpublished" }
-            );
-        } else {
-            o.markModified('tags');
+        if (o.read.includes('public')) {
+            var newReadArray = o.read.filter(perms => perms !== 'public');
+            o.read = newReadArray;
             // Remove publish, save then return.
-            o.save().then(resolve, function (err) {
-                reject({code: 400, message: err.message});
-            });
+            resolve(o.save());
+        } else {
+            resolve(o);
         }
     });
 };
@@ -63,7 +47,7 @@ exports.delete = function (o) {
         o.markModified('isDeleted');
         // save then return.
         o.save().then(resolve, function (err) {
-            reject({code: 400, message: err.message});
+            reject({ code: 400, message: err.message });
         });
     });
 };
