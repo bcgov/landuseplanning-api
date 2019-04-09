@@ -15,9 +15,24 @@ var ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
     return (_.indexOf(['displayName',
-                      'internalURL',
-                      'passedAVCheck',
+                      '_addedBy',
                       'documentFileName',
+                      'internalOriginalName',
+                      'displayName',
+                      'documentType',
+                      'datePosted',
+                      'dateUploaded',
+                      'dateReceived',
+                      'documentFileSize',
+                      'internalURL',
+                      'internalMime',
+                      'checkbox',
+                      'project',
+                      'type',
+                      'documentAuthor',
+                      'milestone',
+                      'description',
+                      'isPublished',
                       'internalMime'], f) !== -1);
   });
 }
@@ -110,7 +125,7 @@ exports.unProtectedPost = function(args, res, next) {
 exports.protectedHead = function (args, res, next) {
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
 
   // Build match query if on docId route
   var query = {};
@@ -133,7 +148,7 @@ exports.protectedHead = function (args, res, next) {
   _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
-                    args.swagger.operation["x-security-scopes"],
+                    args.swagger.params.auth_payload.realm_access.roles,
                     query,
                     ['_id',
                       'tags'], // Fields
@@ -155,16 +170,17 @@ exports.protectedHead = function (args, res, next) {
 
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.operation["x-security-scopes"];
+  self.scopes     = args.swagger.params.auth_payload.realm_access.roles;
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
 
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    // query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.docId.value)});
   }
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
@@ -173,18 +189,18 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
-    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-    _.assignIn(query, { isDeleted: { $exists: true, $ne: true } });
-  }
+  // if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+  //   _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  // } else {
+  //   _.assignIn(query, { isDeleted: { $exists: true, $ne: true } });
+  // }
 
-  console.log("QUERY:", query);
   // Set query type
   _.assignIn(query, {"_schemaName": "Document"});
+  console.log("QUERY:", query);
 
   Utils.runDataQuery('Document',
-                    args.swagger.operation["x-security-scopes"],
+                    args.swagger.params.auth_payload.realm_access.roles,
                     query,
                     getSanitizedFields(args.swagger.params.fields.value), // Fields
                     null, // sort warmup
@@ -193,6 +209,7 @@ exports.protectedGet = function(args, res, next) {
                     null, // limit
                     false) // count
   .then(function (data) {
+    console.log("DATA:", data);
     return Actions.sendResponse(res, 200, data);
   });
 };
@@ -238,11 +255,11 @@ exports.publicDownload = function(args, res, next) {
 
 exports.protectedDownload = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.operation["x-security-scopes"];
+  self.scopes     = args.swagger.params.auth_payload.realm_access.roles;
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
 
   // Build match query if on docId route
   var query = {};
@@ -253,7 +270,7 @@ exports.protectedDownload = function(args, res, next) {
   _.assignIn(query, {"_schemaName": "Document"});
 
   Utils.runDataQuery('Document',
-                    args.swagger.operation["x-security-scopes"],
+                    args.swagger.params.auth_payload.realm_access.roles,
                     query,
                     ["internalURL", "documentFileName", "internalMime"], // Fields
                     null, // sort warmup
@@ -262,6 +279,7 @@ exports.protectedDownload = function(args, res, next) {
                     null, // limit
                     false) // count
   .then(function (data) {
+    console.log("data:", data);
     if (data && data.length === 1) {
       var blob = data[0];
       if (fs.existsSync(blob.internalURL)) {
@@ -283,7 +301,6 @@ exports.protectedPost = function (args, res, next) {
   console.log("Creating new protected document object");
   var project  = args.swagger.params.project.value;
   var _comment      = args.swagger.params._comment.value;
-  var displayName   = args.swagger.params.displayName.value;
   var upfile        = args.swagger.params.upfile.value;
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
@@ -306,28 +323,33 @@ exports.protectedPost = function (args, res, next) {
         var Document = mongoose.model('Document');
         var doc = new Document();
         // Define security tag defaults
-        doc.read = [['sysadmin']];
-        doc.write = [['sysadmin']];
-        doc.delete = [['sysadmin']];
         doc.project = mongoose.Types.ObjectId(project);
         doc._comment = _comment;
-
-        doc.type = args.swagger.params.type.value;
-        doc.documentAuthor = args.swagger.params.documentAuthor.value;
-        doc.milestone = args.swagger.params.milestone.value;
-        doc.documentDate = args.swagger.params.documentDate.value;
-        doc.uploadDate = args.swagger.params.uploadDate.value;
-        doc.documentName = args.swagger.params.documentName.value;
-        doc.description = args.swagger.params.description.value;
-        doc.labels = args.swagger.params.labels.value;
-
-        doc.displayName = displayName;
-        doc.documentFileName = upfile.originalname;
-        doc.internalMime = upfile.mimetype;
-        doc.internalURL = uploadDir+guid+"."+ext;
-        doc.passedAVCheck = true;
-        // Update who did this?
         doc._addedBy = args.swagger.params.auth_payload.preferred_username;
+        doc._createdDate = new Date();
+        doc.read = [['sysadmin', 'project-system-admin', 'staff']];
+        doc.write = [['sysadmin', 'project-system-admin', 'staff']];
+        doc.delete = [['sysadmin', 'project-system-admin', 'staff']];
+
+        doc.documentFileName = args.swagger.params.documentFileName.value;
+        doc.internalURL = uploadDir+guid+"."+ext;
+        doc.internalSize = "0";  // TODO
+        doc.passedAVCheck = true;
+        doc.internalMime = upfile.mimetype;
+
+        doc.documentSource = args.swagger.params.documentSource.value;
+
+        // TODO Not Yet
+        // doc.labels = JSON.parse(args.swagger.params.labels.value);
+
+        doc.displayName = args.swagger.params.displayName.value;
+        doc.milestone = args.swagger.params.milestone.value;
+        doc.uploadDate = args.swagger.params.uploadDate.value;
+        doc.documentDate = args.swagger.params.documentDate.value;
+        doc.type = args.swagger.params.type.value;
+        doc.description = args.swagger.params.description.value;
+        doc.documentAuthor = args.swagger.params.documentAuthor.value;
+        // Update who did this?
         doc.save()
         .then(function (d) {
           defaultLog.info("Saved new document object:", d._id);
@@ -419,59 +441,39 @@ exports.protectedUnPublish = function (args, res, next) {
 
 // Update an existing document
 exports.protectedPut = function (args, res, next) {
+  console.log("args:", args.swagger.params);
   // defaultLog.info("upfile:", args.swagger.params.upfile);
   var objId = args.swagger.params.docId.value;
-  var _application  = args.swagger.params._application.value;
-  var _comment      = args.swagger.params._comment.value;
-  defaultLog.info("ObjectID:", args.swagger.params.docId.value);
 
-  var guid = intformat(generator.next(), 'dec');
-  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
-  try {
-    Promise.resolve()
-    .then(function () {
-      if (ENABLE_VIRUS_SCANNING == 'true') {
-        return Utils.avScan(args.swagger.params.upfile.value.buffer);
-      } else {
-        return true;
-      }
-    })
-    .then(function (valid) {
-      if (!valid) {
-        defaultLog.warn("File failed virus check.");
-        return Actions.sendResponse(res, 400, {"message" : "File failed virus check."});
-      } else {
-        fs.writeFileSync(uploadDir+guid+"."+ext, args.swagger.params.upfile.value.buffer);
-        var obj = args.swagger.params;
-        // Strip security tags - these will not be updated on this route.
-        delete obj.tags;
-        defaultLog.info("Incoming updated object:", obj._id);
-        // Update file location
-        obj.internalURL = uploadDir+guid+"."+ext;
-        // Update who did this?
-        obj._addedBy = args.swagger.params.auth_payload.preferred_username;
-        doc._application = _application;
-        doc._comment = _comment;
-        doc.displayName = displayName;
-        doc.passedAVCheck = true;
-        var Document = mongoose.model('Document');
-        Document.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true}, function (err, o) {
-          if (o) {
-            // defaultLog.info("o:", o);
-            return Actions.sendResponse(res, 200, o);
-          } else {
-            defaultLog.info("Couldn't find that object!");
-            return Actions.sendResponse(res, 404, {});
-          }
-        });
-      }
-    });
-  } catch (e) {
-    defaultLog.info("Error:", e);
-    // Delete the path details before we return to the caller.
-    delete e['path'];
-    return Actions.sendResponse(res, 400, e);
-  }
+  var obj = {};
+
+  obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
+
+  obj.displayName = args.swagger.params.displayName.value;
+  obj.milestone = args.swagger.params.milestone.value;
+  obj.uploadDate = args.swagger.params.uploadDate.value;
+  obj.documentDate = args.swagger.params.documentDate.value;
+  obj.type = args.swagger.params.type.value;
+  obj.description = args.swagger.params.description.value;
+  obj.documentAuthor = args.swagger.params.documentAuthor.value;
+
+  // TODO Not Yet
+  // obj.labels = JSON.parse(args.swagger.params.labels.value);
+
+  defaultLog.info("ObjectID:", objId);
+
+  // Update who did this?
+
+  var Document = mongoose.model('Document');
+  Document.findOneAndUpdate({_id: objId}, obj, {upsert:false}, function (err, o) {
+    if (o) {
+      // defaultLog.info("o:", o);
+      return Actions.sendResponse(res, 200, o);
+    } else {
+      defaultLog.info("Couldn't find that object!");
+      return Actions.sendResponse(res, 404, {});
+    }
+  });
 }
 
 //  Delete a Document
