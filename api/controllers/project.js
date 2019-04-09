@@ -53,7 +53,8 @@ var tagList = [
   'updatedBy',
   'read',
   'write',
-  'delete'
+  'delete',
+  'directoryStructure'
 ];
 
 var getSanitizedFields = function (fields) {
@@ -165,6 +166,10 @@ exports.protectedGet = async function (args, res, next) {
   var count = false;
   var query = {};
 
+  // Admin's only get this
+  args.swagger.params.fields.value.push('directoryStructure');
+  var fields = getSanitizedFields(args.swagger.params.fields.value);
+
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   if (args.swagger.params.projId) {
@@ -205,7 +210,7 @@ exports.protectedGet = async function (args, res, next) {
   var data = await Utils.runDataQuery('Project',
     args.swagger.params.auth_payload.realm_access.roles,
     query,
-    getSanitizedFields(args.swagger.params.fields.value), // Fields
+    fields, // Fields
     null, // sort warmup
     sort, // sort
     skip, // skip

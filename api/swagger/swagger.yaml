@@ -1963,6 +1963,11 @@ paths:
           description: "The milestone of this document."
           required: false
           type: string
+        - name: documentSource
+          in: formData
+          description: "The documentSource of this document."
+          required: false
+          type: string
         - name: documentAuthor
           in: formData
           description: "The documentAuthor of this document."
@@ -2147,14 +2152,59 @@ paths:
           description: "The application to bind this document to."
           required: false
           type: string
-        - name: _comment
+        - name: type
           in: formData
-          description: "The comment to bind this document to."
+          description: "The type to bind this document to."
+          required: false
+          type: string
+        - name: documentSource
+          in: formData
+          description: "The documentSource of this document."
+          required: false
+          type: string
+        - name: documentAuthor
+          in: formData
+          description: "The documentAuthor of the file."
+          required: false
+          type: string
+        - name: milestone
+          in: formData
+          description: "The milestone of the file."
+          required: false
+          type: string
+        - name: documentDate
+          in: formData
+          description: "The documentDate of the file."
+          required: false
+          type: string
+        - name: uploadDate
+          in: formData
+          description: "The uploadDate of the file."
+          required: false
+          type: string
+        - name: documentName
+          in: formData
+          description: "The documentName of the file."
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: "The description of the file."
+          required: false
+          type: string
+        - name: labels
+          in: formData
+          description: "The labels of the file."
           required: false
           type: string
         - name: displayName
           in: formData
           description: "The displayName of the file."
+          required: false
+          type: string
+        - name: documentFileName
+          in: formData
+          description: "The documentFileName of the file."
           required: false
           type: string
       responses:
@@ -4104,6 +4154,12 @@ paths:
           items:
             type: string
             enum: *searchSortByFields
+        - in: query
+          name: query
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instaces is supported."
+          type: string
       responses:
         "200":
           description: "Success"

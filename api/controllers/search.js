@@ -6,8 +6,17 @@ var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var request = require('request');
 var _accessToken = null;
+var qs = require('qs');
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection) {
+function isEmpty(obj) {
+  for(var key in obj) {
+      if(obj.hasOwnProperty(key))
+          return false;
+  }
+  return true;
+}
+
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, query) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -19,22 +28,42 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     searchProperties = { $text: { $search: keywords } };
   }
 
+  // optional keyed lookups
+  var queryModifer = {};
+  if (query) {
+    if (query && query !== undefined) {
+      var queryString = qs.parse(query);
+      console.log("query:", queryString);
+      Object.keys(queryString).map(item => {
+        console.log("item:", item, queryString[item]);
+        queryModifer[item] = queryString[item];
+      })
+    }
+  }
+
+  var match = { _schemaName: collection,
+    ...(isEmpty(queryModifer) ? undefined : queryModifer),
+    ...(searchProperties ? searchProperties : undefined),
+    ...(properties ? properties : undefined),
+    $or: [
+        { isDeleted: { $exists:false } },
+        { isDeleted: false }
+      ]
+  };
+
+  console.log("queryModifer:", queryModifer);
+  console.log("match:", match);
+
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
+
+  console.log("SORT?:", sortingValue)
 
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(
       [
-        { $match: { _schemaName: collection,
-                    ...(searchProperties ? searchProperties : undefined),
-                    ...(properties ? properties : undefined),
-                    $or: [
-                        { isDeleted: { $exists:false } },
-                        { isDeleted: false }
-                      ]
-                  }
-        },
+        { $match: match },
         {
           $redact: {
             $cond: {
@@ -101,6 +130,7 @@ var executeQuery = async function (args, res, next) {
   var pageNum = args.swagger.params.pageNum.value || 0;
   var pageSize = args.swagger.params.pageSize.value || 25;
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
+  var query = args.swagger.params.query.value;
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
   defaultLog.info("Searching project:", project);
@@ -137,7 +167,8 @@ var executeQuery = async function (args, res, next) {
     var data = await collectionObj.aggregate([
       {
         // TODO Include only models to which we want to search against, ie, documents, VCs and projects.
-        $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] }, $text: { $search: keywords } }
+        $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] },
+                  $text: { $search: keywords } }
       },
       {
         $redact: {
@@ -184,9 +215,11 @@ var executeQuery = async function (args, res, next) {
     ])
     return Actions.sendResponse(res, 200, data);
   } else if (dataset !== 'Item'){
+
     console.log("Searching Collection:", dataset);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query)
     return Actions.sendResponse(res, 200, data);
+
   } else if (dataset === 'Item') {
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
     console.log({_id: args.swagger.params._id.value})
@@ -212,7 +245,6 @@ var executeQuery = async function (args, res, next) {
           }
       }
     ]);
-    console.log("data:", data);
     return Actions.sendResponse(res, 200, data);
   } else {
     console.log('Bad Request');

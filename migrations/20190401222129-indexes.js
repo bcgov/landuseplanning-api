@@ -38,6 +38,7 @@ exports.up = function(db) {
           name: "searchIndex"
         }
       );
+      // TODO: Create a collation that does a case insensitive search
       mClient.close();
     })
     .catch((e) => {
