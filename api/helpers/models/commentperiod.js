@@ -2,7 +2,6 @@ var mongoose = require('mongoose');
 var Mixed = mongoose.Schema.Types.Mixed;
 
 module.exports = require('../models')('CommentPeriod', {
-    __v                  : { type: Number, default: "" },
     additionalText       : { type: String, default: "" },
     ceaaAdditionalText   : { type: String, default: "" },
     ceaaInformationLabel : { type: String, default: "" },

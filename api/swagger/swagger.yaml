@@ -3655,7 +3655,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - in: query
           name: project
@@ -3738,7 +3739,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: commentPeriodId
           in: path
@@ -3776,7 +3778,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: commentPeriodId
           in: path
@@ -3851,7 +3854,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       consumes:
         - application/json
       parameters:
@@ -3901,8 +3905,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
-        # TODO: Define publish roles.
+        - staff
+        - sysadmin
       parameters:
         - name: commentPeriodId
           in: path
@@ -3950,8 +3954,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
-        # TODO: Define unpublish roles.
+        - staff
+        - sysadmin
       parameters:
         - name: commentPeriodId
           in: path

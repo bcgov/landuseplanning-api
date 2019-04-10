@@ -1,4 +1,3 @@
-var auth = require("../helpers/auth");
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
@@ -59,14 +58,19 @@ exports.protectedOptions = function (args, res, rest) {
 }
 
 exports.publicGet = async function (args, res, next) {
+  defaultLog.info('Public get for comment period');
+
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {};
+
   if (args.swagger.params.commentPeriodId) {
-    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
+    query = Utils.buildQuery('project', args.swagger.params.project.value, query);
   }
+
+  // sort
   if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
     args.swagger.params.sortBy.value.forEach(function (value) {
       var order_by = value.charAt(0) == '-' ? -1 : 1;
@@ -83,71 +87,88 @@ exports.publicGet = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "CommentPeriod" });
+  _.assignIn(query, { '_schemaName': 'CommentPeriod' });
 
-  var data = await Utils.runDataQuery('CommentPeriod',
-    ['public'],
-    query,
-    getSanitizedFields(args.swagger.params.fields.value), // Fields
-    null, // sort warmup
-    sort, // sort
-    null, // skip
-    null, // limit
-    false) // count
-  return Actions.sendResponse(res, 200, data);
+  try {
+    var data = await Utils.runDataQuery('CommentPeriod',
+      ['public'],
+      query,
+      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      null, // sort warmup
+      sort, // sort
+      null, // skip
+      null, // limit
+      false); // count
+
+    Utils.recordAction('get', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 exports.protectedHead = async function (args, res, next) {
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info('Head for comment period');
 
   // Build match query if on CommentPeriodId route
   var query = {};
   if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
+    query = Utils.buildQuery('project', args.swagger.params.project.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
     _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-
   }
-  // Set query type
-  _.assignIn(query, { "_schemaName": "CommentPeriod" });
 
-  var data = await Utils.runDataQuery('CommentPeriod',
-    args.swagger.params.auth_payload.realm_access.roles,
-    query,
-    ['_id',
-      'tags'], // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    true) // count
-  // /api/commentperiod/ route, return 200 OK with 0 items if necessary
-  if (!(args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) || (data && data.length > 0)) {
-    res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
-    return Actions.sendResponse(res, 200, data);
-  } else {
-    return Actions.sendResponse(res, 404, data);
+  // Set query type
+  _.assignIn(query, { '_schemaName': 'CommentPeriod' });
+
+  try {
+    var data = await Utils.runDataQuery('CommentPeriod',
+      args.swagger.params.auth_payload.realm_access.roles,
+      query,
+      ['_id', 'read', 'write', 'delete'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      true); // count
+
+    Utils.recordAction('head', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+
+    // /api/commentperiod/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) || (data && data.length > 0)) {
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
   }
 }
 
 exports.protectedGet = async function (args, res, next) {
-
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info('Getting comment period(s)');
 
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {}, count = false;
   if (args.swagger.params.commentPeriodId) {
-    query = Utils.buildQuery("_id", args.swagger.params.commentPeriodId.value, query);
+    defaultLog.info('Comment period id:', args.swagger.params.commentPeriodId.value);
+    query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
   }
+
+  // Build match query if on project's id
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value)});
   }
+
+  // sort
   if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
     args.swagger.params.sortBy.value.forEach(function (value) {
       var order_by = value.charAt(0) == '-' ? -1 : 1;
@@ -162,35 +183,45 @@ exports.protectedGet = async function (args, res, next) {
       }
     }, this);
   }
-  if (args.swagger.params.count && args.swagger.params.count.value) {
-    count = args.swagger.params.count.value;
-  }
 
+  // skip and limit
   var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
   skip = processedParameters.skip;
   limit = processedParameters.limit;
 
-  // Set query type
-  _.assignIn(query, { "_schemaName": "CommentPeriod" });
+  // count
+  if (args.swagger.params.count && args.swagger.params.count.value) {
+    count = args.swagger.params.count.value;
+  }
 
-  var data = await Utils.runDataQuery('CommentPeriod',
-    args.swagger.params.auth_payload.realm_access.roles,
-    query,
-    getSanitizedFields(args.swagger.params.fields.value), // Fields
-    null, // sort warmup
-    sort, // sort
-    skip, // skip
-    limit, // limit
-    count) // count
-  return Actions.sendResponse(res, 200, data);
+  // Set query type
+  _.assignIn(query, { '_schemaName': 'CommentPeriod' });
+
+  try {
+    var data = await Utils.runDataQuery('CommentPeriod',
+      args.swagger.params.auth_payload.realm_access.roles,
+      query,
+      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      null,   // sort warmup
+      sort,   // sort
+      skip,   // skip
+      limit,  // limit
+      count); // count
+    Utils.recordAction('get', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+    defaultLog.info('Got comment period(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 //  Create a new CommentPeriod
 exports.protectedPost = async function (args, res, next) {
   var obj = args.swagger.params.period.value;
 
-  defaultLog.info("Incoming new object:", obj);
-  
+  defaultLog.info('Incoming new comment period:', obj);
+
   var CommentPeriod = mongoose.model('CommentPeriod');
 
   var commentPeriod = new CommentPeriod({
@@ -208,95 +239,92 @@ exports.protectedPost = async function (args, res, next) {
     delete: obj.delete
   });
 
-  var c = await commentPeriod.save();
-  // defaultLog.info("Saved new CommentPeriod object:", c);
-  return Actions.sendResponse(res, 200, c);
+  try {
+    var cp = await commentPeriod.save();
+    Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
+    defaultLog.info('Saved new comment period object:', cp);
+    return Actions.sendResponse(res, 200, cp);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 // Update an existing CommentPeriod
-exports.protectedPut = function (args, res, next) {
+exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.commentPeriodId.value;
-  defaultLog.info("ObjectID:", args.swagger.params.commentPeriodId.value);
   var obj = args.swagger.params.cp.value;
+  defaultLog.info('Put comment period:', objId);
 
   delete obj.__v;
 
-  obj.addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  obj.updatedBy = args.swagger.params.auth_payload.preferred_username.value;
   obj.dateUpdated = new Date();
 
-  defaultLog.info("Incoming updated object:", obj);
-  // TODO sanitize/update audits.
+  defaultLog.info('Incoming updated object:', obj);
 
-  var commentperiod = require('mongoose').model('CommentPeriod');
-  commentperiod.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-      return Actions.sendResponse(res, 200, o);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  try {
+    var commentPeriod = await CommentPeriod.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+    Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Comment period updated:', commentPeriod);
+    return Actions.sendResponse(res, 200, commentPeriod);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 }
 
 //  Delete a new CommentPeriod
 exports.protectedDelete = async function (args, res, next) {
   var objId = args.swagger.params.commentPeriodId.value;
-  defaultLog.info("Delete CommentPeriod:", objId);
+  defaultLog.info('Delete comment period:', objId);
 
-  var commentperiod = require('mongoose').model('CommentPeriod');
-  commentperiod.findOne({ _id: objId, isDeleted: false }, async function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-
-      // Set the deleted flag.
-      var deleted = await Actions.delete(o)
-      // Deleted successfully
-      return Actions.sendResponse(res, 200, deleted);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  try {
+    await CommentPeriod.findOneAndRemove({ _id: objId });
+    Utils.recordAction('delete', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, {});
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 // Publish/Unpublish the CommentPeriod
 exports.protectedPublish = async function (args, res, next) {
   var objId = args.swagger.params.commentPeriodId.value;
-  defaultLog.info("Publish CommentPeriod:", objId);
+  defaultLog.info('Publish comment period:', objId);
 
-  var commentperiod = require('mongoose').model('CommentPeriod');
-  commentperiod.findOne({ _id: objId }, async function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-      delete o.__v;
-      // Add public to read array.
-      var published = await Actions.publish(o)
-      // Publish successful
-      return Actions.sendResponse(res, 200, published);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  try {
+    var commentPeriod = await CommentPeriod.findOne({ _id: objId });
+    delete commentPeriod.__v;
+    defaultLog.info('Comment period object:', commentPeriod);
+    // Add public to read array.
+    var published = await Actions.publish(commentPeriod);
+    Utils.recordAction('publish', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, published);
+  } catch (e) {
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 exports.protectedUnPublish = async function (args, res, next) {
   var objId = args.swagger.params.commentPeriodId.value;
-  defaultLog.info("UnPublish CommentPeriod:", objId);
+  defaultLog.info('UnPublish comment period:', objId);
 
-  var commentperiod = require('mongoose').model('CommentPeriod');
-  commentperiod.findOne({ _id: objId }, async function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-      delete o.__v;
-      // Remove public from read array.
-      var unpublished = await Actions.unPublish(o);
-      // Un-publish successful
-      return Actions.sendResponse(res, 200, unpublished);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  try {
+    var commentPeriod = await CommentPeriod.findOne({ _id: objId });
+    delete commentPeriod.__v;
+    defaultLog.info('Comment period object:', commentPeriod);
+    // Remove public from read array.
+    var unpublished = await Actions.unPublish(commentPeriod);
+    Utils.recordAction('unPublish', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, unpublished);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
