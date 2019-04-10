@@ -191,7 +191,6 @@ exports.protectedPost = async function (args, res, next) {
 
   defaultLog.info("Incoming new object:", obj);
   
-
   var CommentPeriod = mongoose.model('CommentPeriod');
 
   var commentPeriod = new CommentPeriod({
@@ -220,10 +219,10 @@ exports.protectedPut = function (args, res, next) {
   defaultLog.info("ObjectID:", args.swagger.params.commentPeriodId.value);
   var obj = args.swagger.params.cp.value;
 
-  // Strip security tags - these will not be updated on this route.
-  delete obj.tags;
+  delete obj.__v;
 
-  delete obj._addedBy;
+  obj.addedBy = args.swagger.params.auth_payload.preferred_username.value;
+  obj.dateUpdated = new Date();
 
   defaultLog.info("Incoming updated object:", obj);
   // TODO sanitize/update audits.
@@ -270,7 +269,7 @@ exports.protectedPublish = async function (args, res, next) {
   commentperiod.findOne({ _id: objId }, async function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-
+      delete o.__v;
       // Add public to read array.
       var published = await Actions.publish(o)
       // Publish successful
@@ -290,7 +289,7 @@ exports.protectedUnPublish = async function (args, res, next) {
   commentperiod.findOne({ _id: objId }, async function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
-
+      delete o.__v;
       // Remove public from read array.
       var unpublished = await Actions.unPublish(o);
       // Un-publish successful
