@@ -114,6 +114,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/audit');
       require('./api/helpers/models/list');
       require('./api/helpers/models/user');
+      require('./api/helpers/models/organization');
       require('./api/helpers/models/vc');
       require('./api/helpers/models/project');
       require('./api/helpers/models/feature');
