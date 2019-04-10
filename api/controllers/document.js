@@ -365,31 +365,6 @@ exports.protectedPost = function (args, res, next) {
   }
 };
 
-exports.protectedDelete = function (args, res, next) {
-  var objId = args.swagger.params.docId.value;
-  defaultLog.info("Delete Document:", objId);
-
-  var Document = require('mongoose').model('Document');
-  Document.findOne({_id: objId, isDeleted: false}, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-
-      // Set the deleted flag.
-      Actions.delete(o)
-      .then(function (deleted) {
-        // Deleted successfully
-        return Actions.sendResponse(res, 200, deleted);
-      }, function (err) {
-        // Error
-        return Actions.sendResponse(res, 400, err);
-      });
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
-};
-
 exports.protectedPublish = function (args, res, next) {
   var objId = args.swagger.params.docId.value;
   defaultLog.info("Publish Document:", objId);
@@ -481,18 +456,13 @@ exports.protectedDelete = async function (args, res, next) {
   var objId = args.swagger.params.docId.value;
   defaultLog.info("Delete Document:", objId);
 
-  var document = mongoose.model('Document');
-  document.findOne({ _id: objId }, async function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-
-      // Set the deleted flag.
-      var deleted = await Actions.delete(o)
-      // Deleted successfully
-      return Actions.sendResponse(res, 200, deleted);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  var Document = require('mongoose').model('Document');
+  try {
+    var doc = await Document.findOneAndRemove({_id: objId});
+    Utils.recordAction('delete', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, {});
+  } catch (e) {
+    console.log("Error:", e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
