@@ -21,38 +21,27 @@ exports.up = function (db) {
       // mClientInst is an instance of MongoClient
       mClient = mClientInst;
       var p = mClient.collection('epic');
-      p.aggregate([
+      p.update(
         {
-          $match: {
-            _schemaName: "Document",
-            $or: [
-              {
-                documentSource: {
-                  $eq: ""
-                }
-              },
-              {
-                documentSource: {
-                  $eq: null
-                }
-              }
-            ]
-          }
-        }
-      ])
-        .toArray()
-        .then(function (arr) {
-          for (let item of arr) {
-            p.update(
+          _schemaName: "Document",
+          $or: [
             {
-              _id: item._id
+              documentSource: {
+                $eq: ""
+              }
             },
             {
-              $set: { documentSource: 'PROJECT' }
-            });
-          }
-          mClient.close();
-        });
+              documentSource: {
+                $eq: null
+              }
+            }
+          ]
+        },
+        {
+          $set: { documentSource: 'PROJECT' }
+        }
+      );
+      mClient.close();
     })
     .catch((e) => {
       console.log("e:", e);
