@@ -86,12 +86,13 @@ exports.getSkipLimitParameters = function (pageSize, pageNum) {
     return params;
 };
 
-exports.recordAction = async function (action, meta, payload){
+exports.recordAction = async function (action, meta, payload, objId = null){
   var Audit = mongoose.model('Audit');
   var audit = new Audit({
     _objectSchema: 'Query',
     action: action,
     meta: meta,
+    objId: objId,
     performedBy: payload
   });
   return await audit.save();
