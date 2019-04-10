@@ -327,9 +327,9 @@ exports.protectedPost = function (args, res, next) {
         doc._comment = _comment;
         doc._addedBy = args.swagger.params.auth_payload.preferred_username;
         doc._createdDate = new Date();
-        doc.read = [['sysadmin', 'project-system-admin', 'staff']];
-        doc.write = [['sysadmin', 'project-system-admin', 'staff']];
-        doc.delete = [['sysadmin', 'project-system-admin', 'staff']];
+        doc.read = [['sysadmin'], ['project-system-admin'], ['staff']];
+        doc.write = [['sysadmin'], ['project-system-admin'], ['staff']];
+        doc.delete = [['sysadmin'], ['project-system-admin'], ['staff']];
 
         doc.documentFileName = args.swagger.params.documentFileName.value;
         doc.internalURL = uploadDir+guid+"."+ext;
