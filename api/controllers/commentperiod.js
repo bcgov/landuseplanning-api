@@ -7,7 +7,6 @@ var Utils = require('../helpers/utils');
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
     return (_.indexOf([
-      '__v',
       '_schemaName',
       'addedBy',
       'additionalText',
@@ -165,7 +164,7 @@ exports.protectedGet = async function (args, res, next) {
 
   // Build match query if on project's id
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value)});
+    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
   }
 
   // sort
@@ -231,7 +230,7 @@ exports.protectedPost = async function (args, res, next) {
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
     instructions: obj.instructions,
-    milestones: obj.milestones,
+    milestones: mongoose.Types.ObjectId(obj.milestones),
     openHouses: obj.openHouses,
     project: mongoose.Types.ObjectId(obj.project),
     read: obj.read,
@@ -256,19 +255,27 @@ exports.protectedPut = async function (args, res, next) {
   var obj = args.swagger.params.cp.value;
   defaultLog.info('Put comment period:', objId);
 
-  delete obj.__v;
-
-  obj.updatedBy = args.swagger.params.auth_payload.preferred_username.value;
-  obj.dateUpdated = new Date();
-
-  defaultLog.info('Incoming updated object:', obj);
-
   var CommentPeriod = mongoose.model('CommentPeriod');
+
+  var commentPeriod = {
+    dateCompleted: obj.dateCompleted,
+    dateStarted: obj.dateStarted,
+    dateUpdated: new Date(),
+    instructions: obj.instructions,
+    milestone: mongoose.Types.ObjectId(obj.milestone),
+    openHouses: obj.openHouses,
+    updatedBy: args.swagger.params.auth_payload.preferred_username.value,
+    read: obj.read
+  };
+  console.log('ASDFADSFASDFADSF%!@$%!$!@#!@#', commentPeriod);
+
+  defaultLog.info('Incoming updated object:', commentPeriod);
+
   try {
-    var commentPeriod = await CommentPeriod.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+    var cp = await CommentPeriod.findOneAndUpdate({ _id: objId }, commentPeriod, { upsert: false });
     Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Comment period updated:', commentPeriod);
-    return Actions.sendResponse(res, 200, commentPeriod);
+    defaultLog.info('Comment period updated:', cp);
+    return Actions.sendResponse(res, 200, cp);
   } catch (e) {
     defaultLog.info('Error:', e);
     return Actions.sendResponse(res, 400, e);
