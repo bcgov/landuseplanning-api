@@ -230,7 +230,7 @@ exports.protectedPost = async function (args, res, next) {
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
     instructions: obj.instructions,
-    milestones: mongoose.Types.ObjectId(obj.milestones),
+    milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
     project: mongoose.Types.ObjectId(obj.project),
     read: obj.read,
@@ -267,7 +267,6 @@ exports.protectedPut = async function (args, res, next) {
     updatedBy: args.swagger.params.auth_payload.preferred_username.value,
     read: obj.read
   };
-  console.log('ASDFADSFASDFADSF%!@$%!$!@#!@#', commentPeriod);
 
   defaultLog.info('Incoming updated object:', commentPeriod);
 
