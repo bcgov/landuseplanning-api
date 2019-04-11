@@ -3,7 +3,7 @@
 
   "local": {
     "driver": "mongodb",
-    "database": "nrts-dev",
+    "database": "gcpe-lup-dev",
     "host": "localhost"
   },
 

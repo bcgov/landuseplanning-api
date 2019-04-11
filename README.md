@@ -111,9 +111,17 @@ Recommend reviewing the [Open API Specification](https://swagger.io/docs/specifi
 
 2) Add Admin user to users collection
 
-    ``
-    db.users.insert({  "username": #{username}, "password": #{password}, roles: [['sysadmin'],['public']] })
-    ``
+    i) Run mongo from the command line
+
+      mongo
+  
+    ii) Switch to running MongoDB (e.g. gcpe-lup-dev)
+
+      use gcpe-lup-dev
+
+    iii) Insert admin user
+
+      db.users.insert({  "username": "{username}", "password": "{password}", roles: [['sysadmin'],['public']] })
 
 3) Seed local database as described in [seed README](seed/README.md)
 

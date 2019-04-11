@@ -1,11 +1,11 @@
 {
-  "name": "nrts-prc-api-seed",
+  "name": "gcpe-lup-api-seed",
   "version": "0.0.1",
   "author": "Severin Beauvais",
   "contributors": [
     "Severin Beauvais <severin.beauvais@gmail.com>"
   ],
-  "description": "NRTS PRC API SEED",
+  "description": "GCPE LUP API SEED",
   "keywords": [],
   "license": "UNLICENSED",
   "main": "seed",

@@ -1,11 +1,12 @@
 {
-  "name": "nrts-prc-api",
+  "name": "gcpe-lup-api",
   "version": "1.0.7",
   "author": "Mark Lisé",
   "contributors": [
-    "Mark Lisé <mark@digitalspace.ca>"
+    "Mark Lisé <mark@digitalspace.ca>",
+    "Steve Howard <Steve.M.Howard@gov.bc.ca>"
   ],
-  "description": "ACRFD API",
+  "description": "LUP API",
   "keywords": [],
   "license": "Apache-2.0",
   "main": "app",

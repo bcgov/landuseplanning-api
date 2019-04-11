@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   version: "1.0.6"
-  title: NRTS PRC (ACRFD) API
+  title: GCPE LUP API
 host: localhost:3000
 basePath: /api
 tags:
@@ -9,47 +9,47 @@ tags:
   description: "Logging in"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "search"
   description: "Search operations"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "application"
   description: "Operations on Application objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "feature"
   description: "Operations on Feature objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "document"
   description: "Operations on Document objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "decision"
   description: "Operations on Decision objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "user"
   description: "Operations on User objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "comment"
   description: "Operations on Comment objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 - name: "commentperiod"
   description: "Operations on Comment Period objects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/nrts-prc-api.git"
+    url: "http://github.com/bcgov/gcpe-lup-api.git"
 schemes:
   - http
 securityDefinitions:
