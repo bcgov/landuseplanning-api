@@ -39,6 +39,9 @@ exports.up = function (db) {
         },
         {
           $set: { documentSource: 'PROJECT' }
+        },
+        {
+          multi: true
         }
       );
       mClient.close();

@@ -39,6 +39,9 @@ exports.up = function (db) {
         },
         {
           $set: { documentType: '' }
+        },
+        {
+          multi: true
         }
       );
       mClient.close();
