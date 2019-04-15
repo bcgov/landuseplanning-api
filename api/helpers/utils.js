@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 var _               = require('lodash');
 var mongoose        = require('mongoose');
@@ -10,10 +10,10 @@ var helpers         = require('@turf/helpers');
 var Wkt             = require('wicket');
 var _serviceHost    = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
 var _servicePort    = process.env.CLAMAV_SERVICE_PORT || '3310';
-var _tantalisAPI    = process.env.TTLS_API_ENDPOINT || "https://api.nrs.gov.bc.ca/ttls-api/v1/";
-var webADEAPI       = process.env.WEBADE_AUTH_ENDPOINT || "https://api.nrs.gov.bc.ca/oauth2/v1/";
-var username        = process.env.WEBADE_USERNAME || "TTLS-EXT";
-var password        = process.env.WEBADE_PASSWORD || "x";
+var _tantalisAPI    = process.env.TTLS_API_ENDPOINT || 'https://api.nrs.gov.bc.ca/ttls-api/v1/';
+var webADEAPI       = process.env.WEBADE_AUTH_ENDPOINT || 'https://api.nrs.gov.bc.ca/oauth2/v1/';
+var username        = process.env.WEBADE_USERNAME || 'TTLS-EXT';
+var password        = process.env.WEBADE_PASSWORD || 'x';
 var MAX_LIMIT       = 1000;
 
 var DEFAULT_PAGESIZE  = 100;
@@ -118,10 +118,10 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         
         var aggregations = _.compact([
         {
-            "$match": query
+            '$match': query
         },
         {
-            "$project": projection
+            '$project': projection
         },
         {
             $redact: {
@@ -129,14 +129,14 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
                     if: {
                         $anyElementTrue: {
                             $map: {
-                                input: "$read" ,
-                                as: "fieldTag",
-                                in: { $setIsSubset: [["$$fieldTag"], role ] }
+                                input: '$read' ,
+                                as: 'fieldTag',
+                                in: { $setIsSubset: [['$$fieldTag'], role ] }
                             }
                         }
                     },
-                    then: "$$KEEP",
-                    else: "$$PRUNE"
+                    then: '$$KEEP',
+                    else: '$$PRUNE'
                 }
             }
         },
@@ -157,8 +157,8 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         },
         count && {
             $project: {
-                "total_items": 1,
-                "results": {
+                'total_items': 1,
+                'results': {
                     $slice: [
                         '$results',
                         skip,

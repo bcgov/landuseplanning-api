@@ -3220,6 +3220,26 @@ paths:
           items:
             type: string
             enum: *commentSortByFields
+        - in: query
+          name: pending
+          description: "Filter where eaoStatus is pending"
+          required: false
+          type: boolean
+        - in: query
+          name: published
+          description: "Filter where eaoStatus is published"
+          required: false
+          type: boolean
+        - in: query
+          name: deferred
+          description: "Filter where eaoStatus is deferred"
+          required: false
+          type: boolean
+        - in: query
+          name: rejected
+          description: "Filter where eaoStatus is rejected"
+          required: false
+          type: boolean
       responses:
         "200":
           description: "Success"
