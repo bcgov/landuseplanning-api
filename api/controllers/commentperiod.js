@@ -155,8 +155,9 @@ exports.protectedHead = async function (args, res, next) {
 exports.protectedGet = async function (args, res, next) {
   defaultLog.info('Getting comment period(s)');
 
+  var query = {}, sort = {}, skip = null, limit = null, count = false;
+  
   // Build match query if on CommentPeriodId route
-  var query = {}, sort = {}, count = false;
   if (args.swagger.params.commentPeriodId) {
     defaultLog.info('Comment period id:', args.swagger.params.commentPeriodId.value);
     query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
@@ -183,12 +184,12 @@ exports.protectedGet = async function (args, res, next) {
     }, this);
   }
 
-  // skip and limit
+  // Skip and limit
   var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
   skip = processedParameters.skip;
   limit = processedParameters.limit;
 
-  // count
+  // Count
   if (args.swagger.params.count && args.swagger.params.count.value) {
     count = args.swagger.params.count.value;
   }
