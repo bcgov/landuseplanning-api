@@ -3732,6 +3732,70 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+
+  /commentperiod/{commentPeriodId}/summary:
+    x-swagger-router-controller: commentperiod
+    options:
+      tags:
+        - commentperiod
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on commentperiod GET Route"
+      parameters:
+        - name: commentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    head:
+      tags:
+        - commentperiod
+      summary: "Retrieve META associated with a comment period."
+      operationId: protectedSummary
+      description: "Get META from the request, without returning the payload in question."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: commentPeriodId
+          in: path
+          description: "ID of commentperiod to get"
+          required: true
+          type: "string"
+        - in: query
+          name: project
+          description: "CommentPeriods relating to a particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "CommentPeriods that are deleted or not"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentPeriodObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
   /commentperiod/{commentPeriodId}:
     x-swagger-router-controller: commentperiod
     options:

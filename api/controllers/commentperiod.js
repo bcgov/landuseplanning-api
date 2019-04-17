@@ -152,6 +152,61 @@ exports.protectedHead = async function (args, res, next) {
   }
 }
 
+exports.protectedSummary = async function (args, res, next) {
+  defaultLog.info('Head for comment period summaries');
+
+  // Build match query if on CommentPeriodId route
+  var query = {};
+  if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
+    _.assignIn(query, { period: mongoose.Types.ObjectId(args.swagger.params.commentPeriodId.value) });
+  }
+  // Unless they specifically ask for it, hide deleted results.
+  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
+    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
+  }
+
+  // Set query type
+  _.assignIn(query, { '_schemaName': 'Comment' });
+
+  Utils.recordAction('summary', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+
+  var options = ['Pending', 'Deferred', 'Published', 'Rejected'];
+  try {
+    var summary = {
+      'Pending': 0,
+      'Deferred': 0,
+      'Published': 0,
+      'Rejected': 0
+    }
+    await Promise.all(options.map(async (item) => {
+      var optionQuery = {};
+      _.assignIn(optionQuery, { 'eaoStatus': item });
+      console.log("optionQuery:", optionQuery);
+      var res = await Utils.runDataQuery('CommentPeriod',
+                                      args.swagger.params.auth_payload.realm_access.roles,
+                                      optionQuery,
+                                      ['_id', 'read', 'write', 'delete'], // Fields
+                                      null, // sort warmup
+                                      null, // sort
+                                      null, // skip
+                                      null, // limit
+                                      true); // count
+      console.log("RES:", res);
+      if (res && res[0]) {
+        summary[item] = res[0]['total_items'];
+      }
+      return summary;
+    }));
+
+    console.log("sending summary:", summary);
+    return Actions.sendResponse(res, 200, summary);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
+
+
 exports.protectedGet = async function (args, res, next) {
   defaultLog.info('Getting comment period(s)');
 
