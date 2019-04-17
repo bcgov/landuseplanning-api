@@ -3756,7 +3756,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-    head:
+    get:
       tags:
         - commentperiod
       summary: "Retrieve META associated with a comment period."
