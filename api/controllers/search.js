@@ -162,6 +162,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("pageSize:", pageSize);
   defaultLog.info("sortBy:", sortBy);
   defaultLog.info("query:", query);
+  defaultLog.info("_id:", _id);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
 
@@ -199,16 +200,24 @@ var executeQuery = async function (args, res, next) {
         $redact: {
           $cond: {
             if: {
-              $anyElementTrue: {
-                $map: {
-                  input: "$read",
-                  as: "fieldTag",
-                  in: { $setIsSubset: [["$$fieldTag"], roles] }
+              // This way, if read isn't present, we assume public no roles array.
+              $and: [
+                { $cond: { if: "$read", then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: "$read",
+                      as: "fieldTag",
+                      in: { $setIsSubset: [["$$fieldTag"], roles] }
+                    }
+                  }
                 }
-              }
+              ]
             },
             then: "$$KEEP",
-            else: "$$PRUNE"
+            else: {
+              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+            }
           }
         }
       },
@@ -247,27 +256,35 @@ var executeQuery = async function (args, res, next) {
 
   } else if (dataset === 'Item') {
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
-    console.log({_id: args.swagger.params._id.value})
+    console.log("ITEM GET", {_id: args.swagger.params._id.value})
     var data = await collectionObj.aggregate([
       {
           "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
       },
       {
-          $redact: {
-              $cond: {
-                  if: {
-                      $anyElementTrue: {
-                          $map: {
-                              input: "$read" ,
-                              as: "fieldTag",
-                              in: { $setIsSubset: [["$$fieldTag"], roles ] }
-                          }
-                      }
-                  },
-                  then: "$$KEEP",
-                  else: "$$PRUNE"
-              }
+        $redact: {
+          $cond: {
+            if: {
+              // This way, if read isn't present, we assume public no roles array.
+              $and: [
+                { $cond: { if: "$read", then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: "$read",
+                      as: "fieldTag",
+                      in: { $setIsSubset: [["$$fieldTag"], roles] }
+                    }
+                  }
+                }
+              ]
+            },
+            then: "$$KEEP",
+            else: {
+              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+            }
           }
+        }
       }
     ]);
     return Actions.sendResponse(res, 200, data);
