@@ -36,7 +36,23 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       console.log("query:", queryString);
       Object.keys(queryString).map(item => {
         console.log("item:", item, queryString[item]);
-        queryModifer[item] = queryString[item];
+        if (isNaN(queryString[item])) {
+          // String or Bool
+          if (queryString[item] === 'true') {
+            // Bool
+            queryModifer[item] = true;
+            queryModifer.active = true;
+          } else if (queryString[item] === 'false') {
+            // Bool
+            queryModifer[item] = false;
+          } else {
+            // String
+            queryModifer[item] = queryString[item];
+          }
+        } else {
+          // Number
+          queryModifer[item] = parseInt(queryString[item]);
+        }
       })
     }
   }
@@ -145,6 +161,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("pageNum:", pageNum);
   defaultLog.info("pageSize:", pageSize);
   defaultLog.info("sortBy:", sortBy);
+  defaultLog.info("query:", query);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
 
