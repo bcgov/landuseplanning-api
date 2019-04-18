@@ -68,16 +68,24 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
           $redact: {
             $cond: {
               if: {
-                $anyElementTrue: {
-                  $map: {
-                    input: "$read",
-                    as: "fieldTag",
-                    in: { $setIsSubset: [["$$fieldTag"], roles] }
+                // This way, if read isn't present, we assume public no roles array.
+                $and: [
+                  { $cond: { if: "$read", then: true, else: false } },
+                  {
+                    $anyElementTrue: {
+                      $map: {
+                        input: "$read",
+                        as: "fieldTag",
+                        in: { $setIsSubset: [["$$fieldTag"], roles] }
+                      }
+                    }
                   }
-                }
+                ]
               },
               then: "$$KEEP",
-              else: "$$PRUNE"
+              else: {
+                $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+              }
             }
           }
         },
@@ -123,14 +131,14 @@ exports.protectedGet = function (args, res, next) {
 };
 
 var executeQuery = async function (args, res, next) {
-  var _id = args.swagger.params._id.value;
+  var _id = args.swagger.params._id ? args.swagger.params._id.value : null;
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
   var project = args.swagger.params.project.value;
   var pageNum = args.swagger.params.pageNum.value || 0;
   var pageSize = args.swagger.params.pageSize.value || 25;
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
-  var query = args.swagger.params.query.value;
+  var query = args.swagger.params.query ? args.swagger.params.query.value : '';
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
   defaultLog.info("Searching project:", project);
