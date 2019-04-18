@@ -1,4 +1,7 @@
- module.exports = require ('../models')('Project', {
+var mongoose = require('mongoose');
+var Mixed = mongoose.Schema.Types.Mixed;
+
+module.exports = require ('../models')('Project', {
 
     //Needed for default view
     CEAAInvolvement         : { type: String, default: '' },
@@ -38,6 +41,7 @@
     epicProjectID           : { type: Number, default: '' },
     fedElecDist             : { type: String, default: '' },
     // TODO: intake
+    intake                  : { type: Mixed, default: ''},
     isTermsAgreed           : { type: Boolean, default: false },
     overallProgress         : { type: Number },
     primaryContact          : { type: String, default: '' },

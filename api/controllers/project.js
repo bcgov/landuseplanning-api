@@ -27,6 +27,7 @@ var tagList = [
   'subtype',
   'type',
   'addedBy',
+  'intake',
   'build',
   'CEAALink',
   'code',
