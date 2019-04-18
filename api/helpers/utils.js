@@ -106,6 +106,7 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         // Fields we always return
         var defaultFields = ['_id',
                             'code',
+                            'tags',
                             'read'];
         _.each(defaultFields, function (f) {
             projection[f] = 1;
@@ -124,21 +125,32 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
             '$project': projection
         },
         {
-            $redact: {
-                $cond: {
-                    if: {
-                        $anyElementTrue: {
-                            $map: {
-                                input: '$read' ,
-                                as: 'fieldTag',
-                                in: { $setIsSubset: [['$$fieldTag'], role ] }
-                            }
-                        }
-                    },
-                    then: '$$KEEP',
-                    else: '$$PRUNE'
-                }
+          $redact: {
+           $cond: {
+              if: {
+                $and: [
+                  // This checks to see that 'tags' field exists before doing the RBAC compare for
+                  // redaction.  If it doesn't contain the 'tags' field, then we allow the result.
+                  { $cond: { if: "$tags", then: true, else: false } },
+                  {
+                    $anyElementTrue: {
+                      $map: {
+                        input: "$tags" ,
+                        as: "fieldTag",
+                        in: { $setIsSubset: [ "$$fieldTag", role ] }
+                      }
+                    }
+                  }
+                ]
+              },
+              then: "$$DESCEND",
+              else: {
+                // If the object didn't have the $tags field, allow recursion
+                // If the object had the tags field, prune it as it failed RBAC
+                $cond: { if: "$tags", then: "$$PRUNE", else: "$$DESCEND" }
+              }
             }
+          }
         },
         
         sortWarmUp, // Used to setup the sort if a temporary projection is needed.

@@ -1,3 +1,4 @@
+mongorestore --noIndexRestore -d epic -c epic ./prod-load-db/esm_prod_april_1/dump/esm/recentactivities.bson
 mongorestore --noIndexRestore -d epic -c epic ./prod-load-db/esm_prod_april_1/dump/esm/projects.bson
 mongorestore --noIndexRestore -d epic -c epic ./prod-load-db/esm_prod_april_1/dump/esm/commentperiods.bson
 mongorestore --noIndexRestore -d epic -c epic ./prod-load-db/esm_prod_april_1/dump/esm/comments.bson
