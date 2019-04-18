@@ -331,6 +331,8 @@ definitions:
     description: "Optional fields to sort by (prefixed with + or - for order)"
     example: +score,-score
     enum: &searchSortByFields
+      - +headline
+      - -headline
       - +score
       - -score
       - +displayName

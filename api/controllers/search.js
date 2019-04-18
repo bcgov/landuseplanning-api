@@ -73,13 +73,34 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
 
-  console.log("SORT?:", sortingValue)
 
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(
       [
         { $match: match },
+        {
+          "$lookup": {
+            "from": "epic",
+            "localField": "project",
+            "foreignField": "_id",
+            "as": "project"
+          }
+        },
+        {
+          "$addFields": {
+            "project": {
+              "$map": {
+                "input": "$project",
+                "as": "project",
+                "in": {
+                  "_id": "$$project._id",
+                  "name": "$$project.name"
+                }
+              }
+            }
+          }
+        },
         {
           $redact: {
             $cond: {
@@ -251,6 +272,7 @@ var executeQuery = async function (args, res, next) {
   } else if (dataset !== 'Item'){
 
     console.log("Searching Collection:", dataset);
+    console.log("sortField:", sortField);
     var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query)
     return Actions.sendResponse(res, 200, data);
 

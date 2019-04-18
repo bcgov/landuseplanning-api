@@ -174,7 +174,7 @@ exports.protectedGet = async function (args, res, next) {
 
   if (args.swagger.params.projId) {
     // Getting a single project
-    query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
+    _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
   } else {
     // Getting multiple projects
     try {
@@ -206,6 +206,10 @@ exports.protectedGet = async function (args, res, next) {
 
   // Set query type
   _.assignIn(query, { "_schemaName": "Project" });
+
+  console.log("*****************************************");
+  console.log("qauery:", query);
+  console.log("*****************************************");
 
   var data = await Utils.runDataQuery('Project',
     args.swagger.params.auth_payload.realm_access.roles,
