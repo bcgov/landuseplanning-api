@@ -89,18 +89,10 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
         },
         {
           "$addFields": {
-            "project": {
-              "$map": {
-                "input": "$project",
-                "as": "project",
-                "in": {
-                  "_id": "$$project._id",
-                  "name": "$$project.name"
-                }
-              }
-            }
+            project: "$project",
           }
         },
+        { "$unwind": "$project" },
         {
           $redact: {
             $cond: {
@@ -217,6 +209,20 @@ var executeQuery = async function (args, res, next) {
         $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] },
                   $text: { $search: keywords } }
       },
+      {
+        "$lookup": {
+          "from": "epic",
+          "localField": "project",
+          "foreignField": "_id",
+          "as": "project"
+        }
+      },
+      {
+        "$addFields": {
+          project: "$project",
+        }
+      },
+      { "$unwind": "$project" },
       {
         $redact: {
           $cond: {
