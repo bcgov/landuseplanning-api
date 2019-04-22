@@ -7,6 +7,7 @@ var Utils = require('../helpers/utils');
 var tagList = [
     'description',
     'name',
+    'type',
     'pillar',
     'parent',
 ];

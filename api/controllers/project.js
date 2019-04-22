@@ -303,26 +303,14 @@ exports.protectedDelete = function (args, res, next) {
 exports.protectedPost = function (args, res, next) {
   var obj = args.swagger.params.project.value;
 
-  // Get rid of the fields we don't need/setting later below.
-  delete (obj.areaHectares);
-  delete (obj.centroid);
-  delete (obj.purpose);
-  delete (obj.subpurpose);
-  delete (obj.type);
-  delete (obj.subtype);
-  delete (obj.status);
-  delete (obj.tenureStage);
-  delete (obj.location);
-  delete (obj.businessUnit);
-  delete (obj.cl_file);
-  delete (obj.client);
-
   defaultLog.info("Incoming new object:", obj);
 
   var Project = mongoose.model('Project');
   var project = new Project(obj);
   // Define security tag defaults
-  project.tags = [['sysadmin']];
+  project.read = ['sysadmin', 'project-system-admin'];
+  project.write = ['sysadmin', 'project-system-admin'];
+  project.delete = ['sysadmin', 'project-system-admin'];
   project._createdBy = args.swagger.params.auth_payload.preferred_username;
   project.createdDate = Date.now();
   project.save()

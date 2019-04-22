@@ -52,6 +52,13 @@ module.exports = require ('../models')('Project', {
     status                  : { type: String, default: '' },
     substitution            : { type: Boolean, default: false },
 
+    // TODO: New Stuff?
+    eaStatusDate            : { type: String, default: '' },
+    projectStatusDate       : { type: String, default: '' },
+    substantiallyDate       : { type: String, default: '' },
+    activeDate              : { type: String, default: '' },
+
+
     // Permissions
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     write                   : [{ type: String, trim: true, default: '["project-system-admin"]' }],

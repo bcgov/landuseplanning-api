@@ -34,13 +34,17 @@ exports.protectedPost = async function (args, res, next) {
 
     var Vc = mongoose.model('Vc');
     var vc = new Vc(obj);
+    console.log("***************************************************");
+    console.log(vc);
+    console.log("***************************************************");
     vc._schemaName = 'Vc';
-    vc.read = ['public'];
-    vc.write = ['project-system-admin'];
-    vc.delete = ['project-system-admin'];
+    vc.read = ['public','project-system-admin', 'staff'];
+    vc.write = ['project-system-admin', 'staff'];
+    vc.delete = ['project-system-admin', 'staff'];
 
     // Define security tag defaults
     var theVc = await vc.save()
+    console.log("saved:", theVc);
     return Actions.sendResponse(res, 200, theVc);
 };
 

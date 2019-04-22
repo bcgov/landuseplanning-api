@@ -592,8 +592,9 @@ paths:
         - Bearer: []
       x-security-scopes:
         - project-system-admin
+        - sysadmin
       parameters:
-        - name: app
+        - name: project
           in: body
           required: true
           schema:
