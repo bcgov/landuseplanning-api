@@ -281,7 +281,7 @@ exports.protectedPost = async function (args, res, next) {
 
   var commentPeriod = new CommentPeriod({
     _schemaName: 'CommentPeriod',
-    addedBy: args.swagger.params.auth_payload.preferred_username.value,
+    addedBy: args.swagger.params.auth_payload.preferred_username,
     dateAdded: new Date(),
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
@@ -320,7 +320,7 @@ exports.protectedPut = async function (args, res, next) {
     instructions: obj.instructions,
     milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
-    updatedBy: args.swagger.params.auth_payload.preferred_username.value,
+    updatedBy: args.swagger.params.auth_payload.preferred_username,
     read: obj.read
   };
 

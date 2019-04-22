@@ -230,10 +230,16 @@ definitions:
       - 'commentId'
       - 'dateAdded'
       - 'dateUpdated'
+      - 'eaoNotes'
+      - 'eaoStatus'
       - 'isAnonymous'
       - 'location'
-      - 'eaoStatus'
       - 'period'
+      - 'proponentNotes'
+      - 'proponentStatus'
+      - 'publishedNotes'
+      - 'rejectedNotes'
+      - 'rejectedReason'
       - 'read'
       - 'write'
       - 'delete'
@@ -247,7 +253,14 @@ definitions:
       - +dateAdded
       - -dateAdded
 
-### Comment Definitions
+### Comment Period Definitions
+  CommentStatus:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be the following commands: publish, defer, reject, reset."
+        example: "publish"
   CommentPeriodId:
     type: object
     properties:
@@ -869,7 +882,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -894,7 +907,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Project fields to return."
@@ -933,7 +946,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Project fields to return."
@@ -972,7 +985,7 @@ paths:
           in: path
           description: "ID of project to update"
           required: true
-          type: "string"
+          type: string
         - name: ProjObject
           in: body
           required: true
@@ -1002,7 +1015,7 @@ paths:
           in: path
           description: "ID of project to delete"
           required: true
-          type: "string"
+          type: string
         - name: ProjObject
           in: body
           required: true
@@ -1030,7 +1043,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1056,7 +1069,7 @@ paths:
           in: path
           description: "ID of project to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1079,7 +1092,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1105,7 +1118,7 @@ paths:
           in: path
           description: "ID of project to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1425,7 +1438,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1446,7 +1459,7 @@ paths:
           in: path
           description: "ID of project to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Project fields to return."
@@ -1796,7 +1809,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1821,7 +1834,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Document fields to return."
@@ -1857,7 +1870,7 @@ paths:
           in: path
           description: "ID of document to update"
           required: true
-          type: "string"
+          type: string
         - name: upfile
           in: formData
           description: "The file to upload."
@@ -1949,7 +1962,7 @@ paths:
           in: path
           description: "ID of document to delete"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1972,7 +1985,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -1998,7 +2011,7 @@ paths:
           in: path
           description: "ID of document to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2021,7 +2034,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2047,7 +2060,7 @@ paths:
           in: path
           description: "ID of document to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2070,7 +2083,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2095,7 +2108,7 @@ paths:
           in: path
           description: "ID of document to download"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2215,7 +2228,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2236,7 +2249,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Document fields to return."
@@ -2268,7 +2281,7 @@ paths:
           in: path
           description: "ID of document to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2289,7 +2302,7 @@ paths:
           in: path
           description: "ID of document to download"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2384,7 +2397,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2409,7 +2422,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Organization fields to return."
@@ -2443,7 +2456,7 @@ paths:
           in: path
           description: "ID of organization to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2466,7 +2479,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2492,7 +2505,7 @@ paths:
           in: path
           description: "ID of organization to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2515,7 +2528,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2541,7 +2554,7 @@ paths:
           in: path
           description: "ID of organization to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2606,7 +2619,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2627,7 +2640,7 @@ paths:
           in: path
           description: "ID of organization to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Organization fields to return."
@@ -2732,7 +2745,7 @@ paths:
           in: path
           description: "ID of user to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2757,7 +2770,7 @@ paths:
           in: path
           description: "ID of user to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "User fields to return."
@@ -2791,7 +2804,7 @@ paths:
           in: path
           description: "ID of user to update"
           required: true
-          type: "string"
+          type: string
         - name: user
           in: body
           required: true
@@ -2834,7 +2847,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - in: query
           name: period
@@ -2889,7 +2903,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - in: query
           name: period
@@ -2960,7 +2975,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /comment/{CommentId}:
+  /comment/{commentId}:
     x-swagger-router-controller: comment
     options:
       tags:
@@ -2969,11 +2984,11 @@ paths:
       operationId: protectedOptions
       description: "Options on comment GET Route"
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -2992,13 +3007,14 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Comment fields to return."
@@ -3020,21 +3036,22 @@ paths:
     put:
       tags:
         - comment
-      summary: "Update/Upload a comment"
+      summary: "Update a comment"
       operationId: protectedPut
       description: "Update a comment object."
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       consumes:
         - multipart/form-data
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to update"
           required: true
-          type: "string"
+          type: string
         - name: comment
           in: body
           required: true
@@ -3049,7 +3066,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /comment/{CommentId}/publish:
+  /comment/{commentId}/status:
     x-swagger-router-controller: comment
     options:
       tags:
@@ -3058,11 +3075,16 @@ paths:
       operationId: protectedOptions
       description: "Options on comment GET Route"
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to get"
           required: true
-          type: "string"
+          type: string
+        - name: status
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CommentStatus"
       responses:
         "200":
           description: "Success"
@@ -3075,69 +3097,25 @@ paths:
     put:
       tags:
         - comment
-      summary: "Publish a comment"
-      operationId: protectedPublish
-      description: "Adds the singular instance of the 'public' role to a comment."
+      summary: "Changes eaoStatus field of a comment"
+      operationId: protectedStatus
+      description: "Sets published, deferred, or rejected for the status of a comment. Also handles permissions tagging when dealing with pubished/unpublish."
       security:
         - Bearer: []
       x-security-scopes:
-        - publish:comment
-        # TODO: Define publish roles.
+        - staff
+        - sysadmin
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to update"
           required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/CommentObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-  /comment/{CommentId}/unpublish:
-    x-swagger-router-controller: comment
-    options:
-      tags:
-        - comment
-      summary: "Pre-flight request"
-      operationId: protectedOptions
-      description: "Options on comment GET Route"
-      parameters:
-        - name: CommentId
-          in: path
-          description: "ID of comment to get"
+          type: string
+        - name: status
+          in: body
           required: true
-          type: "string"
-      responses:
-        "200":
-          description: "Success"
           schema:
-            $ref: "#/definitions/CommentObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    put:
-      tags:
-        - comment
-      summary: "UnPublish a comment"
-      operationId: protectedUnPublish
-      description: "Removes the singular instance of the 'public' role on a comment."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - unpublish:comment
-        # TODO: Define unpublish roles.
-      parameters:
-        - name: CommentId
-          in: path
-          description: "ID of comment to update"
-          required: true
-          type: "string"
+            $ref: "#/definitions/CommentStatus"
       responses:
         "200":
           description: "Success"
@@ -3278,7 +3256,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /public/comment/{CommentId}:
+  /public/comment/{commentId}:
     x-swagger-router-controller: comment
     options:
       tags:
@@ -3287,11 +3265,11 @@ paths:
       operationId: protectedOptions
       description: "Options on comment GET Route"
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3308,11 +3286,11 @@ paths:
       operationId: publicGet
       description: "Public access to retrieving a comment."
       parameters:
-        - name: CommentId
+        - name: commentId
           in: path
           description: "ID of comment to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Comment fields to return."
@@ -3520,7 +3498,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3546,7 +3524,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: project
           description: "CommentPeriods relating to a particular Project(s)"
@@ -3585,7 +3563,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: project
           description: "CommentPeriods relating to a particular Project(s)"
@@ -3630,7 +3608,7 @@ paths:
           in: path
           description: "ID of commentperiod to update"
           required: true
-          type: "string"
+          type: string
         - name: cp
           in: body
           required: true
@@ -3663,7 +3641,7 @@ paths:
           in: path
           description: "ID of commentperiod to delete"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3686,7 +3664,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3712,7 +3690,7 @@ paths:
           in: path
           description: "ID of commentperiod to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3735,7 +3713,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3761,7 +3739,7 @@ paths:
           in: path
           description: "ID of commentperiod to update"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -3842,7 +3820,7 @@ paths:
           in: path
           description: "ID of commentperiod to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -4233,7 +4211,7 @@ paths:
           in: path
           description: "ID of topic to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -4258,7 +4236,7 @@ paths:
           in: path
           description: "ID of topic to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Topic fields to return."
@@ -4294,7 +4272,7 @@ paths:
           in: path
           description: "ID of topic to update"
           required: true
-          type: "string"
+          type: string
         - name: cp
           in: body
           required: true
@@ -4324,7 +4302,7 @@ paths:
           in: path
           description: "ID of topic to delete"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -4443,7 +4421,7 @@ paths:
           in: path
           description: "ID of vc to get"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"
@@ -4468,7 +4446,7 @@ paths:
           in: path
           description: "ID of vc to get"
           required: true
-          type: "string"
+          type: string
         - in: query
           name: fields
           description: "Vc fields to return."
@@ -4504,7 +4482,7 @@ paths:
           in: path
           description: "ID of vc to update"
           required: true
-          type: "string"
+          type: string
         - name: cp
           in: body
           required: true
@@ -4534,7 +4512,7 @@ paths:
           in: path
           description: "ID of vc to delete"
           required: true
-          type: "string"
+          type: string
       responses:
         "200":
           description: "Success"

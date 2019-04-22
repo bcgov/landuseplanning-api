@@ -13,15 +13,48 @@ var getSanitizedFields = function (fields) {
       'commentId',
       'dateAdded',
       'dateUpdated',
+      'eaoNotes',
+      'eaoStatus',
       'isAnonymous',
       'location',
-      'eaoStatus',
       'period',
+      'proponentNotes',
+      'proponentStatus',
+      'publishedNotes',
+      'rejectedNotes',
+      'rejectedReason',
       'read',
       'write',
       'delete'
     ], f) !== -1);
   });
+}
+
+var setPermissionsFromEaoStatus = function (status, comment) {
+  switch (status) {
+    case 'publish':
+      defaultLog.info('Publishing Comment:', objId);
+      comment.eaoStatus = 'Published';
+      comment.read = ['public', 'staff', 'sysadmin'];
+      break;
+      case 'defer':
+      defaultLog.info('Deferring Comment:', objId);
+      comment.eaoStatus = 'Deferred';
+      comment.read = ['staff', 'sysadmin'];
+      break;
+      case 'reject':
+      defaultLog.info('Rejecting Comment:', objId);
+      comment.eaoStatus = 'Rejected';
+      comment.read = ['staff', 'sysadmin'];
+      break;
+    case 'Reset':
+      defaultLog.info('Reseting Comment Status:', objId);
+      comment.eaoStatus = '';
+      comment.read = ['staff', 'sysadmin'];
+      break;
+    default:
+      break;
+  }
 }
 
 // Function 'warms up' the query so that we can project the field that we're sorting on
@@ -75,9 +108,9 @@ exports.publicGet = async function (args, res, next) {
   var query = {}, sort = {};
   var skip = null, limit = null;
 
-  // Build match query if on CommentId route.
-  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
-    query = Utils.buildQuery('_id', args.swagger.params.CommentId.value, query);
+  // Build match query if on commentId route.
+  if (args.swagger.params.commentId && args.swagger.params.commentId.value) {
+    query = Utils.buildQuery('_id', args.swagger.params.commentId.value, query);
   } else {
     if (args.swagger.params.period && args.swagger.params.period.value) {
       query = Utils.buildQuery('period', args.swagger.params.period.value, query);
@@ -126,8 +159,8 @@ exports.protectedHead = async function (args, res, next) {
   var skip = null, limit = null;
   var sort = {}, query = {};
 
-  if (args.swagger.params.CommentId && args.swagger.params.CommentId.value) {
-    query = Utils.buildQuery('_id', args.swagger.params.CommentId.value, query);
+  if (args.swagger.params.commentId && args.swagger.params.commentId.value) {
+    query = Utils.buildQuery('_id', args.swagger.params.commentId.value, query);
   }
   if (args.swagger.params._commentPeriod && args.swagger.params._commentPeriod.value) {
     query = Utils.buildQuery('_commentPeriod', args.swagger.params._commentPeriod.value, query);
@@ -152,7 +185,7 @@ exports.protectedHead = async function (args, res, next) {
     null, // limit
     true); // count
   // /api/comment/ route, return 200 OK with 0 items if necessary
-  if (!(args.swagger.params.CommentId && args.swagger.params.CommentId.value) || (data && data.length > 0)) {
+  if (!(args.swagger.params.commentId && args.swagger.params.commentId.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data);
   } else {
@@ -165,9 +198,9 @@ exports.protectedGet = async function (args, res, next) {
 
   var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
 
-  // Build match query if on CommentId route.
+  // Build match query if on commentId route.
   if (args.swagger.params.commentId && args.swagger.params.commentId.value) {
-    query = Utils.buildQuery('_id', args.swagger.params.commentId.value, query);
+    _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.commentId.value) });
   }
 
   // Build match query if on comment period's id
@@ -199,21 +232,21 @@ exports.protectedGet = async function (args, res, next) {
 
   // Set filter for eaoStatus
   if (args.swagger.params.pending && args.swagger.params.pending.value === true) {
-    filter.push({ 'eaoStatus': 'Pending' }); 
+    filter.push({ 'eaoStatus': 'Pending' });
   }
   if (args.swagger.params.published && args.swagger.params.published.value === true) {
-    filter.push({ 'eaoStatus': 'Published' }); 
+    filter.push({ 'eaoStatus': 'Published' });
   }
   if (args.swagger.params.deferred && args.swagger.params.deferred.value === true) {
-    filter.push({ 'eaoStatus': 'Deferred' }); 
+    filter.push({ 'eaoStatus': 'Deferred' });
   }
   if (args.swagger.params.rejected && args.swagger.params.rejected.value === true) {
-    filter.push({ 'eaoStatus': 'Rejected' }); 
+    filter.push({ 'eaoStatus': 'Rejected' });
   }
   if (filter.length !== 0) {
-    _.assignIn(query, {$or: filter});
+    _.assignIn(query, { $or: filter });
   }
-  
+
   try {
     var data = await Utils.runDataQuery('Comment',
       args.swagger.params.auth_payload.realm_access.roles,
@@ -268,94 +301,78 @@ exports.unProtectedPost = async function (args, res, next) {
 };
 
 // Update an existing Comment
-exports.protectedPut = function (args, res, next) {
-  var objId = args.swagger.params.CommentId.value;
-  defaultLog.info('ObjectID:', args.swagger.params.CommentId.value);
-
+exports.protectedPut = async function (args, res, next) {
+  console.log(args.swagger.params);
+  var objId = args.swagger.params.commentId.value;
   var obj = args.swagger.params.comment.value;
+  defaultLog.info('Put comment:', objId);
 
-  // Strip security tags - these will not be updated on this route.
-  delete obj.tags;
-  if (obj.review) {
-    delete obj.review.tags;
-    if (obj.commentStatus === 'Accepted') {
-      obj.review.tags = [['sysadmin'], ['public']]
-    } else if (obj.commentStatus === 'Pending') {
-      obj.review.tags = [['sysadmin']]
-    } else if (obj.commentStatus === 'Rejected') {
-      obj.review.tags = [['sysadmin']]
-    }
+  var Comment = mongoose.model('Comment');
+
+  var comment = {
+    dateUpdated: new Date(),
+    eaoNotes: obj.eaoNotes,
+    eaoStatus: obj.eaoStatus,
+    proponentNotes: obj.proponentNotes,
+    proponentStatus: obj.proponentStatus,
+    publishedNotes: obj.publishedNotes,
+    rejectedNotes: obj.rejectedNotes,
+    rejectedReason: obj.rejectedReason,
+    // TODO
+    // valuedComponents: obj.valuedComponents,
+    // documents: obj.documents,
+    updatedBy: args.swagger.params.auth_payload.preferred_username
+  };
+  setPermissionsFromEaoStatus(obj.eaoStatus, comment);
+
+  defaultLog.info('Incoming updated object:', comment);
+
+  try {
+    var c = await Comment.findOneAndUpdate({ _id: objId }, comment, { upsert: false });
+    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Comment updated:', c);
+    return Actions.sendResponse(res, 200, c);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
   }
-
-  if (obj.commentAuthor) {
-    delete obj.commentAuthor.tags;
-    // Did they request anon?
-    if (obj.commentAuthor.requestedAnonymous) {
-      obj.commentAuthor.tags = [['sysadmin']];
-    } else {
-      obj.commentAuthor.tags = [['sysadmin'], ['public']];
-    }
-
-    // Never allow this to be updated
-    if (obj.commentAuthor.internal) {
-      delete obj.commentAuthor.internal.tags;
-      obj.commentAuthor.internal.tags = [['sysadmin']];
-    }
-  }
-
-  defaultLog.info('Incoming updated object:', obj);
-  // TODO sanitize/update audits.
-
-  var Comment = require('mongoose').model('Comment');
-  Comment.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function (err, o) {
-    if (o) {
-      defaultLog.info('o:', o);
-      return Actions.sendResponse(res, 200, o);
-    } else {
-      defaultLog.info('Couldn\'t find that object!');
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
 };
 
 // Publish the Comment
-exports.protectedPublish = async function (args, res, next) {
-  var objId = args.swagger.params.CommentId.value;
-  defaultLog.info('Publish Comment:', objId);
+exports.protectedStatus = async function (args, res, next) {
+  var objId = args.swagger.params.commentId.value;
+  var status = args.swagger.params.status.value.status;
 
-  var Comment = require('mongoose').model('Comment');
-  Comment.findOne({ _id: objId }, async function (err, o) {
-    if (o) {
-      defaultLog.info('o:', o);
+  var comment = {
+    dateUpdated: new Date(),
+    updatedBy: args.swagger.params.auth_payload.preferred_username
+  }
+  var Comment = mongoose.model('Comment');
 
-      // Add public to the tag of this obj.
-      var published = await Actions.publish(o);
-      // Published successfully
-      return Actions.sendResponse(res, 200, published);
-    } else {
-      defaultLog.info('Couldn\'t find that object!');
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+  setPermissionsFromEaoStatus(status, comment);
+
+  try {
+    var c = await Comment.findOneAndUpdate({ _id: objId }, comment, { upsert: false, new: true }).exec();
+    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Comment updated:', c);
+    return Actions.sendResponse(res, 200, c);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+
+  // var Comment = require('mongoose').model('Comment');
+  // Comment.findOne({ _id: objId }, async function (err, o) {
+  //   if (o) {
+  //     defaultLog.info('o:', o);
+
+  //     // Add public to the tag of this obj.
+  //     var published = await Actions.publish(o);
+  //     // Published successfully
+  //     return Actions.sendResponse(res, 200, published);
+  //   } else {
+  //     defaultLog.info('Couldn\'t find that object!');
+  //     return Actions.sendResponse(res, 404, {});
+  //   }
+  // });
 };
-
-// Unpublish the Comment
-exports.protectedUnPublish = async function (args, res, next) {
-  var objId = args.swagger.params.CommentId.value;
-  defaultLog.info('UnPublish Comment:', objId);
-
-  var Comment = require('mongoose').model('Comment');
-  Comment.findOne({ _id: objId }, async function (err, o) {
-    if (o) {
-      defaultLog.info('o:', o);
-
-      // Remove public to the tag of this obj.
-      var unpublished = await Actions.unPublish(o)
-      // UnPublished successfully
-      return Actions.sendResponse(res, 200, unpublished);
-    } else {
-      defaultLog.info('Couldn\'t find that object!');
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
-}
