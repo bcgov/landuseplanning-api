@@ -14,6 +14,7 @@ module.exports = require('../models')('Comment', {
     publishedNotes      : { type: String, default: null },
     rejectedNotes       : { type: String, default: null },
     rejectedReason      : { type: String, default: null },
+    valuedComponents    : [{ type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true }],
 
     // Permissions
     write               : [{ type: String, trim: true, default: '["project-system-admin"]' }],
