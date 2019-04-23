@@ -182,5 +182,17 @@ module.exports = [{
   "type" : "label",
   "_schemaName" : "List",
   "name" : "Certificate Extension Determination"
+},
+////////////////////////////////////////////////
+{
+  "type" : "headlineType",
+  "_schemaName" : "List",
+  "name" : "Public Comment Period"
+},
+{
+  "type" : "headlineType",
+  "_schemaName" : "List",
+  "name" : "News"
 }
+
 ]

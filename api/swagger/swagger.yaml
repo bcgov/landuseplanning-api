@@ -3905,6 +3905,11 @@ paths:
           items:
             type: string
         - in: query
+          name: populate
+          description: "Populate Project object ID"
+          type: boolean
+          required: false
+        - in: query
           name: dataset
           description: "Dataset to search on"
           type: string
@@ -3994,6 +3999,11 @@ paths:
           name: project
           description: "Project to specifically query"
           type: string
+          required: false
+        - in: query
+          name: populate
+          description: "Populate Project object ID"
+          type: boolean
           required: false
         - in: query
           name: pageNum

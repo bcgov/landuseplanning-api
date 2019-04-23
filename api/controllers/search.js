@@ -16,7 +16,7 @@ function isEmpty(obj) {
   return true;
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, query) {
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, query, populate = false) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -73,77 +73,84 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
 
+  var aggregation = [{ $match: match }];
+
+  console.log('populate:', populate);
+  if (populate === true) {
+    aggregation.push({
+      "$lookup": {
+        "from": "epic",
+        "localField": "project",
+        "foreignField": "_id",
+        "as": "project"
+      }
+    });
+    aggregation.push({
+      "$addFields": {
+        project: "$project",
+      }
+    });
+    aggregation.push({
+      "$unwind": "$project"
+    });
+  }
+
+  aggregation.push({
+    $redact: {
+      $cond: {
+        if: {
+          // This way, if read isn't present, we assume public no roles array.
+          $and: [
+            { $cond: { if: "$read", then: true, else: false } },
+            {
+              $anyElementTrue: {
+                $map: {
+                  input: "$read",
+                  as: "fieldTag",
+                  in: { $setIsSubset: [["$$fieldTag"], roles] }
+                }
+              }
+            }
+          ]
+        },
+        then: "$$KEEP",
+        else: {
+          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+        }
+      }
+    }
+  });
+
+  aggregation.push({
+    $addFields: {
+      score: { $meta: "textScore" }
+    }
+  });
+
+  aggregation.push({
+    $facet: {
+      searchResults: [
+        {
+          $sort: sortingValue
+        },
+        {
+          $skip: pageNum * pageSize
+        },
+        {
+          $limit: pageSize
+        }
+      ],
+      meta: [
+        {
+          $count: "searchResultsTotal"
+        }
+      ]
+    }
+  })
 
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
-    collectionObj.aggregate(
-      [
-        { $match: match },
-        {
-          "$lookup": {
-            "from": "epic",
-            "localField": "project",
-            "foreignField": "_id",
-            "as": "project"
-          }
-        },
-        {
-          "$addFields": {
-            project: "$project",
-          }
-        },
-        { "$unwind": "$project" },
-        {
-          $redact: {
-            $cond: {
-              if: {
-                // This way, if read isn't present, we assume public no roles array.
-                $and: [
-                  { $cond: { if: "$read", then: true, else: false } },
-                  {
-                    $anyElementTrue: {
-                      $map: {
-                        input: "$read",
-                        as: "fieldTag",
-                        in: { $setIsSubset: [["$$fieldTag"], roles] }
-                      }
-                    }
-                  }
-                ]
-              },
-              then: "$$KEEP",
-              else: {
-                $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-              }
-            }
-          }
-        },
-        {
-          $addFields: {
-            score: { $meta: "textScore" }
-          }
-        },
-        {
-          $facet: {
-            searchResults: [
-              {
-                $sort: sortingValue
-              },
-              {
-                $skip: pageNum * pageSize
-              },
-              {
-                $limit: pageSize
-              }
-            ],
-            meta: [
-              {
-                $count: "searchResultsTotal"
-              }
-            ]
-          }
-        }
-      ])
+    collectionObj.aggregate(aggregation)
       .exec()
       .then(function (data) {
         resolve(data);
@@ -164,6 +171,7 @@ var executeQuery = async function (args, res, next) {
   var keywords = args.swagger.params.keywords.value;
   var dataset = args.swagger.params.dataset.value;
   var project = args.swagger.params.project.value;
+  var populate = args.swagger.params.populate ? args.swagger.params.populate.value : false;
   var pageNum = args.swagger.params.pageNum.value || 0;
   var pageSize = args.swagger.params.pageSize.value || 25;
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
@@ -176,6 +184,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortBy:", sortBy);
   defaultLog.info("query:", query);
   defaultLog.info("_id:", _id);
+  defaultLog.info("populate:", populate);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
 
@@ -209,20 +218,20 @@ var executeQuery = async function (args, res, next) {
         $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] },
                   $text: { $search: keywords } }
       },
-      {
-        "$lookup": {
-          "from": "epic",
-          "localField": "project",
-          "foreignField": "_id",
-          "as": "project"
-        }
-      },
-      {
-        "$addFields": {
-          project: "$project",
-        }
-      },
-      { "$unwind": "$project" },
+      // {
+      //   "$lookup": {
+      //     "from": "epic",
+      //     "localField": "project",
+      //     "foreignField": "_id",
+      //     "as": "project"
+      //   }
+      // },
+      // {
+      //   "$addFields": {
+      //     project: "$project",
+      //   }
+      // },
+      // { "$unwind": "$project" },
       {
         $redact: {
           $cond: {
@@ -279,7 +288,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query, populate)
     return Actions.sendResponse(res, 200, data);
 
   } else if (dataset === 'Item') {
