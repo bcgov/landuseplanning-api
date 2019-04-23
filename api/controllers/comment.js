@@ -23,6 +23,7 @@ var getSanitizedFields = function (fields) {
       'publishedNotes',
       'rejectedNotes',
       'rejectedReason',
+      'valuedComponents',
       'read',
       'write',
       'delete'
@@ -302,12 +303,16 @@ exports.unProtectedPost = async function (args, res, next) {
 
 // Update an existing Comment
 exports.protectedPut = async function (args, res, next) {
-  console.log(args.swagger.params);
   var objId = args.swagger.params.commentId.value;
   var obj = args.swagger.params.comment.value;
   defaultLog.info('Put comment:', objId);
 
   var Comment = mongoose.model('Comment');
+
+  var vcs = [];
+  obj.valuedComponents.forEach(function(vc) {
+    vcs.push(mongoose.Types.ObjectId(vc));
+  });
 
   var comment = {
     dateUpdated: new Date(),
@@ -318,8 +323,8 @@ exports.protectedPut = async function (args, res, next) {
     publishedNotes: obj.publishedNotes,
     rejectedNotes: obj.rejectedNotes,
     rejectedReason: obj.rejectedReason,
+    valuedComponents: vcs,
     // TODO
-    // valuedComponents: obj.valuedComponents,
     // documents: obj.documents,
     updatedBy: args.swagger.params.auth_payload.preferred_username
   };
