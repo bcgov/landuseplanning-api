@@ -194,7 +194,7 @@ definitions:
     #TODO: Fix enums
     enum: &documentFields
       - displayName
-      - documentFileName
+      - internalOriginalName
       - internalURL
       - internalMime
 
@@ -298,6 +298,7 @@ definitions:
       - dateStartedEst
       - dateUpdated
       - downloadRoles
+      - documents
       - informationLabel
       - instructions
       - isClassified
@@ -1756,8 +1757,17 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
+        - staff
       parameters:
+        - in: query
+          name: docIds
+          description: "Search using an array of document ids."
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+              type: string
         - in: query
           name: project
           description: "Documents relating to a particular Project(s)"
@@ -1935,6 +1945,11 @@ paths:
         - name: documentFileName
           in: formData
           description: "The documentFileName of the file."
+          required: false
+          type: string
+        - name: eaoStatus
+          in: formData
+          description: "The eaoStatus of the file."
           required: false
           type: string
       responses:
