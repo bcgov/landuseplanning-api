@@ -31,8 +31,8 @@ module.exports = require ('../models')('Document', {
     // Pre-filled with documentFileName in the UI
     displayName      : { type:String, default:'' },
     milestone        : { type:String, default:'' },
-    uploadDate       : { type: Date, default: Date.now() },
-    documentDate     : { type: Date, default: Date.now() },
+    dateUploaded     : { type: Date, default: Date.now() },
+    datePosted       : { type: Date, default: Date.now() },
     type             : { type:String, default:'' },
     description      : { type:String, default:'' },
     documentAuthor   : { type:String, default:'' },

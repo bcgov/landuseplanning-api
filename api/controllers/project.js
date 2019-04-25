@@ -168,7 +168,10 @@ exports.protectedGet = async function (args, res, next) {
   var query = {};
 
   // Admin's only get this
-  args.swagger.params.fields.value.push('directoryStructure');
+  console.log(args.swagger.params.fields);
+  if (args.swagger.params.fields.value) {
+    args.swagger.params.fields.value.push('directoryStructure');
+  }
   var fields = getSanitizedFields(args.swagger.params.fields.value);
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
@@ -220,7 +223,10 @@ exports.protectedGet = async function (args, res, next) {
     sort, // sort
     skip, // skip
     limit, // limit
-    count) // count
+    count, // count
+    null, 
+    true);
+  console.log(JSON.stringify(data));
   return Actions.sendResponse(res, 200, data);
 };
 

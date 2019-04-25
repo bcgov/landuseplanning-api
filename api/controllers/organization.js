@@ -21,8 +21,11 @@ exports.publicGet = function (args, res, next) {
     return Actions.sendResponse(res, 200, data);
   });
 };
-exports.protectedGet = function(args, res, next) {
+exports.protectedGet = async function(args, res, next) {
   var self        = this;
+
+  var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
+
   self.scopes     = args.swagger.operation["x-security-scopes"];
 
   var Organization = mongoose.model('Organization');
@@ -35,10 +38,45 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.orgId.value, query);
   }
 
-  getOrganizations(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
-  .then(function (data) {
+  // Sort
+  if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    args.swagger.params.sortBy.value.forEach(function (value) {
+      var order_by = value.charAt(0) == '-' ? -1 : 1;
+      var sort_by = value.slice(1);
+      sort[sort_by] = order_by;
+    }, this);
+  }
+
+  // Skip and limit
+  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+  skip = processedParameters.skip;
+  limit = processedParameters.limit;
+
+  console.log('query:', query);
+
+  try {
+    var data = await Utils.runDataQuery('Organization',
+      args.swagger.params.auth_payload.realm_access.roles,
+      query,
+      ['name'], // Fields
+      null,
+      sort, // sort
+      skip, // skip
+      limit, // limit
+      count); // count
+    Utils.recordAction('get', 'organization', args.swagger.params.auth_payload.preferred_username);
+    defaultLog.info('Got organization(s):', data);
+    console.log(data);
     return Actions.sendResponse(res, 200, data);
-  });
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+
+  // getOrganizations(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
+  // .then(function (data) {
+  //   return Actions.sendResponse(res, 200, data);
+  // });
 };
 
 //  Create a new organization

@@ -98,7 +98,7 @@ exports.recordAction = async function (action, meta, payload, objId = null){
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps) {
+exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false) {
     return new Promise(async function (resolve, reject) {
         var theModel = mongoose.model(modelType);
         var projection = {};
@@ -124,30 +124,38 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         {
             '$project': projection
         },
+        populateProponent && {
+          '$lookup': {
+            "from": "epic",
+            "localField": "proponent",
+            "foreignField": "_id",
+            "as": "proponent"
+          }
+        },
+        populateProponent && {
+          "$unwind": "$proponent"
+        },
         {
           $redact: {
-           $cond: {
+            $cond: {
               if: {
+                // This way, if read isn't present, we assume public no roles array.
                 $and: [
-                  // This checks to see that 'tags' field exists before doing the RBAC compare for
-                  // redaction.  If it doesn't contain the 'tags' field, then we allow the result.
-                  { $cond: { if: "$tags", then: true, else: false } },
+                  { $cond: { if: "$read", then: true, else: false } },
                   {
                     $anyElementTrue: {
                       $map: {
-                        input: "$tags" ,
+                        input: "$read",
                         as: "fieldTag",
-                        in: { $setIsSubset: [ "$$fieldTag", role ] }
+                        in: { $setIsSubset: [["$$fieldTag"], role] }
                       }
                     }
                   }
                 ]
               },
-              then: "$$DESCEND",
+              then: "$$KEEP",
               else: {
-                // If the object didn't have the $tags field, allow recursion
-                // If the object had the tags field, prune it as it failed RBAC
-                $cond: { if: "$tags", then: "$$PRUNE", else: "$$DESCEND" }
+                $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
               }
             }
           }

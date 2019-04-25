@@ -344,8 +344,8 @@ exports.protectedPost = function (args, res, next) {
 
         doc.displayName = args.swagger.params.displayName.value;
         doc.milestone = args.swagger.params.milestone.value;
-        doc.uploadDate = args.swagger.params.uploadDate.value;
-        doc.documentDate = args.swagger.params.documentDate.value;
+        doc.dateUploaded = args.swagger.params.dateUploaded.value;
+        doc.datePosted = args.swagger.params.datePosted.value;
         doc.type = args.swagger.params.type.value;
         doc.description = args.swagger.params.description.value;
         doc.documentAuthor = args.swagger.params.documentAuthor.value;
@@ -426,8 +426,8 @@ exports.protectedPut = function (args, res, next) {
 
   obj.displayName = args.swagger.params.displayName.value;
   obj.milestone = args.swagger.params.milestone.value;
-  obj.uploadDate = args.swagger.params.uploadDate.value;
-  obj.documentDate = args.swagger.params.documentDate.value;
+  obj.dateUploaded = args.swagger.params.dateUploaded.value;
+  obj.datePosted = args.swagger.params.datePosted.value;
   obj.type = args.swagger.params.type.value;
   obj.description = args.swagger.params.description.value;
   obj.documentAuthor = args.swagger.params.documentAuthor.value;

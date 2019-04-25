@@ -1697,14 +1697,14 @@ paths:
           description: "The milestone of the file."
           required: false
           type: string
-        - name: documentDate
+        - name: datePosted
           in: formData
-          description: "The documentDate of the file."
+          description: "The datePosted of the file."
           required: false
           type: string
-        - name: uploadDate
+        - name: dateUploaded
           in: formData
-          description: "The uploadDate of the file."
+          description: "The dateUploaded of the file."
           required: false
           type: string
         - name: documentName
@@ -1901,14 +1901,14 @@ paths:
           description: "The milestone of the file."
           required: false
           type: string
-        - name: documentDate
+        - name: datePosted
           in: formData
-          description: "The documentDate of the file."
+          description: "The datePosted of the file."
           required: false
           type: string
-        - name: uploadDate
+        - name: dateUploaded
           in: formData
-          description: "The uploadDate of the file."
+          description: "The dateUploaded of the file."
           required: false
           type: string
         - name: documentName
