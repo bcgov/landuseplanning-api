@@ -19,6 +19,7 @@ var getSanitizedFields = function (fields) {
       'documentFileName',
       'internalOriginalName',
       'displayName',
+      'labels',
       'documentType',
       'datePosted',
       'dateUploaded',
