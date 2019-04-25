@@ -14,9 +14,9 @@ module.exports = require ('../models')('Document', {
 
     // Note: Default on tag property is purely for display only, they have no real effect on the model
     // This must be done in the code.
-    read             : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
-    write            : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
-    delete           : [{ type: String, trim: true, default: '[["sysadmin"]]' }],
+    read             : [{ type: String, trim: true, default: 'sysadmin' }],
+    write            : [{ type: String, trim: true, default: 'sysadmin' }],
+    delete           : [{ type: String, trim: true, default: 'sysadmin' }],
 
     // Not editable
     documentFileName : { type:String, default:'' },
@@ -36,6 +36,7 @@ module.exports = require ('../models')('Document', {
     type             : { type:String, default:'' },
     description      : { type:String, default:'' },
     documentAuthor   : { type:String, default:'' },
+    eaoStatus        : { type: String, default: '' },
 
     // TODO
     labels           : [{ type: Mixed, default: {} }]

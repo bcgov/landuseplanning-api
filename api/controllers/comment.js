@@ -13,6 +13,7 @@ var getSanitizedFields = function (fields) {
       'commentId',
       'dateAdded',
       'dateUpdated',
+      'documents',
       'eaoNotes',
       'eaoStatus',
       'isAnonymous',
