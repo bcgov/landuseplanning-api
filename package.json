@@ -33,6 +33,7 @@
     "request": "^2.88.0",
     "stream": "^0.0.2",
     "swagger-tools": "^0.10.4",
+    "tree-model": "^1.0.7",
     "underscore": "^1.9.1",
     "validator": "^9.4.1",
     "wicket": "^1.3.3",
