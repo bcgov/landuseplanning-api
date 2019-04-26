@@ -218,20 +218,20 @@ var executeQuery = async function (args, res, next) {
         $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] },
                   $text: { $search: keywords } }
       },
-      // {
-      //   "$lookup": {
-      //     "from": "epic",
-      //     "localField": "project",
-      //     "foreignField": "_id",
-      //     "as": "project"
-      //   }
-      // },
-      // {
-      //   "$addFields": {
-      //     project: "$project",
-      //   }
-      // },
-      // { "$unwind": "$project" },
+      {
+        "$lookup": {
+          "from": "epic",
+          "localField": "project",
+          "foreignField": "_id",
+          "as": "project"
+        }
+      },
+      {
+        "$addFields": {
+          project: "$project",
+        }
+      },
+      { "$unwind": "$project" },
       {
         $redact: {
           $cond: {
