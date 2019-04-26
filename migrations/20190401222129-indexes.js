@@ -33,6 +33,7 @@ exports.up = function(db) {
         epicProjectId: "text",
         sector: "text",
         status: "text",
+        labels: "text",
         code: "text" },
         {
           name: "searchIndex"
