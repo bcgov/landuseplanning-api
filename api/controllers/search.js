@@ -9,9 +9,9 @@ var _accessToken = null;
 var qs = require('qs');
 
 function isEmpty(obj) {
-  for(var key in obj) {
-      if(obj.hasOwnProperty(key))
-          return false;
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key))
+      return false;
   }
   return true;
 }
@@ -57,14 +57,15 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     }
   }
 
-  var match = { _schemaName: collection,
+  var match = {
+    _schemaName: collection,
     ...(isEmpty(queryModifer) ? undefined : queryModifer),
     ...(searchProperties ? searchProperties : undefined),
     ...(properties ? properties : undefined),
     $or: [
-        { isDeleted: { $exists:false } },
-        { isDeleted: false }
-      ]
+      { isDeleted: { $exists: false } },
+      { isDeleted: false }
+    ]
   };
 
   console.log("queryModifer:", queryModifer);
@@ -72,6 +73,21 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
 
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
+
+  // We don't want to have sort in the aggrigation if the front end doesn't need sort.
+  let searchResultAggrigation = [
+    {
+      $skip: pageNum * pageSize
+    },
+    {
+      $limit: pageSize
+    }
+  ];
+  if (sortField !== 'score') {
+    searchResultAggrigation.unshift({
+      $sort: sortingValue
+    });
+  }
 
   var aggregation = [{ $match: match }];
 
@@ -129,17 +145,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
 
   aggregation.push({
     $facet: {
-      searchResults: [
-        {
-          $sort: sortingValue
-        },
-        {
-          $skip: pageNum * pageSize
-        },
-        {
-          $limit: pageSize
-        }
-      ],
+      searchResults: searchResultAggrigation,
       meta: [
         {
           $count: "searchResultsTotal"
@@ -215,8 +221,10 @@ var executeQuery = async function (args, res, next) {
     var data = await collectionObj.aggregate([
       {
         // TODO Include only models to which we want to search against, ie, documents, VCs and projects.
-        $match: { _schemaName: { $in: ['Project', 'Document', 'Vc'] },
-                  $text: { $search: keywords } }
+        $match: {
+          _schemaName: { $in: ['Project', 'Document', 'Vc'] },
+          $text: { $search: keywords }
+        }
       },
       {
         "$lookup": {
@@ -284,7 +292,7 @@ var executeQuery = async function (args, res, next) {
       }
     ])
     return Actions.sendResponse(res, 200, data);
-  } else if (dataset !== 'Item'){
+  } else if (dataset !== 'Item') {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
@@ -293,10 +301,10 @@ var executeQuery = async function (args, res, next) {
 
   } else if (dataset === 'Item') {
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
-    console.log("ITEM GET", {_id: args.swagger.params._id.value})
+    console.log("ITEM GET", { _id: args.swagger.params._id.value })
     var data = await collectionObj.aggregate([
       {
-          "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
+        "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
       },
       {
         $redact: {
