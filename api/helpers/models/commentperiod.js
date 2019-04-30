@@ -31,7 +31,7 @@ module.exports = require('../models')('CommentPeriod', {
     publishedPercent     : { type: Number, default: '' },
     rangeOption          : { type: String, default: '' },
     rangeType            : { type: String, default: '' },
-    relatedDocuments     : { type: String, default: '' },
+    relatedDocuments     : [{ type: String, default: '' }],
     resolvedPercent      : { type: Number, default: '' },
     userCan              : { type: String, default: '' },
     vettedPercent        : { type: Number, default: '' },
