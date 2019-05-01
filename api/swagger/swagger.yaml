@@ -2991,6 +2991,33 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+    post:
+      tags:
+        - comment
+      summary: "Create a new comment"
+      operationId: protectedPost
+      description: "Create a new comment object."
+      summary: "Create a new comment object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: comment
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/CommentId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
   /comment/{commentId}:
     x-swagger-router-controller: comment
     options:
@@ -4161,7 +4188,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: topic
           in: body

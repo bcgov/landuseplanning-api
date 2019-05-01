@@ -33,24 +33,26 @@ var getSanitizedFields = function (fields) {
 }
 
 var setPermissionsFromEaoStatus = function (status, comment) {
+  console.log(status);
   switch (status) {
-    case 'publish':
-      defaultLog.info('Publishing Comment:', objId);
+    case 'Published':
+      defaultLog.info('Publishing Comment');
       comment.eaoStatus = 'Published';
       comment.read = ['public', 'staff', 'sysadmin'];
       break;
-      case 'defer':
-      defaultLog.info('Deferring Comment:', objId);
+    case 'Deferred':
+      defaultLog.info('Deferring Comment');
       comment.eaoStatus = 'Deferred';
       comment.read = ['staff', 'sysadmin'];
+      console.log('wtf', comment.read);
       break;
-      case 'reject':
-      defaultLog.info('Rejecting Comment:', objId);
+    case 'Rejected':
+      defaultLog.info('Rejecting Comment');
       comment.eaoStatus = 'Rejected';
       comment.read = ['staff', 'sysadmin'];
       break;
     case 'Reset':
-      defaultLog.info('Reseting Comment Status:', objId);
+      defaultLog.info('Reseting Comment Status');
       comment.eaoStatus = '';
       comment.read = ['staff', 'sysadmin'];
       break;
@@ -269,6 +271,53 @@ exports.protectedGet = async function (args, res, next) {
 };
 
 //  Create a new Comment
+exports.protectedPost = async function (args, res, next) {
+  var obj = args.swagger.params.comment.value;
+
+  defaultLog.info('Incoming new comment:', obj);
+
+  var Comment = mongoose.model('Comment');
+
+  var vcs = [];
+  obj.valuedComponents.forEach(function (vc) {
+    vcs.push(mongoose.Types.ObjectId(vc));
+  });
+
+  var comment = new Comment();
+  comment._schemaName = 'Comment';
+  comment.author = obj.author;
+  comment.comment = obj.comment;
+  comment.dateAdded = obj.dateAdded;
+  comment.dateUpdated = obj.dateUpdated;
+  comment.eaoNotes = obj.eaoNotes;
+  comment.eaoStatus = obj.eaoStatus;
+  comment.isAnonymous = obj.isAnonymous;
+  comment.location = obj.location;
+  comment.period = mongoose.Types.ObjectId(obj.period);
+  comment.proponentNotes = obj.proponentNotes;
+  comment.proponentStatus = obj.proponentStatus;
+  comment.publishedNotes = obj.publishedNotes;
+  comment.rejectedNotes = obj.rejectedNotes;
+  comment.rejectedReason = obj.rejectedReason;
+  comment.valuedComponents = vcs;
+
+  comment.write = ['staff', 'sysadmin'];
+  comment.delete = ['staff', 'sysadmin'];
+
+  setPermissionsFromEaoStatus(obj.eaoStatus, comment);
+
+  try {
+    var c = await comment.save();
+    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, c._id);
+    defaultLog.info('Saved new comment object:', c);
+    return Actions.sendResponse(res, 200, c);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+};
+
+//  Create a new Comment
 exports.unProtectedPost = async function (args, res, next) {
   var obj = args.swagger.params.comment.value;
   defaultLog.info('Incoming new object:', obj);
@@ -311,7 +360,7 @@ exports.protectedPut = async function (args, res, next) {
   var Comment = mongoose.model('Comment');
 
   var vcs = [];
-  obj.valuedComponents.forEach(function(vc) {
+  obj.valuedComponents.forEach(function (vc) {
     vcs.push(mongoose.Types.ObjectId(vc));
   });
 
@@ -327,7 +376,6 @@ exports.protectedPut = async function (args, res, next) {
     valuedComponents: vcs,
     // TODO
     // documents: obj.documents,
-    updatedBy: args.swagger.params.auth_payload.preferred_username
   };
   setPermissionsFromEaoStatus(obj.eaoStatus, comment);
 
