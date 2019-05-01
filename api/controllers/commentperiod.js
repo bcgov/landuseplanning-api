@@ -99,7 +99,7 @@ exports.publicGet = async function (args, res, next) {
       null, // limit
       false); // count
 
-    Utils.recordAction('get', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('get', 'commentPeriod', 'public');
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
