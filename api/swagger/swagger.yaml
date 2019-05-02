@@ -229,6 +229,7 @@ definitions:
       - 'comment'
       - 'commentId'
       - 'dateAdded'
+      - 'datePosted'
       - 'dateUpdated'
       - 'eaoNotes'
       - 'eaoStatus'

@@ -12,6 +12,7 @@ var getSanitizedFields = function (fields) {
       'comment',
       'commentId',
       'dateAdded',
+      'datePosted',
       'dateUpdated',
       'documents',
       'eaoNotes',
@@ -365,6 +366,9 @@ exports.protectedPut = async function (args, res, next) {
   });
 
   var comment = {
+    isAnonymous: obj.isAnonymous,
+    dateUpdated: obj.dateAdded,
+    datePosted: obj.datePosted,
     dateUpdated: new Date(),
     eaoNotes: obj.eaoNotes,
     eaoStatus: obj.eaoStatus,
