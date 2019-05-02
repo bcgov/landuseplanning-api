@@ -3,6 +3,7 @@ module.exports = require('../models')('Comment', {
     comment             : { type: String, default: null },
     commentId           : { type: Number, default: null },
     dateAdded           : { type: Date, default: Date.now() },
+    datePosted         : { type: Date, default: Date.now() },
     dateUpdated         : { type: Date, default: Date.now() },
     documents           : [{ type: 'ObjectId', ref: 'Document', default: null, index: true }],
     eaoNotes            : { type: String, default: null },
