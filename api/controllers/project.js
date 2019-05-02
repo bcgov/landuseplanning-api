@@ -153,7 +153,9 @@ exports.publicGet = function (args, res, next) {
       null, // sort
       skip, // skip
       limit, // limit
-      false) // count
+      false, // count
+      null, // steps
+      true) // proponent populate
       .then(function (data) {
         return Actions.sendResponse(res, 200, data);
       });

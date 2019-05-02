@@ -106,6 +106,7 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         // Fields we always return
         var defaultFields = ['_id',
                             'code',
+                            'proponent',
                             'tags',
                             'read'];
         _.each(defaultFields, function (f) {
