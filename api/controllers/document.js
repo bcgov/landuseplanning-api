@@ -19,6 +19,7 @@ var getSanitizedFields = function (fields) {
     return (_.indexOf(['displayName',
       '_addedBy',
       'documentFileName',
+      'internalExt',
       'internalOriginalName',
       'displayName',
       'labels',
