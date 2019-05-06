@@ -21,6 +21,7 @@ module.exports = require ('../models')('Document', {
     // Not editable
     documentFileName : { type:String, default:'' },
     internalURL      : { type:String, default:'' },
+    internalExt      : { type:String, default:'' },
     internalSize     : { type:String, default:'' },
     passedAVCheck    : { type: Boolean, default: false },
     internalMime     : { type:String, default:'' },
