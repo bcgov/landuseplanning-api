@@ -3,7 +3,14 @@
 Minimal API for the EAGLE [Public](https://github.com/bcgov/eagle-public) and [Admin](https://github.com/bcgov/eagle-admin) apps -->
 
 ## How to run this
- 
+
+Before running the api, you must set some environment variables:
+1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
+2) MINIO_ACCESS_KEY='xxxx'
+3) MINIO_SECRET_KEY='xxxx'
+
+Check the respective environments (dev, test, prod) for the appropriate values.
+
 Start the server by running `npm start`
 
 Check the swagger-ui on `http://localhost:3000/api/docs/`
