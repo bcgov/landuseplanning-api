@@ -178,12 +178,10 @@ exports.protectedGet = async function (args, res, next) {
 
   var query = {}, sort = {}, skip = null, limit = null, count = false;
 
-
   // Build match query if on docId route
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.docId.value) });
   } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
-    console.log(args.swagger.params.docIds.value);
     query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
   }
 
@@ -245,18 +243,18 @@ exports.publicDownload = function (args, res, next) {
 
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;
-        if (fileName.slice(- fileType.length) !== fileType){
+        if (fileName.slice(- fileType.length) !== fileType) {
           fileName = fileName + '.' + fileType;
         }
         var fileMeta;
 
         // check if the file exists in Minio
         return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
-          .then(function(objectMeta){
+          .then(function (objectMeta) {
             fileMeta = objectMeta;
             // get the download URL
             return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
-          }, function(){
+          }, function () {
             return Actions.sendResponse(res, 404, {});
           })
           .then(function (docURL) {
@@ -306,18 +304,18 @@ exports.protectedDownload = function (args, res, next) {
 
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;
-        if (fileName.slice(- fileType.length) !== fileType){
+        if (fileName.slice(- fileType.length) !== fileType) {
           fileName = fileName + '.' + fileType;
         }
         var fileMeta;
 
         // check if the file exists in Minio
         return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
-          .then(function(objectMeta){
+          .then(function (objectMeta) {
             fileMeta = objectMeta;
             // get the download URL
             return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
-          }, function(){
+          }, function () {
             return Actions.sendResponse(res, 404, {});
           })
           .then(function (docURL) {
@@ -367,9 +365,9 @@ exports.protectedPost = async function (args, res, next) {
             tempFilePath)
 
           MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
-                                      project,
-                                      args.swagger.params.documentFileName.value,
-                                      tempFilePath)
+            project,
+            args.swagger.params.documentFileName.value,
+            tempFilePath)
             .then(async function (minioFile) {
               console.log("putDocument:", minioFile);
 
@@ -385,9 +383,9 @@ exports.protectedPost = async function (args, res, next) {
               doc._comment = _comment;
               doc._addedBy = args.swagger.params.auth_payload.preferred_username;
               doc._createdDate = new Date();
-              doc.read = [['sysadmin'], ['project-system-admin'], ['staff']];
-              doc.write = [['sysadmin'], ['project-system-admin'], ['staff']];
-              doc.delete = [['sysadmin'], ['project-system-admin'], ['staff']];
+              doc.read = ['sysadmin', 'staff'];
+              doc.write = ['sysadmin', 'staff'];
+              doc.delete = ['sysadmin', 'staff'];
 
               doc.documentFileName = args.swagger.params.documentFileName.value;
               doc.internalURL = minioFile.path;
@@ -402,6 +400,12 @@ exports.protectedPost = async function (args, res, next) {
               // doc.labels = JSON.parse(args.swagger.params.labels.value);
 
               doc.displayName = args.swagger.params.displayName.value;
+              if (args.swagger.params.eaoStatus && args.swagger.params.eaoStatus.value) {
+                doc.eaoStatus = args.swagger.params.eaoStatus.value;
+                if (args.swagger.params.eaoStatus.value == 'Published') {
+                  doc.read.push('public');
+                }
+              }
               doc.milestone = args.swagger.params.milestone.value;
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
@@ -432,53 +436,48 @@ exports.protectedPost = async function (args, res, next) {
   }
 };
 
-exports.protectedPublish = function (args, res, next) {
+exports.protectedPublish = async function (args, res, next) {
   var objId = args.swagger.params.docId.value;
   defaultLog.info("Publish Document:", objId);
 
   var Document = require('mongoose').model('Document');
-  Document.findOne({ _id: objId }, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-
-      // Add public to the tag of this obj.
-      Actions.publish(o)
-        .then(function (published) {
-          // Published successfully
-          return Actions.sendResponse(res, 200, published);
-        }, function (err) {
-          // Error
-          return Actions.sendResponse(res, err.code, err);
-        });
+  try {
+    var document = await Document.findOne({ _id: objId });
+    if (document) {
+      defaultLog.info("Document:", document);
+      document.eaoStatus = "Published";
+      var published = await Actions.publish(document);
+      Utils.recordAction('publish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+      return Actions.sendResponse(res, 200, published);
     } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
+      defaultLog.info("Couldn't find that document!");
+      return Actions.sendResponse(res, 404, e);
     }
-  });
+  } catch (e) {
+    return Actions.sendResponse(res, 400, e);
+  }
 };
-exports.protectedUnPublish = function (args, res, next) {
+
+exports.protectedUnPublish = async function (args, res, next) {
   var objId = args.swagger.params.docId.value;
   defaultLog.info("UnPublish Document:", objId);
 
   var Document = require('mongoose').model('Document');
-  Document.findOne({ _id: objId }, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-
-      // Remove public to the tag of this obj.
-      Actions.unPublish(o)
-        .then(function (unpublished) {
-          // UnPublished successfully
-          return Actions.sendResponse(res, 200, unpublished);
-        }, function (err) {
-          // Error
-          return Actions.sendResponse(res, err.code, err);
-        });
+  try {
+    var document = await Document.findOne({ _id: objId });
+    if (document) {
+      defaultLog.info("Document:", document);
+      document.eaoStatus = "Rejected";
+      var unPublished = await Actions.unPublish(document);
+      Utils.recordAction('unPublish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+      return Actions.sendResponse(res, 200, unPublished);
     } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
+      defaultLog.info("Couldn't find that document!");
+      return Actions.sendResponse(res, 404, e);
     }
-  });
+  } catch (e) {
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 // Update an existing document

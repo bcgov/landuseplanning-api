@@ -284,12 +284,18 @@ exports.protectedPost = async function (args, res, next) {
     vcs.push(mongoose.Types.ObjectId(vc));
   });
 
+  var docs = [];
+  obj.documents.forEach(function (doc) {
+    docs.push(mongoose.Types.ObjectId(doc));
+  });
+
   var comment = new Comment();
   comment._schemaName = 'Comment';
   comment.author = obj.author;
   comment.comment = obj.comment;
   comment.dateAdded = obj.dateAdded;
   comment.dateUpdated = obj.dateUpdated;
+  comment.documents = docs
   comment.eaoNotes = obj.eaoNotes;
   comment.eaoStatus = obj.eaoStatus;
   comment.isAnonymous = obj.isAnonymous;
