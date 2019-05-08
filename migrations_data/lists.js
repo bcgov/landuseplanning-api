@@ -1,6 +1,10 @@
 module.exports = [{
   "type" : "doctype",
   "_schemaName" : "List",
+  "name" : "Amendment"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
   "name" : "Assessment"
 },{
   "type" : "doctype",
@@ -9,11 +13,19 @@ module.exports = [{
 },{
   "type" : "doctype",
   "_schemaName" : "List",
+  "name" : "Compliance Self Report"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
   "name" : "Correspondence"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Report"
+  "name" : "Fees"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Inspection Record"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
@@ -21,15 +33,7 @@ module.exports = [{
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Notice/News Release"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Notification"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Order"
+  "name" : "Management Plan"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
@@ -42,6 +46,22 @@ module.exports = [{
   "type" : "doctype",
   "_schemaName" : "List",
   "name" : "Order"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Notice/News Release"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Notification"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Order"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Presentation"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
@@ -54,18 +74,6 @@ module.exports = [{
   "type" : "doctype",
   "_schemaName" : "List",
   "name" : "Request"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Presentation"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Amendment"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Fees"
 },
 ////////////////////////////////////////////////
 {
@@ -193,6 +201,26 @@ module.exports = [{
   "type" : "headlineType",
   "_schemaName" : "List",
   "name" : "News"
+},
+{
+  "type" : "headlinePriority",
+  "_schemaName" : "List",
+  "name" : "1"
+},
+{
+  "type" : "headlinePriority",
+  "_schemaName" : "List",
+  "name" : "2"
+},
+{
+  "type" : "headlinePriority",
+  "_schemaName" : "List",
+  "name" : "3"
+},
+{
+  "type" : "headlinePriority",
+  "_schemaName" : "List",
+  "name" : "4"
 }
 
 ]
