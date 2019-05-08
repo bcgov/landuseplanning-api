@@ -18,6 +18,9 @@ module.exports = require('../models')('Comment', {
     rejectedReason      : { type: String, default: null },
     valuedComponents    : [{ type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true }],
 
+    // Number auto-incremented.  Do not set manually.
+    commentId           : { type: Number, default: null },
+
     // Permissions
     write               : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     read                : [{ type: String, trim: true, default: '["project-system-admin"]' }],

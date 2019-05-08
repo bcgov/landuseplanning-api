@@ -289,6 +289,9 @@ exports.protectedPost = async function (args, res, next) {
     docs.push(mongoose.Types.ObjectId(doc));
   });
 
+  // get the next commentID for this period
+  var commentIdCount = await getNextCommentIdCount(mongoose.Types.ObjectId(obj.period));
+
   var comment = new Comment();
   comment._schemaName = 'Comment';
   comment.author = obj.author;
@@ -307,6 +310,7 @@ exports.protectedPost = async function (args, res, next) {
   comment.rejectedNotes = obj.rejectedNotes;
   comment.rejectedReason = obj.rejectedReason;
   comment.valuedComponents = vcs;
+  comment.commentId = commentIdCount;
 
   comment.write = ['staff', 'sysadmin'];
   comment.delete = ['staff', 'sysadmin'];
@@ -323,6 +327,12 @@ exports.protectedPost = async function (args, res, next) {
     return Actions.sendResponse(res, 400, e);
   }
 };
+
+async function getNextCommentIdCount(period){
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, {$inc:{commentIdCount:1}});
+  return period.commentIdCount;
+}
 
 //  Create a new Comment
 exports.unProtectedPost = async function (args, res, next) {
