@@ -16,7 +16,7 @@ module.exports = require ('../models')('Project', {
     projectLead             : { type: String, default: '' },
     projectLeadEmail        : { type: String, default: '' },
     projectLeadPhone        : { type: String, default: '' },
-    proponent               : { type: String, default: '' },
+    proponent               : { type:'ObjectId', default:null },
     region                  : { type: String, default: '' },
     responsibleEPD          : { type: String, default: '' },
     responsibleEPDEmail     : { type: String, default: '' },
@@ -34,11 +34,11 @@ module.exports = require ('../models')('Project', {
     dateCommentsClosed      : { type: String, default: '' },
     dateCommentsOpen        : { type: String, default: '' },
     dateUpdated             : { type: String, default: '' },
-    decisionDate            : { type: String, default: '' },
+    decisionDate            : { type: Date, default: null },
     duration                : { type: String, default: '' },
     // TODO: directoryStructure
     eaoMember               : { type: String, default: '' },
-    epicProjectID           : { type: Number, default: '' },
+    epicProjectID           : { type: Number, default: 0 },
     fedElecDist             : { type: String, default: '' },
     // TODO: intake
     intake                  : { type: Mixed, default: ''},

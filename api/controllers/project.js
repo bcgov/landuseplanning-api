@@ -336,14 +336,32 @@ exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.projId.value;
   defaultLog.info("ObjectID:", args.swagger.params.projId.value);
 
-  var obj = args.swagger.params.ProjObject.value;
-  // Strip security tags - these will not be updated on this route.
-  delete obj.tags;
-  defaultLog.info("Incoming updated object:", obj);
-  // TODO sanitize/update audits.
+  var Project = mongoose.model('Project');
+  var obj = new Project(args.swagger.params.ProjObject.value);
 
-  var Project = require('mongoose').model('Project');
-  Project.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function (err, o) {
+  console.log("Incoming updated object:", obj._doc);
+  console.log("*****************");
+  // TODO sanitize/update audits.
+  var updateObj = {};
+  for (const [key, value] of Object.entries(obj._doc)) {
+    if (!`${value}`) {
+      delete key;
+    } else {
+      // console.log(`${key}`, JSON.stringify(`${value}`));
+      if (key === 'centroid') {
+        updateObj[key] = [value];
+      } else if(key === 'proponent') {
+        updateObj[key] = mongoose.Types.ObjectId(value);
+      } else if(key === 'decisionDate') {
+        updateObj[key] = new Date(value);
+      } else {
+        updateObj[key] = value;
+      }
+    }
+  }
+  console.log(updateObj);
+  console.log("--------------------------");
+  Project.update({ _id: objId }, { $set: updateObj }, function (err, o) {
     if (o) {
       defaultLog.info("o:", o);
       return Actions.sendResponse(res, 200, o);
