@@ -289,10 +289,14 @@ exports.protectedPost = async function (args, res, next) {
     milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
     project: mongoose.Types.ObjectId(obj.project),
-    read: obj.read,
-    write: obj.write,
-    delete: obj.delete
+    read: ['staff', 'sysadmin'],
+    write: ['staff', 'sysadmin'],
+    delete: ['staff', 'sysadmin']
   });
+
+  if (args.swagger.params.isPublished && args.swagger.params.isPublished.value) {
+    commentPeriod.read.push('public');
+  }
 
   try {
     var cp = await commentPeriod.save();
@@ -321,8 +325,12 @@ exports.protectedPut = async function (args, res, next) {
     milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
-    read: obj.read
+    read: ['staff', 'sysadmin']
   };
+
+  if (args.swagger.params.isPublished && args.swagger.params.isPublished.value) {
+    commentPeriod.read.push('public');
+  }
 
   defaultLog.info('Incoming updated object:', commentPeriod);
 
