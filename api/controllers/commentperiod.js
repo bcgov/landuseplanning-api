@@ -183,14 +183,14 @@ exports.protectedSummary = async function (args, res, next) {
       _.assignIn(optionQuery, { 'eaoStatus': item, period: mongoose.Types.ObjectId(args.swagger.params.commentPeriodId.value) });
       console.log("optionQuery:", optionQuery);
       var res = await Utils.runDataQuery('CommentPeriod',
-                                      args.swagger.params.auth_payload.realm_access.roles,
-                                      optionQuery,
-                                      ['_id', 'read', 'write', 'delete'], // Fields
-                                      null, // sort warmup
-                                      null, // sort
-                                      null, // skip
-                                      null, // limit
-                                      true); // count
+        args.swagger.params.auth_payload.realm_access.roles,
+        optionQuery,
+        ['_id', 'read', 'write', 'delete'], // Fields
+        null, // sort warmup
+        null, // sort
+        null, // skip
+        null, // limit
+        true); // count
       console.log("RES:", res);
       if (res && res[0]) {
         summary[item] = res[0]['total_items'];
@@ -211,7 +211,7 @@ exports.protectedGet = async function (args, res, next) {
   defaultLog.info('Getting comment period(s)');
 
   var query = {}, sort = {}, skip = null, limit = null, count = false;
-  
+
   // Build match query if on CommentPeriodId route
   if (args.swagger.params.commentPeriodId) {
     defaultLog.info('Comment period id:', args.swagger.params.commentPeriodId.value);
@@ -335,7 +335,7 @@ exports.protectedPut = async function (args, res, next) {
   defaultLog.info('Incoming updated object:', commentPeriod);
 
   try {
-    var cp = await CommentPeriod.findOneAndUpdate({ _id: objId }, commentPeriod, { upsert: false });
+    var cp = await CommentPeriod.update({ _id: objId }, { $set: commentPeriod });
     Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment period updated:', cp);
     return Actions.sendResponse(res, 200, cp);

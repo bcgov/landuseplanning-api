@@ -328,9 +328,9 @@ exports.protectedPost = async function (args, res, next) {
   }
 };
 
-async function getNextCommentIdCount(period){
+async function getNextCommentIdCount(period) {
   var CommentPeriod = mongoose.model('CommentPeriod');
-  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, {$inc:{commentIdCount:1}});
+  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { commentIdCount: 1 } });
   return period.commentIdCount;
 }
 
@@ -402,7 +402,7 @@ exports.protectedPut = async function (args, res, next) {
   defaultLog.info('Incoming updated object:', comment);
 
   try {
-    var c = await Comment.findOneAndUpdate({ _id: objId }, comment, { upsert: false });
+    var c = await Comment.update({ _id: objId }, { $set: comment });
     Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment updated:', c);
     return Actions.sendResponse(res, 200, c);
@@ -426,7 +426,7 @@ exports.protectedStatus = async function (args, res, next) {
   setPermissionsFromEaoStatus(status, comment);
 
   try {
-    var c = await Comment.findOneAndUpdate({ _id: objId }, comment, { upsert: false, new: true }).exec();
+    var c = await Comment.update({ _id: objId }, { $set: comment });
     Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment updated:', c);
     return Actions.sendResponse(res, 200, c);
@@ -434,19 +434,4 @@ exports.protectedStatus = async function (args, res, next) {
     defaultLog.info('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
-
-  // var Comment = require('mongoose').model('Comment');
-  // Comment.findOne({ _id: objId }, async function (err, o) {
-  //   if (o) {
-  //     defaultLog.info('o:', o);
-
-  //     // Add public to the tag of this obj.
-  //     var published = await Actions.publish(o);
-  //     // Published successfully
-  //     return Actions.sendResponse(res, 200, published);
-  //   } else {
-  //     defaultLog.info('Couldn\'t find that object!');
-  //     return Actions.sendResponse(res, 404, {});
-  //   }
-  // });
 };
