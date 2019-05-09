@@ -28,6 +28,7 @@ var getSanitizedFields = function (fields) {
       'dateUploaded',
       'dateReceived',
       'documentFileSize',
+      'documentSource',
       'eaoStatus',
       'internalURL',
       'internalMime',
