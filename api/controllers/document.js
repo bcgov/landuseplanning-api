@@ -388,6 +388,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.delete = ['sysadmin', 'staff'];
 
               doc.documentFileName = args.swagger.params.documentFileName.value;
+              doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
               doc.internalSize = "0";  // TODO
