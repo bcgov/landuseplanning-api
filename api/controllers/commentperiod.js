@@ -180,7 +180,7 @@ exports.protectedSummary = async function (args, res, next) {
     }
     await Promise.all(options.map(async (item) => {
       var optionQuery = {};
-      _.assignIn(optionQuery, { 'eaoStatus': item });
+      _.assignIn(optionQuery, { 'eaoStatus': item, period: mongoose.Types.ObjectId(args.swagger.params.commentPeriodId.value) });
       console.log("optionQuery:", optionQuery);
       var res = await Utils.runDataQuery('CommentPeriod',
                                       args.swagger.params.auth_payload.realm_access.roles,
