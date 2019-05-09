@@ -94,8 +94,8 @@ exports.protectedPut = async function (args, res, next) {
 
     defaultLog.info("Incoming updated object:", obj);
 
-    var commentperiod = require('mongoose').model('Vc');
-    var data = await commentperiod.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
+    var valuedComponent = require('mongoose').model('Vc');
+    var data = await valuedComponent.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
     return Actions.sendResponse(res, 200, data);
 }
 
