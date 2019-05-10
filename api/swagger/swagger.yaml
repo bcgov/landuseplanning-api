@@ -194,6 +194,7 @@ definitions:
     #TODO: Fix enums
     enum: &documentFields
       - displayName
+      - documentFileName
       - internalOriginalName
       - internalURL
       - internalMime
@@ -1666,7 +1667,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       consumes:
         - multipart/form-data
       parameters:
@@ -1733,6 +1735,11 @@ paths:
         - name: documentFileName
           in: formData
           description: "The documentFileName of the file."
+          required: false
+          type: string
+        - name: internalOriginalName
+          in: formData
+          description: "The internalOriginalName of the file. This is only used for documents related to comments."
           required: false
           type: string
         - name: _comment

@@ -20,6 +20,7 @@ module.exports = require ('../models')('Document', {
 
     // Not editable
     documentFileName : { type:String, default:'' },
+    internalOriginalName : { type:String, default:'' },
     internalURL      : { type:String, default:'' },
     internalExt      : { type:String, default:'' },
     internalSize     : { type:String, default:'' },
