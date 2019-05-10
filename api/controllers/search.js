@@ -92,7 +92,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   var aggregation = [{ $match: match }];
 
   console.log('populate:', populate);
-  if (populate === true) {
+  if (populate === true && collection !== 'Project') {
     aggregation.push({
       "$lookup": {
         "from": "epic",
