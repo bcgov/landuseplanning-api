@@ -2028,7 +2028,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
         # TODO: Define publish roles.
       parameters:
         - name: docId
@@ -2077,7 +2078,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
         # TODO: Define unpublish roles.
       parameters:
         - name: docId
