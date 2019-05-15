@@ -78,7 +78,7 @@ exports.publicGet = function (args, res, next) {
 };
 exports.unProtectedPost = function (args, res, next) {
   console.log("Creating new object");
-  var _application = args.swagger.params._application.value;
+  // var _application = args.swagger.params._application.value;
   var _comment = args.swagger.params._comment.value;
   var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
@@ -103,9 +103,13 @@ exports.unProtectedPost = function (args, res, next) {
           var Document = mongoose.model('Document');
           var doc = new Document();
           // Define security tag defaults
-          doc.tags = [['sysadmin']];
-          doc._application = _application;
-          doc._comment = _comment;
+          doc.tags = ['sysadmin', 'staff'];
+          // doc._application = _application;
+          // doc._comment = _comment;
+
+          // TODO Project and other good meta
+          doc.documentSource = "COMMENT";
+
           doc.displayName = displayName;
           doc.documentFileName = upfile.originalname;
           doc.internalMime = upfile.mimetype;

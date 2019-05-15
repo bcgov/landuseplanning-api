@@ -346,22 +346,9 @@ exports.unProtectedPost = async function (args, res, next) {
   comment.dateAdded = Date.now();
 
   // Define security tag defaults
-  comment.tags = [['sysadmin']];
-  comment.review.tags = [['sysadmin']];
-  comment.commentAuthor.tags = [['sysadmin']];
-
-  // Unless they request to be anon, make their stuff public.
-  // TODO: Contact name/location/org currently showing public
-  // when they request anonymous.
-  if (!comment.commentAuthor.requestedAnonymous) {
-    comment.commentAuthor.tags = [['sysadmin'], ['public']];
-  }
-
-  // Never allow this to be updated
-  comment.commentAuthor.internal.tags = [['sysadmin']];
-
-  // Not needed until we tie user profiles in.
-  // comment._addedBy = args.swagger.params.auth_payload.preferred_username;
+  comment.read = ['sysadmin', 'staff'];
+  comment.write = ['sysadmin', 'staff'];
+  comment.delete = ['sysadmin', 'staff'];
 
   var c = await comment.save()
   // defaultLog.info('Saved new Comment object:', c);
