@@ -108,6 +108,7 @@ exports.unProtectedPost = function (args, res, next) {
           // doc._comment = _comment;
 
           // TODO Project and other good meta
+          // TODO  add to period documents, etc.
           doc.documentSource = "COMMENT";
 
           doc.displayName = displayName;
