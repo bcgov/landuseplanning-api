@@ -98,7 +98,7 @@ exports.recordAction = async function (action, meta, payload, objId = null){
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false) {
+exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, postQueryPipelineSteps) {
     return new Promise(async function (resolve, reject) {
         var theModel = mongoose.model(modelType);
         var projection = {};
@@ -136,6 +136,7 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         populateProponent && {
           "$unwind": "$proponent"
         },
+        postQueryPipelineSteps,
         {
           $redact: {
             $cond: {
