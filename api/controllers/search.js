@@ -203,14 +203,12 @@ var executeQuery = async function (args, res, next) {
   var sortDirection = undefined;
   var sortField = undefined;
 
-  // TODO: Change away from array.  Only support 1.
+  var sortingValue = {};
   sortBy.map((value) => {
     sortDirection = value.charAt(0) == '-' ? -1 : 1;
     sortField = value.slice(1);
+    sortingValue[sortField] = sortDirection;
   });
-
-  var sortingValue = {};
-  sortingValue[sortField] = sortDirection;
 
   defaultLog.info("sortField:", sortField);
   defaultLog.info("sortDirection:", sortDirection);
