@@ -51,7 +51,13 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
     }
   } else {
     defaultLog.error("Token didn't have a bearer.");
-    return callback(sendError());
+    req.swagger.params.auth_payload = {
+      realm_access: {
+        roles: ['public']
+      },
+      preferred_username: 'public'
+    };
+    return callback(null);
   }
 };
 
@@ -65,17 +71,17 @@ function _verifySecret (currentScopes, tokenString, secret, req, callback, sendE
 
     // check if the JWT was verified correctly
     if (verificationError == null &&
-        Array.isArray(currentScopes) &&
+        // Array.isArray(currentScopes) &&
         decodedToken &&
         decodedToken.realm_access.roles
     ) {
       defaultLog.info("JWT decoded:", decodedToken);
 
       // check if the role is valid for this endpoint
-      var roleMatch = currentScopes.some(r=> decodedToken.realm_access.roles.indexOf(r) >= 0)
-      defaultLog.info("currentScopes", currentScopes);
+      // var roleMatch = currentScopes.some(r=> decodedToken.realm_access.roles.indexOf(r) >= 0)
+      // defaultLog.info("currentScopes", currentScopes);
       defaultLog.info("decodedToken.realm_access.roles", decodedToken.realm_access.roles);
-      defaultLog.info("role match", roleMatch);
+      // defaultLog.info("role match", roleMatch);
 
       // check if the dissuer matches
       var issuerMatch = decodedToken.iss == ISSUER;
@@ -83,7 +89,8 @@ function _verifySecret (currentScopes, tokenString, secret, req, callback, sendE
       defaultLog.info("ISSUER", ISSUER);
       defaultLog.info("issuerMatch", issuerMatch);
 
-      if (roleMatch && issuerMatch) {
+   // if (roleMatch && issuerMatch) {
+      if (issuerMatch) {
         // add the token to the request so that we can access it in the endpoint code if necessary
         req.swagger.params.auth_payload = decodedToken;
         defaultLog.info("JWT Verified.");

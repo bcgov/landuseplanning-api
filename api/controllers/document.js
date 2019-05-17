@@ -338,6 +338,71 @@ exports.protectedDownload = function (args, res, next) {
     });
 };
 
+exports.protectedOpen = function (args, res, next) {
+  var self = this;
+  self.scopes = args.swagger.params.auth_payload.realm_access.roles;
+
+  var Document = mongoose.model('Document');
+
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
+
+  // Build match query if on docId route
+  var query = {};
+  if (args.swagger.params.docId) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  }
+  // Set query type
+  _.assignIn(query, { "_schemaName": "Document" });
+
+  Utils.runDataQuery('Document',
+    args.swagger.params.auth_payload.realm_access.roles,
+    query,
+    ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
+    null, // sort warmup
+    null, // sort
+    null, // skip
+    null, // limit
+    false) // count
+    .then(function (data) {
+      if (data && data.length === 1) {
+        var blob = data[0];
+
+        var fileName = blob.documentFileName;
+        var fileType = blob.internalExt;
+        if (fileName.slice(- fileType.length) !== fileType) {
+          fileName = fileName + '.' + fileType;
+        }
+
+        // Allow override
+        if (args.swagger.params.filename) {
+          fileName = args.swagger.params.docId.value;
+        }
+
+        var fileMeta;
+
+        // check if the file exists in Minio
+        return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
+          .then(function (objectMeta) {
+            fileMeta = objectMeta;
+            // get the download URL
+            return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
+          }, function () {
+            return Actions.sendResponse(res, 404, {});
+          })
+          .then(function (docURL) {
+            console.log('docURL:', docURL);
+            // stream file from Minio to client
+            res.setHeader('Content-Length', fileMeta.size);
+            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
+            res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
+            return rp(docURL).pipe(res);
+          });
+      } else {
+        return Actions.sendResponse(res, 404, {});
+      }
+    });
+};
+
 //  Create a new document
 exports.protectedPost = async function (args, res, next) {
   console.log("Creating new protected document object");
