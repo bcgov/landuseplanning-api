@@ -68,18 +68,22 @@ exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
 
-exports.publicHead = function (args, res, next) {
+exports.publicHead = async function (args, res, next) {
+  defaultLog.info('Getting head for Project')
+
   // Build match query if on ProjId route
   var query = {};
+  var commentPeriodPipeline = null;
 
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
-  tagList.push('_id');
-  tagList.push('read');
+  tagList.push('dateAdded');
+  tagList.push('dateCompleted');
 
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
 
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
+    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -91,8 +95,8 @@ exports.publicHead = function (args, res, next) {
   // Set query type
   _.assignIn(query, { "_schemaName": "Project" });
 
-  handleCommentPeriodDateQueryParameters(args, tagList, function (commentPeriodPipeline) {
-    Utils.runDataQuery('Project',
+  try {
+    var data = await Utils.runDataQuery('Project',
       ['public'],
       query,
       requestedFields, // Fields
@@ -100,34 +104,38 @@ exports.publicHead = function (args, res, next) {
       null, // sort
       null, // skip
       1000000, // limit
-      true,
-      commentPeriodPipeline) // count
-      .then(function (data) {
-        // /api/comment/ route, return 200 OK with 0 items if necessary
-        if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
-          res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
-          return Actions.sendResponse(res, 200, data);
-        } else {
-          return Actions.sendResponse(res, 404, data);
-        }
-      });
-  }, function (error) {
-    return Actions.sendResponse(res, 400, error);
-  });
+      true, // count
+      null,
+      false,
+      commentPeriodPipeline);
+    // /api/comment/ route, return 200 OK with 0 items if necessary
+    if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
+      //Utils.recordAction('head', 'project', args.swagger.params.auth_payload.preferred_username);
+      defaultLog.info('Got project head:', data);
+      res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
-exports.publicGet = function (args, res, next) {
+exports.publicGet = async function (args, res, next) {
   // Build match query if on projId route
-  var query = {};
-  var skip = null;
-  var limit = null;
+  var query = {}, skip = null, limit = null;
+  var commentPeriodPipeline = null;
+
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
   // Add in the default fields to the projection so that the incoming query will work for any selected fields.
-  tagList.push('_id');
-  tagList.push('read');
+  tagList.push('dateAdded');
+  tagList.push('dateCompleted');
 
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
+    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -144,8 +152,8 @@ exports.publicGet = function (args, res, next) {
   // Set query type
   _.assignIn(query, { "_schemaName": "Project" });
 
-  handleCommentPeriodDateQueryParameters(args, tagList, function () {
-    Utils.runDataQuery('Project',
+  try {
+    var data = await Utils.runDataQuery('Project',
       ['public'],
       query,
       requestedFields, // Fields
@@ -155,32 +163,40 @@ exports.publicGet = function (args, res, next) {
       limit, // limit
       false, // count
       null, // steps
-      true) // proponent populate
-      .then(function (data) {
-        return Actions.sendResponse(res, 200, data);
-      });
-  }, function (error) {
-    return Actions.sendResponse(res, 400, error);
-  });
+      true, // proponent populate
+      commentPeriodPipeline)
+    //Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
+    defaultLog.info('Got project(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 exports.protectedGet = async function (args, res, next) {
-  var skip = null, limit = null, sort = {};
+  var skip = null, limit = null, sort = null;
   var count = false;
   var query = {};
 
+  var commentPeriodPipeline = null;
+
   // Admin's only get this
-  console.log(args.swagger.params.fields);
   if (args.swagger.params.fields.value) {
     args.swagger.params.fields.value.push('directoryStructure');
   }
   var fields = getSanitizedFields(args.swagger.params.fields.value);
+
+  tagList.push('dateStarted');
+  tagList.push('dateCompleted');
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   if (args.swagger.params.projId) {
     // Getting a single project
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
+    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
+    console.log(JSON.stringify(commentPeriodPipeline));
   } else {
     // Getting multiple projects
     try {
@@ -189,19 +205,20 @@ exports.protectedGet = async function (args, res, next) {
 
       // Sorting
       if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+        sort = {};
         args.swagger.params.sortBy.value.forEach(function (value) {
           var order_by = value.charAt(0) == '-' ? -1 : 1;
           var sort_by = value.slice(1);
           sort[sort_by] = order_by;
         }, this);
-        
+
       }
-      
+
       // Pagination
       var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
       skip = processedParameters.skip;
       limit = processedParameters.limit;
-      
+
       // Enable Count
       count = true
 
@@ -214,22 +231,31 @@ exports.protectedGet = async function (args, res, next) {
   _.assignIn(query, { "_schemaName": "Project" });
 
   console.log("*****************************************");
-  console.log("qauery:", query);
+  console.log("query:", query);
   console.log("*****************************************");
 
-  var data = await Utils.runDataQuery('Project',
-    args.swagger.params.auth_payload.realm_access.roles,
-    query,
-    fields, // Fields
-    null, // sort warmup
-    sort, // sort
-    skip, // skip
-    limit, // limit
-    count, // count
-    null, 
-    true);
-  console.log(JSON.stringify(data));
-  return Actions.sendResponse(res, 200, data);
+  console.log("PIPELINE", commentPeriodPipeline);
+
+  try {
+    var data = await Utils.runDataQuery('Project',
+      args.swagger.params.auth_payload.realm_access.roles,
+      query,
+      fields, // Fields
+      null, // sort warmup
+      sort, // sort
+      skip, // skip
+      limit, // limit
+      count, // count
+      null,
+      true,
+      commentPeriodPipeline);
+    Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
+    defaultLog.info('Got comment project(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 exports.protectedHead = function (args, res, next) {
@@ -350,9 +376,9 @@ exports.protectedPut = async function (args, res, next) {
       // console.log(`${key}`, JSON.stringify(`${value}`));
       if (key === 'centroid') {
         updateObj[key] = [value];
-      } else if(key === 'proponent') {
+      } else if (key === 'proponent') {
         updateObj[key] = mongoose.Types.ObjectId(value);
-      } else if(key === 'decisionDate') {
+      } else if (key === 'decisionDate') {
         updateObj[key] = new Date(value);
       } else {
         updateObj[key] = value;
@@ -416,22 +442,22 @@ exports.protectedUnPublish = function (args, res, next) {
   });
 };
 
-var handleCommentPeriodDateQueryParameters = function (args, requestedFields, callback, error) {
-  var pipelineSteps = null;
-  var commentPeriodDates = [];
+var handleCommentPeriodDateQueryParameters = function (args, projectId) {
+
+  var dateStarted, dateCompleted = null;
 
   // Date range logic
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpStart.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: ["$commentPeriods.startDate", new Date(queryString.eq)] });
+      dateStarted = { dateStarted: { $eq: new Date(queryString.eq) } }
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: ["$commentPeriods.startDate", new Date(queryString.since)] });
+        dateStarted = { dateStarted: { $gte: new Date(queryString.since) } }
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: ["$commentPeriods.startDate", new Date(queryString.until)] });
+        dateStarted = { dateStarted: { $lte: new Date(queryString.until) } }
       }
     }
   }
@@ -439,56 +465,46 @@ var handleCommentPeriodDateQueryParameters = function (args, requestedFields, ca
   if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.cpEnd.value);
     if (queryString.eq) {
-      commentPeriodDates.push({ $eq: ["$commentPeriods.endDate", new Date(queryString.eq)] });
+      dateCompleted = { dateCompleted: { $eq: new Date(queryString.eq) } }
     } else {
       // Which param was set?
       if (queryString.since) {
-        commentPeriodDates.push({ $gte: ["$commentPeriods.endDate", new Date(queryString.since)] });
+        dateCompleted = { dateCompleted: { $gte: new Date(queryString.since) } }
       }
       if (queryString.until) {
-        commentPeriodDates.push({ $lte: ["$commentPeriods.endDate", new Date(queryString.until)] });
+        dateCompleted = { dateCompleted: { $lte: new Date(queryString.until) } }
       }
     }
   }
 
-  // Did we want to filter based on comment period?
-  if (commentPeriodDates.length > 0) {
-    // NB: These are in reverse order in order to unshift into the pipline in proper order,
-    // since we are querying commentPeriods and then left-joining the project query.
-    var projection = {};
-    var fields = [...['_id', 'isDeleted', 'tags'], ...requestedFields];
-    for (let f of fields) {
-      projection[f] = 1;
-    }
-
-    if (commentPeriodDates.length > 1) {
-      projection.result = { $and: [commentPeriodDates.pop(), commentPeriodDates.pop()] };
-    } else if (commentPeriodDates.length > 0) {
-      projection.result = commentPeriodDates.pop();
-    }
-
-    pipelineSteps = [
-      {
-        $match: { result: true }
-      },
-      {
-        $project: projection
-      },
-      {
-        $unwind: "$commentPeriods"
-      },
-      {
-        $lookup: {
-          from: "commentperiods",
-          localField: "_id",    // field in the orders collection
-          foreignField: "_application",  // field in the items collection
-          as: "commentPeriods"
-        }
-      }
-    ];
+  if (dateStarted == null && dateCompleted == null) {
+    return {};
   }
 
-  return callback(pipelineSteps);
+  var and = [];
+  if (dateStarted !== null) {
+    and.push(dateStarted);
+  }
+  if (dateCompleted !== null) {
+    and.push(dateCompleted);
+  }
+
+  var match = {
+    _schemaName: 'CommentPeriod',
+    project: mongoose.Types.ObjectId(projectId),
+    $and: and
+  };
+
+  return {
+    '$lookup':
+    {
+      from: 'epic',
+      pipeline: [{
+        $match: match
+      }],
+      as: 'upcomingCommentPeriod'
+    }
+  };
 };
 
 var addStandardQueryFilters = function (query, args) {

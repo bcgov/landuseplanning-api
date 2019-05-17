@@ -754,7 +754,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - in: query
           name: fields
@@ -938,13 +939,14 @@ paths:
     get:
       tags:
         - project
-      summary: "Get an project"
+      summary: "Get a project"
       operationId: protectedGet
       description: "Authenticated access to retreiving projects."
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: projId
           in: path
@@ -961,10 +963,17 @@ paths:
             type: string
             enum: *projectFields
         - in: query
-          name: isDeleted
-          type: boolean
+          name: cpStart
+          type: string
+          format: date-time
           required: false
-          description: "Applications that are deleted or not"
+          description: "Comment Period Start Date that Projects must compare to"
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "Comment Period End Date that Projects must compare to"
       responses:
         "200":
           description: "Success"
@@ -1275,6 +1284,18 @@ paths:
           required: false
           description: "The read permissions of the project"
           type: string
+        - in: query
+          name: cpStart
+          type: string
+          format: date-time
+          required: false
+          description: "Comment Period Start Date that Projects must compare to"
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "Comment Period End Date that Projects must compare to"
       responses:
         "200":
           description: "Success"
@@ -1420,6 +1441,18 @@ paths:
           type: number
           required: false
           description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: cpStart
+          type: string
+          format: date-time
+          required: false
+          description: "Start date for comment periods."
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "End date for comment periods."
       responses:
         "200":
           description: "Success"
@@ -1455,7 +1488,7 @@ paths:
     get:
       tags:
         - project
-      summary: "Get an project"
+      summary: "Get a project"
       operationId: publicGet
       description: "Public access to retreiving projects."
       parameters:
@@ -1473,6 +1506,18 @@ paths:
           items:
             type: string
             enum: *projectFields
+        - in: query
+          name: cpStart
+          type: string
+          format: date-time
+          required: false
+          description: "Comment Period Start Date that Projects must compare to"
+        - in: query
+          name: cpEnd
+          type: string
+          format: date-time
+          required: false
+          description: "Comment Period End Date that Projects must compare to"
       responses:
         "200":
           description: "Success"
