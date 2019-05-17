@@ -110,7 +110,7 @@ exports.publicHead = async function (args, res, next) {
       commentPeriodPipeline);
     // /api/comment/ route, return 200 OK with 0 items if necessary
     if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
-      Utils.recordAction('head', 'project', args.swagger.params.auth_payload.preferred_username);
+      //Utils.recordAction('head', 'project', args.swagger.params.auth_payload.preferred_username);
       defaultLog.info('Got project head:', data);
       res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
       return Actions.sendResponse(res, 200, data);
