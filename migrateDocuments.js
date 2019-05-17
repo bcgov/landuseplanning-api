@@ -4,7 +4,12 @@ var TreeModel = require('tree-model');
 var projects = [];
 
 // Connect to the db
-MongoClient.connect("mongodb://localhost:27017/epic", async function(err, client) {
+// Dev
+// MongoClient.connect("mongodb://user7DW:KKmTLpYBBvbUKAVD@localhost:5555/epic", async function(err, client) {
+// Test
+MongoClient.connect("mongodb://userS1J:lD8w0UKaYcGaFtW4@localhost:5555/epic", async function(err, client) {
+// Local
+//MongoClient.connect("mongodb://localhost/epic", async function(err, client) {
   if(!err) {
     console.log("We are connected");
     const db = client.db('epic');

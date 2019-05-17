@@ -9,20 +9,22 @@
 
   "dev": {
     "driver": "mongodb",
-    "database": {"ENV": "MONGODB_DATABASE"},
-    "user": {"ENV": "MONGODB_USERNAME"},
-    "password": {"ENV": "MONGODB_PASSWORD"},
+    "database": "epic",
+    "user": "admin",
+    "password": "0vmDt8aMBmCldD3i",
     "authSource": "admin",
-    "host": "MONGODB_SERVICE_HOST"
+    "host": "localhost",
+    "port": "5555"
   },
 
   "test": {
     "driver": "mongodb",
-    "database": {"ENV": "MONGODB_DATABASE"},
-    "user": {"ENV": "MONGODB_USERNAME"},
-    "password": {"ENV": "MONGODB_PASSWORD"},
+    "database": "epic",
+    "user": "admin",
+    "password": "8xvEQ7GnUmRSKxRU",
     "authSource": "admin",
-    "host": "MONGODB_SERVICE_HOST"
+    "host": "localhost",
+    "port": "5555"
   },
 
   "demo": {

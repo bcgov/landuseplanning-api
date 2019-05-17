@@ -26,7 +26,7 @@ exports.up = function (db) {
             _schemaName: "Organization",
         },
         {
-          $set: { read: ['project-system-admin', 'sysadmin', 'staff'] }
+          $set: { read: ['sysadmin', 'staff'] }
         }
       );
       mClient.close();

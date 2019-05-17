@@ -20,7 +20,7 @@
             "request": "launch",
             "name": "Launch API using Node",
             "program": "${workspaceFolder}/app.js",
-            "envFile": "${workspaceFolder}/.env"
+            "envFile": "${workspaceFolder}/.env",
         }
     ]
 }

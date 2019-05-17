@@ -45,9 +45,9 @@ exports.up = function (db) {
             },
             {
               $unset: { directoryStructure: "", userCan: "" },
-              $set: { read: ['project-system-admin', 'sysadmin', 'staff', 'public'],
-                      write: ['project-system-admin', 'sysadmin', 'staff'],
-                      delete: ['project-system-admin', 'sysadmin', 'staff'] }
+              $set: { read: ['sysadmin', 'staff', 'public'],
+                      write: ['sysadmin', 'staff'],
+                      delete: ['sysadmin', 'staff'] }
             });
           }
         }

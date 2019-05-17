@@ -34,7 +34,7 @@ exports.up = function(db) {
             _id: item._id
           },
           {
-            $set: { read: ['project-system-admin', 'sysadmin'], write: ['project-system-admin', 'sysadmin'] }
+            $set: { read: ['staff', 'sysadmin'], write: ['staff', 'sysadmin'] }
           });
         }
         mClient.close();
