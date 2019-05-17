@@ -70,7 +70,7 @@ exports.protectedPut = async function (args, res, next) {
 
   var RecentActivity = require('mongoose').model('RecentActivity');
   try {
-    var rec = await RecentActivity.findOneAndUpdate({_id: objId}, obj, {upsert:false, new: true});
+    var rec = await RecentActivity.findOneAndUpdate({_id: objId}, obj, {upsert:false});
     Utils.recordAction('put', 'recentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
