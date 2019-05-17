@@ -135,7 +135,7 @@ exports.publicGet = async function (args, res, next) {
 
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
-    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
+    // commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
