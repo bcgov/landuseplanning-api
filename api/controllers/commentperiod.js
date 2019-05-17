@@ -294,7 +294,7 @@ exports.protectedPost = async function (args, res, next) {
     delete: ['staff', 'sysadmin']
   });
 
-  if (args.swagger.params.isPublished && args.swagger.params.isPublished.value) {
+  if (obj.isPublished) {
     commentPeriod.read.push('public');
   }
 
