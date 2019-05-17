@@ -165,7 +165,7 @@ exports.publicGet = async function (args, res, next) {
       null, // steps
       true, // proponent populate
       commentPeriodPipeline)
-    Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
+    //Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
     defaultLog.info('Got project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
