@@ -77,17 +77,15 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   // We don't want to have sort in the aggrigation if the front end doesn't need sort.
   let searchResultAggrigation = [
     {
+      $sort: sortingValue
+    },
+    {
       $skip: pageNum * pageSize
     },
     {
       $limit: pageSize
     }
   ];
-  if (sortField !== 'score') {
-    searchResultAggrigation.unshift({
-      $sort: sortingValue
-    });
-  }
 
   var aggregation = [{ $match: match }];
 
@@ -210,6 +208,7 @@ var executeQuery = async function (args, res, next) {
     sortingValue[sortField] = sortDirection;
   });
 
+  console.log("sortingValue:", sortingValue);
   defaultLog.info("sortField:", sortField);
   defaultLog.info("sortDirection:", sortDirection);
 
