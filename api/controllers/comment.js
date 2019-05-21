@@ -340,19 +340,53 @@ exports.unProtectedPost = async function (args, res, next) {
   defaultLog.info('Incoming new object:', obj);
 
   var Comment = mongoose.model('Comment');
+
+  var vcs = [];
+  obj.valuedComponents.forEach(function (vc) {
+    vcs.push(mongoose.Types.ObjectId(vc));
+  });
+
+  var docs = [];
+  obj.documents.forEach(function (doc) {
+    docs.push(mongoose.Types.ObjectId(doc));
+  });
+
+  // get the next commentID for this period
+  var commentIdCount = await getNextCommentIdCount(mongoose.Types.ObjectId(obj.period));
+
   var comment = new Comment(obj);
-
+  comment._schemaName = 'Comment';
   comment.commentStatus = 'Pending';
-  comment.dateAdded = Date.now();
+  comment.author = obj.author;
+  comment.comment = obj.comment;
+  comment.dateAdded = obj.dateAdded;
+  comment.dateUpdated = obj.dateUpdated;
+  comment.documents = docs
+  comment.eaoNotes = obj.eaoNotes;
+  comment.eaoStatus = obj.eaoStatus;
+  comment.isAnonymous = obj.isAnonymous;
+  comment.location = obj.location;
+  comment.period = mongoose.Types.ObjectId(obj.period);
+  comment.proponentNotes = obj.proponentNotes;
+  comment.proponentStatus = obj.proponentStatus;
+  comment.publishedNotes = obj.publishedNotes;
+  comment.rejectedNotes = obj.rejectedNotes;
+  comment.rejectedReason = obj.rejectedReason;
+  comment.valuedComponents = vcs;
+  comment.commentId = commentIdCount;
 
-  // Define security tag defaults
-  comment.read = ['sysadmin', 'staff'];
-  comment.write = ['sysadmin', 'staff'];
-  comment.delete = ['sysadmin', 'staff'];
+  comment.write = ['staff', 'sysadmin'];
+  comment.delete = ['staff', 'sysadmin'];
 
-  var c = await comment.save()
-  // defaultLog.info('Saved new Comment object:', c);
-  return Actions.sendResponse(res, 200, c);
+  try {
+    var c = await comment.save();
+    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, c._id);
+    defaultLog.info('Saved new comment object:', c);
+    return Actions.sendResponse(res, 200, c);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 // Update an existing Comment
