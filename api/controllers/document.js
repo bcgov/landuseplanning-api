@@ -76,7 +76,7 @@ exports.publicGet = function (args, res, next) {
       return Actions.sendResponse(res, 200, data);
     });
 };
-exports.unProtectedPost = function (args, res, next) {
+exports.unProtectedPost = async function (args, res, next) {
   console.log("Creating new object");
   // var _application = args.swagger.params._application.value;
   var _comment = args.swagger.params._comment.value;
@@ -87,14 +87,14 @@ exports.unProtectedPost = function (args, res, next) {
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
     Promise.resolve()
-      .then(function () {
+      .then(async function () {
         if (ENABLE_VIRUS_SCANNING == 'true') {
           return Utils.avScan(args.swagger.params.upfile.value.buffer);
         } else {
           return true;
         }
       })
-      .then(function (valid) {
+      .then(async function (valid) {
         if (!valid) {
           defaultLog.warn("File failed virus check.");
           return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
@@ -109,6 +109,7 @@ exports.unProtectedPost = function (args, res, next) {
 
           // TODO Push files back into the original comment for reference.
 
+
           // TODO Project and other good meta
           // TODO  add to period documents, etc.
           doc.documentSource = "COMMENT";
@@ -121,8 +122,13 @@ exports.unProtectedPost = function (args, res, next) {
           // Update who did this?  TODO: Public
           // doc._addedBy = args.swagger.params.auth_payload.preferred_username;
           doc.save()
-            .then(function (d) {
+            .then(async function (d) {
               defaultLog.info("Saved new document object:", d._id);
+
+              var Comment = mongoose.model('Comment');
+              var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
+              defaultLog.info('Comment updated:', c);
+
               return Actions.sendResponse(res, 200, d);
             });
         }
