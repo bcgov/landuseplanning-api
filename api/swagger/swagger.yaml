@@ -2323,7 +2323,7 @@ paths:
           type: file
         - name: project
           in: formData
-          description: "The application to bind this document to."
+          description: "The project to bind this document to."
           required: false
           type: string
         - name: _comment

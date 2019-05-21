@@ -80,6 +80,7 @@ exports.unProtectedPost = async function (args, res, next) {
   console.log("Creating new object");
   // var _application = args.swagger.params._application.value;
   var _comment = args.swagger.params._comment.value;
+  var project = args.swagger.params.project.value;
   var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
 
@@ -103,15 +104,13 @@ exports.unProtectedPost = async function (args, res, next) {
           var Document = mongoose.model('Document');
           var doc = new Document();
           // Define security tag defaults
-          doc.tags = ['sysadmin', 'staff'];
+          doc.read = ['sysadmin', 'staff'];
+          doc.write = ['sysadmin', 'staff'];
+          doc.delete = ['sysadmin', 'staff'];
           // doc._application = _application;
           doc._comment = _comment;
 
-          // TODO Push files back into the original comment for reference.
-
-
-          // TODO Project and other good meta
-          // TODO  add to period documents, etc.
+          doc.project = mongoose.Types.ObjectId(project);
           doc.documentSource = "COMMENT";
 
           doc.displayName = displayName;
@@ -119,8 +118,8 @@ exports.unProtectedPost = async function (args, res, next) {
           doc.internalMime = upfile.mimetype;
           doc.internalURL = uploadDir + guid + "." + ext;
           doc.passedAVCheck = true;
-          // Update who did this?  TODO: Public
-          // doc._addedBy = args.swagger.params.auth_payload.preferred_username;
+          // Update who did this?
+          doc._addedBy = 'public';
           doc.save()
             .then(async function (d) {
               defaultLog.info("Saved new document object:", d._id);
