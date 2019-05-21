@@ -36,7 +36,10 @@ exports.up = function(db) {
         labels: "text",
         code: "text" },
         {
-          name: "searchIndex"
+            weights: {
+                name: 90000
+            },
+            name: "searchIndex_1"
         }
       );
       // TODO: Create a collation that does a case insensitive search
