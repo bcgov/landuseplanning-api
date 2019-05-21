@@ -105,7 +105,9 @@ exports.unProtectedPost = function (args, res, next) {
           // Define security tag defaults
           doc.tags = ['sysadmin', 'staff'];
           // doc._application = _application;
-          // doc._comment = _comment;
+          doc._comment = _comment;
+
+          // TODO Push files back into the original comment for reference.
 
           // TODO Project and other good meta
           // TODO  add to period documents, etc.
