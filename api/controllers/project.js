@@ -388,6 +388,7 @@ exports.protectedPut = async function (args, res, next) {
   console.log(updateObj);
   console.log("--------------------------");
   Project.update({ _id: objId }, { $set: updateObj }, function (err, o) {
+    console.log("ERR:", err);
     if (o) {
       defaultLog.info("o:", o);
       return Actions.sendResponse(res, 200, o);

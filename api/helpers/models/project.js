@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var Mixed = mongoose.Schema.Types.Mixed;
+var Double = mongoose.SchemaTypes.Double;
 
 module.exports = require ('../models')('Project', {
 
@@ -8,7 +9,7 @@ module.exports = require ('../models')('Project', {
     CELead                  : { type: String, default: '' },
     CELeadEmail             : { type: String, default: '' },
     CELeadPhone             : { type: String, default: '' },
-    centroid                : [{ type: Number, default: 0.00}],
+    centroid                : [{ type: Mixed, default: 0.00}],
     description             : { type: String, default: '' },
     eacDecision             : { type: String, default: '' },
     location                : { type: String, default: '' },
