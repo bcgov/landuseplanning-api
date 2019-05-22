@@ -37,7 +37,16 @@ exports.up = function(db) {
         code: "text" },
         {
             weights: {
-                name: 90000
+                name: 9000,
+                displayName: 8500,
+                description: 8000,
+                milestone: 7000,
+                label: 6000,
+                documentFileName: 5000,
+                type: 4000,
+                documentAuthor: 3000,
+                datePosted: 2500,
+                dateUploaded: 2000
             },
             name: "searchIndex_1"
         }
