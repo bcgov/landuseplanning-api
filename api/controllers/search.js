@@ -107,6 +107,24 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     );
   }
 
+  if (collection === 'User') {
+    // pop proponent if exists.
+    aggregation.push(
+        {
+          '$lookup': {
+            "from": "epic",
+            "localField": "org",
+            "foreignField": "_id",
+            "as": "org"
+          }
+        });
+        aggregation.push(
+        {
+          "$unwind": "$org"
+        },
+    );
+  }
+
   console.log('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
