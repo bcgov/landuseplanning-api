@@ -41,11 +41,15 @@ var setPermissionsFromEaoStatus = function (status, comment) {
       comment.eaoStatus = 'Published';
       comment.read = ['public', 'staff', 'sysadmin'];
       break;
+    case 'Pending':
+      defaultLog.info('Pending Comment');
+      comment.eaoStatus = 'Pending';
+      comment.read = ['staff', 'sysadmin'];
+      break;
     case 'Deferred':
       defaultLog.info('Deferring Comment');
       comment.eaoStatus = 'Deferred';
       comment.read = ['staff', 'sysadmin'];
-      console.log('wtf', comment.read);
       break;
     case 'Rejected':
       defaultLog.info('Rejecting Comment');
@@ -54,12 +58,13 @@ var setPermissionsFromEaoStatus = function (status, comment) {
       break;
     case 'Reset':
       defaultLog.info('Reseting Comment Status');
-      comment.eaoStatus = '';
+      comment.eaoStatus = 'Pending';
       comment.read = ['staff', 'sysadmin'];
       break;
     default:
       break;
   }
+  return comment;
 }
 
 // Function 'warms up' the query so that we can project the field that we're sorting on
@@ -315,7 +320,7 @@ exports.protectedPost = async function (args, res, next) {
   comment.write = ['staff', 'sysadmin'];
   comment.delete = ['staff', 'sysadmin'];
 
-  setPermissionsFromEaoStatus(obj.eaoStatus, comment);
+  comment = setPermissionsFromEaoStatus(obj.eaoStatus, comment);
 
   try {
     var c = await comment.save();
@@ -346,7 +351,7 @@ exports.unProtectedPost = async function (args, res, next) {
 
   var comment = new Comment(obj);
   comment._schemaName = 'Comment';
-  comment.commentStatus = 'Pending';
+  comment.eaoStatus = 'Pending';
   comment.author = obj.author;
   comment.comment = obj.comment;
   comment.dateAdded = new Date();
@@ -356,6 +361,7 @@ exports.unProtectedPost = async function (args, res, next) {
   comment.period = mongoose.Types.ObjectId(obj.period);
   comment.commentId = commentIdCount;
 
+  comment.read = ['staff', 'sysadmin'];
   comment.write = ['staff', 'sysadmin'];
   comment.delete = ['staff', 'sysadmin'];
 
@@ -399,7 +405,7 @@ exports.protectedPut = async function (args, res, next) {
     // TODO
     // documents: obj.documents,
   };
-  setPermissionsFromEaoStatus(obj.eaoStatus, comment);
+  comment = setPermissionsFromEaoStatus(obj.eaoStatus, comment);
 
   defaultLog.info('Incoming updated object:', comment);
 
@@ -425,7 +431,7 @@ exports.protectedStatus = async function (args, res, next) {
   }
   var Comment = mongoose.model('Comment');
 
-  setPermissionsFromEaoStatus(status, comment);
+  comment = setPermissionsFromEaoStatus(status, comment);
 
   try {
     var c = await Comment.update({ _id: objId }, { $set: comment });
