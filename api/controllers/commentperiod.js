@@ -288,6 +288,7 @@ exports.protectedPost = async function (args, res, next) {
     instructions: obj.instructions,
     milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
+    relatedDocuments: obj.relatedDocuments,
     project: mongoose.Types.ObjectId(obj.project),
     read: ['staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
@@ -324,6 +325,7 @@ exports.protectedPut = async function (args, res, next) {
     instructions: obj.instructions,
     milestone: mongoose.Types.ObjectId(obj.milestone),
     openHouses: obj.openHouses,
+    relatedDocuments: obj.relatedDocuments,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
     read: ['staff', 'sysadmin']
   };
