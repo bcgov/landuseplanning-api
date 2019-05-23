@@ -98,7 +98,7 @@ exports.recordAction = async function (action, meta, payload, objId = null){
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, postQueryPipelineSteps = false) {
+exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, postQueryPipelineSteps = false, populateProject = false) {
     return new Promise(async function (resolve, reject) {
         var theModel = mongoose.model(modelType);
         var projection = {};
@@ -135,6 +135,17 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         },
         populateProponent && {
           "$unwind": "$proponent"
+        },
+        populateProject && {
+          '$lookup': {
+            "from": "epic",
+            "localField": "project",
+            "foreignField": "_id",
+            "as": "project"
+          }
+        },
+        populateProject && {
+          "$unwind": "$project"
         },
         postQueryPipelineSteps,
         {

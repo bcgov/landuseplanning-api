@@ -5,8 +5,101 @@ var mongoose    = require('mongoose');
 var Actions     = require('../helpers/actions');
 var Utils       = require('../helpers/utils');
 
+var getSanitizedFields = function (fields) {
+  return _.remove(fields, function (f) {
+    return (_.indexOf([
+      '_schemaName',
+      'dateUpdated',
+      'dateAdded',
+      'pinned',
+      'documentUrl',
+      'contentUrl',
+      'type',
+      'priority',
+      'active',
+      'project',
+      'content',
+      'headline'
+    ], f) !== -1);
+  });
+}
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
+}
+
+exports.publicGet = async function (args, res, next) {
+  var fields = ['_schemaName',
+                'dateUpdated',
+                'dateAdded',
+                'pinned',
+                'documentUrl',
+                'contentUrl',
+                'type',
+                'priority',
+                'active',
+                'project',
+                'content',
+                'headline'];
+  var RecentActivity = mongoose.model('RecentActivity');
+  var query = {};
+  var sort = {
+    dateAdded: -1
+  };
+  var theFields = getSanitizedFields(fields);
+
+  _.assignIn(query, { '_schemaName': 'RecentActivity', active: true, pinned: true });
+
+  console.log(query);
+
+  try {
+    var data = await Utils.runDataQuery('RecentActivity',
+                                        ['public'],
+                                        query,
+                                        theFields, // Fields
+                                        null, // sort warmup
+                                        sort, // sort
+                                        null, // skip
+                                        4, // limit
+                                        false,
+                                        null,
+                                        false,
+                                        false,
+                                        true); // count
+
+    Utils.recordAction('get', 'recentActivity', 'public');
+
+    if (data.length > 3) {
+      // we're done getting enough for the front end. Top 4 only.
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      // Get next sorted, unpinned
+      query = {};
+      _.assignIn(query, { '_schemaName': 'RecentActivity', active: true, pinned: false });
+
+      var dataNext = await Utils.runDataQuery('RecentActivity',
+                                          ['public'],
+                                          query,
+                                          theFields, // Fields
+                                          null, // sort warmup
+                                          sort, // sort
+                                          null, // skip
+                                          4, // limit
+                                          false,
+                                          null,
+                                          false,
+                                          false,
+                                          true); // count
+
+      dataNext.slice(0, 4 - data.length).map(item => {
+        data.push(item);
+      });
+      return Actions.sendResponse(res, 200, data);
+    }
+
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 }
 
 exports.protectedDelete = function (args, res, next) {
