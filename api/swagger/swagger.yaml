@@ -1529,6 +1529,39 @@ paths:
             $ref: "#/definitions/Error"
 
 ### RecentActivity Routes
+  /public/recentActivity:
+    x-swagger-router-controller: recentActivity
+    options:
+      tags:
+        - recentActivity
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on RecentActivity Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/RecentActivityObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - recentActivity
+      summary: "Get top recentActivity"
+      operationId: publicGet
+      description: "Get top recentActivity."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/RecentActivityObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
   /recentActivity:
     x-swagger-router-controller: recentActivity
     options:
