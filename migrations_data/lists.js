@@ -1,31 +1,7 @@
 module.exports = [{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Amendment"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Assessment"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Comments/Submissions"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Compliance Self Report"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Correspondence"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Fees"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Inspection Record"
+  "name" : "Request"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
@@ -33,27 +9,23 @@ module.exports = [{
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Management Plan"
+  "name" : "Meeting Notes"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Notice/News Release"
+  "name" : "PCP"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Notification"
+  "name" : "Plan"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Order"
+  "name" : "Report/Study/Agreement"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Notice/News Release"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
-  "name" : "Notification"
+  "name" : "Decision Materials"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
@@ -61,36 +33,41 @@ module.exports = [{
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Presentation"
+  "name" : "Project Description"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Project Information"
+  "name" : "AIR Materials"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Report/Plan"
+  "name" : "Application Materials"
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Request"
+  "name" : "Certificate Package"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Exemption Package"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Amendment Package"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Enforcement Action"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Inspection Record"
+},{
+  "type" : "doctype",
+  "_schemaName" : "List",
+  "name" : "Other"
 },
 ////////////////////////////////////////////////
-{
-  "type" : "author",
-  "_schemaName" : "List",
-  "name" : "Proponent"
-},
-{
-  "type" : "author",
-  "_schemaName" : "List",
-  "name" : "Certificate Holder"
-},
-{
-  "type" : "author",
-  "_schemaName" : "List",
-  "name" : "Minister's Office"
-},
 {
   "type" : "author",
   "_schemaName" : "List",
@@ -99,7 +76,17 @@ module.exports = [{
 {
   "type" : "author",
   "_schemaName" : "List",
-  "name" : "Participating Indigenous Nation"
+  "name" : "Proponent/Certificate Holder"
+},
+{
+  "type" : "author",
+  "_schemaName" : "List",
+  "name" : "Indigenous Group"
+},
+{
+  "type" : "author",
+  "_schemaName" : "List",
+  "name" : "Working Group"
 },
 {
   "type" : "author",
@@ -109,87 +96,82 @@ module.exports = [{
 {
   "type" : "author",
   "_schemaName" : "List",
-  "name" : "Other Agency"
-},
-{
-  "type" : "author",
-  "_schemaName" : "List",
-  "name" : "CEAA"
-},
-{
-  "type" : "author",
-  "_schemaName" : "List",
-  "name" : "Working Group"
+  "name" : "Other"
 },
 ////////////////////////////////////////////////
 {
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Transition Order"
+  "name" : "Section 6"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Minister's Designation (S6)"
+  "name" : "Section 7"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Opt-in (S7)"
+  "name" : "Section 10"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "S.10(1)(a) Determination"
+  "name" : "Section 11/14"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "S10(1)(b) Determination"
+  "name" : "Section 13/15"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "S10(1)(c) Determination"
+  "name" : "dAIR"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "S.11 Order"
+  "name" : "AIR"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Initial Project Description"
+  "name" : "Application Evaluation"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Project Description"
+  "name" : "Application Review"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Draft Application Information Requirements"
+  "name" : "Referral"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Application information Requirements"
+  "name" : "Certificate"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Draft Application"
+  "name" : "Certificate Extension"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Application"
+  "name" : "Substantial Start Decision"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Referral Package"
+  "name" : "Inspection"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Certificate Package"
+  "name" : "Enforcement"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Substantially Started Determination"
+  "name" : "Compliance"
 },{
   "type" : "label",
   "_schemaName" : "List",
-  "name" : "Certificate Extension Determination"
+  "name" : "Post-Decision Materials"
+},
+{
+  "type" : "label",
+  "_schemaName" : "List",
+  "name" : "Amendment"
 },
 ////////////////////////////////////////////////
 {
