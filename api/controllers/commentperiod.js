@@ -328,7 +328,7 @@ exports.protectedPut = async function (args, res, next) {
     read: ['staff', 'sysadmin']
   };
 
-  if (args.swagger.params.isPublished && args.swagger.params.isPublished.value) {
+  if (obj.isPublished) {
     commentPeriod.read.push('public');
   }
 
