@@ -89,21 +89,23 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
 
   var aggregation = [{ $match: match }];
 
-  // pop proponent if exists.
-  aggregation.push(
-      {
-        '$lookup': {
-          "from": "epic",
-          "localField": "proponent",
-          "foreignField": "_id",
-          "as": "proponent"
-        }
-      });
-      aggregation.push(
-      {
-        "$unwind": "$proponent"
-      },
-  );
+  if (collection === 'Project') {
+    // pop proponent if exists.
+    aggregation.push(
+        {
+          '$lookup': {
+            "from": "epic",
+            "localField": "proponent",
+            "foreignField": "_id",
+            "as": "proponent"
+          }
+        });
+        aggregation.push(
+        {
+          "$unwind": "$proponent"
+        },
+    );
+  }
 
   console.log('populate:', populate);
   if (populate === true && collection !== 'Project') {
