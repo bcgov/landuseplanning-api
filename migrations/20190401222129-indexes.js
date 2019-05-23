@@ -41,6 +41,8 @@ exports.up = function(db) {
                 displayName: 8500,
                 description: 8000,
                 milestone: 7000,
+                headline: 1,
+                content: 1,
                 label: 6000,
                 documentFileName: 5000,
                 type: 4000,
