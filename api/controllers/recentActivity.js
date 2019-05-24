@@ -134,9 +134,18 @@ exports.protectedPost = async function (args, res, next) {
   defaultLog.info("Incoming new object:", obj);
 
   var RecentActivity = mongoose.model('RecentActivity');
+  delete obj._id;
   var recentActivity = new RecentActivity(obj);
   // Define security tag defaults.  Default public and sysadmin.
-  recentActivity.read = ['project-system-admin', 'sysadmin'];
+
+  if (recentActivity.active) {
+    recentActivity.read = ['sysadmin', 'staff', 'public'];
+  } else {
+    recentActivity.read = ['sysadmin', 'staff'];
+  }
+
+  recentActivity.pinned = false;
+
   recentActivity.dateAdded = new Date();
   recentActivity._addedBy = args.swagger.params.auth_payload.preferred_username;
   try {
@@ -158,6 +167,11 @@ exports.protectedPut = async function (args, res, next) {
   var obj = args.swagger.params.RecentActivityObject.value;
   // Strip security tags - these will not be updated on this route.
   defaultLog.info("Incoming updated object:", obj);
+  if (obj.active) {
+    obj.read = ['sysadmin', 'staff', 'public'];
+  } else {
+    obj.read = ['sysadmin', 'staff'];
+  }
   // TODO sanitize/update audits.
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
