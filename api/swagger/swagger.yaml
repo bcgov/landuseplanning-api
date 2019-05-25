@@ -1853,7 +1853,7 @@ paths:
           required: false
           collectionFormat: pipes
           items:
-              type: string
+            type: string
         - in: query
           name: project
           description: "Documents relating to a particular Project(s)"
@@ -1925,7 +1925,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: docId
           in: path
@@ -2386,16 +2387,16 @@ paths:
       description: "Retreiving public documents."
       parameters:
         - in: query
-          name: project
-          description: "Documents relating to a particular Project(s)"
+          name: docIds
+          description: "Search using an array of document ids."
           type: array
           required: false
           collectionFormat: pipes
           items:
             type: string
         - in: query
-          name: _comment
-          description: "Documents relating to a particular Comment(s)"
+          name: project
+          description: "Documents relating to a particular Project(s)"
           type: array
           required: false
           collectionFormat: pipes
@@ -2568,8 +2569,17 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
+        - in: query
+          name: project
+          description: "Documents relating to a particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
         - in: query
           name: fields
           description: "Organization fields to return."

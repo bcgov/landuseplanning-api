@@ -47,38 +47,41 @@ exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
 
-exports.publicGet = function (args, res, next) {
+exports.publicGet = async function (args, res, next) {
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
+    query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
   }
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
-  }
-  if (args.swagger.params._comment && args.swagger.params._comment.value) {
-    query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
 
   // Set query type
   _.assignIn(query, { "_schemaName": "Document" });
 
-  Utils.runDataQuery('Document',
-    ['public'],
-    query,
-    getSanitizedFields(args.swagger.params.fields.value), // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    false) // count
-    .then(function (data) {
-      return Actions.sendResponse(res, 200, data);
-    });
+  try {
+    var data = await Utils.runDataQuery('Document',
+      ['public'],
+      query,
+      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false); // count
+    defaultLog.info('Got document(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
+
 exports.unProtectedPost = async function (args, res, next) {
   console.log("Creating new object");
-  // var _application = args.swagger.params._application.value;
   var _comment = args.swagger.params._comment.value;
   var project = args.swagger.params.project.value;
   var displayName = args.swagger.params.displayName.value;
@@ -107,7 +110,6 @@ exports.unProtectedPost = async function (args, res, next) {
           doc.read = ['sysadmin', 'staff'];
           doc.write = ['sysadmin', 'staff'];
           doc.delete = ['sysadmin', 'staff'];
-          // doc._application = _application;
           doc._comment = _comment;
 
           doc.project = mongoose.Types.ObjectId(project);
@@ -198,11 +200,8 @@ exports.protectedGet = async function (args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
   }
 
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery("_application", args.swagger.params._application.value, query);
-  }
-  if (args.swagger.params._comment && args.swagger.params._comment.value) {
-    query = Utils.buildQuery("_comment", args.swagger.params._comment.value, query);
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
 
   // Set query type
@@ -278,8 +277,6 @@ exports.publicDownload = function (args, res, next) {
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           });
-
-
       } else {
         return Actions.sendResponse(res, 404, {});
       }
