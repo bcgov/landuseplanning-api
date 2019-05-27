@@ -34,10 +34,7 @@ exports.up = function(db) {
             _id: item._id
           },
           {
-            $addToSet: { read: 'staff' },
-            $addToSet: { read: 'sysadmin' },
-            $addToSet: { write: 'staff' },
-            $addToSet: { write: 'sysadmin' },
+            $addToSet: { read: { $each: [ "staff", "sysadmin" ] }, write: { $each: [ "staff", "sysadmin" ] } }
           });
         }
         mClient.close();
