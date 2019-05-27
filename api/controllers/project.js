@@ -210,7 +210,6 @@ exports.protectedGet = async function (args, res, next) {
           var sort_by = value.slice(1);
           sort[sort_by] = order_by;
         }, this);
-
       }
 
       // Pagination
