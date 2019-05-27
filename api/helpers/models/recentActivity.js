@@ -1,5 +1,5 @@
  module.exports = require ('../models')('RecentActivity', {
-    daetUpdated         : { type: Date, default: Date.now() },
+    dateUpdated         : { type: Date, default: Date.now() },
     dateAdded           : { type: Date, default: Date.now() },
     _addedBy            : { type: String, default: null },
     _updatedBy          : { type: String, default: null },
