@@ -210,7 +210,7 @@ exports.protectedSummary = async function (args, res, next) {
 exports.protectedGet = async function (args, res, next) {
   defaultLog.info('Getting comment period(s)');
 
-  var query = {}, sort = {}, skip = null, limit = null, count = false;
+  var query = {}, sort = null, skip = null, limit = null, count = false;
 
   // Build match query if on CommentPeriodId route
   if (args.swagger.params.commentPeriodId) {
@@ -225,17 +225,11 @@ exports.protectedGet = async function (args, res, next) {
 
   // sort
   if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
+    sort = {};
     args.swagger.params.sortBy.value.forEach(function (value) {
       var order_by = value.charAt(0) == '-' ? -1 : 1;
       var sort_by = value.slice(1);
-      // only accept certain fields
-      switch (sort_by) {
-        case 'dateStarted':
-        case 'dateCompleted':
-        case 'author':
-          sort[sort_by] = order_by;
-          break;
-      }
+      sort[sort_by] = order_by;
     }, this);
   }
 
