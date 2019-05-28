@@ -83,7 +83,7 @@ exports.publicHead = async function (args, res, next) {
 
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
-    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
+    commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
   } else {
     try {
       query = addStandardQueryFilters(query, args);
@@ -135,7 +135,7 @@ exports.publicGet = async function (args, res, next) {
 
   if (args.swagger.params.projId) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
-    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
+    commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
   } else {
     // Could be a bunch of results - enable pagination
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
@@ -194,7 +194,7 @@ exports.protectedGet = async function (args, res, next) {
   if (args.swagger.params.projId) {
     // Getting a single project
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
-    commentPeriodPipeline = handleCommentPeriodDateQueryParameters(args, args.swagger.params.projId.value);
+    commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
     console.log(JSON.stringify(commentPeriodPipeline));
   } else {
     // Getting multiple projects
@@ -441,57 +441,26 @@ exports.protectedUnPublish = function (args, res, next) {
   });
 };
 
-var handleCommentPeriodDateQueryParameters = function (args, projectId) {
+var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
 
-  var dateStarted, dateCompleted = null;
+  var dateStartedRange, dateCompletedRange = null;
 
-  // Date range logic
-  if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined) {
-    var queryString = qs.parse(args.swagger.params.cpStart.value);
-    if (queryString.eq) {
-      dateStarted = { dateStarted: { $eq: new Date(queryString.eq) } }
+  if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined && args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
+    var queryStringStart = qs.parse(args.swagger.params.cpStart.value);
+    var queryStringEnd = qs.parse(args.swagger.params.cpEnd.value);
+
+    if (queryStringStart.since && queryStringEnd.until) {
+      dateStartedRange = { $and: [{ dateStarted: { $gte: new Date(queryStringStart.since) } }, { dateStarted: { $lte: new Date(queryStringEnd.until) } }] };
+      dateCompletedRange = { $and: [{ dateCompleted: { $gte: new Date(queryStringStart.since) } }, { dateCompleted: { $lte: new Date(queryStringEnd.until) } }] };
     } else {
-      // Which param was set?
-      if (queryString.since) {
-        dateStarted = { dateStarted: { $gte: new Date(queryString.since) } }
-      }
-      if (queryString.until) {
-        dateStarted = { dateStarted: { $lte: new Date(queryString.until) } }
-      }
+      return null;
     }
-  }
-
-  if (args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
-    var queryString = qs.parse(args.swagger.params.cpEnd.value);
-    if (queryString.eq) {
-      dateCompleted = { dateCompleted: { $eq: new Date(queryString.eq) } }
-    } else {
-      // Which param was set?
-      if (queryString.since) {
-        dateCompleted = { dateCompleted: { $gte: new Date(queryString.since) } }
-      }
-      if (queryString.until) {
-        dateCompleted = { dateCompleted: { $lte: new Date(queryString.until) } }
-      }
-    }
-  }
-
-  if (dateStarted == null && dateCompleted == null) {
-    return null;
-  }
-
-  var and = [];
-  if (dateStarted !== null) {
-    and.push(dateStarted);
-  }
-  if (dateCompleted !== null) {
-    and.push(dateCompleted);
   }
 
   var match = {
     _schemaName: 'CommentPeriod',
     project: mongoose.Types.ObjectId(projectId),
-    $and: and
+    $or: [dateStartedRange, dateCompletedRange]
   };
 
   return {
@@ -501,7 +470,7 @@ var handleCommentPeriodDateQueryParameters = function (args, projectId) {
       pipeline: [{
         $match: match
       }],
-      as: 'upcomingCommentPeriod'
+      as: 'commentPeriodForBanner'
     }
   };
 };
