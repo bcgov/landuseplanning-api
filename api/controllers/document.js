@@ -103,35 +103,73 @@ exports.unProtectedPost = async function (args, res, next) {
           defaultLog.warn("File failed virus check.");
           return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
         } else {
-          fs.writeFileSync(uploadDir + guid + "." + ext, args.swagger.params.upfile.value.buffer);
-          var Document = mongoose.model('Document');
-          var doc = new Document();
-          // Define security tag defaults
-          doc.read = ['sysadmin', 'staff'];
-          doc.write = ['sysadmin', 'staff'];
-          doc.delete = ['sysadmin', 'staff'];
-          doc._comment = _comment;
+          console.log('writing file.');
+          fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
+          console.log('wrote file successfully.');
 
-          doc.project = mongoose.Types.ObjectId(project);
-          doc.documentSource = "COMMENT";
+          console.log(MinioController.BUCKETS.DOCUMENTS_BUCKET,
+            mongoose.Types.ObjectId(project),
+            args.swagger.params.documentFileName.value,
+            tempFilePath);
 
-          doc.displayName = displayName;
-          doc.documentFileName = upfile.originalname;
-          doc.internalMime = upfile.mimetype;
-          doc.internalURL = uploadDir + guid + "." + ext;
-          doc.passedAVCheck = true;
-          // Update who did this?
-          doc._addedBy = 'public';
-          doc.save()
-            .then(async function (d) {
-              defaultLog.info("Saved new document object:", d._id);
+          MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
+            project,
+            args.swagger.params.documentFileName.value,
+            tempFilePath)
+          .then(async function (minioFile) {
+            console.log("putDocument:", minioFile);
 
-              var Comment = mongoose.model('Comment');
-              var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
-              defaultLog.info('Comment updated:', c);
+            // remove file from temp folder
+            fs.unlinkSync(tempFilePath);
 
-              return Actions.sendResponse(res, 200, d);
-            });
+            console.log('unlink');
+
+            var Document = mongoose.model('Document');
+            var doc = new Document();
+            // Define security tag defaults
+            doc.project = mongoose.Types.ObjectId(project);
+            doc._comment = _comment;
+            doc._addedBy = args.swagger.params.auth_payload.preferred_username;
+            doc._createdDate = new Date();
+            doc.read = ['sysadmin', 'staff'];
+            doc.write = ['sysadmin', 'staff'];
+            doc.delete = ['sysadmin', 'staff'];
+
+            doc.internalOriginalName = upfile.originalname;
+            doc.internalURL = minioFile.path;
+            doc.internalExt = minioFile.extension;
+            doc.internalSize = "0";  // TODO
+            doc.passedAVCheck = true;
+            doc.internalMime = upfile.mimetype;
+
+            doc.documentSource = "COMMENT";
+
+            doc.displayName = upfile.originalname;
+            doc.documentFileName = upfile.originalname;
+            doc.dateUploaded = args.swagger.params.dateUploaded.value;
+            doc.datePosted = args.swagger.params.datePosted.value;
+            doc.type = args.swagger.params.type.value;
+            doc.description = args.swagger.params.description.value;
+            doc.documentAuthor = args.swagger.params.documentAuthor.value;
+            // Update who did this?
+            console.log('unlink');
+            doc.save()
+              .then(async function (d) {
+                defaultLog.info("Saved new document object:", d._id);
+
+                var Comment = mongoose.model('Comment');
+                var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
+                defaultLog.info('Comment updated:', c);
+
+                return Actions.sendResponse(res, 200, d);
+              })
+              .catch(async function (error) {
+                console.log("error:", error);
+                // the model failed to be created - delete the document from minio so the database and minio remain in sync.
+                MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
+                return Actions.sendResponse(res, 400, error);
+              });
+          });
         }
       });
   } catch (e) {
