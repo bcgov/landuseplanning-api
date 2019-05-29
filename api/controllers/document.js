@@ -86,9 +86,9 @@ exports.unProtectedPost = async function (args, res, next) {
   var project = args.swagger.params.project.value;
   var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
-  var tempFilePath = uploadDir + guid + "." + ext;
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+  var tempFilePath = uploadDir + guid + "." + ext;
   try {
     Promise.resolve()
       .then(async function () {
