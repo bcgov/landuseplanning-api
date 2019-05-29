@@ -156,7 +156,7 @@ exports.publicGet = async function (args, res, next) {
     sort, // sort
     skip, // skip
     limit, // limit
-    args.swagger.params.count.value); // count
+    true); // count
   if (args.swagger.params.count.value) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
