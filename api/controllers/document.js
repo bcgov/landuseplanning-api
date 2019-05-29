@@ -86,7 +86,7 @@ exports.unProtectedPost = async function (args, res, next) {
   var project = args.swagger.params.project.value;
   var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
-
+  var tempFilePath = uploadDir + guid + "." + ext;
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   try {
@@ -109,12 +109,12 @@ exports.unProtectedPost = async function (args, res, next) {
 
           console.log(MinioController.BUCKETS.DOCUMENTS_BUCKET,
             mongoose.Types.ObjectId(project),
-            args.swagger.params.documentFileName.value,
+            upfile.originalname,
             tempFilePath);
 
           MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
             project,
-            args.swagger.params.documentFileName.value,
+            upfile.originalname,
             tempFilePath)
           .then(async function (minioFile) {
             console.log("putDocument:", minioFile);
@@ -129,7 +129,7 @@ exports.unProtectedPost = async function (args, res, next) {
             // Define security tag defaults
             doc.project = mongoose.Types.ObjectId(project);
             doc._comment = _comment;
-            doc._addedBy = args.swagger.params.auth_payload.preferred_username;
+            doc._addedBy = 'public';
             doc._createdDate = new Date();
             doc.read = ['sysadmin', 'staff'];
             doc.write = ['sysadmin', 'staff'];
@@ -146,11 +146,9 @@ exports.unProtectedPost = async function (args, res, next) {
 
             doc.displayName = upfile.originalname;
             doc.documentFileName = upfile.originalname;
-            doc.dateUploaded = args.swagger.params.dateUploaded.value;
-            doc.datePosted = args.swagger.params.datePosted.value;
-            doc.type = args.swagger.params.type.value;
-            doc.description = args.swagger.params.description.value;
-            doc.documentAuthor = args.swagger.params.documentAuthor.value;
+            doc.dateUploaded = new Date();
+            doc.datePosted = new Date();
+            doc.documentAuthor = 'public';
             // Update who did this?
             console.log('unlink');
             doc.save()
