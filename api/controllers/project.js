@@ -389,10 +389,12 @@ exports.protectedPut = async function (args, res, next) {
   obj.region = projectObj.region;
   obj.status = projectObj.status;
   obj.eaStatus = projectObj.eaStatus;
+  obj.name = projectObj.name;
   // obj.eaStatusDate = new Date(projectObj.eaStatusDate);
   // obj.projectStatusDate = new Date(projectObj.projectStatusDate);
   // obj.substantiallyDate = new Date(projectObj.substantiallyDate);
-  // obj.substantially = projectObj.substantially;
+  // obj.activeDate = new Date(projectObj.activeDate);
+  obj.substantially = projectObj.substantially;
   
   obj.centroid = projectObj.centroid;
 
