@@ -8,54 +8,64 @@ var Utils = require('../helpers/utils');
 var request = require('request');
 var tagList = [
   'CEAAInvolvement',
-  'CELead',
-  'CELeadEmail',
-  'CELeadPhone',
-  'centroid',
-  'description',
-  'eacDecision',
-  'location',
-  'name',
-  'projectLead',
-  'projectLeadEmail',
-  'projectLeadPhone',
-  'proponent',
-  'region',
-  'responsibleEPD',
-  'responsibleEPDEmail',
-  'responsibleEPDPhone',
-  'subtype',
-  'type',
-  'addedBy',
-  'intake',
-  'build',
-  'CEAALink',
-  'code',
-  'commodity',
-  'currentPhaseName',
-  'dateAdded',
-  'dateCommentsClosed',
-  'dateCommentsOpen',
-  'dateUpdated',
-  'decisionDate',
-  'duration',
-  'eaoMember',
-  'epicProjectID',
-  'fedElecDist',
-  'isTermsAgreed',
-  'overallProgress',
-  'primaryContact',
-  'proMember',
-  'provElecDist',
-  'sector',
-  'shortName',
-  'status',
-  'substitution',
-  'updatedBy',
-  'read',
-  'write',
-  'delete',
-  'directoryStructure'
+      'CELead',
+      'CELeadEmail',
+      'CELeadPhone',
+      'centroid',
+      'description',
+      'eacDecision',
+      'activeStatus',
+      'location',
+      'name',
+      'projectLead',
+      'projectLeadEmail',
+      'projectLeadPhone',
+      'proponent',
+      'region',
+      'responsibleEPD',
+      'responsibleEPDEmail',
+      'responsibleEPDPhone',
+      'subtype',
+      'type',
+      'addedBy',
+      'build',
+      'intake',
+      'CEAALink',
+      'code',
+      'eaDecision',
+      'operational',
+      'substantiallyStarted',
+      'nature',
+      'commodity',
+      'currentPhaseName',
+      'dateAdded',
+      'dateCommentsClosed',
+      'dateCommentsOpen',
+      'dateUpdated',
+      'decisionDate',
+      'duration',
+      'eaoMember',
+      'epicProjectID',
+      'fedElecDist',
+      'isTermsAgreed',
+      'overallProgress',
+      'primaryContact',
+      'proMember',
+      'provElecDist',
+      'sector',
+      'shortName',
+      'status',
+      'substantiallyDate',
+      'substantially',
+      'substitution',
+      'eaStatus',
+      'eaStatusDate',
+      'projectStatusDate',
+      'activeDate',
+      'updatedBy',
+      'read',
+      'write',
+      'delete'
 ];
 
 var getSanitizedFields = function (fields) {
@@ -340,9 +350,9 @@ exports.protectedPost = function (args, res, next) {
   var Project = mongoose.model('Project');
   var project = new Project(obj);
   // Define security tag defaults
-  project.read = ['sysadmin', 'project-system-admin'];
-  project.write = ['sysadmin', 'project-system-admin'];
-  project.delete = ['sysadmin', 'project-system-admin'];
+  project.read = ['sysadmin', 'staff'];
+  project.write = ['sysadmin', 'staff'];
+  project.delete = ['sysadmin', 'staff'];
   project._createdBy = args.swagger.params.auth_payload.preferred_username;
   project.createdDate = Date.now();
   project.save()
@@ -364,7 +374,7 @@ exports.protectedPut = async function (args, res, next) {
   var obj = {};
   var projectObj = args.swagger.params.ProjObject.value;
 
-  console.log("Incoming updated object:", projectObj);
+  // console.log("Incoming updated object:", projectObj);
   console.log("*****************");
 
   delete projectObj.read;
@@ -372,24 +382,29 @@ exports.protectedPut = async function (args, res, next) {
   delete projectObj.delete;
 
   obj.type = projectObj.type;
-  obj.nature = projectObj.nature;
+  obj.build = projectObj.build;
   obj.sector = projectObj.sector;
   obj.description = projectObj.description;
   obj.location = projectObj.location;
   obj.region = projectObj.region;
+  obj.status = projectObj.status;
+  obj.eaStatus = projectObj.eaStatus;
+  // obj.eaStatusDate = new Date(projectObj.eaStatusDate);
+  // obj.projectStatusDate = new Date(projectObj.projectStatusDate);
+  // obj.substantiallyDate = new Date(projectObj.substantiallyDate);
+  // obj.substantially = projectObj.substantially;
   
-  obj.centroid = [projectObj.lon, projectObj.lat];
-  // obj.lat = projectObj.lat;
-  // obj.lon = projectObj.lon;
+  obj.centroid = projectObj.centroid;
 
   obj.CEAAInvolvement = projectObj.CEAAInvolvement;
   obj.CEAALink = projectObj.CEAALink;
-  obj.eacDecision = projectObj.eacDecision;
-  obj.decisionDate = projectObj.decisionDate;
+  obj.eacDecision = new Date(projectObj.eacDecision);
+  obj.decisionDate = new Date(projectObj.decisionDate);
 
   try {
+    obj.intake = {};
     obj.intake.investment = projectObj.intake.investment;
-    obj.intake.investmentNotes = projectObj.intake.investmentNotes;
+    obj.intake.investmentNotes = projectObj.intake.notes;
   } catch (e) {
     // Missing info
     console.log("Missing:", e);
@@ -400,7 +415,7 @@ exports.protectedPut = async function (args, res, next) {
 
   console.log("Updating with:", obj);
   console.log("--------------------------");
-  var doc = await Project.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+  var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false });
   // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
     if (doc) {
       console.log("o:", doc);

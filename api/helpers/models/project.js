@@ -23,7 +23,6 @@ module.exports = require ('../models')('Project', {
     responsibleEPDEmail     : { type: String, default: '' },
     responsibleEPDPhone     : { type: String, default: '' },
     type                    : { type: String, default: '' },
-    nature                  : { type: String, default: '' },
 
     //Everything else
     addedBy                 : { type: String, default: '' },
@@ -35,7 +34,7 @@ module.exports = require ('../models')('Project', {
     dateAdded               : { type: String, default: '' },
     dateCommentsClosed      : { type: String, default: '' },
     dateCommentsOpen        : { type: String, default: '' },
-    dateUpdated             : { type: String, default: '' },
+    dateUpdated             : { type: Date, default: '' },
     decisionDate            : { type: Date, default: null },
     duration                : { type: String, default: '' },
     // TODO: directoryStructure
@@ -55,10 +54,13 @@ module.exports = require ('../models')('Project', {
     substitution            : { type: Boolean, default: false },
 
     // TODO: New Stuff?
-    eaStatusDate            : { type: String, default: '' },
-    projectStatusDate       : { type: String, default: '' },
-    substantiallyDate       : { type: String, default: '' },
-    activeDate              : { type: String, default: '' },
+    eaStatusDate            : { type: Date, default: '' },
+    eaStatus            : { type: String, default: '' },
+    projectStatusDate       : { type: Date, default: '' },
+    substantiallyDate       : { type: Date, default: '' },
+    substantially       : { type: Boolean, default: false },
+    activeDate              : { type: Date, default: '' },
+    activeStatus              : { type: String, default: '' },
 
 
     // Permissions
