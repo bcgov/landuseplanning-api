@@ -341,6 +341,14 @@ var executeQuery = async function (args, res, next) {
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
     var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query, populate)
+    if (dataset === 'Comment') {
+      // Filter
+      _.each(data[0].searchResults, function (item) {
+        if (item.isAnonymous === true) {
+          delete item.author;
+        }
+      });
+    }
     return Actions.sendResponse(res, 200, data);
 
   } else if (dataset === 'Item') {
@@ -376,6 +384,14 @@ var executeQuery = async function (args, res, next) {
         }
       }
     ]);
+    if (args.swagger.params._schemaName.value === 'Comment') {
+      // Filter
+      _.each(data, function (item) {
+        if (item.isAnonymous === true) {
+          delete item.author;
+        }
+      });
+    }
     return Actions.sendResponse(res, 200, data);
   } else {
     console.log('Bad Request');

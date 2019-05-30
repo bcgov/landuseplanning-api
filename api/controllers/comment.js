@@ -157,6 +157,13 @@ exports.publicGet = async function (args, res, next) {
     skip, // skip
     limit, // limit
     true); // count
+
+  _.each(data[0].results, function (item) {
+    if (item.isAnonymous === true) {
+      delete item.author;
+    }
+  });
+
   if (args.swagger.params.count.value) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
