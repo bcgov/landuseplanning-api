@@ -398,7 +398,7 @@ exports.protectedPut = async function (args, res, next) {
 
   obj.CEAAInvolvement = projectObj.CEAAInvolvement;
   obj.CEAALink = projectObj.CEAALink;
-  obj.eacDecision = new Date(projectObj.eacDecision);
+  obj.eacDecision = projectObj.eacDecision;
   obj.decisionDate = new Date(projectObj.decisionDate);
 
   try {
