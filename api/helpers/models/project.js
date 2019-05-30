@@ -23,6 +23,7 @@ module.exports = require ('../models')('Project', {
     responsibleEPDEmail     : { type: String, default: '' },
     responsibleEPDPhone     : { type: String, default: '' },
     type                    : { type: String, default: '' },
+    nature                  : { type: String, default: '' },
 
     //Everything else
     addedBy                 : { type: String, default: '' },

@@ -361,40 +361,54 @@ exports.protectedPut = async function (args, res, next) {
   defaultLog.info("ObjectID:", args.swagger.params.projId.value);
 
   var Project = mongoose.model('Project');
-  var obj = new Project(args.swagger.params.ProjObject.value);
+  var obj = {};
+  var projectObj = args.swagger.params.ProjObject.value;
 
-  console.log("Incoming updated object:", obj._doc);
+  console.log("Incoming updated object:", projectObj);
   console.log("*****************");
-  // TODO sanitize/update audits.
-  var updateObj = {};
-  for (const [key, value] of Object.entries(obj._doc)) {
-    if (!`${value}`) {
-      delete key;
-    } else {
-      // console.log(`${key}`, JSON.stringify(`${value}`));
-      if (key === 'centroid') {
-        updateObj[key] = [value];
-      } else if (key === 'proponent') {
-        updateObj[key] = mongoose.Types.ObjectId(value);
-      } else if (key === 'decisionDate') {
-        updateObj[key] = new Date(value);
-      } else {
-        updateObj[key] = value;
-      }
-    }
+
+  delete projectObj.read;
+  delete projectObj.write;
+  delete projectObj.delete;
+
+  obj.type = projectObj.type;
+  obj.nature = projectObj.nature;
+  obj.sector = projectObj.sector;
+  obj.description = projectObj.description;
+  obj.location = projectObj.location;
+  obj.region = projectObj.region;
+  
+  obj.centroid = [projectObj.lon, projectObj.lat];
+  // obj.lat = projectObj.lat;
+  // obj.lon = projectObj.lon;
+
+  obj.CEAAInvolvement = projectObj.CEAAInvolvement;
+  obj.CEAALink = projectObj.CEAALink;
+  obj.eacDecision = projectObj.eacDecision;
+  obj.decisionDate = projectObj.decisionDate;
+
+  try {
+    obj.intake.investment = projectObj.intake.investment;
+    obj.intake.investmentNotes = projectObj.intake.investmentNotes;
+  } catch (e) {
+    // Missing info
+    console.log("Missing:", e);
+    // fall through
   }
-  console.log(updateObj);
+  // Not doing people or proponent yet.
+  // obj.proponent;
+
+  console.log("Updating with:", obj);
   console.log("--------------------------");
-  Project.update({ _id: objId }, { $set: updateObj }, function (err, o) {
-    console.log("ERR:", err);
-    if (o) {
-      defaultLog.info("o:", o);
-      return Actions.sendResponse(res, 200, o);
+  var doc = await Project.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+  // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
+    if (doc) {
+      console.log("o:", doc);
+      return Actions.sendResponse(res, 200, doc);
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
 }
 
 // Publish/Unpublish the project
