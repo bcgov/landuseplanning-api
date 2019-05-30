@@ -8,64 +8,64 @@ var Utils = require('../helpers/utils');
 var request = require('request');
 var tagList = [
   'CEAAInvolvement',
-      'CELead',
-      'CELeadEmail',
-      'CELeadPhone',
-      'centroid',
-      'description',
-      'eacDecision',
-      'activeStatus',
-      'location',
-      'name',
-      'projectLead',
-      'projectLeadEmail',
-      'projectLeadPhone',
-      'proponent',
-      'region',
-      'responsibleEPD',
-      'responsibleEPDEmail',
-      'responsibleEPDPhone',
-      'subtype',
-      'type',
-      'addedBy',
-      'build',
-      'intake',
-      'CEAALink',
-      'code',
-      'eaDecision',
-      'operational',
-      'substantiallyStarted',
-      'nature',
-      'commodity',
-      'currentPhaseName',
-      'dateAdded',
-      'dateCommentsClosed',
-      'dateCommentsOpen',
-      'dateUpdated',
-      'decisionDate',
-      'duration',
-      'eaoMember',
-      'epicProjectID',
-      'fedElecDist',
-      'isTermsAgreed',
-      'overallProgress',
-      'primaryContact',
-      'proMember',
-      'provElecDist',
-      'sector',
-      'shortName',
-      'status',
-      'substantiallyDate',
-      'substantially',
-      'substitution',
-      'eaStatus',
-      'eaStatusDate',
-      'projectStatusDate',
-      'activeDate',
-      'updatedBy',
-      'read',
-      'write',
-      'delete'
+  'CELead',
+  'CELeadEmail',
+  'CELeadPhone',
+  'centroid',
+  'description',
+  'eacDecision',
+  'activeStatus',
+  'location',
+  'name',
+  'projectLead',
+  'projectLeadEmail',
+  'projectLeadPhone',
+  'proponent',
+  'region',
+  'responsibleEPD',
+  'responsibleEPDEmail',
+  'responsibleEPDPhone',
+  'subtype',
+  'type',
+  'addedBy',
+  'build',
+  'intake',
+  'CEAALink',
+  'code',
+  'eaDecision',
+  'operational',
+  'substantiallyStarted',
+  'nature',
+  'commodity',
+  'currentPhaseName',
+  'dateAdded',
+  'dateCommentsClosed',
+  'dateCommentsOpen',
+  'dateUpdated',
+  'decisionDate',
+  'duration',
+  'eaoMember',
+  'epicProjectID',
+  'fedElecDist',
+  'isTermsAgreed',
+  'overallProgress',
+  'primaryContact',
+  'proMember',
+  'provElecDist',
+  'sector',
+  'shortName',
+  'status',
+  'substantiallyDate',
+  'substantially',
+  'substitution',
+  'eaStatus',
+  'eaStatusDate',
+  'projectStatusDate',
+  'activeDate',
+  'updatedBy',
+  'read',
+  'write',
+  'delete'
 ];
 
 var getSanitizedFields = function (fields) {
@@ -176,6 +176,16 @@ exports.publicGet = async function (args, res, next) {
       true, // proponent populate
       commentPeriodPipeline);
     defaultLog.info('Got project(s):', data);
+
+    // TODO: We should do this as a query
+    if (commentPeriodPipeline) {
+      _.each(data, function (item) {
+        if (item.commentPeriodForBanner > 0 && !item.commentPeriodForBanner[0].read.includes('public')) {
+          delete item.commentPeriodForBanner;
+        }
+      });
+    }
+
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -395,7 +405,7 @@ exports.protectedPut = async function (args, res, next) {
   // obj.substantiallyDate = new Date(projectObj.substantiallyDate);
   // obj.activeDate = new Date(projectObj.activeDate);
   obj.substantially = projectObj.substantially;
-  
+
   obj.centroid = projectObj.centroid;
 
   obj.CEAAInvolvement = projectObj.CEAAInvolvement;
@@ -421,13 +431,13 @@ exports.protectedPut = async function (args, res, next) {
   console.log("--------------------------");
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false });
   // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
-    if (doc) {
-      console.log("o:", doc);
-      return Actions.sendResponse(res, 200, doc);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
+  if (doc) {
+    console.log("o:", doc);
+    return Actions.sendResponse(res, 200, doc);
+  } else {
+    defaultLog.info("Couldn't find that object!");
+    return Actions.sendResponse(res, 404, {});
+  }
 }
 
 // Publish/Unpublish the project
@@ -476,7 +486,7 @@ exports.protectedUnPublish = function (args, res, next) {
 
 var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
 
-  var dateStartedRange, dateCompletedRange = null;
+  var dateStartedRange, dateCompletedRange, currentDateInBetween = null;
 
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined && args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
     var queryStringStart = qs.parse(args.swagger.params.cpStart.value);
@@ -485,6 +495,7 @@ var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
     if (queryStringStart.since && queryStringEnd.until) {
       dateStartedRange = { $and: [{ dateStarted: { $gte: new Date(queryStringStart.since) } }, { dateStarted: { $lte: new Date(queryStringEnd.until) } }] };
       dateCompletedRange = { $and: [{ dateCompleted: { $gte: new Date(queryStringStart.since) } }, { dateCompleted: { $lte: new Date(queryStringEnd.until) } }] };
+      currentDateInBetween = { $and: [{ dateStarted: { $lte: new Date(queryStringStart.since) } }, { dateCompleted: { $gte: new Date(queryStringEnd.until) } }] };
     } else {
       return null;
     }
@@ -493,7 +504,7 @@ var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
   var match = {
     _schemaName: 'CommentPeriod',
     project: mongoose.Types.ObjectId(projectId),
-    $or: [dateStartedRange, dateCompletedRange]
+    $or: [dateStartedRange, dateCompletedRange, currentDateInBetween]
   };
 
   return {
