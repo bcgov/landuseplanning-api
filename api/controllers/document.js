@@ -415,7 +415,7 @@ exports.protectedOpen = function (args, res, next) {
 
         // Allow override
         if (args.swagger.params.filename) {
-          fileName = args.swagger.params.docId.value;
+          fileName = args.swagger.params.filename.value;
         }
 
         var fileMeta;
