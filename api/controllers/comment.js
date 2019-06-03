@@ -125,17 +125,12 @@ exports.publicGet = async function (args, res, next) {
     if (args.swagger.params.period && args.swagger.params.period.value) {
       query = Utils.buildQuery('period', args.swagger.params.period.value, query);
     }
+    // Sort
     if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
       args.swagger.params.sortBy.value.forEach(function (value) {
         var order_by = value.charAt(0) == '-' ? -1 : 1;
         var sort_by = value.slice(1);
-        // only accept certain fields
-        switch (sort_by) {
-          case 'dateAdded':
-          case 'author':
-            sort[sort_by] = order_by;
-            break;
-        }
+        sort[sort_by] = order_by;
       }, this);
     }
 
