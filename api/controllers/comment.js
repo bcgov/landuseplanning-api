@@ -367,6 +367,7 @@ exports.unProtectedPost = async function (args, res, next) {
   comment.location = obj.location;
   comment.period = mongoose.Types.ObjectId(obj.period);
   comment.commentId = commentIdCount;
+  comment.documents = [];
 
   comment.read = ['staff', 'sysadmin'];
   comment.write = ['staff', 'sysadmin'];
