@@ -11,7 +11,7 @@
     "driver": "mongodb",
     "database": "epic",
     "user": "admin",
-    "password": "0vmDt8aMBmCldD3i",
+    "password": {"ENV": "MONGODB_PASSWORD"},
     "authSource": "admin",
     "host": "localhost",
     "port": "5555"
@@ -21,7 +21,7 @@
     "driver": "mongodb",
     "database": "epic",
     "user": "admin",
-    "password": "8xvEQ7GnUmRSKxRU",
+    "password": {"ENV": "MONGODB_PASSWORD"},
     "authSource": "admin",
     "host": "localhost",
     "port": "5555"
