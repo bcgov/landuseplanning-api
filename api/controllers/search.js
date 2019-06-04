@@ -87,7 +87,42 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     }
   ];
 
-  var aggregation = [{ $match: match }];
+  var aggregation = [
+    {
+      $match: match
+    }
+  ];
+
+  if (collection === 'Document') {
+    // Allow documents to be sorted by status based on publish existence
+    aggregation.push(
+      {
+        $addFields: {
+          "status": {
+              $cond: {
+              if: {
+                // This way, if read isn't present, we assume public no roles array.
+                $and: [
+                  { $cond: { if: "$read", then: true, else: false } },
+                  {
+                    $anyElementTrue: {
+                      $map: {
+                        input: "$read",
+                        as: "fieldTag",
+                        in: { $setIsSubset: [["$$fieldTag"], ['public']] }
+                      }
+                    }
+                  }
+                ]
+              },
+              then: 'published',
+              else: 'unpublished'
+            }
+          }
+        }
+      }
+    );
+  }
 
   if (collection === 'Project') {
     // pop proponent if exists.
@@ -248,95 +283,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortField:", sortField);
   defaultLog.info("sortDirection:", sortDirection);
 
-  if (dataset === 'All') {
-    console.log("Searching Collection:", dataset);
-    var collectionObj = mongoose.model("Project");
-    var data = await collectionObj.aggregate([
-      {
-        // TODO Include only models to which we want to search against, ie, documents, VCs and projects.
-        $match: {
-          _schemaName: { $in: ['Project', 'Document', 'Vc'] },
-          $text: { $search: keywords }
-        }
-      },
-      {
-        "$lookup": {
-          "from": "epic",
-          "localField": "project",
-          "foreignField": "_id",
-          "as": "project"
-        }
-      },
-      {
-        "$addFields": {
-          project: "$project",
-        }
-      },
-      { "$unwind": "$project" },
-      {
-        '$lookup': {
-          "from": "epic",
-          "localField": "proponent",
-          "foreignField": "_id",
-          "as": "proponent"
-        }
-      },
-      {
-        "$unwind": "$proponent"
-      },
-      {
-        $redact: {
-          $cond: {
-            if: {
-              // This way, if read isn't present, we assume public no roles array.
-              $and: [
-                { $cond: { if: "$read", then: true, else: false } },
-                {
-                  $anyElementTrue: {
-                    $map: {
-                      input: "$read",
-                      as: "fieldTag",
-                      in: { $setIsSubset: [["$$fieldTag"], roles] }
-                    }
-                  }
-                }
-              ]
-            },
-            then: "$$KEEP",
-            else: {
-              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-            }
-          }
-        }
-      },
-      {
-        $addFields: {
-          score: { $meta: "textScore" }
-        }
-      },
-      {
-        $facet: {
-          searchResults: [
-            {
-              $sort: sortingValue
-            },
-            {
-              $skip: pageNum * pageSize
-            },
-            {
-              $limit: pageSize
-            }
-          ],
-          meta: [
-            {
-              $count: "searchResultsTotal"
-            }
-          ]
-        }
-      }
-    ])
-    return Actions.sendResponse(res, 200, data);
-  } else if (dataset !== 'Item') {
+  if (dataset !== 'Item') {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
