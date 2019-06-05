@@ -180,7 +180,7 @@ exports.publicGet = async function (args, res, next) {
     // TODO: We should do this as a query
     if (commentPeriodPipeline) {
       _.each(data, function (item) {
-        if (item.commentPeriodForBanner > 0 && !item.commentPeriodForBanner[0].read.includes('public')) {
+        if (item.commentPeriodForBanner.length > 0 && !item.commentPeriodForBanner[0].read.includes('public')) {
           delete item.commentPeriodForBanner;
         }
       });
