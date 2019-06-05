@@ -4242,6 +4242,11 @@ paths:
           type: string
           required: false
         - in: query
+          name: query
+          description: "Selector for query"
+          type: string
+          required: false
+        - in: query
           name: populate
           description: "Populate Project object ID"
           type: boolean
