@@ -153,12 +153,18 @@ exports.publicGet = async function (args, res, next) {
     limit, // limit
     true); // count
 
+  if (data[0] == null) {
+    if (args.swagger.params.count.value) {
+      res.setHeader('x-total-count', 0);
+    }
+    return Actions.sendResponse(res, 200, data);
+  }
+
   _.each(data[0].results, function (item) {
     if (item.isAnonymous === true) {
       delete item.author;
     }
   });
-
   if (args.swagger.params.count.value) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
@@ -337,7 +343,7 @@ exports.protectedPost = async function (args, res, next) {
 
 async function getNextCommentIdCount(period) {
   var CommentPeriod = mongoose.model('CommentPeriod');
-  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { commentIdCount: 1 } }, { new: true } );
+  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { commentIdCount: 1 } }, { new: true });
   return period.commentIdCount;
 }
 
