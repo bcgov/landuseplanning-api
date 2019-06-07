@@ -276,6 +276,7 @@ exports.protectedPost = async function (args, res, next) {
   var commentPeriod = new CommentPeriod({
     _schemaName: 'CommentPeriod',
     addedBy: args.swagger.params.auth_payload.preferred_username,
+    commentIdCount: 0,
     dateAdded: new Date(),
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,

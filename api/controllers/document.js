@@ -116,58 +116,58 @@ exports.unProtectedPost = async function (args, res, next) {
             project,
             upfile.originalname,
             tempFilePath)
-          .then(async function (minioFile) {
-            console.log("putDocument:", minioFile);
+            .then(async function (minioFile) {
+              console.log("putDocument:", minioFile);
 
-            // remove file from temp folder
-            fs.unlinkSync(tempFilePath);
+              // remove file from temp folder
+              fs.unlinkSync(tempFilePath);
 
-            console.log('unlink');
+              console.log('unlink');
 
-            var Document = mongoose.model('Document');
-            var doc = new Document();
-            // Define security tag defaults
-            doc.project = mongoose.Types.ObjectId(project);
-            doc._comment = _comment;
-            doc._addedBy = 'public';
-            doc._createdDate = new Date();
-            doc.read = ['sysadmin', 'staff'];
-            doc.write = ['sysadmin', 'staff'];
-            doc.delete = ['sysadmin', 'staff'];
+              var Document = mongoose.model('Document');
+              var doc = new Document();
+              // Define security tag defaults
+              doc.project = mongoose.Types.ObjectId(project);
+              doc._comment = _comment;
+              doc._addedBy = 'public';
+              doc._createdDate = new Date();
+              doc.read = ['sysadmin', 'staff'];
+              doc.write = ['sysadmin', 'staff'];
+              doc.delete = ['sysadmin', 'staff'];
 
-            doc.internalOriginalName = upfile.originalname;
-            doc.internalURL = minioFile.path;
-            doc.internalExt = minioFile.extension;
-            doc.internalSize = "0";  // TODO
-            doc.passedAVCheck = true;
-            doc.internalMime = upfile.mimetype;
+              doc.internalOriginalName = upfile.originalname;
+              doc.internalURL = minioFile.path;
+              doc.internalExt = minioFile.extension;
+              doc.internalSize = "0";  // TODO
+              doc.passedAVCheck = true;
+              doc.internalMime = upfile.mimetype;
 
-            doc.documentSource = "COMMENT";
+              doc.documentSource = "COMMENT";
 
-            doc.displayName = upfile.originalname;
-            doc.documentFileName = upfile.originalname;
-            doc.dateUploaded = new Date();
-            doc.datePosted = new Date();
-            doc.documentAuthor = 'public';
-            // Update who did this?
-            console.log('unlink');
-            doc.save()
-              .then(async function (d) {
-                defaultLog.info("Saved new document object:", d._id);
+              doc.displayName = upfile.originalname;
+              doc.documentFileName = upfile.originalname;
+              doc.dateUploaded = new Date();
+              doc.datePosted = new Date();
+              doc.documentAuthor = 'public';
+              // Update who did this?
+              console.log('unlink');
+              doc.save()
+                .then(async function (d) {
+                  defaultLog.info("Saved new document object:", d._id);
 
-                var Comment = mongoose.model('Comment');
-                var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
-                defaultLog.info('Comment updated:', c);
+                  var Comment = mongoose.model('Comment');
+                  var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
+                  defaultLog.info('Comment updated:', c);
 
-                return Actions.sendResponse(res, 200, d);
-              })
-              .catch(async function (error) {
-                console.log("error:", error);
-                // the model failed to be created - delete the document from minio so the database and minio remain in sync.
-                MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
-                return Actions.sendResponse(res, 400, error);
-              });
-          });
+                  return Actions.sendResponse(res, 200, d);
+                })
+                .catch(async function (error) {
+                  console.log("error:", error);
+                  // the model failed to be created - delete the document from minio so the database and minio remain in sync.
+                  MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
+                  return Actions.sendResponse(res, 400, error);
+                });
+            });
         }
       });
   } catch (e) {
@@ -558,7 +558,7 @@ exports.protectedPublish = async function (args, res, next) {
     if (document) {
       defaultLog.info("Document:", document);
       document.eaoStatus = "Published";
-      var published = await Actions.publish(document);
+      var published = await Actions.publish(await document.save());
       Utils.recordAction('publish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
       return Actions.sendResponse(res, 200, published);
     } else {
@@ -580,7 +580,7 @@ exports.protectedUnPublish = async function (args, res, next) {
     if (document) {
       defaultLog.info("Document:", document);
       document.eaoStatus = "Rejected";
-      var unPublished = await Actions.unPublish(document);
+      var unPublished = await Actions.unPublish(await document.save());
       Utils.recordAction('unPublish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
       return Actions.sendResponse(res, 200, unPublished);
     } else {
