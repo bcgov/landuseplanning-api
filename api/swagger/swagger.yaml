@@ -3265,6 +3265,11 @@ paths:
           items:
             type: string
             enum: *commentFields
+        - in: query
+          name: populateNextComment
+          description: "Flag to get next comment information."
+          required: false
+          type: boolean
       responses:
         "200":
           description: "Success"
