@@ -43,7 +43,7 @@ app.use(function (req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE, HEAD');
   res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type,Authorization,responseType');
-  res.setHeader('Access-Control-Expose-Headers', 'x-total-count');
+  res.setHeader('Access-Control-Expose-Headers', 'x-total-count,x-pending-comment-count,x-next-comment-id');
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Cache-Control', 'max-age=4');
   next();

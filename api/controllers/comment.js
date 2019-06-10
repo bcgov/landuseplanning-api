@@ -277,6 +277,28 @@ exports.protectedGet = async function (args, res, next) {
       count); // count
     Utils.recordAction('get', 'comment', args.swagger.params.auth_payload.preferred_username);
     defaultLog.info('Got comment(s):', data);
+
+    // This is to get the next pending comment information.
+    if (args.swagger.params.populateNextComment && args.swagger.params.populateNextComment.value) {
+      defaultLog.info('Getting next pending comment information');
+      var queryForNextComment = {};
+
+      _.assignIn(queryForNextComment, { _id: { $ne: data[0]._id } });
+      _.assignIn(queryForNextComment, { period: data[0].period });
+      _.assignIn(queryForNextComment, { eaoStatus: 'Pending' });
+
+      var nextComment = await Utils.runDataQuery('Comment',
+        args.swagger.params.auth_payload.realm_access.roles,
+        queryForNextComment,
+        [], // Fields
+        null,
+        { commentId: 1 }, // sort
+        0, // skip
+        1, // limit
+        true); // count
+      res.setHeader('x-pending-comment-count', nextComment && nextComment.length > 0 ? nextComment[0].total_items : 0);
+      res.setHeader('x-next-comment-id', nextComment && nextComment.length > 0 && nextComment[0].results.length > 0 ? nextComment[0].results[0]._id : null);
+    }
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
