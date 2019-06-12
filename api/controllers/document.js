@@ -38,6 +38,7 @@ var getSanitizedFields = function (fields) {
       'documentAuthor',
       'milestone',
       'description',
+      'keywords',
       'isPublished',
       'internalMime'], f) !== -1);
   });
@@ -523,6 +524,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.datePosted = args.swagger.params.datePosted.value;
               doc.type = args.swagger.params.type.value;
               doc.description = args.swagger.params.description.value;
+              doc.keywords = args.swagger.params.keywords.value;
               doc.documentAuthor = args.swagger.params.documentAuthor.value;
               // Update who did this?
               console.log('unlink');
@@ -607,6 +609,7 @@ exports.protectedPut = async function (args, res, next) {
   obj.datePosted = args.swagger.params.datePosted.value;
   obj.type = args.swagger.params.type.value;
   obj.description = args.swagger.params.description.value;
+  obj.keywords = args.swagger.params.keywords.value;
   obj.documentAuthor = args.swagger.params.documentAuthor.value;
 
   obj.eaoStatus = args.swagger.params.eaoStatus.value;
