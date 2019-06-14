@@ -39,6 +39,7 @@ module.exports = require ('../models')('Document', {
     description      : { type:String, default:'' },
     documentAuthor   : { type:String, default:'' },
     eaoStatus        : { type: String, default: '' },
+    keywords         : { type: String, default: '' },
 
     // TODO
     labels           : [{ type: Mixed, default: {} }]
