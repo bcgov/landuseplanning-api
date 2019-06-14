@@ -559,9 +559,11 @@ exports.protectedExport = async function (args, res, next) {
 
     // Translate documents into links.
     let docLinks = [];
-    d.documents.map((theDoc) => {
-      docLinks.push('https://projects.eao.gov.bc.ca/api/document/' + theDoc + '/fetch');
-    });
+    if (d.documents) {
+      d.documents.map((theDoc) => {
+        docLinks.push('https://projects.eao.gov.bc.ca/api/document/' + theDoc + '/fetch');
+      });
+    }
 
     delete d.documents;
 
