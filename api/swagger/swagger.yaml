@@ -3216,6 +3216,57 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+
+  /comment/export/{periodId}:
+    x-swagger-router-controller: comment
+    options:
+      tags:
+        - comment
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Export comments for a period"
+      operationId: protectedExport
+      description: "Authenticated access to retrieving an export of comments for a particular period."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID of comment to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/CommentObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
   /comment/{commentId}:
     x-swagger-router-controller: comment
     options:

@@ -474,3 +474,104 @@ exports.protectedStatus = async function (args, res, next) {
     return Actions.sendResponse(res, 400, e);
   }
 };
+
+// Export all comments
+exports.protectedExport = async function (args, res, next) {
+  var period = args.swagger.params.periodId.value;
+  var roles = args.swagger.params.auth_payload.realm_access.roles;
+
+  var match = {
+    _schemaName: 'Comment',
+    period: mongoose.Types.ObjectId(period)
+  };
+
+  var aggregation = [
+    {
+      $match: match
+    }
+  ];
+
+  aggregation.push({
+    $redact: {
+      $cond: {
+        if: {
+          // This way, if read isn't present, we assume public no roles array.
+          $and: [
+            { $cond: { if: "$read", then: true, else: false } },
+            {
+              $anyElementTrue: {
+                $map: {
+                  input: "$read",
+                  as: "fieldTag",
+                  in: { $setIsSubset: [["$$fieldTag"], roles] }
+                }
+              }
+            }
+          ]
+        },
+        then: "$$KEEP",
+        else: {
+          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+        }
+      }
+    }
+  });
+
+  var data = mongoose.model('Comment')
+                     .aggregate(aggregation)
+                     .cursor()
+                     .exec()
+                     .stream();
+
+  const filename = 'export.csv';
+  res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+  res.writeHead(200, { 'Content-Type': 'text/csv' });
+
+  res.flushHeaders();
+
+  var csv = require('csv');
+  const transform = require('stream-transform');
+  data.stream()
+  .pipe(transform(function (d) {
+    let read = d.read;
+    delete d.userCan;
+    delete d._schemaName;
+    delete d.isPublished;
+    delete d.delete;
+    delete d.read;
+    delete d.write;
+    delete d.dateUpdated;
+    delete d.dateAdded;
+    delete d.resolvedBy;
+    delete d.isResolved;
+    delete d.isAnonymous;
+    delete d.original;
+    delete d.ancestor;
+    delete d.parent;
+    delete d.period;
+    delete d.project;
+    delete d.__v;
+    delete d.updatedBy;
+    delete d.datePosted;
+
+    // todo: translate valuedComponents
+    delete d.valuedComponents;
+
+    // Translate documents into links.
+    let docLinks = [];
+    d.documents.map((theDoc) => {
+      docLinks.push('https://projects.eao.gov.bc.ca/api/document/' + theDoc + '/fetch');
+    });
+
+    delete d.documents;
+
+    if (d.isAnonymous) {
+      delete d.author;
+      return { author: 'Anonymous', isPublished: read.includes('public'), documents: docLinks, ...d };
+    } else {
+      return { isPublished: read.includes('public'), documents: docLinks, ...d };
+    }
+  }))
+  .pipe(csv.stringify({header: true}))
+  .pipe(res);
+}
