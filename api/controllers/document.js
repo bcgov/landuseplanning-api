@@ -629,7 +629,7 @@ exports.protectedPut = async function (args, res, next) {
   var Document = mongoose.model('Document');
 
   try {
-    var doc = await Document.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+    var doc = await Document.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true });
     if (doc) {
       Utils.recordAction('put', 'document', args.swagger.params.auth_payload.preferred_username, objId);
       defaultLog.info('Document updated:', doc);
