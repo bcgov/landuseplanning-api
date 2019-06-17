@@ -47,7 +47,11 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
             queryModifer[item] = false;
           } else {
             // String
-            queryModifer[item] = queryString[item];
+            if (mongoose.Types.ObjectId.isValid(queryString[item])) {
+              queryModifer[item] = mongoose.Types.ObjectId(queryString[item]);
+            } else {
+              queryModifer[item] = queryString[item];
+            }
           }
         } else {
           // Number
