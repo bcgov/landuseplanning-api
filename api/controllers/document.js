@@ -524,7 +524,6 @@ exports.protectedPost = async function (args, res, next) {
               doc.datePosted = args.swagger.params.datePosted.value;
               doc.type = args.swagger.params.type.value;
               doc.description = args.swagger.params.description.value;
-              doc.keywords = args.swagger.params.keywords.value;
               doc.documentAuthor = args.swagger.params.documentAuthor.value;
               // Update who did this?
               console.log('unlink');
