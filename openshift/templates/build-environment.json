@@ -340,7 +340,6 @@
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
       "value": "gcpe-lup-api"
-      "value": "eagle-api"
     },
     {
       "name": "MONGO_IMAGE_NAMESPACE",
@@ -364,26 +363,19 @@
       "name": "APPLICATION_DOMAIN",
       "displayName": "Application Hostname",
       "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
-<<<<<<< HEAD
       "value": "gcpe-lup-dev.pathfinder.gov.bc.ca/api"
-=======
-      "value": "eagle-dev.pathfinder.gov.bc.ca"
+
     },
     {
       "name": "APPLICATION_DOMAIN_PATH",
       "displayName": "Application Hostname Path",
       "description": "The path for this service.",
       "value": "/api"
->>>>>>> eagle/develop
     },
     {
       "name": "DATABASE_SERVICE_NAME",
       "displayName": "Database Service Name",
-<<<<<<< HEAD
-      "value": "mongodb-dev"
-=======
       "value": "mongodb"
->>>>>>> eagle/develop
     },
     {
       "name": "DATABASE_USER",
@@ -402,11 +394,7 @@
     {
       "name": "DATABASE_NAME",
       "displayName": "Database Name",
-<<<<<<< HEAD
-      "value": "lup-prod"
-=======
-      "value": "epic"
->>>>>>> eagle/develop
+      "value": "gcpe-lup"
     },
     {
       "name": "DATABASE_ADMIN_PASSWORD",
@@ -440,22 +428,14 @@
       "name": "APP_IMAGE_NAME",
       "displayName": "Application image name.",
       "description": "Application image name.",
-<<<<<<< HEAD
       "value": "gcpe-lup-api",
-=======
-      "value": "eagle-api",
->>>>>>> eagle/develop
       "required": true
     },
     {
       "name": "APP_IMAGE_NAMESPACE",
       "displayName": "Namespace containing application images.",
       "description": "Namespace containing application images.",
-<<<<<<< HEAD
-      "value": "gcpe-lup-tools",
-=======
-      "value": "eagle-tools",
->>>>>>> eagle/develop
+      "value": "xti26n-tools",
       "required": true
     },
     {

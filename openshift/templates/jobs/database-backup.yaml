@@ -4,7 +4,7 @@ metadata:
   labels:
     app: mongodb-backup-template
   name: mongodb-backup
-  namespace: eagle-prod
+  namespace: xti26n-prod
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: update-shapes-template
   name: update-shapes
-  namespace: eagle-tools
+  namespace: xti26n-tools
 spec:
   concurrencyPolicy: Forbid
   jobTemplate:
