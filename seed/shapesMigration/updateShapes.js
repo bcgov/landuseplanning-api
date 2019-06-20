@@ -1,33 +1,21 @@
-/**
- * This script performs various updates to ACRFD applications in order to keep them up to date with whatever information is in Tantalis (the source of truth).
- *
- * 1. Authenticates with ACRFD
- * 2. Unpublishes retired applications:
- *    a. Fetches all ACRFD applications that may have reached a retired state, and unpublishes any found.
- * 3. AUthenticates with Tantalis
- * 4. Updates non-deleted ACRFD applications:
- *    a. Fetches all Tantalis applications that have had an update within the last 1 day.
- *    b. Fetches all non-deleted ACRFD tantalisIDs.
- *    c. For each ACRFD application with a matching Tantalis application:
- *      i. Updates the ACRFD application features and meta to match whatever is in Tantalis (the source of truth).
- */
-var Promise = require('es6-promise').Promise;
-var _ = require('lodash');
-var request = require('request');
-var querystring = require('querystring');
-var moment = require('moment');
-var Utils = require('../../api/helpers/utils');
-var Actions = require('../../api/helpers/actions');
-var username = '';
-var password = '';
-var protocol = 'http';
-var host = 'localhost';
-var port = '3000';
-var uri = '';
-var client_id = '';
-var grant_type = '';
-var auth_endpoint = 'http://localhost:3000/api/login/token';
-var _accessToken = '';
+//
+// Example: node updateShapes.js admin admin https eagle-dev.pathfinder.gov.bc.ca 443
+//
+var Promise         = require('es6-promise').Promise;
+var _               = require('lodash');
+var request         = require('request');
+var querystring     = require('querystring');
+var Utils           = require('../../api/helpers/utils');
+var username        = '';
+var password        = '';
+var protocol        = 'http';
+var host            = 'localhost';
+var port            = '3000';
+var uri             = '';
+var client_id       = '';
+var grant_type      = '';
+var auth_endpoint   = 'http://localhost:3000/api/login/token';
+var _accessToken    = '';
 
 var args = process.argv.slice(2);
 console.log('=======================================================');

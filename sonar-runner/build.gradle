@@ -48,9 +48,9 @@ if ( project.hasProperty('project_key_extension') ) {
 
 sonarqube {
     properties {
-        property "sonar.host.url", "https://sonarqube-prc-tools.pathfinder.gov.bc.ca"        
-        property "sonar.projectName", "prc-api$pne"
-        property "sonar.projectKey", "org.sonarqube:prc-api$pke"
+        property "sonar.host.url", "https://sonarqube-eagle-tools.pathfinder.gov.bc.ca"        
+        property "sonar.projectName", "eagle-api$pne"
+        property "sonar.projectKey", "org.sonarqube:eagle-api$pke"
         property "sonar.projectBaseDir", "../"
         property "sonar.sources", "./api"
         //property "sonar.tests", "test"

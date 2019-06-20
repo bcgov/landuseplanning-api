@@ -3,13 +3,13 @@
 var jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
-var ISSUER = process.env.SSO_ISSUER || 'https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc';
-var JWKSURI =
-  process.env.SSO_JWKSURI || 'https://sso-dev.pathfinder.gov.bc.ca/auth/realms/prc/protocol/openid-connect/certs';
-var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || '1440'; // 24 hours in minutes.
-var SECRET = process.env.SECRET || 'defaultSecret';
-var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || 'true';
-var defaultLog = require('winston').loggers.get('default');
+var ISSUER          = process.env.SSO_ISSUER || "https://sso.pathfinder.gov.bc.ca/auth/realms/xti26n";
+var JWKSURI         = process.env.SSO_JWKSURI || "https://sso.pathfinder.gov.bc.ca/auth/realms/xti26n/protocol/openid-connect/certs";
+var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.
+var SECRET          = process.env.SECRET || "defaultSecret";
+var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "true";
+var winston         = require('winston');
+var defaultLog      = winston.loggers.get('default');
 
 exports.verifyToken = function(req, authOrSecDef, token, callback) {
   defaultLog.info('verifying token', token);
@@ -51,59 +51,72 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
     }
   } else {
     defaultLog.error("Token didn't have a bearer.");
-    return callback(sendError());
+    req.swagger.params.auth_payload = {
+      realm_access: {
+        roles: ['public']
+      },
+      preferred_username: 'public'
+    };
+    return callback(null);
   }
 };
 
 function _verifySecret(currentScopes, tokenString, secret, req, callback, sendError) {
-  jwt.verify(tokenString, secret, function(verificationError, decodedToken) {
+  jwt.verify(tokenString, secret, function (
+    verificationError,
+    decodedToken
+  ) {
     // defaultLog.info("verificationError:", verificationError);
     // defaultLog.info("decodedToken:", decodedToken);
 
     // check if the JWT was verified correctly
-    if (verificationError == null && Array.isArray(currentScopes) && decodedToken && decodedToken.realm_access.roles) {
-      defaultLog.info('JWT decoded:', decodedToken);
+    if (verificationError == null &&
+      // Array.isArray(currentScopes) &&
+      decodedToken &&
+      decodedToken.realm_access.roles
+    ) {
+      defaultLog.info("JWT decoded:", decodedToken);
 
       // check if the role is valid for this endpoint
-      var roleMatch = currentScopes.some(r => decodedToken.realm_access.roles.indexOf(r) >= 0);
-      defaultLog.info('currentScopes', currentScopes);
-      defaultLog.info('decodedToken.realm_access.roles', decodedToken.realm_access.roles);
-      defaultLog.info('role match', roleMatch);
+      // var roleMatch = currentScopes.some(r=> decodedToken.realm_access.roles.indexOf(r) >= 0)
+      // defaultLog.info("currentScopes", currentScopes);
+      defaultLog.info("decodedToken.realm_access.roles", decodedToken.realm_access.roles);
+      // defaultLog.info("role match", roleMatch);
 
       // check if the dissuer matches
       var issuerMatch = decodedToken.iss == ISSUER;
-      defaultLog.info('decodedToken.iss', decodedToken.iss);
-      defaultLog.info('ISSUER', ISSUER);
-      defaultLog.info('issuerMatch', issuerMatch);
+      defaultLog.info("decodedToken.iss", decodedToken.iss);
+      defaultLog.info("ISSUER", ISSUER);
+      defaultLog.info("issuerMatch", issuerMatch);
 
-      if (roleMatch && issuerMatch) {
+      // if (roleMatch && issuerMatch) {
+      if (issuerMatch) {
         // add the token to the request so that we can access it in the endpoint code if necessary
         req.swagger.params.auth_payload = decodedToken;
-        defaultLog.info('JWT Verified.');
+        defaultLog.info("JWT Verified.");
         return callback(null);
       } else {
-        defaultLog.info('JWT Role/Issuer mismatch.');
+        defaultLog.info("JWT Role/Issuer mismatch.");
         return callback(sendError());
       }
     } else {
       // return the error in the callback if the JWT was not verified
-      defaultLog.info('JWT Verification Err:', verificationError);
+      defaultLog.info("JWT Verification Err:", verificationError);
       return callback(sendError());
     }
   });
 }
 
-exports.issueToken = function(user, deviceId, scopes) {
-  defaultLog.info('user:', user);
-  defaultLog.info('deviceId:', deviceId);
-  defaultLog.info('scopes:', scopes);
+exports.issueToken = function (user,
+  deviceId,
+  scopes) {
+  defaultLog.info("user:", user);
+  defaultLog.info("deviceId:", deviceId);
+  defaultLog.info("scopes:", scopes);
   var crypto = require('crypto');
   var randomString = crypto.randomBytes(32).toString('hex');
-  var jti = crypto
-    .createHash('sha256')
-    .update(user.username + deviceId + randomString)
-    .digest('hex');
-  defaultLog.info('JTI:', jti);
+  var jti = crypto.createHash('sha256').update(user.username + deviceId + randomString).digest('hex');
+  defaultLog.info("JTI:", jti);
 
   var payload = {
     name: user.username,
@@ -117,8 +130,10 @@ exports.issueToken = function(user, deviceId, scopes) {
     }
   };
 
-  var token = jwt.sign(payload, SECRET, { expiresIn: JWT_SIGN_EXPIRY + 'm' });
-  defaultLog.info('ISSUING NEW TOKEN:expiresIn:', JWT_SIGN_EXPIRY + 'm');
+  var token = jwt.sign(payload,
+    SECRET,
+    { expiresIn: JWT_SIGN_EXPIRY + 'm' });
+  defaultLog.info("ISSUING NEW TOKEN:expiresIn:", JWT_SIGN_EXPIRY + 'm');
 
   return token;
 };
@@ -152,24 +167,21 @@ exports.checkAuthentication = function(username, password, cb) {
   var User = require('mongoose').model('User');
 
   // Look this user up in the db and hash their password to see if it's correct.
-  User.findOne(
-    {
-      username: username.toLowerCase()
-    },
-    function(err, user) {
-      if (err) {
-        defaultLog.info('ERR:', err);
-        return cb(err);
-      }
-      defaultLog.info('continuing');
-      if (!user || !authenticate(user, password)) {
-        defaultLog.info('bad username or password!');
-        return cb(null, false, {
-          message: 'Invalid username or password'
-        });
-      }
-      defaultLog.info('YAY');
-      return cb(null, user);
+  User.findOne({
+    username: username.toLowerCase()
+  }, function (err, user) {
+    if (err) {
+      defaultLog.info("ERR:", err);
+      return cb(err);
     }
-  );
+    defaultLog.info("continuing");
+    if (!user || !authenticate(user, password)) {
+      defaultLog.info("bad username or password!");
+      return cb(null, false, {
+        message: 'Invalid username or password'
+      });
+    }
+    defaultLog.info("YAY");
+    return cb(null, user);
+  });
 };

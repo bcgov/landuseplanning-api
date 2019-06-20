@@ -1,7 +1,7 @@
 'use strict';
 
 //
-// Example: node seed.js MONGO_USER MONGO_PASSWORD mongodb nrts-prod
+// Example: node seed.js MONGO_USER MONGO_PASSWORD mongodb eagle-prod
 //
 
 var Promise = require('es6-promise').Promise;

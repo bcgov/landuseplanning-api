@@ -1,51 +1,28 @@
 module.exports = require('../models')('Comment', {
-  _addedBy: { type: String, default: null },
-  _commentPeriod: { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
-  // Note: Default on tag property is purely for display only, they have no real effect on the model
-  // This must be done in the code.
-  tags: [[{ type: String, trim: true, default: '[["sysadmin"]]' }]],
-  name: { type: String, trim: true },
+    author: { type: String, default: null },
+    comment: { type: String, default: null },
+    commentId: { type: Number, default: null },
+    dateAdded: { type: Date, default: Date.now() },
+    datePosted: { type: Date, default: Date.now() },
+    dateUpdated: { type: Date, default: Date.now() },
+    documents: [{ type: 'ObjectId', ref: 'Document', default: null, index: true }],
+    eaoNotes: { type: String, default: null },
+    eaoStatus: { type: String, default: null },
+    isAnonymous: { type: Boolean, default: true },
+    location: { type: String, default: null },
+    period: { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
+    proponentNotes: { type: String, default: null },
+    proponentStatus: { type: String, default: null },
+    publishedNotes: { type: String, default: null },
+    rejectedNotes: { type: String, default: null },
+    rejectedReason: { type: String, default: null },
+    valuedComponents: [{ type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true }],
 
-  // unique number per application (not guid) for export and sorting
-  commentNumber: { type: Number },
+    // Number auto-incremented.  Do not set manually.
+    commentId: { type: Number, default: null },
 
-  // free form field (supports rich text?)
-  comment: { type: String, default: '' },
-
-  commentAuthor: {
-    // May reference a particular user in the future.
-    _userId: { type: 'ObjectId', ref: 'User' },
-
-    // All the following details are in case there's no binding to a particular user objId
-    // TODO: Should this be cleaned up a bit more?
-    orgName: { type: String, default: null },
-    contactName: { type: String, default: '' },
-    location: { type: String, default: '' },
-
-    // Did the user request to be anonymous?
-    requestedAnonymous: { type: Boolean, default: false },
-
-    internal: {
-      email: { type: String, default: '' },
-      phone: { type: String, default: '' },
-      tags: [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
-    },
-
-    tags: [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
-  },
-
-  // Who vetted this comment?
-  review: {
-    _reviewerId: { type: 'ObjectId', ref: 'User' },
-    reviewerNotes: { type: String, default: '' },
-    reviewerDate: { type: Date, default: '' },
-
-    tags: [[{ type: String, trim: true, default: '[["sysadmin"]]' }]]
-  },
-
-  // TODO: More date fields?
-  dateAdded: { type: Date, default: Date.now() },
-
-  commentStatus: { type: String, default: 'Pending', enum: ['Pending', 'Accepted', 'Rejected'] },
-  isDeleted: { type: Boolean, default: false }
-});
+    // Permissions
+    write: [{ type: String, trim: true, default: '["project-system-admin"]' }],
+    read: [{ type: String, trim: true, default: '["project-system-admin"]' }],
+    delete: [{ type: String, trim: true, default: '["project-system-admin"]' }]
+}, 'gcpe-lup');

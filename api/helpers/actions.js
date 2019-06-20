@@ -1,74 +1,58 @@
-'use strict';
+"use strict";
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 
-exports.publish = function(o) {
-  return new Promise(function(resolve, reject) {
-    var exists = _.find(o.tags, function(item) {
-      return _.isEqual(item, ['public']);
+exports.publish = async function (o) {
+    return new Promise(function (resolve, reject) {
+        // Object wasn't already published?
+        if (!o.read.includes('public')) {
+            var newReadArray = o.read;
+            newReadArray.push('public');
+            o.read = newReadArray;
+            // Remove publish, save then return.
+            resolve(o.save());
+        } else {
+            resolve(o);
+        }
     });
-
-    // Object was already published?
-    if (exists) {
-      defaultLog.info('HTTP 409, Object already published:', exists);
-      reject({
-        code: 409,
-        message: 'Object already published'
-      });
-    } else {
-      // Add publish, save then return.
-      o.tags.push(['public']);
-      o.save().then(resolve, function(err) {
-        reject({ code: 400, message: err.message });
-      });
-    }
-  });
 };
 
-exports.isPublished = function(o) {
-  return _.find(o.tags, function(item) {
-    return _.isEqual(item, ['public']);
-  });
+exports.isPublished = async function (o) {
+    return _.find(o.tags, function (item) {
+        return _.isEqual(item, ['public']);
+    });
 };
 
-exports.unPublish = function(o) {
-  return new Promise(function(resolve, reject) {
-    var exists = _.remove(o.tags, function(item) {
-      return _.isEqual(item, ['public']);
+exports.unPublish = async function (o) {
+    return new Promise(function (resolve, reject) {
+        // Object wasn't already published?
+        if (o.read.includes('public')) {
+            var newReadArray = o.read.filter(perms => perms !== 'public');
+            o.read = newReadArray;
+            // Remove publish, save then return.
+            resolve(o.save());
+        } else {
+            resolve(o);
+        }
     });
-    // Object wasn't already published?
-    if (exists.length === 0) {
-      defaultLog.info('HTTP 409, Object already unpublished:', exists);
-      reject({
-        code: 409,
-        message: 'Object already unpublished'
-      });
-    } else {
-      o.markModified('tags');
-      // Remove publish, save then return.
-      o.save().then(resolve, function(err) {
-        reject({ code: 400, message: err.message });
-      });
-    }
-  });
 };
 
-exports.delete = function(o) {
-  return new Promise(function(resolve, reject) {
-    _.remove(o.tags, function(item) {
-      return _.isEqual(item, ['public']);
+exports.delete = function (o) {
+    return new Promise(function (resolve, reject) {
+        _.remove(o.tags, function (item) {
+            return _.isEqual(item, ['public']);
+        });
+        o.isDeleted = true;
+        o.markModified('tags');
+        o.markModified('isDeleted');
+        // save then return.
+        o.save().then(resolve, function (err) {
+            reject({ code: 400, message: err.message });
+        });
     });
-    o.isDeleted = true;
-    o.markModified('tags');
-    o.markModified('isDeleted');
-    // save then return.
-    o.save().then(resolve, function(err) {
-      reject({ code: 400, message: err.message });
-    });
-  });
 };
 
-exports.sendResponse = function(res, code, object) {
-  res.writeHead(code, { 'Content-Type': 'application/json' });
-  return res.end(JSON.stringify(object));
+exports.sendResponse = function (res, code, object) {
+    res.writeHead(code, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify(object));
 };
