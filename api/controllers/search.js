@@ -16,7 +16,7 @@ function isEmpty(obj) {
   return true;
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate = false) {
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate = false, or) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -29,50 +29,98 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   }
 
   // optional keyed lookups
-  var queryModifer = {};
-  if (query) {
-    if (query && query !== undefined) {
-      var queryString = qs.parse(query);
-      console.log("query:", queryString);
-      Object.keys(queryString).map(item => {
-        console.log("item:", item, queryString[item]);
-        if (isNaN(queryString[item])) {
-          // String or Bool
-          if (queryString[item] === 'true') {
-            // Bool
-            queryModifer[item] = true;
-            queryModifer.active = true;
-          } else if (queryString[item] === 'false') {
-            // Bool
-            queryModifer[item] = false;
+  var queryModifier = {};
+  if (query && query !== undefined) {
+    var queryString = qs.parse(query);
+    console.log("query:", queryString);
+    Object.keys(queryString).map(item => {
+      console.log("item:", item, queryString[item]);
+      if (isNaN(queryString[item])) {
+        // String or Bool
+        if (queryString[item] === 'true') {
+          // Bool
+          queryModifier[item] = true;
+          queryModifier.active = true;
+        } else if (queryString[item] === 'false') {
+          // Bool
+          queryModifier[item] = false;
+        } else {
+          // String
+          if (mongoose.Types.ObjectId.isValid(queryString[item])) {
+            queryModifier[item] = mongoose.Types.ObjectId(queryString[item]);
           } else {
-            // String
-            if (mongoose.Types.ObjectId.isValid(queryString[item])) {
-              queryModifer[item] = mongoose.Types.ObjectId(queryString[item]);
+            queryModifier[item] = queryString[item];
+          }
+        }
+      } else {
+        // Number
+        queryModifier[item] = parseInt(queryString[item]);
+      }
+    })
+  }
+
+  // TODO: Combine this with queryModifier function.
+  // Issue lies with if (Array.isArray(orQueryString[item]))
+  var orExpArray = [];
+  if (or && or !== undefined) {
+    var orQueryString = qs.parse(or);
+    console.log("or:", orQueryString);
+    Object.keys(orQueryString).map(item => {
+      console.log("item:", item, orQueryString[item]);
+      if (isNaN(orQueryString[item])) {
+        // String or Bool
+        if (orQueryString[item] === 'true') {
+          // Bool
+          var tempObj = {}
+          tempObj[item] = true;
+          tempObj.active = true;
+          orExpArray.push(tempObj);
+        } else if (orQueryString[item] === 'false') {
+          // Bool
+          orExpArray.push({ [item]: false });
+        } else {
+          // String
+          if (Array.isArray(orQueryString[item])) {
+            orQueryString[item].map(entry => {
+              orExpArray.push({ [item]: entry });
+            });
+          } else {
+            if (mongoose.Types.ObjectId.isValid(orQueryString[item])) {
+              queryModifier[item] = mongoose.Types.ObjectId(orQueryString[item]);
+              orExpArray.push({ [item]: mongoose.Types.ObjectId(orQueryString[item]) });
             } else {
-              queryModifer[item] = queryString[item];
+              orExpArray.push({ [item]: orQueryString[item] });
             }
           }
-        } else {
-          // Number
-          queryModifer[item] = parseInt(queryString[item]);
         }
-      })
-    }
+      } else {
+        // Number
+        orExpArray.push({ [item]: parseInt(orQueryString[item]) });
+      }
+    })
+  }
+
+  var modifier = {};
+  if (!isEmpty(queryModifier) && orExpArray.length > 0) {
+    modifier = { $and: [queryModifier, { $or: orExpArray }] };
+  } else if (isEmpty(queryModifier) && orExpArray.length > 0) {
+    modifier = { $and: [{ $or: orExpArray }] };
+  } else if (!isEmpty(queryModifier) && orExpArray.length === 0) {
+    modifier = queryModifier;
   }
 
   var match = {
     _schemaName: collection,
-    ...(isEmpty(queryModifer) ? undefined : queryModifer),
+    ...(isEmpty(modifier) ? undefined : modifier),
     ...(searchProperties ? searchProperties : undefined),
     ...(properties ? properties : undefined),
     $or: [
       { isDeleted: { $exists: false } },
-      { isDeleted: false }
+      { isDeleted: false },
     ]
   };
 
-  console.log("queryModifer:", queryModifer);
+  console.log("modifier:", modifier);
   console.log("match:", match);
 
   var sortingValue = {};
@@ -110,7 +158,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       {
         $addFields: {
           "status": {
-              $cond: {
+            $cond: {
               if: {
                 // This way, if read isn't present, we assume public no roles array.
                 $and: [
@@ -138,36 +186,36 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   if (collection === 'Project') {
     // pop proponent if exists.
     aggregation.push(
-        {
-          '$lookup': {
-            "from": "epic",
-            "localField": "proponent",
-            "foreignField": "_id",
-            "as": "proponent"
-          }
-        });
-        aggregation.push(
-        {
-          "$unwind": "$proponent"
-        },
+      {
+        '$lookup': {
+          "from": "epic",
+          "localField": "proponent",
+          "foreignField": "_id",
+          "as": "proponent"
+        }
+      });
+    aggregation.push(
+      {
+        "$unwind": "$proponent"
+      },
     );
   }
 
   if (collection === 'User') {
     // pop proponent if exists.
     aggregation.push(
-        {
-          '$lookup': {
-            "from": "epic",
-            "localField": "org",
-            "foreignField": "_id",
-            "as": "org"
-          }
-        });
-        aggregation.push(
-        {
-          "$unwind": "$org"
-        },
+      {
+        '$lookup': {
+          "from": "epic",
+          "localField": "org",
+          "foreignField": "_id",
+          "as": "org"
+        }
+      });
+    aggregation.push(
+      {
+        "$unwind": "$org"
+      },
     );
   }
 
@@ -264,6 +312,7 @@ var executeQuery = async function (args, res, next) {
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
   var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
   var query = args.swagger.params.query ? args.swagger.params.query.value : '';
+  var or = args.swagger.params.or ? args.swagger.params.or.value : '';
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
   defaultLog.info("Searching project:", project);
@@ -272,6 +321,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("sortBy:", sortBy);
   defaultLog.info("caseSensitive:", caseSensitive);
   defaultLog.info("query:", query);
+  defaultLog.info("or:", or);
   defaultLog.info("_id:", _id);
   defaultLog.info("populate:", populate);
 
@@ -301,7 +351,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate, or)
     if (dataset === 'Comment') {
       // Filter
       _.each(data[0].searchResults, function (item) {
