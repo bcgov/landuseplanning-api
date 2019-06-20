@@ -1,13 +1,21 @@
 {
-  "name": "nrts-prc-api-seed",
+<<<<<<< HEAD
+  "name": "gcpe-lup-api-seed",
+=======
+  "name": "eagle-api-seed",
+>>>>>>> eagle/develop
   "version": "0.0.1",
-  "author": "Severin Beauvais",
+  "author": "Mark Lisé",
   "contributors": [
-    "Severin Beauvais <severin.beauvais@gmail.com>"
+    "Mark Lisé <mark@digitalspace.ca>"
   ],
-  "description": "NRTS PRC API SEED",
+<<<<<<< HEAD
+  "description": "GCPE LUP API SEED",
+=======
+  "description": "EAGLE API SEED",
+>>>>>>> eagle/develop
   "keywords": [],
-  "license": "UNLICENSED",
+  "license": "Apache 2.0",
   "main": "seed",
   "dependencies": {
     "@turf/helpers": "^6.1.4",

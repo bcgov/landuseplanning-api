@@ -2,7 +2,7 @@
   "kind": "Template",
   "apiVersion": "v1",
   "metadata": {
-    "name": "nrts-prc-api-beta",
+    "name": "${NAME}",
     "annotations": {
       "description": "Template for Node.js applications with a MongoDB database, based on OpenShift provided templates 'nodejs-mongodb-example' and 'mongodb-persistent-template'.",
       "tags": "quickstart,nodejs,mongodb",
@@ -10,7 +10,7 @@
     }
   },
   "labels": {
-    "template": "nrts-prc-api-beta"
+    "template": "${NAME}"
   },
   "objects": [
     {
@@ -76,7 +76,15 @@
         "to": {
           "kind": "Service",
           "name": "${NAME}"
-        }
+        },
+        "path": "${APPLICATION_DOMAIN_PATH}",
+        "port": {
+            "targetPort": "web"
+        },
+        "tls": {
+            "termination": "edge"
+        },
+        "wildcardPolicy": "None"
       }
     },
     {
@@ -331,7 +339,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "gcpe-lup-api-dev"
+      "value": "gcpe-lup-api"
     },
     {
       "name": "MONGO_IMAGE_NAMESPACE",
@@ -356,11 +364,18 @@
       "displayName": "Application Hostname",
       "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
       "value": "gcpe-lup-dev.pathfinder.gov.bc.ca/api"
+
+    },
+    {
+      "name": "APPLICATION_DOMAIN_PATH",
+      "displayName": "Application Hostname Path",
+      "description": "The path for this service.",
+      "value": "/api"
     },
     {
       "name": "DATABASE_SERVICE_NAME",
       "displayName": "Database Service Name",
-      "value": "mongodb-dev"
+      "value": "mongodb"
     },
     {
       "name": "DATABASE_USER",
@@ -379,7 +394,7 @@
     {
       "name": "DATABASE_NAME",
       "displayName": "Database Name",
-      "value": "lup-prod"
+      "value": "gcpe-lup"
     },
     {
       "name": "DATABASE_ADMIN_PASSWORD",
@@ -420,7 +435,7 @@
       "name": "APP_IMAGE_NAMESPACE",
       "displayName": "Namespace containing application images.",
       "description": "Namespace containing application images.",
-      "value": "gcpe-lup-tools",
+      "value": "xti26n-tools",
       "required": true
     },
     {

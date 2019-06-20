@@ -1,4 +1,5 @@
 const mongooseOptions = {
+  useMongoClient: true,
   autoReconnect: true,
   reconnectTries: Number.MAX_VALUE,
   reconnectInterval: 500,

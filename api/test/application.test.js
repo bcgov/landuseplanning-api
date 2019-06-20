@@ -55,7 +55,7 @@ app.delete('/api/application/:id', function(req, res) {
 });
 
 app.put('/api/application/:id', function(req, res) {
-  let extraFields = test_helper.buildParams({ appId: req.params.id, AppObject: req.body });
+  let extraFields = test_helper.buildParams({'appId': req.params.id, 'ProjObject': req.body});
   let params = test_helper.createSwaggerParams(fieldNames, extraFields);
   return applicationController.protectedPut(params, res);
 });

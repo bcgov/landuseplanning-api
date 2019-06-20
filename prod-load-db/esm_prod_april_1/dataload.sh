@@ -1,0 +1,9 @@
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/recentactivities.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/projects.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/commentperiods.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/comments.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/documents.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/organizations.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/topics.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/vcs.bson
+mongorestore --noIndexRestore -d epic -c epic ./dump/esm/users.bson

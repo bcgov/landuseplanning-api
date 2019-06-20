@@ -1,296 +1,355 @@
+var auth = require("../helpers/auth");
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
+var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var request = require('request');
 var _accessToken = null;
+var qs = require('qs');
 
-exports.protectedTTLSGetApplicationsByFileNumber = function(args, res, rest) {
-  var fileNumber = args.swagger.params.fileNumber.value;
-  defaultLog.info('Searching TTLS API for Crown Land FileNumber:', fileNumber);
-  return new Promise(function(r, j) {
-    return Utils.loginWebADE()
-      .then(function(accessToken) {
-        _accessToken = accessToken;
-        defaultLog.info('TTLS API Logged in:', _accessToken);
-        // fileNumber lookup
-        return Utils.getApplicationByFilenumber(_accessToken, fileNumber);
+function isEmpty(obj) {
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key))
+      return false;
+  }
+  return true;
+}
+
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, query, populate = false) {
+  var properties = undefined;
+  if (project) {
+    properties = { project: mongoose.Types.ObjectId(project) };
+  }
+
+  // optional search keys
+  var searchProperties = undefined;
+  if (keywords) {
+    searchProperties = { $text: { $search: keywords } };
+  }
+
+  // optional keyed lookups
+  var queryModifer = {};
+  if (query) {
+    if (query && query !== undefined) {
+      var queryString = qs.parse(query);
+      console.log("query:", queryString);
+      Object.keys(queryString).map(item => {
+        console.log("item:", item, queryString[item]);
+        if (isNaN(queryString[item])) {
+          // String or Bool
+          if (queryString[item] === 'true') {
+            // Bool
+            queryModifer[item] = true;
+            queryModifer.active = true;
+          } else if (queryString[item] === 'false') {
+            // Bool
+            queryModifer[item] = false;
+          } else {
+            // String
+            if (mongoose.Types.ObjectId.isValid(queryString[item])) {
+              queryModifer[item] = mongoose.Types.ObjectId(queryString[item]);
+            } else {
+              queryModifer[item] = queryString[item];
+            }
+          }
+        } else {
+          // Number
+          queryModifer[item] = parseInt(queryString[item]);
+        }
       })
-      .then(r, j);
-  })
-    .then(function(promises) {
-      defaultLog.info('returning number of items:', promises.length);
-
-      // Call the api again but this time grab all the related information on each app
-      // returned form the CL file lookup.
-      var allApps = [];
-      Promise.resolve()
-        .then(function() {
-          return promises.reduce(function(previousItem, currentItem) {
-            return previousItem.then(function() {
-              // return Actions.publish(currentItem);
-              defaultLog.info('executing disp:', currentItem.DISPOSITION_TRANSACTION_SID);
-              return Utils.getApplicationByDispositionID(_accessToken, currentItem.DISPOSITION_TRANSACTION_SID).then(
-                function(appData) {
-                  allApps.push(appData);
-                  return appData;
-                }
-              );
-            });
-          }, Promise.resolve());
-        })
-        .then(function() {
-          // All done with promises in the array, return to the caller.
-          defaultLog.info('------------------------done with promises------------------------');
-          defaultLog.info(allApps);
-          return Actions.sendResponse(res, 200, allApps);
-        });
-    })
-    .catch(function(err) {
-      defaultLog.error('Error in API:', err);
-      return Actions.sendResponse(res, err.statusCode, err);
-    });
-};
-
-exports.protectedTTLSGetApplicationByDisp = function(args, res, rest) {
-  var dtId = args.swagger.params.dtId.value;
-  defaultLog.info('Searching TTLS API for Disposition Transaction ID:', dtId);
-  return new Promise(function(resolve, reject) {
-    return Utils.loginWebADE()
-      .then(function(accessToken) {
-        _accessToken = accessToken;
-        defaultLog.info('TTLS API Logged in:', _accessToken);
-        // Disp lookup
-        return Utils.getApplicationByDispositionID(_accessToken, dtId);
-      })
-      .then(resolve, reject);
-  })
-    .then(function(data) {
-      defaultLog.info('returning:', data.DISPOSITION_TRANSACTION_SID);
-      return Actions.sendResponse(res, 200, data);
-    })
-    .catch(function(err) {
-      defaultLog.error('Error in API:', err);
-      return Actions.sendResponse(res, err.statusCode, err);
-    });
-};
-
-exports.protectedOptions = function(args, res, rest) {
-  res.status(200).send();
-};
-
-exports.publicGetClientsInfoByDispositionId = function(args, res, next) {
-  var dtId = args.swagger.params.dtId.value;
-  defaultLog.info('Searching arcgis for client info on Disposition Transaction ID:', dtId);
-
-  var searchURL =
-    'http://maps.gov.bc.ca/arcgis/rest/services/mpcm/bcgw/MapServer/dynamicLayer/query?layer=%7B%22id%22%3A1%2C%22source%22%3A%7B%22type%22%3A%22dataLayer%22%2C%22dataSource%22%3A%7B%22type%22%3A%22table%22%2C%22workspaceId%22%3A%22MPCM_ALL_PUB%22%2C%22dataSourceName%22%3A%22WHSE_TANTALIS.TA_INTEREST_HOLDER_VW%22%7D%7D%7D&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=true&maxAllowableOffset=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&returnDistinctValues=false&f=json&where=DISPOSITION_TRANSACTION_SID=';
-  return new Promise(function(resolve, reject) {
-    request.get({ url: searchURL + "'" + dtId + "'" }, function(err, res, body) {
-      if (err) {
-        reject(err);
-      } else if (res.statusCode !== 200) {
-        reject(res.statusCode + ' ' + body);
-      } else {
-        var obj = {};
-        try {
-          defaultLog.info('ArcGIS Call Complete.', body);
-          obj = JSON.parse(body);
-        } catch (e) {
-          defaultLog.error('Parsing Failed.', e);
-        }
-        var clients = [];
-        _.each(obj.features, function(i) {
-          clients.push(i.attributes);
-        });
-        resolve(clients);
-      }
-    });
-  })
-    .then(function(data) {
-      return Actions.sendResponse(res, 200, data);
-    })
-    .catch(function(err) {
-      defaultLog.error(err);
-      return Actions.sendResponse(res, 400, err);
-    });
-};
-
-// Get BCGW features by CLID
-exports.publicGetBCGW = function(args, res, next) {
-  // Build match query if on appId route
-  // Pad with leading zeros to make CLID seven digits
-  var clid = _.padStart(args.swagger.params.crownLandsId.value, 7, '0');
-  defaultLog.info('Searching BCGW for CLID:', clid);
-
-  // TODO: Error handling.
-
-  // var searchURL = "https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=pub:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=application/json&PROPERTYNAME=CROWN_LANDS_FILE&CQL_FILTER=CROWN_LANDS_FILE=";
-  var searchURL =
-    'https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=CROWN_LANDS_FILE=';
-  return new Promise(function(resolve, reject) {
-    request.get({ url: searchURL + "'" + clid + "'" }, function(err, res, body) {
-      if (err) {
-        reject(err);
-      } else if (res.statusCode !== 200) {
-        reject(res.statusCode + ' ' + body);
-      } else {
-        var obj = {};
-        try {
-          defaultLog.info('BCGW Call Complete.', body);
-          obj = JSON.parse(body);
-        } catch (e) {
-          defaultLog.error('Parsing Failed.', e);
-          resolve(obj);
-        }
-
-        // Search for this in our DB in case it's already been imported.
-        try {
-          var result = _.chain(obj.features)
-            .groupBy('properties.DISPOSITION_TRANSACTION_SID')
-            .toPairs()
-            .map(function(currentItem) {
-              return _.zipObject(['SID', 'sids'], currentItem);
-            })
-            .value();
-
-          obj.sidsFound = [];
-          result
-            .reduce(function(current, code) {
-              return current.then(function() {
-                var Application = require('mongoose').model('Application');
-                return new Promise(function(complete, fail) {
-                  Application.findOne({ tantalisID: code.SID, isDeleted: false }, function(err, o) {
-                    if (err) {
-                      fail();
-                    }
-                    if (o) {
-                      obj.sidsFound.push(code.SID); // NB: SID is string (tantalisID is number)
-                    } else {
-                      defaultLog.info('Nothing found');
-                    }
-                    complete();
-                  });
-                });
-              });
-            }, Promise.resolve())
-            .then(function() {
-              resolve(obj);
-            });
-        } catch (e) {
-          // Error, don't tag the isImported on it.
-          resolve(obj);
-        }
-      }
-    });
-  })
-    .then(function(data) {
-      return Actions.sendResponse(res, 200, data);
-    })
-    .catch(function(err) {
-      defaultLog.error(err);
-      return Actions.sendResponse(res, 400, err);
-    });
-};
-
-// Get local shapes
-exports.publicGetDispositionTransactionId = function(args, res, next) {
-  return new Promise(function(resolve, reject) {
-    var Feature = require('mongoose').model('Feature');
-
-    var query = {};
-    if (args.swagger.params.dtId && args.swagger.params.dtId.value !== undefined) {
-      _.assignIn(query, { 'properties.DISPOSITION_TRANSACTION_SID': args.swagger.params.dtId.value });
     }
+  }
 
-    return Feature.find(query, function(err, data) {
-      if (err) {
-        return Actions.sendResponse(res, 400, err);
-      } else {
-        var featureCollection = {};
-        featureCollection.crs = {};
-        featureCollection.crs.properties = {};
-        featureCollection.crs.properties.name = 'urn:ogc:def:crs:EPSG::4326';
-        featureCollection.totalFeatures = data.length;
-        featureCollection.features = data;
-        featureCollection.type = 'FeatureCollection';
-        return Actions.sendResponse(res, 200, featureCollection);
+  var match = {
+    _schemaName: collection,
+    ...(isEmpty(queryModifer) ? undefined : queryModifer),
+    ...(searchProperties ? searchProperties : undefined),
+    ...(properties ? properties : undefined),
+    $or: [
+      { isDeleted: { $exists: false } },
+      { isDeleted: false }
+    ]
+  };
+
+  console.log("queryModifer:", queryModifer);
+  console.log("match:", match);
+
+  var sortingValue = {};
+  sortingValue[sortField] = sortDirection;
+
+  // We don't want to have sort in the aggrigation if the front end doesn't need sort.
+  let searchResultAggrigation = [
+    {
+      $sort: sortingValue
+    },
+    {
+      $skip: pageNum * pageSize
+    },
+    {
+      $limit: pageSize
+    }
+  ];
+
+  var aggregation = [
+    {
+      $match: match
+    }
+  ];
+
+  if (collection === 'Document') {
+    // Allow documents to be sorted by status based on publish existence
+    aggregation.push(
+      {
+        $addFields: {
+          "status": {
+              $cond: {
+              if: {
+                // This way, if read isn't present, we assume public no roles array.
+                $and: [
+                  { $cond: { if: "$read", then: true, else: false } },
+                  {
+                    $anyElementTrue: {
+                      $map: {
+                        input: "$read",
+                        as: "fieldTag",
+                        in: { $setIsSubset: [["$$fieldTag"], ['public']] }
+                      }
+                    }
+                  }
+                ]
+              },
+              then: 'published',
+              else: 'unpublished'
+            }
+          }
+        }
+      }
+    );
+  }
+
+  if (collection === 'Project') {
+    // pop proponent if exists.
+    aggregation.push(
+        {
+          '$lookup': {
+            "from": "epic",
+            "localField": "proponent",
+            "foreignField": "_id",
+            "as": "proponent"
+          }
+        });
+        aggregation.push(
+        {
+          "$unwind": "$proponent"
+        },
+    );
+  }
+
+  if (collection === 'User') {
+    // pop proponent if exists.
+    aggregation.push(
+        {
+          '$lookup': {
+            "from": "epic",
+            "localField": "org",
+            "foreignField": "_id",
+            "as": "org"
+          }
+        });
+        aggregation.push(
+        {
+          "$unwind": "$org"
+        },
+    );
+  }
+
+  console.log('populate:', populate);
+  if (populate === true && collection !== 'Project') {
+    aggregation.push({
+      "$lookup": {
+        "from": "epic",
+        "localField": "project",
+        "foreignField": "_id",
+        "as": "project"
       }
     });
+    aggregation.push({
+      "$addFields": {
+        project: "$project",
+      }
+    });
+    aggregation.push({
+      "$unwind": "$project"
+    });
+  }
+
+  aggregation.push({
+    $redact: {
+      $cond: {
+        if: {
+          // This way, if read isn't present, we assume public no roles array.
+          $and: [
+            { $cond: { if: "$read", then: true, else: false } },
+            {
+              $anyElementTrue: {
+                $map: {
+                  input: "$read",
+                  as: "fieldTag",
+                  in: { $setIsSubset: [["$$fieldTag"], roles] }
+                }
+              }
+            }
+          ]
+        },
+        then: "$$KEEP",
+        else: {
+          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+        }
+      }
+    }
   });
+
+  aggregation.push({
+    $addFields: {
+      score: { $meta: "textScore" }
+    }
+  });
+
+  aggregation.push({
+    $facet: {
+      searchResults: searchResultAggrigation,
+      meta: [
+        {
+          $count: "searchResultsTotal"
+        }
+      ]
+    }
+  })
+
+  return new Promise(function (resolve, reject) {
+    var collectionObj = mongoose.model(collection);
+    collectionObj.aggregate(aggregation)
+      .exec()
+      .then(function (data) {
+        resolve(data);
+      }, reject);
+  });
+}
+
+exports.publicGet = async function (args, res, next) {
+  executeQuery(args, res, next);
 };
 
-// Get BCGW features by DTID
-exports.publicGetBCGWDispositionTransactionId = function(args, res, next) {
-  // Build match query if on dtId route
-  var dtId = args.swagger.params.dtId.value;
-  defaultLog.info('Searching BCGW for DTID:', dtId);
+exports.protectedGet = function (args, res, next) {
+  executeQuery(args, res, next);
+};
 
-  // TODO: Error handling.
+var executeQuery = async function (args, res, next) {
+  var _id = args.swagger.params._id ? args.swagger.params._id.value : null;
+  var keywords = args.swagger.params.keywords.value;
+  var dataset = args.swagger.params.dataset.value;
+  var project = args.swagger.params.project.value;
+  var populate = args.swagger.params.populate ? args.swagger.params.populate.value : false;
+  var pageNum = args.swagger.params.pageNum.value || 0;
+  var pageSize = args.swagger.params.pageSize.value || 25;
+  var sortBy = args.swagger.params.sortBy.value || ['-score'];
+  var query = args.swagger.params.query ? args.swagger.params.query.value : '';
+  defaultLog.info("Searching keywords:", keywords);
+  defaultLog.info("Searching datasets:", dataset);
+  defaultLog.info("Searching project:", project);
+  defaultLog.info("pageNum:", pageNum);
+  defaultLog.info("pageSize:", pageSize);
+  defaultLog.info("sortBy:", sortBy);
+  defaultLog.info("query:", query);
+  defaultLog.info("_id:", _id);
+  defaultLog.info("populate:", populate);
 
-  var searchURL =
-    'https://openmaps.gov.bc.ca/geo/pub/WHSE_TANTALIS.TA_CROWN_TENURES_SVW/ows?service=wfs&version=2.0.0&request=getfeature&typename=PUB:WHSE_TANTALIS.TA_CROWN_TENURES_SVW&outputFormat=json&srsName=EPSG:4326&CQL_FILTER=DISPOSITION_TRANSACTION_SID=';
-  return new Promise(function(resolve, reject) {
-    request.get({ url: searchURL + "'" + dtId + "'" }, function(err, res, body) {
-      if (err) {
-        reject(err);
-      } else if (res.statusCode !== 200) {
-        reject(res.statusCode + ' ' + body);
-      } else {
-        var obj = {};
-        try {
-          defaultLog.info('BCGW Call Complete.', body);
-          obj = JSON.parse(body);
-        } catch (e) {
-          defaultLog.error('Parsing Failed.', e);
-          resolve(obj);
+  var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  console.log("******************************************************************");
+  console.log(roles);
+  console.log("******************************************************************");
+
+  Utils.recordAction('search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
+
+  var sortDirection = undefined;
+  var sortField = undefined;
+
+  var sortingValue = {};
+  sortBy.map((value) => {
+    sortDirection = value.charAt(0) == '-' ? -1 : 1;
+    sortField = value.slice(1);
+    sortingValue[sortField] = sortDirection;
+  });
+
+  console.log("sortingValue:", sortingValue);
+  defaultLog.info("sortField:", sortField);
+  defaultLog.info("sortDirection:", sortDirection);
+
+  if (dataset !== 'Item') {
+
+    console.log("Searching Collection:", dataset);
+    console.log("sortField:", sortField);
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query, populate)
+    if (dataset === 'Comment') {
+      // Filter
+      _.each(data[0].searchResults, function (item) {
+        if (item.isAnonymous === true) {
+          delete item.author;
         }
+      });
+    }
+    return Actions.sendResponse(res, 200, data);
 
-        // Search for this in our DB in case it's already been imported.
-        try {
-          var result = _.chain(obj.features)
-            .groupBy('properties.DISPOSITION_TRANSACTION_SID')
-            .toPairs()
-            .map(function(currentItem) {
-              return _.zipObject(['SID', 'sids'], currentItem);
-            })
-            .value();
-
-          obj.sidsFound = [];
-          result
-            .reduce(function(current, code) {
-              return current.then(function() {
-                var Application = require('mongoose').model('Application');
-                return new Promise(function(complete, fail) {
-                  Application.findOne({ tantalisID: code.SID, isDeleted: false }, function(err, o) {
-                    if (err) {
-                      fail();
+  } else if (dataset === 'Item') {
+    var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
+    console.log("ITEM GET", { _id: args.swagger.params._id.value })
+    var data = await collectionObj.aggregate([
+      {
+        "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
+      },
+      {
+        $redact: {
+          $cond: {
+            if: {
+              // This way, if read isn't present, we assume public no roles array.
+              $and: [
+                { $cond: { if: "$read", then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: "$read",
+                      as: "fieldTag",
+                      in: { $setIsSubset: [["$$fieldTag"], roles] }
                     }
-                    if (o) {
-                      obj.sidsFound.push(code.SID); // NB: SID is string (tantalisID is number)
-                    } else {
-                      defaultLog.info('Nothing found');
-                    }
-                    complete();
-                  });
-                });
-              });
-            }, Promise.resolve())
-            .then(function() {
-              resolve(obj);
-            });
-        } catch (e) {
-          // Error, don't tag the isImported on it.
-          resolve(obj);
+                  }
+                }
+              ]
+            },
+            then: "$$KEEP",
+            else: {
+              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+            }
+          }
         }
       }
-    });
-  })
-    .then(function(data) {
-      return Actions.sendResponse(res, 200, data);
-    })
-    .catch(function(err) {
-      defaultLog.error(err);
-      return Actions.sendResponse(res, 400, err);
-    });
+    ]);
+    if (args.swagger.params._schemaName.value === 'Comment') {
+      // Filter
+      _.each(data, function (item) {
+        if (item.isAnonymous === true) {
+          delete item.author;
+        }
+      });
+    }
+    return Actions.sendResponse(res, 200, data);
+  } else {
+    console.log('Bad Request');
+    return Actions.sendResponse(res, 400, {});
+  }
+};
+
+exports.protectedOptions = function (args, res, next) {
+  res.status(200).send();
 };
