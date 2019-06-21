@@ -733,7 +733,7 @@ paths:
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query project publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instances and supported."
           type: string
           format: date-time
       responses:
@@ -854,7 +854,7 @@ paths:
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query project publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instances and supported."
           type: string
           format: date-time
         - in: query
@@ -4253,7 +4253,13 @@ paths:
           name: query
           collectionFormat: multi
           required: false
-          description: "Query: multiple parameter instaces is supported."
+          description: "Query: multiple parameter instances are supported using AND."
+          type: string
+        - in: query
+          name: or
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using OR."
           type: string
       responses:
         "200":
