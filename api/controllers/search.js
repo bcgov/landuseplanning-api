@@ -16,7 +16,7 @@ function isEmpty(obj) {
   return true;
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, query, populate = false) {
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate = false) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -25,7 +25,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   // optional search keys
   var searchProperties = undefined;
   if (keywords) {
-    searchProperties = { $text: { $search: keywords } };
+    searchProperties = { $text: { $search: keywords, $caseSensitive: caseSensitive } };
   }
 
   // optional keyed lookups
@@ -96,6 +96,13 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       $match: match
     }
   ];
+
+  let collation = {
+    locale: 'en',
+    strength: 2
+  };
+
+  console.log('collation:', collation);
 
   if (collection === 'Document') {
     // Allow documents to be sorted by status based on publish existence
@@ -230,6 +237,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
     collectionObj.aggregate(aggregation)
+      .collation(collation)
       .exec()
       .then(function (data) {
         resolve(data);
@@ -254,6 +262,7 @@ var executeQuery = async function (args, res, next) {
   var pageNum = args.swagger.params.pageNum.value || 0;
   var pageSize = args.swagger.params.pageSize.value || 25;
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
+  var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
   var query = args.swagger.params.query ? args.swagger.params.query.value : '';
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
@@ -261,6 +270,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("pageNum:", pageNum);
   defaultLog.info("pageSize:", pageSize);
   defaultLog.info("sortBy:", sortBy);
+  defaultLog.info("caseSensitive:", caseSensitive);
   defaultLog.info("query:", query);
   defaultLog.info("_id:", _id);
   defaultLog.info("populate:", populate);
@@ -291,7 +301,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, query, populate)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate)
     if (dataset === 'Comment') {
       // Filter
       _.each(data[0].searchResults, function (item) {
