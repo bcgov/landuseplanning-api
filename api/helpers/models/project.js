@@ -62,6 +62,23 @@ module.exports = require ('../models')('Project', {
     activeDate              : { type: Date, default: '' },
     activeStatus              : { type: String, default: '' },
 
+    /////////////////////
+    // Contact references
+    /////////////////////
+    // Project Lead
+    projLead              : { type: 'ObjectId', ref: 'User', default: null, index: true },
+
+    // Executive Project Director
+    execProjectDirector   : { type: 'ObjectId', ref: 'User', default: null, index: true },
+
+    // Compliance & Enforcement Lead
+    complianceLead        : { type: 'ObjectId', ref: 'User', default: null, index: true },
+    //////////////////////
+
+    /////////////////////
+    // PINs
+    /////////////////////
+    pins                  : { type: 'ObjectId', ref: 'Pin', default: null, index: true },
 
     // Permissions
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],

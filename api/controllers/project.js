@@ -63,6 +63,9 @@ var tagList = [
   'projectStatusDate',
   'activeDate',
   'updatedBy',
+  'projLead',
+  'execProjectDirector',
+  'complianceLead',
   'read',
   'write',
   'delete'
@@ -408,6 +411,11 @@ exports.protectedPut = async function (args, res, next) {
 
   obj.centroid = projectObj.centroid;
 
+  // Contacts
+  obj.projLead            = projectObj.projLead;
+  obj.execProjectDirector = projectObj.execProjectDirector;
+  obj.complianceLead      = projectObj.complianceLead;
+
   obj.CEAAInvolvement = projectObj.CEAAInvolvement;
   obj.CEAALink = projectObj.CEAALink;
   obj.eacDecision = projectObj.eacDecision;
@@ -429,7 +437,7 @@ exports.protectedPut = async function (args, res, next) {
 
   console.log("Updating with:", obj);
   console.log("--------------------------");
-  var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false });
+  var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
   // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
   if (doc) {
     console.log("o:", doc);
