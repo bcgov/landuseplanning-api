@@ -198,6 +198,7 @@ definitions:
       - internalOriginalName
       - internalURL
       - internalMime
+      - internalSize
 
 ### Comment Definitions
   CommentId:
