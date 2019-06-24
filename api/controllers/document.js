@@ -32,6 +32,7 @@ var getSanitizedFields = function (fields) {
       'eaoStatus',
       'internalURL',
       'internalMime',
+      'internalSize',
       'checkbox',
       'project',
       'type',
@@ -85,7 +86,6 @@ exports.unProtectedPost = async function (args, res, next) {
   console.log("Creating new object");
   var _comment = args.swagger.params._comment.value;
   var project = args.swagger.params.project.value;
-  var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
@@ -139,7 +139,7 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.internalOriginalName = upfile.originalname;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
-              doc.internalSize = "0";  // TODO
+              doc.internalSize = upfile.size;
               doc.passedAVCheck = true;
               doc.internalMime = upfile.mimetype;
 
@@ -503,7 +503,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
-              doc.internalSize = "0";  // TODO
+              doc.internalSize = upfile.size;
               doc.passedAVCheck = true;
               doc.internalMime = upfile.mimetype;
 
