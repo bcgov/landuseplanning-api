@@ -4251,7 +4251,7 @@ paths:
             type: string
             enum: *searchSortByFields
         - in: query
-          name: query
+          name: and
           collectionFormat: multi
           required: false
           description: "Query: multiple parameter instances are supported using AND."

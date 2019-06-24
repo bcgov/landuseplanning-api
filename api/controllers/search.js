@@ -16,7 +16,49 @@ function isEmpty(obj) {
   return true;
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate = false, or) {
+var generateExpArray = function (field) {
+  var expArray = [];
+  if (field && field !== undefined) {
+    var queryString = qs.parse(field);
+    console.log("queryString:", queryString);
+    Object.keys(queryString).map(item => {
+      console.log("item:", item, queryString[item]);
+      if (isNaN(queryString[item])) {
+        // String or Bool
+        if (queryString[item] === 'true') {
+          // Bool
+          var tempObj = {}
+          tempObj[item] = true;
+          tempObj.active = true;
+          expArray.push(tempObj);
+        } else if (queryString[item] === 'false') {
+          // Bool
+          expArray.push({ [item]: false });
+        } else {
+          // String
+          if (Array.isArray(queryString[item])) {
+            queryString[item].map(entry => {
+              expArray.push({ [item]: entry });
+            });
+          } else {
+            if (mongoose.Types.ObjectId.isValid(queryString[item])) {
+              queryModifier[item] = mongoose.Types.ObjectId(queryString[item]);
+              expArray.push({ [item]: mongoose.Types.ObjectId(queryString[item]) });
+            } else {
+              expArray.push({ [item]: queryString[item] });
+            }
+          }
+        }
+      } else {
+        // Number
+        expArray.push({ [item]: parseInt(queryString[item]) });
+      }
+    })
+  }
+  return expArray;
+}
+
+var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
   var properties = undefined;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
@@ -28,85 +70,16 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     searchProperties = { $text: { $search: keywords, $caseSensitive: caseSensitive } };
   }
 
-  // optional keyed lookups
-  var queryModifier = {};
-  if (query && query !== undefined) {
-    var queryString = qs.parse(query);
-    console.log("query:", queryString);
-    Object.keys(queryString).map(item => {
-      console.log("item:", item, queryString[item]);
-      if (isNaN(queryString[item])) {
-        // String or Bool
-        if (queryString[item] === 'true') {
-          // Bool
-          queryModifier[item] = true;
-          queryModifier.active = true;
-        } else if (queryString[item] === 'false') {
-          // Bool
-          queryModifier[item] = false;
-        } else {
-          // String
-          if (mongoose.Types.ObjectId.isValid(queryString[item])) {
-            queryModifier[item] = mongoose.Types.ObjectId(queryString[item]);
-          } else {
-            queryModifier[item] = queryString[item];
-          }
-        }
-      } else {
-        // Number
-        queryModifier[item] = parseInt(queryString[item]);
-      }
-    })
-  }
-
-  // TODO: Combine this with queryModifier function.
-  // Issue lies with if (Array.isArray(orQueryString[item]))
-  var orExpArray = [];
-  if (or && or !== undefined) {
-    var orQueryString = qs.parse(or);
-    console.log("or:", orQueryString);
-    Object.keys(orQueryString).map(item => {
-      console.log("item:", item, orQueryString[item]);
-      if (isNaN(orQueryString[item])) {
-        // String or Bool
-        if (orQueryString[item] === 'true') {
-          // Bool
-          var tempObj = {}
-          tempObj[item] = true;
-          tempObj.active = true;
-          orExpArray.push(tempObj);
-        } else if (orQueryString[item] === 'false') {
-          // Bool
-          orExpArray.push({ [item]: false });
-        } else {
-          // String
-          if (Array.isArray(orQueryString[item])) {
-            orQueryString[item].map(entry => {
-              orExpArray.push({ [item]: entry });
-            });
-          } else {
-            if (mongoose.Types.ObjectId.isValid(orQueryString[item])) {
-              queryModifier[item] = mongoose.Types.ObjectId(orQueryString[item]);
-              orExpArray.push({ [item]: mongoose.Types.ObjectId(orQueryString[item]) });
-            } else {
-              orExpArray.push({ [item]: orQueryString[item] });
-            }
-          }
-        }
-      } else {
-        // Number
-        orExpArray.push({ [item]: parseInt(orQueryString[item]) });
-      }
-    })
-  }
+  var andExpArray = generateExpArray(and);
+  var orExpArray = generateExpArray(or);
 
   var modifier = {};
-  if (!isEmpty(queryModifier) && orExpArray.length > 0) {
-    modifier = { $and: [queryModifier, { $or: orExpArray }] };
-  } else if (isEmpty(queryModifier) && orExpArray.length > 0) {
+  if (andExpArray.length > 0 && orExpArray.length > 0) {
+    modifier = { $and: [{ $and: andExpArray }, { $or: orExpArray }] };
+  } else if (andExpArray.length === 0 && orExpArray.length > 0) {
     modifier = { $and: [{ $or: orExpArray }] };
-  } else if (!isEmpty(queryModifier) && orExpArray.length === 0) {
-    modifier = queryModifier;
+  } else if (andExpArray.length > 0 && orExpArray.length === 0) {
+    modifier = { $and: [{ $and: andExpArray }] };
   }
 
   var match = {
@@ -311,7 +284,7 @@ var executeQuery = async function (args, res, next) {
   var pageSize = args.swagger.params.pageSize.value || 25;
   var sortBy = args.swagger.params.sortBy.value || ['-score'];
   var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
-  var query = args.swagger.params.query ? args.swagger.params.query.value : '';
+  var and = args.swagger.params.and ? args.swagger.params.and.value : '';
   var or = args.swagger.params.or ? args.swagger.params.or.value : '';
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
@@ -320,7 +293,7 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("pageSize:", pageSize);
   defaultLog.info("sortBy:", sortBy);
   defaultLog.info("caseSensitive:", caseSensitive);
-  defaultLog.info("query:", query);
+  defaultLog.info("and:", and);
   defaultLog.info("or:", or);
   defaultLog.info("_id:", _id);
   defaultLog.info("populate:", populate);
@@ -351,7 +324,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, query, populate, or)
+    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
     if (dataset === 'Comment') {
       // Filter
       _.each(data[0].searchResults, function (item) {
