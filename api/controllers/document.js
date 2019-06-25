@@ -519,12 +519,13 @@ exports.protectedPost = async function (args, res, next) {
                   doc.read.push('public');
                 }
               }
-              doc.milestone = args.swagger.params.milestone.value;
+              doc.milestone = mongoose.Types.ObjectId(args.swagger.params.milestone.value);
+              doc.type = mongoose.Types.ObjectId(args.swagger.params.type.value);
+              doc.documentAuthor = mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value);
+
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
-              doc.type = args.swagger.params.type.value;
               doc.description = args.swagger.params.description.value;
-              doc.documentAuthor = args.swagger.params.documentAuthor.value;
               // Update who did this?
               console.log('unlink');
               doc.save()
@@ -603,13 +604,15 @@ exports.protectedPut = async function (args, res, next) {
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   obj.displayName = args.swagger.params.displayName.value;
-  obj.milestone = args.swagger.params.milestone.value;
+
+  obj.milestone = args.swagger.params.milestone ? mongoose.Types.ObjectId(args.swagger.params.milestone.value) : null;
+  obj.type = args.swagger.params.type ? mongoose.Types.ObjectId(args.swagger.params.type.value) : null;
+  obj.documentAuthor = args.swagger.params.documentAuthor ? mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value) : null;
+
   obj.dateUploaded = args.swagger.params.dateUploaded.value;
   obj.datePosted = args.swagger.params.datePosted.value;
-  obj.type = args.swagger.params.type.value;
   obj.description = args.swagger.params.description.value;
   obj.keywords = args.swagger.params.keywords.value;
-  obj.documentAuthor = args.swagger.params.documentAuthor.value;
 
   obj.eaoStatus = args.swagger.params.eaoStatus.value;
   if (args.swagger.params.eaoStatus.value === 'Published') {

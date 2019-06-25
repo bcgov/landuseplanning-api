@@ -4342,6 +4342,18 @@ paths:
           items:
             type: string
             enum: *searchSortByFields
+        - in: query
+          name: and
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using AND."
+          type: string
+        - in: query
+          name: or
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using OR."
+          type: string
       responses:
         "200":
           description: "Success"
