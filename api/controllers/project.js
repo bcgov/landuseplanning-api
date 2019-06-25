@@ -412,9 +412,9 @@ exports.protectedPut = async function (args, res, next) {
   obj.centroid = projectObj.centroid;
 
   // Contacts
-  obj.projLead            = projectObj.projLead;
+  obj.projLead = projectObj.projLead;
   obj.execProjectDirector = projectObj.execProjectDirector;
-  obj.complianceLead      = projectObj.complianceLead;
+  obj.complianceLead = projectObj.complianceLead;
 
   obj.CEAAInvolvement = projectObj.CEAAInvolvement;
   obj.CEAALink = projectObj.CEAALink;
@@ -493,10 +493,8 @@ exports.protectedUnPublish = function (args, res, next) {
 };
 
 var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
-
-  var dateStartedRange, dateCompletedRange, currentDateInBetween = null;
-
   if (args.swagger.params.cpStart && args.swagger.params.cpStart.value !== undefined && args.swagger.params.cpEnd && args.swagger.params.cpEnd.value !== undefined) {
+    var dateStartedRange, dateCompletedRange, currentDateInBetween = null;
     var queryStringStart = qs.parse(args.swagger.params.cpStart.value);
     var queryStringEnd = qs.parse(args.swagger.params.cpEnd.value);
 
@@ -507,25 +505,28 @@ var handleCommentPeriodForBannerQueryParameters = function (args, projectId) {
     } else {
       return null;
     }
+
+    var match = {
+      _schemaName: 'CommentPeriod',
+      project: mongoose.Types.ObjectId(projectId),
+      $or: [dateStartedRange, dateCompletedRange, currentDateInBetween]
+    };
+
+    return {
+      '$lookup':
+      {
+        from: 'epic',
+        pipeline: [{
+          $match: match
+        }],
+        as: 'commentPeriodForBanner'
+      }
+    };
+  } else {
+    return null;
   }
+}
 
-  var match = {
-    _schemaName: 'CommentPeriod',
-    project: mongoose.Types.ObjectId(projectId),
-    $or: [dateStartedRange, dateCompletedRange, currentDateInBetween]
-  };
-
-  return {
-    '$lookup':
-    {
-      from: 'epic',
-      pipeline: [{
-        $match: match
-      }],
-      as: 'commentPeriodForBanner'
-    }
-  };
-};
 
 var addStandardQueryFilters = function (query, args) {
   if (args.swagger.params.publishDate && args.swagger.params.publishDate.value !== undefined) {
