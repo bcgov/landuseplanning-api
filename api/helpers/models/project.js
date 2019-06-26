@@ -79,6 +79,14 @@ module.exports = require ('../models')('Project', {
     // PINs
     /////////////////////
     pins                  : { type: 'ObjectId', ref: 'Pin', default: null, index: true },
+    /*
+      array of mixed:
+      [{
+        action: 'added' | 'removed',
+        date: new Date(now).toISOString()
+      }]
+    */
+   pinsHistory            : [{ type: Mixed, default: {} }],
 
     // Permissions
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],

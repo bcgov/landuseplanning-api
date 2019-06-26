@@ -9,15 +9,5 @@ module.exports = require ('../models')('Pin', {
     postalCode         : { type: String, default: '' },
     phone              : { type: String, default: '' },
     fax                : { type: String, default: '' },
-    www                : { type: String, default: '' },
-
-    /*
-      array of mixed:
-      [{
-        action: 'added' | 'removed',
-        project: ObjectId,
-        date: new Date(now).toISOString()
-      }]
-    */
-    history            : [{ type: Mixed, default: {} }]
+    www                : { type: String, default: '' }
 }, 'epic');

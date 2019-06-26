@@ -11,11 +11,11 @@ exports.protectedOptions = function (args, res, rest) {
 
 exports.protectedGet = function(args, res, next) {
   var self        = this;
-  self.scopes     = args.swagger.operation["x-security-scopes"];
+  self.scopes     = args.swagger.params.auth_payload.realm_access.roles;
 
   var User = mongoose.model('User');
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
 
   // Build match query if on userId route
   var query = {};
@@ -23,7 +23,9 @@ exports.protectedGet = function(args, res, next) {
     query = Utils.buildQuery("_id", args.swagger.params.userId.value, query);
   }
 
-  getUsers(args.swagger.operation["x-security-scopes"], query, args.swagger.params.fields.value)
+  console.log(args.swagger.params.fields.value);
+
+  getUsers(self.scopes, query, args.swagger.params.fields.value)
   .then(function (data) {
     return Actions.sendResponse(res, 200, data);
   });
@@ -118,7 +120,7 @@ var getUsers = function (role, query, fields) {
 
     // Add requested fields - sanitize first by including only those that we can/want to return
     var sanitizedFields = _.remove(fields, function (f) {
-      return (_.indexOf(['displayName', 'firstName', 'lastName', 'username', 'roles'], f) !== -1);
+      return (_.indexOf(['displayName', 'firstName', 'lastName', 'username', 'roles', 'org', 'email', 'phoneNumber'], f) !== -1);
     });
     _.each(sanitizedFields, function (f) {
       projection[f] = 1;
@@ -131,6 +133,17 @@ var getUsers = function (role, query, fields) {
       },
       {
         "$project": projection
+      },
+      {
+        "$lookup": {
+          "from": "epic",
+          "localField": "org",
+          "foreignField": "_id",
+          "as": "org"
+        }
+      },
+      {
+        "$unwind": "$org"
       }
     ]).exec()
     .then(function (data) {
