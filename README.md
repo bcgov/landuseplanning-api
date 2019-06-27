@@ -8,15 +8,15 @@ Before running the api, you must set some environment variables:
 1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
 2) MINIO_ACCESS_KEY='xxxx'
 3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=TRUE
-5) MONGODB_DATABASE='epic'
+4) KEYCLOAK_ENABLED=true
+5) MONGODB_DATABASE='gcpe-lup'
 
 One way to do this is to edit your ~/.bashrc file to contain:
 export MONGODB_DATABASE="gcpe-lup"
 export MINIO_HOST="foo.pathfinder.gov.bc.ca"
 export MINIO_ACCESS_KEY="xxxx"
 export MINIO_SECRET_KEY="xxxx"
-export KEYCLOAK_ENABLED=TRUE
+export KEYCLOAK_ENABLED=true
 
 Don't forget to reload your .bash_profile file so that your terminal environment is up to date with the correct values
 ``
