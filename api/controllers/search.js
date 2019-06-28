@@ -179,6 +179,38 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     );
   }
 
+  if (collection === 'Group') {
+    // pop project and user if exists.
+    aggregation.push(
+      {
+        '$lookup': {
+          "from": "epic",
+          "localField": "contact",
+          "foreignField": "_id",
+          "as": "contact"
+        }
+      });
+    aggregation.push(
+      {
+        "$unwind": "$contact"
+      },
+    );
+    aggregation.push(
+      {
+        '$lookup': {
+          "from": "epic",
+          "localField": "contact.org",
+          "foreignField": "_id",
+          "as": "contact.org"
+        }
+      });
+    aggregation.push(
+      {
+        "$unwind": "$contact.org"
+      },
+    );
+  }
+
   if (collection === 'User') {
     // pop proponent if exists.
     aggregation.push(
@@ -304,6 +336,8 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("populate:", populate);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  console.log("Searching Collection:", dataset);
 
   console.log("******************************************************************");
   console.log(roles);
