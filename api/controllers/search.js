@@ -24,15 +24,18 @@ var generateExpArray = function (field) {
     Object.keys(queryString).map(item => {
       console.log("item:", item, queryString[item]);
       if (Array.isArray(queryString[item])) {
+        // Arrays will always be ors
+        var orArray = [];
         queryString[item].map(entry => {
-          expArray.push(getConvertedValue(item, entry));
+          orArray.push(getConvertedValue(item, entry));
         });
+        expArray.push({ $or: orArray });
       } else {
-        console.log("normal", item, queryString[item]);
         expArray.push(getConvertedValue(item, queryString[item]));
       }
     })
   }
+  console.log("expArray:", expArray);
   return expArray;
 }
 
@@ -75,16 +78,19 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     searchProperties = { $text: { $search: keywords, $caseSensitive: caseSensitive } };
   }
 
+  // query modifiers
   var andExpArray = generateExpArray(and);
+
+  // filters
   var orExpArray = generateExpArray(or);
 
   var modifier = {};
   if (andExpArray.length > 0 && orExpArray.length > 0) {
-    modifier = { $and: [{ $and: andExpArray }, { $or: orExpArray }] };
+    modifier = { $and: [{ $and: andExpArray }, { $and: orExpArray }] };
   } else if (andExpArray.length === 0 && orExpArray.length > 0) {
-    modifier = { $and: [{ $or: orExpArray }] };
+    modifier = { $and: orExpArray  };
   } else if (andExpArray.length > 0 && orExpArray.length === 0) {
-    modifier = { $and: [{ $and: andExpArray }] };
+    modifier = { $and: andExpArray };
   }
 
   var match = {
