@@ -58,7 +58,7 @@ exports.protectedGet = async function(args, res, next) {
     var data = await Utils.runDataQuery('Organization',
       args.swagger.params.auth_payload.realm_access.roles,
       query,
-      ['name'], // Fields
+      ['name', 'province'], // Fields
       null,
       sort, // sort
       skip, // skip
@@ -175,6 +175,7 @@ var getOrganizations = function (role, query, fields) {
     // Fields we always return
     var defaultFields = ['_id',
                         'name',
+                        'province',
                         'tags'];
     _.each(defaultFields, function (f) {
         projection[f] = 1;
