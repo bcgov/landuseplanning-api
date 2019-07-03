@@ -126,6 +126,8 @@ definitions:
       - responsibleEPDPhone
       - type
       - read
+      - build
+      - nature
   TopicSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
