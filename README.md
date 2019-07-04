@@ -8,21 +8,26 @@ Before running the api, you must set some environment variables:
 1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
 2) MINIO_ACCESS_KEY='xxxx'
 3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=TRUE
+4) KEYCLOAK_ENABLED=true
 5) MONGODB_DATABASE='epic'
 
-One way to do this is to edit your ~/.bashrc file to contain:
+One way to do this is to edit your ~/.bash_profile file to contain:
+
+```
 export MONGODB_DATABASE="epic"
 export MINIO_HOST="foo.pathfinder.gov.bc.ca"
 export MINIO_ACCESS_KEY="xxxx"
 export MINIO_SECRET_KEY="xxxx"
-export KEYCLOAK_ENABLED=TRUE
+export KEYCLOAK_ENABLED=true
+```
+
+Please note that these values are case sensitive so don't use upper-case TRUE for example.
 
 Don't forget to reload your .bash_profile file so that your terminal environment is up to date with the correct values
-``
+```
 source ~/.bash_profile
 env
-``
+```
 
 The above env command will show you your environment variables and allow you to check that the correct values are present.
 
@@ -31,12 +36,12 @@ Start the server by running `npm start`
 Check the swagger-ui on `http://localhost:3000/api/docs/`
 
 1) POST `http://localhost:3000/api/login/token` with the following body
-``
+```
 {
 "username": #{username},
 "password": #{password}
 }
-``
+```
 
  and take the token that you get in the response
  
@@ -48,30 +53,30 @@ Check the swagger-ui on `http://localhost:3000/api/docs/`
 We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.
 
 Run the following commands:
-``
+```
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
 asdf install nodejs 8.16.0
 asdf reshim nodejs
 npm i -g yarn
 yarn install
-``
+```
 
 
 Acquire a dump of the database from one of the live environments.  
 
 Make sure you don't have an old copy (careful, this is destructive):
 
-``
+```
 mongo
 use epic
 db.dropDatabase()
-``
+```
 
 Restore the database dump you have from the old epic system.
 
-``
+```
 mongorestore -d epic dump/[old_database_name_most_likely_esm]
-``
+```
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
@@ -171,15 +176,15 @@ Recall the environment variables we need for local dev:
 1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
 2) MINIO_ACCESS_KEY='xxxx'
 3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=TRUE
+4) KEYCLOAK_ENABLED=true
 5) MONGODB_DATABASE='epic'
 
 To get actual values for the above fields in the deployed environments, examine the openshift environment you wish to target:
 
-``
+```
 oc project [projectname]
 oc get routes | grep 'minio'
 oc get secrets | grep 'minio'
-``
+```
 
 You will not be able to see the above value of the secret if you try examine it.  You will only see the encrypted values.  Approach your team member with admin access in the openshift project in order to get the access key and secret key values for the secret name you got from the above command.  Make sure to ask for the correct environment (dev, test, prod) for the appropriate values.
