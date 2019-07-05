@@ -401,6 +401,156 @@ exports.protectedPost = function (args, res, next) {
     });
 };
 
+exports.protectedPinDelete = async function (args, res, next) {
+  var projId = args.swagger.params.projId.value;
+  var pinId = args.swagger.params.pinId.value;
+  defaultLog.info("Delete PIN: ", pinId, " from Project:", projId);
+
+  var Project = mongoose.model('Project');
+  try {
+    var data = await Project.update(
+      { _id: projId },
+      { $pull: { pins: { $in: [mongoose.Types.ObjectId(pinId)] } } },
+      { new: true }
+    );
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info("Couldn't find that object!");
+    return Actions.sendResponse(res, 404, {});
+  }
+}
+
+handleGetPins = async function(projectId, roles, sortBy, pageSize, pageNum, username, res) {
+  var skip = null, limit = null, sort = null;
+  var count = false;
+  var query = {};
+
+  _.assignIn(query, { "_schemaName": "Project" });
+
+  var fields = ['_id', 'pins', 'name', 'website', 'province'];
+
+  // First get the project
+  if (projectId) {
+    // Getting a single project
+    _.assignIn(query, { _id: mongoose.Types.ObjectId(projectId.value) });
+    var data = await Utils.runDataQuery('Project',
+    roles,
+      query,
+      fields, // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false, // count
+      null,
+      true,
+      null
+    );
+
+    _.assignIn(query, { "_schemaName": "Organization" });
+
+    let thePins = [];
+    if (!data[0].pins) {
+      // no pins, return empty result;
+      return Actions.sendResponse(res, 200, [{
+        total_items: 0
+      }]);
+    } else {
+      data[0].pins.map( pin => {
+        thePins.push(mongoose.Types.ObjectId(pin));
+      })
+      query = { _id: { $in: thePins }}
+
+      // Sort
+      if (sortBy && sortBy.value) {
+        sort = {};
+        sortBy.value.forEach(function (value) {
+          var order_by = value.charAt(0) == '-' ? -1 : 1;
+          var sort_by = value.slice(1);
+          sort[sort_by] = order_by;
+        }, this);
+      }
+
+      // Skip and limit
+      var processedParameters = Utils.getSkipLimitParameters(pageSize, pageNum);
+      skip = processedParameters.skip;
+      limit = processedParameters.limit;
+
+      try {
+        var orgData = await Utils.runDataQuery('Organization',
+        roles,
+          query,
+          fields, // Fields
+          null,
+          sort, // sort
+          skip, // skip
+          limit, // limit
+          true); // count
+        Utils.recordAction('get', 'organization', username);
+        return Actions.sendResponse(res, 200, orgData);
+      } catch (e) {
+        defaultLog.info('Error:', e);
+        return Actions.sendResponse(res, 400, e);
+      }
+    }
+  } else {
+    return Actions.sendResponse(res, 400, 'error');
+  }
+}
+
+exports.publicPinGet = async function (args, res, next) {
+  handleGetPins(args.swagger.params.projId,
+    ['public'],
+    args.swagger.params.sortBy,
+    args.swagger.params.pageSize,
+    args.swagger.params.pageNum,
+    'public',
+    res
+    );
+}
+
+exports.protectedPinGet = async function (args, res, next) {
+  handleGetPins(args.swagger.params.projId,
+    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.sortBy,
+    args.swagger.params.pageSize,
+    args.swagger.params.pageNum,
+    args.swagger.params.auth_payload.preferred_username,
+    res
+    );
+}
+
+exports.protectedAddPins = async function (args, res, next) {
+  var objId = args.swagger.params.projId.value;
+  defaultLog.info("ObjectID:", args.swagger.params.projId.value);
+
+  var Project = mongoose.model('Project');
+  // var pinsArr = args.swagger.params.pins.value;
+  var pinsArr = [];
+  args.swagger.params.pins.value.map(item => {
+    pinsArr.push(mongoose.Types.ObjectId(item));
+  });
+
+  // Add pins to pins existing
+  var doc = await Project.update(
+    { _id: mongoose.Types.ObjectId(objId) },
+    {
+      $push: {
+        pins: {
+          $each: pinsArr
+        }
+      }
+    },
+    { new: true }
+  );
+  if (doc) {
+    return Actions.sendResponse(res, 200, doc);
+  } else {
+    defaultLog.info("Couldn't find that object!");
+    return Actions.sendResponse(res, 404, {});
+  }
+}
+
 // Update an existing project
 exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.projId.value;

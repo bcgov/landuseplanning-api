@@ -78,7 +78,7 @@ module.exports = require ('../models')('Project', {
     /////////////////////
     // PINs
     /////////////////////
-    pins                  : { type: 'ObjectId', ref: 'Pin', default: null, index: true },
+    pins                  : [{ type: 'ObjectId', ref: 'Pin', default: null, index: true }],
     /*
       array of mixed:
       [{
