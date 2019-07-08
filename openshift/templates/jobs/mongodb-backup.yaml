@@ -1,0 +1,145 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: mongodb-backup-template
+  annotations:
+    description: 'Template for MongoDB container backup job'
+    tags: 'database,backup,mongo'
+parameters:
+  - name: MONGODB_BACKUP_SCHEDULE
+    description: 'Cron-like schedule expression. Default: Once every day at 1:00 AM'
+    value: '30 6 * * *'
+  - name: MONGODB_BACKUP_VOLUME_CLAIM
+    description: 'Name of the volume claim to be used as storage'
+    value: ''
+objects:
+  - apiVersion: batch/v1beta1
+    kind: CronJob
+    metadata:
+      name: mongodb-backup
+    spec:
+      schedule: ${MONGODB_BACKUP_SCHEDULE}
+      concurrencyPolicy: Forbid
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              volumes:
+                - name: mongodb-backup
+                  persistentVolumeClaim:
+                    claimName: ${MONGODB_BACKUP_VOLUME_CLAIM}
+              containers:
+                - name: mongodb-backup
+                  image: 'docker-registry.default.svc:5000/openshift/mongodb:latest'
+                  command:
+                    - 'bash'
+                    - '-c'
+                    - >-
+                      declare -a adminDirFiles=(
+                        "system.users.bson"
+                        "system.users.metadata.json"
+                        "system.version.bson"
+                        "system.version.metadata.json"
+                      );
+
+                      declare -a epicDirFiles=(
+                        "audit.bson"
+                        "audit.metadata.json"
+                        "epic.bson"
+                        "epic.metadata.json"
+                        "migrations.bson"
+                        "migrations.metadata.json"
+                      );
+
+                      ALL_BACKUPS_HEALTHY=true;
+
+                      alertBadDump () {
+                        HEALTHY_STR="$1";
+                        MESSAGE="$2";
+                        UNHEALTHY_STR="UNHEALTHY";
+                        UNHEALTHY_STR=${1/HEALTHY/$UNHEALTHY_STR};
+                        mv /var/lib/mongodb-backup/$HEALTHY_STR /var/lib/mongodb-backup/$UNHEALTHY_STR;
+                        ALL_BACKUPS_HEALTHY=false;
+                        curl -X POST -H "Content-Type: application/json" --data "{\"username\":\"BakBot\",\"icon_emoji\":\":robot:\",\"text\":\"@all EAGLE Mongo backup FAILURE. Backups are currently paused until the issue is fixed. $MESSAGE Please see documentation https://github.com/bcgov/eagle-api/tree/develop/openshift/templates/jobs\"}" $ROCKETCHAT_BACKUP_DB_WEBHOOK;
+                      };
+                      alertWarning () {
+                        MESSAGE="$1";
+                        curl -X POST -H "Content-Type: application/json" --data "{\"username\":\"BakBot\",\"icon_emoji\":\":robot:\",\"text\":\"@all EAGLE Mongo backup WARNING - $MESSAGE Please see documentation https://github.com/bcgov/eagle-api/tree/develop/openshift/templates/jobs\"}" $ROCKETCHAT_BACKUP_DB_WEBHOOK;
+                      };
+                      checkDumps () {
+                        DUMP_DIRS=$(ls /var/lib/mongodb-backup/);
+                        for DUMP_DIR in $DUMP_DIRS; do
+                          for ADMIN_FILE in "${adminDirFiles[@]}"; do
+                            if [ ! -f /var/lib/mongodb-backup/$DUMP_DIR/admin/$ADMIN_FILE ]; then
+                              alertBadDump "$DUMP_DIR" "A previous backup did not complete successfully. One or more files in the admin directory are missing.";
+                              return;
+                            fi;
+                          done;
+                          for EPIC_FILE in "${epicDirFiles[@]}"; do
+                            if [ ! -f /var/lib/mongodb-backup/$DUMP_DIR/epic/$EPIC_FILE ]; then
+                              alertBadDump "$DUMP_DIR" "A previous backup did not complete successfully. One or more files in the epic directory  are missing.";
+                              return;
+                            fi;
+                          done;
+                          if [ "$(du -sb /var/lib/mongodb-backup/$DUMP_DIR | cut -f1)" -gt $MONGO_BACKUP_SIZE_UPPER_LIMIT ]; then
+                            alertWarning "Disk usage is approaching capacity. Please transfer backups to larger PVC or decrease the number of backups to keep.";
+                            return;
+                          fi;
+                          if [ "$(du -sb /var/lib/mongodb-backup/$DUMP_DIR | cut -f1)" -lt $MONGO_BACKUP_SIZE_LOWER_LIMIT ]; then
+                            alertBadDump "$DUMP_DIR" "A previous backup did not complete successfully. Backup size was lower than normal.";
+                            return;
+                          fi;
+                        done;
+                      };
+                      checkDumps;
+                      if [ "$ALL_BACKUPS_HEALTHY" = true ]; then
+                        DIR=/var/lib/mongodb-backup/dump-`date +%Y%m%d%H%M%S%Z`-HEALTHY;
+                        mongodump --numParallelCollections=1 --username=admin --password=$MONGODB_EAGLE_ADMIN_PASSWORD --host=$MONGODB_EAGLE_SERVICE_HOST --port=$MONGODB_EAGLE_SERVICE_PORT --authenticationDatabase=admin --out=$DIR;
+                        checkDumps;
+                        if [ "$ALL_BACKUPS_HEALTHY" = true ]; then
+                          ls -rdt /var/lib/mongodb-backup/dump-* |
+                          head -n -$MONGODB_BACKUP_KEEP |
+                          xargs rm -rf;
+                          curl -X POST -H 'Content-Type: application/json' --data '{"username":"BakBot","icon_emoji":":robot:","text":"Backup for EAGLE Mongo Database SUCCESS!"}' $ROCKETCHAT_BACKUP_DB_WEBHOOK;
+                          echo;
+                          echo "To restore, use:";
+                          echo "~# mongorestore -u admin -p \$MONGODB_ADMIN_PASSWORD --authenticationDatabase admin $DIR/DB_TO_RESTORE -d DB_TO_RESTORE_INTO";
+                        fi;
+                      fi
+                  resources:
+                  limits:
+                    cpu: 250m
+                    memory: 1Gi
+                  requests:
+                    cpu: 100m
+                    memory: 512Mi
+                  env:
+                    - name: MONGODB_EAGLE_ADMIN_PASSWORD
+                      valueFrom:
+                        secretKeyRef:
+                          name: eagle-mongo-secrets
+                          key: MONGODB_EAGLE_ADMIN_PASSWORD
+                    - name: MONGODB_BACKUP_KEEP
+                      valueFrom:
+                        configMapKeyRef:
+                          name: mongo-config
+                          key: MONGO_BACKUP_COUNT
+                    - name: MONGO_BACKUP_SIZE_LOWER_LIMIT
+                      valueFrom:
+                        configMapKeyRef:
+                          name: mongo-config
+                          key: MONGO_BACKUP_SIZE_LOWER_LIMIT
+                    - name: MONGO_BACKUP_SIZE_UPPER_LIMIT
+                      valueFrom:
+                        configMapKeyRef:
+                          name: mongo-config
+                          key: MONGO_BACKUP_SIZE_UPPER_LIMIT
+                    - name: ROCKETCHAT_BACKUP_DB_WEBHOOK
+                      valueFrom:
+                        configMapKeyRef:
+                          name: mongo-config
+                          key: ROCKETCHAT_BACKUP_DB_WEBHOOK
+                  volumeMounts:
+                    - name: mongodb-backup
+                      mountPath: /var/lib/mongodb-backup
+              restartPolicy: Never
