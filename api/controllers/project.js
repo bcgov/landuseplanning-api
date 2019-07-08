@@ -551,6 +551,186 @@ exports.protectedAddPins = async function (args, res, next) {
   }
 }
 
+exports.protectedDeleteGroupMembers = async function (args, res, next) {
+  var projId = args.swagger.params.projId.value;
+  var groupId = args.swagger.params.groupId.value;
+  var memberId = args.swagger.params.memberId.value;
+  defaultLog.info("Delete Group Member:", memberId, "from group:", groupId, " from Project:", projId);
+
+  var Project = mongoose.model('Group');
+  try {
+    var data = await Project.update(
+      { _id: groupId },
+      { $pull: { members: { $in: [mongoose.Types.ObjectId(memberId)] } } },
+      { new: true }
+    );
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.info("Couldn't find that object!");
+    return Actions.sendResponse(res, 404, {});
+  }
+}
+
+exports.protectedAddGroupMembers = async function (args, res, next) {
+  var projectId = args.swagger.params.projId.value;
+  var groupId = args.swagger.params.groupId.value;
+  defaultLog.info("ProjectID:", projectId);
+  defaultLog.info("GroupId:", groupId);
+
+  var Project = mongoose.model('Group');
+  var membersArr = [];
+  args.swagger.params.members.value.map(item => {
+    membersArr.push(mongoose.Types.ObjectId(item));
+  });
+
+  // Add members to members existing
+  var doc = await Project.update(
+    { _id: mongoose.Types.ObjectId(groupId) },
+    {
+      $push: {
+        members: {
+          $each: membersArr
+        }
+      }
+    },
+    { new: true }
+  );
+  if (doc) {
+    return Actions.sendResponse(res, 200, doc);
+  } else {
+    defaultLog.info("Couldn't find that object!");
+    return Actions.sendResponse(res, 404, {});
+  }
+}
+
+exports.protectedGroupGetMembers = async function (args, res, next) {
+  handleGetGroupMembers(args.swagger.params.groupId,
+    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.sortBy,
+    args.swagger.params.pageSize,
+    args.swagger.params.pageNum,
+    args.swagger.params.auth_payload.preferred_username,
+    res
+    );
+}
+
+handleGetGroupMembers = async function(groupId, roles, sortBy, pageSize, pageNum, username, res) {
+  var skip = null, limit = null, sort = null;
+  var query = {};
+
+  _.assignIn(query, { "_schemaName": "Group" });
+
+  var fields = ['_id', 'members', 'name', 'project'];
+
+  // First get the group
+  if (groupId) {
+    // Getting a single group
+    _.assignIn(query, { _id: mongoose.Types.ObjectId(groupId.value) });
+
+    var data = await Utils.runDataQuery('Group',
+      roles,
+      query,
+      fields, // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false, // count
+      null,
+      false,
+      null
+    );
+
+    console.log("users:", data);
+
+    if (data.length === 0) {
+      return Actions.sendResponse(res, 200, [{
+        total_items: 0
+      }]);
+    } else {
+      _.assignIn(query, { "_schemaName": "User" });
+
+      let theUsers = [];
+      data[0].members.map( user => {
+        theUsers.push(mongoose.Types.ObjectId(user));
+      })
+      query = { _id: { $in: theUsers }}
+
+      // Sort
+      if (sortBy && sortBy.value) {
+        sort = {};
+        sortBy.value.forEach(function (value) {
+          var order_by = value.charAt(0) == '-' ? -1 : 1;
+          var sort_by = value.slice(1);
+          sort[sort_by] = order_by;
+        }, this);
+      }
+
+      // Skip and limit
+      var processedParameters = Utils.getSkipLimitParameters(pageSize, pageNum);
+      skip = processedParameters.skip;
+      limit = processedParameters.limit;
+
+      fields = ['_id', 'displayName', 'email', 'org'];
+      try {
+        var groupData = await Utils.runDataQuery('User',
+          roles,
+          query,
+          fields, // Fields
+          null,
+          sort, // sort
+          skip, // skip
+          limit, // limit
+          false); // count
+        Utils.recordAction('get', 'GroupUsers', username);
+        console.log('YEAH', groupData);
+        return Actions.sendResponse(res, 200, groupData);
+      } catch (e) {
+        defaultLog.info('Error:', e);
+        return Actions.sendResponse(res, 400, e);
+      }
+    }
+  } else {
+    return Actions.sendResponse(res, 400, 'error');
+  }
+}
+
+exports.protectedAddGroup = async function (args, res, next) {
+  var objId = args.swagger.params.projId.value;
+  var groupName = args.swagger.params.group.value;
+  defaultLog.info("Incoming new group:", groupName);
+
+  var Group = mongoose.model('Group');
+  var doc = new Group({project: mongoose.Types.ObjectId(objId), name: groupName.group });
+  ['project-system-admin', 'sysadmin', 'staff'].map(item => {
+    doc.read.push(item), doc.write.push(item), doc.delete.push(item)
+  });
+  // Update who did this?
+  doc._addedBy = args.swagger.params.auth_payload.preferred_username;
+  doc.save()
+  .then(function (d) {
+    defaultLog.info("Saved new group object:", d);
+    return Actions.sendResponse(res, 200, d);
+  });
+}
+
+exports.protectedGroupDelete = async function (args, res, next) {
+  var objId = args.swagger.params.projId.value;
+  var groupId = args.swagger.params.groupId.value;
+  defaultLog.info("Delete Group:", groupId, "from project:", objId);
+
+  var Group = require('mongoose').model('Group');
+  try {
+    var doc = await Group.findOneAndRemove({ _id: groupId });
+    console.log('deleting group', doc);
+    Utils.recordAction('delete', 'Group', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, {});
+  } catch (e) {
+    console.log("Error:", e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
+
 // Update an existing project
 exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.projId.value;

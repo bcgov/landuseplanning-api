@@ -191,28 +191,14 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       {
         '$lookup': {
           "from": "epic",
-          "localField": "contact",
+          "localField": "project",
           "foreignField": "_id",
-          "as": "contact"
+          "as": "project"
         }
       });
     aggregation.push(
       {
-        "$unwind": "$contact"
-      },
-    );
-    aggregation.push(
-      {
-        '$lookup': {
-          "from": "epic",
-          "localField": "contact.org",
-          "foreignField": "_id",
-          "as": "contact.org"
-        }
-      });
-    aggregation.push(
-      {
-        "$unwind": "$contact.org"
+        "$unwind": "$project"
       },
     );
   }

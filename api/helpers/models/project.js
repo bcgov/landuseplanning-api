@@ -88,6 +88,8 @@ module.exports = require ('../models')('Project', {
     */
    pinsHistory            : [{ type: Mixed, default: {} }],
 
+   groups                   : [{ type: 'ObjectId', ref: 'Group', default: null, index: true }],
+
     // Permissions
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     write                   : [{ type: String, trim: true, default: '["project-system-admin"]' }],
