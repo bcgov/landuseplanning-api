@@ -234,7 +234,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       },
     );
   }
-
+ 
   console.log('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
@@ -251,7 +251,10 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       }
     });
     aggregation.push({
-      "$unwind": "$project"
+      "$unwind": {
+        "path": "$project",
+        "preserveNullAndEmptyArrays": true
+      }
     });
   }
 
