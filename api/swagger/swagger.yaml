@@ -3486,35 +3486,6 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-    get:
-      tags:
-        - user
-      summary: "Get a list of users"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving users."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - project-system-admin
-      parameters:
-        - in: query
-          name: fields
-          description: "User fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *userFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/UserObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
   /user/{userId}:
     x-swagger-router-controller: user
     options:
@@ -3529,40 +3500,6 @@ paths:
           description: "ID of user to get"
           required: true
           type: string
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/UserObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - user
-      summary: "Get a user"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving users."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - project-system-admin
-      parameters:
-        - name: userId
-          in: path
-          description: "ID of user to get"
-          required: true
-          type: string
-        - in: query
-          name: fields
-          description: "User fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *userFields
       responses:
         "200":
           description: "Success"
