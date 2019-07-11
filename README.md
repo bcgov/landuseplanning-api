@@ -84,6 +84,9 @@ Seed local database as described in [seed README](seed/README.md)
 
 Start server by running `npm start` in root
 
+## Developing
+
+See [Code Reuse Strategy](code_reuse_strategy.md)
 
 ## Testing
 
