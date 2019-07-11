@@ -671,7 +671,7 @@ handleGetGroupMembers = async function(groupId, roles, sortBy, pageSize, pageNum
       skip = processedParameters.skip;
       limit = processedParameters.limit;
 
-      fields = ['_id', 'displayName', 'email', 'org'];
+      fields = ['_id', 'displayName', 'email', 'org', 'orgName', 'phoneNumber'];
       try {
         var groupData = await Utils.runDataQuery('User',
           roles,
