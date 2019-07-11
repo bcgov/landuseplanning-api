@@ -5,6 +5,7 @@ module.exports = require ('../models')('User', {
     displayName             : { type: String, trim: true },
     email                   : { type: String, trim: true, default: '' },
     org                     : { type:'ObjectId', ref:'Organization', default:null },
+    orgName                 : { type:String, default: '' },
     title                   : { type:String, default: '' },
     phoneNumber             : { type:String, default: '' },
     salutation              : { type:String, default: '' },
