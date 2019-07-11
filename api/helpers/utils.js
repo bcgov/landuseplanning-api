@@ -145,7 +145,10 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
           }
         },
         populateProject && {
-          "$unwind": "$project"
+          "$unwind": {
+            "path": "$project",
+            "preserveNullAndEmptyArrays": true
+          }
         },
         postQueryPipelineSteps,
         {
