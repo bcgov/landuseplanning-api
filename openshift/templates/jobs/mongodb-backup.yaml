@@ -57,8 +57,10 @@ objects:
                         HEALTHY_STR="$1";
                         MESSAGE="$2";
                         UNHEALTHY_STR="UNHEALTHY";
-                        UNHEALTHY_STR=${1/HEALTHY/$UNHEALTHY_STR};
-                        mv /var/lib/mongodb-backup/$HEALTHY_STR /var/lib/mongodb-backup/$UNHEALTHY_STR;
+                        if [[ $HEALTHY_STR != *"UNHEALTHY"* ]]; then
+                          UNHEALTHY_STR=${1/HEALTHY/$UNHEALTHY_STR};
+                          mv /var/lib/mongodb-backup/$HEALTHY_STR /var/lib/mongodb-backup/$UNHEALTHY_STR;
+                        fi;
                         ALL_BACKUPS_HEALTHY=false;
                         curl -X POST -H "Content-Type: application/json" --data "{\"username\":\"BakBot\",\"icon_emoji\":\":robot:\",\"text\":\"@all EAGLE Mongo backup FAILURE. Backups are currently paused until the issue is fixed. $MESSAGE Please see documentation https://github.com/bcgov/eagle-api/tree/develop/openshift/templates/jobs\"}" $ROCKETCHAT_BACKUP_DB_WEBHOOK;
                       };
@@ -94,7 +96,8 @@ objects:
                       checkDumps;
                       if [ "$ALL_BACKUPS_HEALTHY" = true ]; then
                         DIR=/var/lib/mongodb-backup/dump-`date +%Y%m%d%H%M%S%Z`-HEALTHY;
-                        mongodump --numParallelCollections=1 --username=admin --password=$MONGODB_EAGLE_ADMIN_PASSWORD --host=$MONGODB_EAGLE_SERVICE_HOST --port=$MONGODB_EAGLE_SERVICE_PORT --authenticationDatabase=admin --out=$DIR;
+                        mongodump --numParallelCollections=1 --username=admin --password=$MONGODB_EAGLE_ADMIN_PASSWORD --host=$MONGODB_EAGLE_SERVICE_HOST --port=$MONGODB_EAGLE_SERVICE_PORT --authenticationDatabase=admin -d admin --out=$DIR;
+                        mongodump --numParallelCollections=1 --username=admin --password=$MONGODB_EAGLE_ADMIN_PASSWORD --host=$MONGODB_EAGLE_SERVICE_HOST --port=$MONGODB_EAGLE_SERVICE_PORT --authenticationDatabase=admin -d epic --out=$DIR;
                         checkDumps;
                         if [ "$ALL_BACKUPS_HEALTHY" = true ]; then
                           ls -rdt /var/lib/mongodb-backup/dump-* |
