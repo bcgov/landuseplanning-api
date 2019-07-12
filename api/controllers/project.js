@@ -420,7 +420,7 @@ exports.protectedPinDelete = async function (args, res, next) {
   }
 }
 
-handleGetPins = async function(projectId, roles, sortBy, pageSize, pageNum, username, res) {
+handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, username, res) {
   var skip = null, limit = null, sort = null;
   var count = false;
   var query = {};
@@ -434,7 +434,7 @@ handleGetPins = async function(projectId, roles, sortBy, pageSize, pageNum, user
     // Getting a single project
     _.assignIn(query, { _id: mongoose.Types.ObjectId(projectId.value) });
     var data = await Utils.runDataQuery('Project',
-    roles,
+      roles,
       query,
       fields, // Fields
       null, // sort warmup
@@ -456,10 +456,10 @@ handleGetPins = async function(projectId, roles, sortBy, pageSize, pageNum, user
         total_items: 0
       }]);
     } else {
-      data[0].pins.map( pin => {
+      data[0].pins.map(pin => {
         thePins.push(mongoose.Types.ObjectId(pin));
       })
-      query = { _id: { $in: thePins }}
+      query = { _id: { $in: thePins } }
 
       // Sort
       if (sortBy && sortBy.value) {
@@ -478,7 +478,7 @@ handleGetPins = async function(projectId, roles, sortBy, pageSize, pageNum, user
 
       try {
         var orgData = await Utils.runDataQuery('Organization',
-        roles,
+          roles,
           query,
           fields, // Fields
           null,
@@ -506,7 +506,7 @@ exports.publicPinGet = async function (args, res, next) {
     args.swagger.params.pageNum,
     'public',
     res
-    );
+  );
 }
 
 exports.protectedPinGet = async function (args, res, next) {
@@ -517,7 +517,7 @@ exports.protectedPinGet = async function (args, res, next) {
     args.swagger.params.pageNum,
     args.swagger.params.auth_payload.preferred_username,
     res
-    );
+  );
 }
 
 exports.protectedAddPins = async function (args, res, next) {
@@ -611,10 +611,10 @@ exports.protectedGroupGetMembers = async function (args, res, next) {
     args.swagger.params.pageNum,
     args.swagger.params.auth_payload.preferred_username,
     res
-    );
+  );
 }
 
-handleGetGroupMembers = async function(groupId, roles, sortBy, pageSize, pageNum, username, res) {
+handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNum, username, res) {
   var skip = null, limit = null, sort = null;
   var query = {};
 
@@ -651,10 +651,10 @@ handleGetGroupMembers = async function(groupId, roles, sortBy, pageSize, pageNum
       _.assignIn(query, { "_schemaName": "User" });
 
       let theUsers = [];
-      data[0].members.map( user => {
+      data[0].members.map(user => {
         theUsers.push(mongoose.Types.ObjectId(user));
       })
-      query = { _id: { $in: theUsers }}
+      query = { _id: { $in: theUsers } }
 
       // Sort
       if (sortBy && sortBy.value) {
@@ -701,17 +701,35 @@ exports.protectedAddGroup = async function (args, res, next) {
   defaultLog.info("Incoming new group:", groupName);
 
   var Group = mongoose.model('Group');
-  var doc = new Group({project: mongoose.Types.ObjectId(objId), name: groupName.group });
+  var doc = new Group({ project: mongoose.Types.ObjectId(objId), name: groupName.group });
   ['project-system-admin', 'sysadmin', 'staff'].map(item => {
     doc.read.push(item), doc.write.push(item), doc.delete.push(item)
   });
   // Update who did this?
   doc._addedBy = args.swagger.params.auth_payload.preferred_username;
   doc.save()
-  .then(function (d) {
-    defaultLog.info("Saved new group object:", d);
-    return Actions.sendResponse(res, 200, d);
-  });
+    .then(function (d) {
+      defaultLog.info("Saved new group object:", d);
+      return Actions.sendResponse(res, 200, d);
+    });
+}
+
+exports.protectedGroupPut = async function (args, res, next) {
+  var projId = args.swagger.params.projId.value;
+  var groupId = args.swagger.params.groupId.value;
+  var obj = args.swagger.params.groupObject.value;
+  defaultLog.info("Update Group:", groupId, "from project:", projId);
+
+  var Group = require('mongoose').model('Group');
+  try {
+    var group = await Group.findOneAndUpdate({ _id: groupId }, obj, { upsert: false, new: true });
+    console.log('updating group', group);
+    Utils.recordAction('put', 'Group', args.swagger.params.auth_payload.preferred_username, groupId);
+    return Actions.sendResponse(res, 200, group);
+  } catch (e) {
+    console.log("Error:", e);
+    return Actions.sendResponse(res, 400, e);
+  }
 }
 
 exports.protectedGroupDelete = async function (args, res, next) {
