@@ -98,6 +98,12 @@ definitions:
         type: string
         example: "[['public']]"
         ## TODO: Add more fields here.
+  GroupObject:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool user"
   Project:
     type: string
     description: "Optional fields to return."
@@ -1520,6 +1526,43 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - project
+      summary: "Update a group"
+      operationId: protectedGroupPut
+      description: "Update a group"
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to update"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to update"
+          required: true
+          type: string
+        - name: groupObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/GroupObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
         "403":
           description: "Access Denied"
           schema:
