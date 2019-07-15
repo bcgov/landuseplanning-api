@@ -188,8 +188,7 @@ exports.publicGet = async function (args, res, next) {
         }
       });
     }
-
-    populateReadonlyNatureField(data);
+    serializeProjectVirtuals(data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -272,7 +271,7 @@ exports.protectedGet = async function (args, res, next) {
       true,
       commentPeriodPipeline);
     Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
-    populateReadonlyNatureField(data);
+    serializeProjectVirtuals(data);
     defaultLog.info('Got comment project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -330,27 +329,6 @@ exports.protectedHead = function (args, res, next) {
       }
     });
 };
-
-populateReadonlyNatureField = function (data) {
-  _.each(data, function (item) {
-    if (item) {
-      console.log("item.build = " + item.build);
-      switch (item.build) {
-        case 'new':
-          item.nature = 'New Construction';
-          break;
-        case 'modification':
-          item.nature = 'Modification of Existing';
-          break;
-        case 'dismantling':
-          item.nature = 'Dismantling or Abandonment';
-          break;
-        default:
-          item.nature = 'Unknown nature value';
-      }
-    }
-  });
-}
 
 exports.protectedDelete = function (args, res, next) {
   var projId = args.swagger.params.projId.value;
@@ -1034,4 +1012,14 @@ var addStandardQueryFilters = function (query, args) {
     });
   }
   return query;
+}
+
+var serializeProjectVirtuals = function (data) {
+  var Project = mongoose.model('Project');
+  _.each(data, function (item) {
+    if (item) {
+      var project = new Project(item);
+      item.nature = project.get('nature');
+    }
+  });
 }
