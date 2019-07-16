@@ -16,15 +16,17 @@ function isEmpty(obj) {
   return true;
 }
 
-var generateExpArray = function (field) {
+var generateExpArray = async function (field, roles) {
   var expArray = [];
   if (field && field !== undefined) {
     var queryString = qs.parse(field);
     console.log("queryString:", queryString);
-    Object.keys(queryString).map(item => {
+    await Promise.all(Object.keys(queryString).map(async item => {
       console.log("item:", item, queryString[item]);
-      if (Array.isArray(queryString[item])) {
-        // Arrays will always be ors
+      if (item === 'pcp') {
+        await handlePCPItem(roles, expArray, queryString[item]);
+      } else if (Array.isArray(queryString[item])) {
+        // Arrays are a list of options so will always be ors
         var orArray = [];
         queryString[item].map(entry => {
           orArray.push(getConvertedValue(item, entry));
@@ -33,7 +35,7 @@ var generateExpArray = function (field) {
       } else {
         expArray.push(getConvertedValue(item, queryString[item]));
       }
-    })
+    }));
   }
   console.log("expArray:", expArray);
   return expArray;
@@ -66,6 +68,72 @@ var getConvertedValue = function (item, entry) {
   }
 }
 
+var handlePCPItem = async function(roles, expArray, value) {
+  if (Array.isArray(value)) {
+    // Arrays are a list of options so will always be ors
+    var orArray = [];
+    await Promise.all(value.map(async entry => {
+      orArray.push(await getPCPValue(roles, entry));
+    }));
+    expArray.push({ $or: orArray });
+  } else {
+    expArray.push(await getPCPValue(roles, value));
+  }
+}
+
+var getPCPValue = async function(roles, entry) {
+  console.log('pcp: ', entry);
+
+  var query = null;
+  var now = new Date();
+
+  switch (entry) {
+    case 'pending':
+      var in7days = new Date();
+      in7days.setDate(now.getDate() + 7);
+
+      query = {
+        _schemaName: 'CommentPeriod',
+        $and: [
+          { dateStarted: { $gt: now }},
+          { dateStarted: { $lte: in7days }}
+        ]
+      };
+      break;
+
+    case 'open':
+      query = {
+        _schemaName: 'CommentPeriod',
+        $and: [
+          { dateStarted: { $lte: now }},
+          { dateCompleted: { $gt: now }}
+        ]
+      };
+      break;
+
+    case 'closed':
+      query = {
+        _schemaName: 'CommentPeriod',
+        dateCompleted: { $lt: now }
+      };
+      break;
+
+    default:
+      console.log('Unknown PCP entry');
+  }
+
+  var pcp = {};
+
+  if (query) {
+    var data = await Utils.runDataQuery('CommentPeriod', roles, query, ['project'], null, null, null, null, false, null);
+    var ids = _.map(data, 'project');
+    pcp = { _id: { $in: ids }};
+  }
+
+  console.log('pcp', pcp);
+  return pcp;
+}
+
 var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
   var properties = undefined;
   if (project) {
@@ -79,10 +147,10 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
   }
 
   // query modifiers
-  var andExpArray = generateExpArray(and);
+  var andExpArray = await generateExpArray(and, roles);
 
   // filters
-  var orExpArray = generateExpArray(or);
+  var orExpArray = await generateExpArray(or, roles);
 
   var modifier = {};
   if (andExpArray.length > 0 && orExpArray.length > 0) {
@@ -220,7 +288,7 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
       },
     );
   }
- 
+
   console.log('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
