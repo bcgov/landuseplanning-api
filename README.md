@@ -55,12 +55,11 @@ We use a version manager so as to allow concurrent versions of node and other so
 Run the following commands:
 ```
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-asdf install nodejs 8.16.0
 asdf reshim nodejs
 npm i -g yarn
 yarn install
 ```
-
+We use a config file for asdf called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
 
 Acquire a dump of the database from one of the live environments.  
 
