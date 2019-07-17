@@ -50,16 +50,27 @@ Check the swagger-ui on `http://localhost:3000/api/docs/`
 
 ## Initial Setup
 
-We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.
+We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  asdf uses a config file called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
 
 Run the following commands:
 ```
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
+```
+
+Next open .tool-versions and take the node version there and use it in the following command so that that specific version of node is present on your local machine for asdf to switch to.  Replace the "x" characters in the following command with what's in .tool-versions.
+
+```
+asdf install nodejs x.xx.x
+```
+
+Then run the following commands every time you need to switch npm versions in a project.
+
+```
 asdf reshim nodejs
 npm i -g yarn
 yarn install
 ```
-We use a config file for asdf called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
+
 
 Acquire a dump of the database from one of the live environments.  
 
