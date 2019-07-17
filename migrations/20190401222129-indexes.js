@@ -48,7 +48,8 @@ exports.up = function(db) {
                 type: 4000,
                 documentAuthor: 3000,
                 datePosted: 2500,
-                dateUploaded: 2000
+                dateUploaded: 2000,
+                orgName: 1
             },
             name: "searchIndex_1"
         }
