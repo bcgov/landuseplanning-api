@@ -1,17 +1,8 @@
 [
-<<<<<<< HEAD
   {
     "username": "admin",
     "password": "admin",
     "displayName": "LUP Admin",
     "roles": ["sysadmin", "public"]
   }
-=======
-    {
-        "username": "admin",
-        "password": "admin",
-        "displayName": "Eagle Admin",
-        "roles": ["sysadmin", "public"]
-    }
->>>>>>> eagle/develop
 ]
