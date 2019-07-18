@@ -17,7 +17,7 @@ var bodyParser    = require('body-parser');
 var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
                     + '/'
-                    + (process.env.MONGODB_DATABASE || 'epic');
+                    + (process.env.MONGODB_DATABASE || 'lup-prod');
 var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
 
