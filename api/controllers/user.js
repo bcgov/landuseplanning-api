@@ -3,72 +3,98 @@ var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
+var Utils = require('../helpers/utils');
 
 exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 }
 
 //  Create a new user
-exports.protectedPost = function (args, res, next) {
+exports.protectedPost = async function (args, res, next) {
   var obj = args.swagger.params.user.value;
   defaultLog.info("Incoming new object:", obj);
-  console.log("Incoming updated object:", obj);
 
   var User = mongoose.model('User');
-  var user = new User(obj);
+  var user = new User({
+    firstName: obj.firstName,
+    middleName: obj.middleName,
+    lastName: obj.lastName,
+    displayName: obj.displayName,
+    email: obj.email,
+    org: obj.org,
+    orgName: obj.orgName,
+    title: obj.title,
+    phoneNumber: obj.phoneNumber,
+    salutation: obj.salutation,
+    department: obj.department,
+    faxNumber: obj.faxNumber,
+    cellPhoneNumber: obj.cellPhoneNumber,
+    address1: obj.address1,
+    address2: obj.address2,
+    city: obj.city,
+    province: obj.province,
+    country: obj.country,
+    postalCode: obj.postalCode,
+    notes: obj.notes,
+    read: ['staff', 'sysadmin'],
+    write: ['staff', 'sysadmin'],
+    delete: ['staff', 'sysadmin']
+  });
 
   // Make the user's password salted and store that instead of the actual password.
   user = auth.setPassword(user);
 
-  // Define security tag defaults - users not public by default.
-  user.read = ['staff', 'sysadmin'];
-  user.write = ['staff', 'sysadmin'];
-  user.delete = ['staff', 'sysadmin'];
-
-  user.save()
-    .then(function (a) {
-      defaultLog.info("Saved new user object:", a);
-      return Actions.sendResponse(res, 200, a);
-    });
+  try {
+    var u = await user.save();
+    Utils.recordAction('put', 'user', args.swagger.params.auth_payload.preferred_username, u._id);
+    defaultLog.info('Saved new user object:', u);
+    return Actions.sendResponse(res, 200, u);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
 // Update an existing user
-exports.protectedPut = function (args, res, next) {
+exports.protectedPut = async function (args, res, next) {
   var objId = args.swagger.params.userId.value;
+  var obj = args.swagger.params.user.value;
   defaultLog.info("ObjectID:", args.swagger.params.userId.value);
 
-  this.scopes = args.swagger.operation["x-security-scopes"];
-
-  var obj = args.swagger.params.user.value;
-  // NB: Don't strip security tags on protectedPut.  Only sysadmins
-  // Can call this route.
-  // delete obj.tags;
-  defaultLog.info("Incoming updated object:", obj);
-
-  // TODO Temporary: Only let the 'admin' account change usernames and passwords.
-  // Additionally, don't let them update their username.
-  delete obj.username;
-  if (args.swagger.params.auth_payload.username !== 'admin') {
-    delete obj.password;
-  }
-
-  if (obj.password) {
-    obj = auth.setPassword(obj);
-  }
-
-  if (obj.username && obj.username === 'admin' && !_.some(obj.roles, _.method('includes', 'sysadmin'))) {
-    // No way, can't change admin user.
-    return Actions.sendResponse(res, 405, { message: '405: Admin user must have sysadmin role.' });
-  }
-
   var User = require('mongoose').model('User');
-  User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }, function (err, o) {
-    if (o) {
-      defaultLog.info("o:", o);
-      return Actions.sendResponse(res, 200, o);
-    } else {
-      defaultLog.info("Couldn't find that object!");
-      return Actions.sendResponse(res, 404, {});
-    }
-  });
+
+  var user = {
+    firstName: obj.firstName ? obj.firstName : '',
+    middleName: obj.middleName ? obj.middleName : '',
+    lastName: obj.lastName ? obj.lastName : '',
+    displayName: obj.displayName ? obj.displayName : '',
+    email: obj.email ? obj.email : '',
+    org: obj.org ? obj.org : '',
+    orgName: obj.orgName ? obj.orgName : '',
+    title: obj.title ? obj.title : '',
+    phoneNumber: obj.phoneNumber ? obj.phoneNumber : '',
+    salutation: obj.salutation ? obj.salutation : '',
+    department: obj.department ? obj.department : '',
+    faxNumber: obj.faxNumber ? obj.faxNumber : '',
+    cellPhoneNumber: obj.cellPhoneNumber ? obj.cellPhoneNumber : '',
+    address1: obj.address1 ? obj.address1 : '',
+    address2: obj.address2 ? obj.address2 : '',
+    city: obj.city ? obj.city : '',
+    province: obj.province ? obj.province : '',
+    country: obj.country ? obj.country : '',
+    postalCode: obj.postalCode ? obj.postalCode : '',
+    notes: obj.notes ? obj.notes : ''
+  }
+
+  defaultLog.info("Incoming updated object:", user);
+
+  try {
+    var u = await User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
+    Utils.recordAction('put', 'user', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Organization updated:', u);
+    return Actions.sendResponse(res, 200, u);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
 }
