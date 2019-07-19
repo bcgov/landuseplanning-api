@@ -21,7 +21,10 @@ exports.protectedPost = function (args, res, next) {
   user = auth.setPassword(user);
 
   // Define security tag defaults - users not public by default.
-  user.tags = [['sysadmin']];
+  user.read = ['staff', 'sysadmin'];
+  user.write = ['staff', 'sysadmin'];
+  user.delete = ['staff', 'sysadmin'];
+
   user.save()
     .then(function (a) {
       defaultLog.info("Saved new user object:", a);
@@ -51,17 +54,6 @@ exports.protectedPut = function (args, res, next) {
 
   if (obj.password) {
     obj = auth.setPassword(obj);
-  }
-
-  // TODO: Fix this, we need better handling of role selection/updating
-  // For now, we only have 2 roles, we are just munging this to be in multi-
-  // dimensional arrays since our input only passes a single string which is
-  // the new singular role.
-  if (obj.roles === 'public') {
-    obj.roles = [['public']];
-  }
-  if (obj.roles === 'sysadmin') {
-    obj.roles = [['sysadmin']];
   }
 
   if (obj.username && obj.username === 'admin' && !_.some(obj.roles, _.method('includes', 'sysadmin'))) {

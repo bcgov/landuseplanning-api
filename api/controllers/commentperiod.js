@@ -322,7 +322,6 @@ exports.protectedPut = async function (args, res, next) {
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
-    read: ['staff', 'sysadmin']
   };
 
   if (obj.isPublished) {

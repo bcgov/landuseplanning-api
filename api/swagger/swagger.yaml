@@ -3156,7 +3156,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: org
           in: body
@@ -3283,6 +3284,11 @@ paths:
           description: "ID of organization to update"
           required: true
           type: string
+        - name: org
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/OrgObject"
       responses:
         "200":
           description: "Success"
