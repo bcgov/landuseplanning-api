@@ -1,17 +1,42 @@
 ## How to migrate local database
 
-Go into /migrations, and move the changing file OUT of the folder for now, example: 20190411002817-projectDS.js
+### Create migration boilerplate
 
-then run:
+`./node_modules/db-migrate/bin/db-migrate/create myMigrationName`
 
-`./prod-load-db/esm_prod_april_1/dataload.sh && ./node_modules/db-migrate/bin/db-migrate up`
+This will create a date stamped **boilerplate* migration file for you in the `./migrations` directory, such as  *20190625114200-myMigrationName.js* . 
+Modify this file to implement your migration. 
 
-then run:
+### Run a migration
 
-`node migrateDocuments.js`
+` ./node_modules/db-migrate/bin/db-migrate up`
 
-then put 20190411002817-projectDS.js back into the /migrations folder, and re-run:
 
-`./node_modules/db-migrate/bin/db-migrate up`
+### Load dump into db and run migrations (optional)
 
-note that regionCapitalized file is used to capitalize first letter of a region in database.
+
+1. Move your newly generated migration file out of the migrations folder(ie. *20190625114200-myMigrationName.js*). This is to ensure a 
+clean state to test your new migration against.
+
+2. Run the following command to load a dump file and apply all existing migrations:
+
+    1. `cd dumps_folder && mongorestore -d epic some_unzipped_dump/`
+    2. `cd eagle_api_root/ && ./node_modules/db-migrate/bin/db-migrate up`
+    2. `node migrateDocuments.js`
+
+3. Put your new migration file back into the **/migrations** folder and run:
+
+    * `./node_modules/db-migrate/bin/db-migrate up`
+
+### Re-run migration (local testing)
+
+** This won't unclobber data, just allow a rerun of a migration. You may 
+need to dump and restore if the last migration attempt mangled data. **
+
+1. View all migrations applied, in mongo shell
+
+    * `db.migrations.find()`
+
+2. The most recent migration will be at the bottom of the list
+
+    * `db.migrations.deleteOne({ _id: ObjectId(my_most_recent_migrationd_id)})`
