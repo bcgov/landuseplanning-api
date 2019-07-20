@@ -30,7 +30,7 @@ exports.protectedPost = async function (args, res, next) {
     address1: obj.address1,
     address2: obj.address2,
     companyType: obj.companyType,
-    parentCompany: obj.parentCompany,
+    parentCompany: mongoose.Types.ObjectId.isValid(obj.parentCompany) ? mongoose.Types.ObjectId(obj.parentCompany) : null,
     companyLegal: obj.companyLegal,
     company: obj.company,
     read: ['staff', 'sysadmin'],
@@ -70,7 +70,7 @@ exports.protectedPut = async function (args, res, next) {
     address1: obj.address1 ? obj.address1 : '',
     address2: obj.address2 ? obj.address2 : '',
     companyType: obj.companyType ? obj.companyType : '',
-    parentCompany: obj.parentCompany ? obj.parentCompany : '',
+    parentCompany: mongoose.Types.ObjectId.isValid(obj.parentCompany) ? mongoose.Types.ObjectId(obj.parentCompany) : null,
     companyLegal: obj.companyLegal ? obj.companyLegal : '',
     company: obj.company ? obj.company : ''
   };

@@ -13,7 +13,7 @@ module.exports = require('../models')('Organization', {
     address1: { type: String, default: '' },
     address2: { type: String, default: '' },
     companyType: { type: String, default: '' },
-    parentCompany: { type: String, default: '' },
+    parentCompany: { type: 'ObjectId', ref: 'Organization', default: null, index: true },
     companyLegal: { type: String, default: '' },
     company: { type: String, default: '' },
 
