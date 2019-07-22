@@ -62,7 +62,7 @@ exports.publicGet = async function (args, res, next) {
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {};
 
-  if (args.swagger.params.commentPeriodId) {
+  if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
     query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
   }
   if (args.swagger.params.project && args.swagger.params.project.value) {
@@ -99,7 +99,7 @@ exports.publicGet = async function (args, res, next) {
       null, // limit
       false); // count
 
-    Utils.recordAction('get', 'commentPeriod', 'public');
+    Utils.recordAction('Get', 'CommentPeriod', 'public', args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value ? args.swagger.params.commentPeriodId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -137,7 +137,7 @@ exports.protectedHead = async function (args, res, next) {
       null, // limit
       true); // count
 
-    Utils.recordAction('head', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('Head', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value ? args.swagger.params.commentPeriodId.value : null);
 
     // /api/commentperiod/ route, return 200 OK with 0 items if necessary
     if (!(args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) || (data && data.length > 0)) {
@@ -191,6 +191,7 @@ exports.protectedSummary = async function (args, res, next) {
         null, // skip
         null, // limit
         true); // count
+      Utils.recordAction('Summary', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value ? args.swagger.params.commentPeriodId.value : null);
       console.log("RES:", res);
       if (res && res[0]) {
         summary[item] = res[0]['total_items'];
@@ -213,7 +214,7 @@ exports.protectedGet = async function (args, res, next) {
   var query = {}, sort = null, skip = null, limit = null, count = false;
 
   // Build match query if on CommentPeriodId route
-  if (args.swagger.params.commentPeriodId) {
+  if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
     defaultLog.info('Comment period id:', args.swagger.params.commentPeriodId.value);
     query = Utils.buildQuery('_id', args.swagger.params.commentPeriodId.value, query);
   }
@@ -256,7 +257,7 @@ exports.protectedGet = async function (args, res, next) {
       skip,   // skip
       limit,  // limit
       count); // count
-    Utils.recordAction('get', 'commentPeriod', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('Get', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value ? args.swagger.params.commentPeriodId.value : null);
     defaultLog.info('Got comment period(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -296,7 +297,7 @@ exports.protectedPost = async function (args, res, next) {
 
   try {
     var cp = await commentPeriod.save();
-    Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
+    Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
     defaultLog.info('Saved new comment period object:', cp);
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
@@ -332,7 +333,7 @@ exports.protectedPut = async function (args, res, next) {
 
   try {
     var cp = await CommentPeriod.update({ _id: objId }, { $set: commentPeriod });
-    Utils.recordAction('put', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment period updated:', cp);
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
@@ -349,7 +350,7 @@ exports.protectedDelete = async function (args, res, next) {
   var CommentPeriod = mongoose.model('CommentPeriod');
   try {
     await CommentPeriod.findOneAndRemove({ _id: objId });
-    Utils.recordAction('delete', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Delete', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -369,7 +370,7 @@ exports.protectedPublish = async function (args, res, next) {
     defaultLog.info('Comment period object:', commentPeriod);
     // Add public to read array.
     var published = await Actions.publish(commentPeriod);
-    Utils.recordAction('publish', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Publish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, published);
   } catch (e) {
     return Actions.sendResponse(res, 400, e);
@@ -387,7 +388,7 @@ exports.protectedUnPublish = async function (args, res, next) {
     defaultLog.info('Comment period object:', commentPeriod);
     // Remove public from read array.
     var unpublished = await Actions.unPublish(commentPeriod);
-    Utils.recordAction('unPublish', 'commentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Unpublish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, unpublished);
   } catch (e) {
     defaultLog.info('Error:', e);
