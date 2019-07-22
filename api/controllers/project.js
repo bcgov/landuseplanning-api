@@ -94,7 +94,7 @@ exports.publicHead = async function (args, res, next) {
 
   var requestedFields = getSanitizedFields(args.swagger.params.fields.value);
 
-  if (args.swagger.params.projId) {
+  if (args.swagger.params.projId && args.swagger.params.projId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
   } else {
@@ -123,7 +123,7 @@ exports.publicHead = async function (args, res, next) {
       commentPeriodPipeline);
     // /api/comment/ route, return 200 OK with 0 items if necessary
     if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
-      //Utils.recordAction('head', 'project', args.swagger.params.auth_payload.preferred_username);
+      Utils.recordAction('Head', 'Project', 'public', args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
       defaultLog.info('Got project head:', data);
       res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
       return Actions.sendResponse(res, 200, data);
@@ -146,7 +146,7 @@ exports.publicGet = async function (args, res, next) {
   tagList.push('dateAdded');
   tagList.push('dateCompleted');
 
-  if (args.swagger.params.projId) {
+  if (args.swagger.params.projId && args.swagger.params.projId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
   } else {
@@ -189,6 +189,7 @@ exports.publicGet = async function (args, res, next) {
       });
     }
     serializeProjectVirtuals(data);
+    Utils.recordAction('Get', 'Project', 'public', args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -214,7 +215,7 @@ exports.protectedGet = async function (args, res, next) {
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
-  if (args.swagger.params.projId) {
+  if (args.swagger.params.projId && args.swagger.params.projId.value) {
     // Getting a single project
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
@@ -270,7 +271,7 @@ exports.protectedGet = async function (args, res, next) {
       null,
       true,
       commentPeriodPipeline);
-    Utils.recordAction('get', 'project', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('Get', 'Project', args.swagger.params.auth_payload.preferred_username, args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
     serializeProjectVirtuals(data);
     defaultLog.info('Got comment project(s):', data);
     return Actions.sendResponse(res, 200, data);
@@ -290,7 +291,7 @@ exports.protectedHead = function (args, res, next) {
   tagList.push('_id');
   tagList.push('tags');
 
-  if (args.swagger.params.projId) {
+  if (args.swagger.params.projId && args.swagger.params.projId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.projId.value, query);
   } else {
     try {
@@ -322,6 +323,7 @@ exports.protectedHead = function (args, res, next) {
     .then(function (data) {
       // /api/comment/ route, return 200 OK with 0 items if necessary
       if (!(args.swagger.params.projId && args.swagger.params.projId.value) || (data && data.length > 0)) {
+        Utils.recordAction('Head', 'Project', args.swagger.params.auth_payload.preferred_username, args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
         res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
         return Actions.sendResponse(res, 200, data);
       } else {
@@ -342,6 +344,7 @@ exports.protectedDelete = function (args, res, next) {
       // Set the deleted flag.
       Actions.delete(o)
         .then(function (deleted) {
+          Utils.recordAction('Delete', 'Project', args.swagger.params.auth_payload.preferred_username, projId);
           // Deleted successfully
           return Actions.sendResponse(res, 200, deleted);
         }, function (err) {
@@ -371,6 +374,7 @@ exports.protectedPost = function (args, res, next) {
   project.createdDate = Date.now();
   project.save()
     .then(function (theProject) {
+      Utils.recordAction('Post', 'Project', args.swagger.params.auth_payload.preferred_username, theProject._id);
       return Actions.sendResponse(res, 200, theProject);
     })
     .catch(function (err) {
@@ -391,6 +395,7 @@ exports.protectedPinDelete = async function (args, res, next) {
       { $pull: { pins: { $in: [mongoose.Types.ObjectId(pinId)] } } },
       { new: true }
     );
+    Utils.recordAction('Delete', 'Pin', args.swagger.params.auth_payload.preferred_username, pinId);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info("Couldn't find that object!");
@@ -408,7 +413,7 @@ handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, use
   var fields = ['_id', 'pins', 'name', 'website', 'province'];
 
   // First get the project
-  if (projectId) {
+  if (projectId && projectId.value) {
     // Getting a single project
     _.assignIn(query, { _id: mongoose.Types.ObjectId(projectId.value) });
     var data = await Utils.runDataQuery('Project',
@@ -464,7 +469,7 @@ handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, use
           skip, // skip
           limit, // limit
           true); // count
-        Utils.recordAction('get', 'organization', username);
+        Utils.recordAction('Get', 'Pin', username, projectId && projectId.value ? projectId.value : null);
         return Actions.sendResponse(res, 200, orgData);
       } catch (e) {
         defaultLog.info('Error:', e);
@@ -522,6 +527,7 @@ exports.protectedAddPins = async function (args, res, next) {
     { new: true }
   );
   if (doc) {
+    Utils.recordAction('Add', 'Pin', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, doc);
   } else {
     defaultLog.info("Couldn't find that object!");
@@ -542,6 +548,7 @@ exports.protectedDeleteGroupMembers = async function (args, res, next) {
       { $pull: { members: { $in: [mongoose.Types.ObjectId(memberId)] } } },
       { new: true }
     );
+    Utils.recordAction('Delete', 'GroupMember', args.swagger.params.auth_payload.preferred_username, groupId);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info("Couldn't find that object!");
@@ -574,6 +581,7 @@ exports.protectedAddGroupMembers = async function (args, res, next) {
     { new: true }
   );
   if (doc) {
+    Utils.recordAction('Add', 'GroupMember', args.swagger.params.auth_payload.preferred_username, groupId);
     return Actions.sendResponse(res, 200, doc);
   } else {
     defaultLog.info("Couldn't find that object!");
@@ -601,7 +609,7 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
   var fields = ['_id', 'members', 'name', 'project'];
 
   // First get the group
-  if (groupId) {
+  if (groupId && groupId.value) {
     // Getting a single group
     _.assignIn(query, { _id: mongoose.Types.ObjectId(groupId.value) });
 
@@ -660,8 +668,7 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
           skip, // skip
           limit, // limit
           false); // count
-        Utils.recordAction('get', 'GroupUsers', username);
-        console.log('YEAH', groupData);
+        Utils.recordAction('Get', 'GroupMember', username, groupId && groupId.value ? groupId : null);
         return Actions.sendResponse(res, 200, groupData);
       } catch (e) {
         defaultLog.info('Error:', e);
@@ -687,6 +694,7 @@ exports.protectedAddGroup = async function (args, res, next) {
   doc._addedBy = args.swagger.params.auth_payload.preferred_username;
   doc.save()
     .then(function (d) {
+      Utils.recordAction('Add', 'Group', args.swagger.params.auth_payload.preferred_username, objId);
       defaultLog.info("Saved new group object:", d);
       return Actions.sendResponse(res, 200, d);
     });
@@ -701,8 +709,7 @@ exports.protectedGroupPut = async function (args, res, next) {
   var Group = require('mongoose').model('Group');
   try {
     var group = await Group.findOneAndUpdate({ _id: groupId }, obj, { upsert: false, new: true });
-    console.log('updating group', group);
-    Utils.recordAction('put', 'Group', args.swagger.params.auth_payload.preferred_username, groupId);
+    Utils.recordAction('Put', 'Group', args.swagger.params.auth_payload.preferred_username, groupId);
     return Actions.sendResponse(res, 200, group);
   } catch (e) {
     console.log("Error:", e);
@@ -719,7 +726,7 @@ exports.protectedGroupDelete = async function (args, res, next) {
   try {
     var doc = await Group.findOneAndRemove({ _id: groupId });
     console.log('deleting group', doc);
-    Utils.recordAction('delete', 'Group', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Delete', 'Group', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
     console.log("Error:", e);
@@ -789,7 +796,7 @@ exports.protectedPut = async function (args, res, next) {
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
   // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
   if (doc) {
-    console.log("o:", doc);
+    Utils.recordAction('Put', 'Project', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, doc);
   } else {
     defaultLog.info("Couldn't find that object!");
@@ -808,6 +815,7 @@ exports.protectedPublish = function (args, res, next) {
       defaultLog.info("o:", o);
       return Actions.publish(o)
         .then(function (published) {
+          Utils.recordAction('Publish', 'Project', args.swagger.params.auth_payload.preferred_username, objId);
           return Actions.sendResponse(res, 200, published);
         })
         .catch(function (err) {
@@ -829,6 +837,7 @@ exports.protectedUnPublish = function (args, res, next) {
       defaultLog.info("o:", o);
       return Actions.unPublish(o)
         .then(function (unpublished) {
+          Utils.recordAction('Put', 'Unpublish', args.swagger.params.auth_payload.preferred_username, objId);
           return Actions.sendResponse(res, 200, unpublished);
         })
         .catch(function (err) {

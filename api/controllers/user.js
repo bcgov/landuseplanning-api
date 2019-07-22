@@ -46,7 +46,7 @@ exports.protectedPost = async function (args, res, next) {
 
   try {
     var u = await user.save();
-    Utils.recordAction('put', 'user', args.swagger.params.auth_payload.preferred_username, u._id);
+    Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, u._id);
     defaultLog.info('Saved new user object:', u);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {
@@ -90,7 +90,7 @@ exports.protectedPut = async function (args, res, next) {
 
   try {
     var u = await User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
-    Utils.recordAction('put', 'user', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Organization updated:', u);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {

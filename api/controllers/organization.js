@@ -40,7 +40,7 @@ exports.protectedPost = async function (args, res, next) {
 
   try {
     var org = await organization.save();
-    Utils.recordAction('put', 'organization', args.swagger.params.auth_payload.preferred_username, org._id);
+    Utils.recordAction('Post', 'Organization', args.swagger.params.auth_payload.preferred_username, org._id);
     defaultLog.info('Saved new organization object:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
@@ -79,7 +79,7 @@ exports.protectedPut = async function (args, res, next) {
 
   try {
     var org = await Organization.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
-    Utils.recordAction('put', 'organization', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Put', 'Organization', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Organization updated:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
@@ -96,8 +96,8 @@ exports.protectedPublish = function (args, res, next) {
   var Organization = require('mongoose').model('Organization');
   Organization.findOne({ _id: objId }, function (err, o) {
     if (o) {
+      Utils.recordAction('Publish', 'Organization', args.swagger.params.auth_payload.preferred_username, objId);
       defaultLog.info("o:", o);
-
       // Add public to the tag of this obj.
       Actions.publish(o)
         .then(function (published) {
@@ -125,6 +125,7 @@ exports.protectedUnPublish = function (args, res, next) {
       // Remove public to the tag of this obj.
       Actions.unPublish(o)
         .then(function (unpublished) {
+          Utils.recordAction('Unpublish', 'Organization', args.swagger.params.auth_payload.preferred_username, objId);
           // UnPublished successfully
           return Actions.sendResponse(res, 200, unpublished);
         }, function (err) {

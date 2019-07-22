@@ -1,9 +1,9 @@
-var auth        = require("../helpers/auth");
-var _           = require('lodash');
-var defaultLog  = require('winston').loggers.get('default');
-var mongoose    = require('mongoose');
-var Actions     = require('../helpers/actions');
-var Utils       = require('../helpers/utils');
+var auth = require("../helpers/auth");
+var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('default');
+var mongoose = require('mongoose');
+var Actions = require('../helpers/actions');
+var Utils = require('../helpers/utils');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
@@ -28,16 +28,16 @@ exports.protectedOptions = function (args, res, rest) {
 
 exports.publicGet = async function (args, res, next) {
   var fields = ['_schemaName',
-                'dateUpdated',
-                'dateAdded',
-                'pinned',
-                'documentUrl',
-                'contentUrl',
-                'type',
-                'active',
-                'project',
-                'content',
-                'headline'];
+    'dateUpdated',
+    'dateAdded',
+    'pinned',
+    'documentUrl',
+    'contentUrl',
+    'type',
+    'active',
+    'project',
+    'content',
+    'headline'];
   var RecentActivity = mongoose.model('RecentActivity');
   var query = {};
   var sort = {
@@ -47,24 +47,22 @@ exports.publicGet = async function (args, res, next) {
 
   _.assignIn(query, { '_schemaName': 'RecentActivity', active: true, pinned: true });
 
-  console.log(query);
-
   try {
     var data = await Utils.runDataQuery('RecentActivity',
-                                        ['public'],
-                                        query,
-                                        theFields, // Fields
-                                        null, // sort warmup
-                                        sort, // sort
-                                        null, // skip
-                                        4, // limit
-                                        false,
-                                        null,
-                                        false,
-                                        false,
-                                        true); // count
+      ['public'],
+      query,
+      theFields, // Fields
+      null, // sort warmup
+      sort, // sort
+      null, // skip
+      4, // limit
+      false,
+      null,
+      false,
+      false,
+      true); // count
 
-    Utils.recordAction('get', 'recentActivity', 'public');
+    Utils.recordAction('Get', 'RecentActivity', 'public');
 
     if (data.length > 3) {
       // we're done getting enough for the front end. Top 4 only.
@@ -75,18 +73,18 @@ exports.publicGet = async function (args, res, next) {
       _.assignIn(query, { '_schemaName': 'RecentActivity', active: true, pinned: false });
 
       var dataNext = await Utils.runDataQuery('RecentActivity',
-                                          ['public'],
-                                          query,
-                                          theFields, // Fields
-                                          null, // sort warmup
-                                          sort, // sort
-                                          null, // skip
-                                          4, // limit
-                                          false,
-                                          null,
-                                          false,
-                                          false,
-                                          true); // count
+        ['public'],
+        query,
+        theFields, // Fields
+        null, // sort warmup
+        sort, // sort
+        null, // skip
+        4, // limit
+        false,
+        null,
+        false,
+        false,
+        true); // count
 
       dataNext.slice(0, 4 - data.length).map(item => {
         data.push(item);
@@ -119,9 +117,10 @@ exports.protectedDelete = function (args, res, next) {
   // Straight delete, don't isDelete=true them.
   RecentActivity.remove(query, function (err, data) {
     if (data) {
-        return Actions.sendResponse(res, 200, data);
+      Utils.recordAction('Delete', 'RecentActivity', args.swagger.params.auth_payload.preferred_username, data._id);
+      return Actions.sendResponse(res, 200, data);
     } else {
-        return Actions.sendResponse(res, 400, err);
+      return Actions.sendResponse(res, 400, err);
     }
   });
 }
@@ -148,7 +147,7 @@ exports.protectedPost = async function (args, res, next) {
   recentActivity._addedBy = args.swagger.params.auth_payload.preferred_username;
   try {
     var rec = await recentActivity.save();
-    Utils.recordAction('post', 'recentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
+    Utils.recordAction('Post', 'RecentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
     defaultLog.info('Saved new RecentActivity object:', rec);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
@@ -175,8 +174,8 @@ exports.protectedPut = async function (args, res, next) {
 
   var RecentActivity = require('mongoose').model('RecentActivity');
   try {
-    var rec = await RecentActivity.findOneAndUpdate({_id: objId}, obj, {upsert:false});
-    Utils.recordAction('put', 'recentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
+    var rec = await RecentActivity.findOneAndUpdate({ _id: objId }, obj, { upsert: false });
+    Utils.recordAction('Put', 'RecentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
