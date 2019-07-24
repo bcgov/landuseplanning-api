@@ -17,7 +17,7 @@ var definition = {
   projectLead             : { type: String, default: '' },
   projectLeadEmail        : { type: String, default: '' },
   projectLeadPhone        : { type: String, default: '' },
-  // proponent               : { type:'ObjectId', default:null },
+  proponent               : { type:'ObjectId', default:null },
   region                  : { type: String, default: '' },
   responsibleEPD          : { type: String, default: '' },
   responsibleEPDEmail     : { type: String, default: '' },

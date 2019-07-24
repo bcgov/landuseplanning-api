@@ -366,6 +366,7 @@ exports.protectedPost = function (args, res, next) {
 
   var Project = mongoose.model('Project');
   var project = new Project(obj);
+  project.proponent = mongoose.Types.ObjectId(obj.proponent)
   // Define security tag defaults
   project.read = ['sysadmin', 'staff'];
   project.write = ['sysadmin', 'staff'];
@@ -788,8 +789,7 @@ exports.protectedPut = async function (args, res, next) {
     console.log("Missing:", e);
     // fall through
   }
-  // Not doing people or proponent yet.
-  // obj.proponent;
+  obj.proponent = projectObj.proponent;
 
   console.log("Updating with:", obj);
   console.log("--------------------------");
