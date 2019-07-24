@@ -325,8 +325,11 @@ exports.protectedPut = async function (args, res, next) {
     updatedBy: args.swagger.params.auth_payload.preferred_username,
   };
 
+  // TODO: Revise this so we are not explicitly setting permissions
   if (obj.isPublished) {
-    commentPeriod.read.push('public');
+    commentPeriod['read'] = ['public', 'staff', 'sysadmin'];
+  } else {
+    commentPeriod['read'] = ['staff', 'sysadmin'];
   }
 
   defaultLog.info('Incoming updated object:', commentPeriod);
