@@ -52,7 +52,7 @@ exports.protectedOptions = function (args, res, rest) {
 exports.publicGet = async function (args, res, next) {
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId.value && args.swagger.params.docId.value) {
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
@@ -150,7 +150,8 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              doc.documentAuthor = 'public';
+              // TODO: We should set documentAuthor to something.
+              // doc.documentAuthor = 'public';
               // Update who did this?
               console.log('unlink');
               doc.save()
