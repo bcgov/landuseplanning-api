@@ -549,7 +549,7 @@ exports.protectedDeleteGroupMembers = async function (args, res, next) {
       { $pull: { members: { $in: [mongoose.Types.ObjectId(memberId)] } } },
       { new: true }
     );
-    Utils.recordAction('Delete', 'GroupMember', args.swagger.params.auth_payload.preferred_username, groupId);
+    Utils.recordAction('Delete', 'GroupMember', args.swagger.params.auth_payload.preferred_username, data._id);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info("Couldn't find that object!");
@@ -582,7 +582,7 @@ exports.protectedAddGroupMembers = async function (args, res, next) {
     { new: true }
   );
   if (doc) {
-    Utils.recordAction('Add', 'GroupMember', args.swagger.params.auth_payload.preferred_username, groupId);
+    Utils.recordAction('Add', 'GroupMember', args.swagger.params.auth_payload.preferred_username, doc._id);
     return Actions.sendResponse(res, 200, doc);
   } else {
     defaultLog.info("Couldn't find that object!");
@@ -669,7 +669,7 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
           skip, // skip
           limit, // limit
           false); // count
-        Utils.recordAction('Get', 'GroupMember', username, groupId && groupId.value ? groupId : null);
+        Utils.recordAction('Get', 'GroupMember', username);
         return Actions.sendResponse(res, 200, groupData);
       } catch (e) {
         defaultLog.info('Error:', e);
