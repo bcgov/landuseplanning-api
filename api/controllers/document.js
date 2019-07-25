@@ -150,10 +150,7 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              // TODO: We should set documentAuthor to something.
-              // doc.documentAuthor = 'public';
-              // Update who did this?
-              console.log('unlink');
+              doc.documentAuthor = upfile.documentAuthor;
               doc.save()
                 .then(async function (d) {
                   defaultLog.info("Saved new document object:", d._id);
