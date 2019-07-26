@@ -150,7 +150,8 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              doc.documentAuthor = upfile.documentAuthor;
+              doc.documentAuthor = mongoose.Types.ObjectId(args.body.documentAuthor);
+
               doc.save()
                 .then(async function (d) {
                   defaultLog.info("Saved new document object:", d._id);
