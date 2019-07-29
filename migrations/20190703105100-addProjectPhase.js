@@ -14,7 +14,7 @@ exports.setup = function(options, seedLink) {
   seed = seedLink;
 };
 
-let listItems = require(process.cwd() + '/migrations_data/new_project_phase_list_items');
+let listItems = require(process.cwd() + '/migrations_data/newProjectPhaseListItems');
 
 exports.up = function(db) {
   let mClient;
