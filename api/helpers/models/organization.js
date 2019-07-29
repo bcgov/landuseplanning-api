@@ -1,6 +1,6 @@
 module.exports = require('../models')('Organization', {
     _schemaName: { type: String, default: 'Organization' },
-    addedBy: { type: 'ObjectId', ref: 'User', default: null, index: true },
+    addedBy: { type: String, default: '' },
     description: { type: String, default: '' },
     name: { type: String, default: '' },
     updatedBy: { type: String, default: '' },
