@@ -38,6 +38,7 @@ module.exports = require ('../models')('Document', {
     type             : { type:'ObjectId', default:null },
     description      : { type:String, default:'' },
     documentAuthor   : { type:'ObjectId', default: null },
+    projectPhase     : { type:'ObjectId', default: null },
     eaoStatus        : { type: String, default: '' },
     keywords         : { type: String, default: '' },
 

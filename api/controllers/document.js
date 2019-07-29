@@ -38,6 +38,7 @@ var getSanitizedFields = function (fields) {
       'type',
       'documentAuthor',
       'milestone',
+      'projectPhase',
       'description',
       'keywords',
       'isPublished',
@@ -527,6 +528,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
               doc.description = args.swagger.params.description.value;
+              doc.projectPhase = mongoose.Types.ObjectId(args.swagger.params.projectPhase.value);
               // Update who did this?
               console.log('unlink');
               doc.save()
@@ -610,6 +612,7 @@ exports.protectedPut = async function (args, res, next) {
   obj.milestone = args.swagger.params.milestone ? mongoose.Types.ObjectId(args.swagger.params.milestone.value) : null;
   obj.type = args.swagger.params.type ? mongoose.Types.ObjectId(args.swagger.params.type.value) : null;
   obj.documentAuthor = args.swagger.params.documentAuthor ? mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value) : null;
+  obj.projectPhase = args.swagger.params.projectPhase ? mongoose.Types.ObjectId(args.swagger.params.projectPhase.value) : null;
 
   obj.dateUploaded = args.swagger.params.dateUploaded.value;
   obj.datePosted = args.swagger.params.datePosted.value;
