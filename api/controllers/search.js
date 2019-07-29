@@ -25,6 +25,8 @@ var generateExpArray = async function (field, roles) {
       console.log("item:", item, queryString[item]);
       if (item === 'pcp') {
         await handlePCPItem(roles, expArray, queryString[item]);
+      } else if (item === 'decisionDateStart' || item === 'decisionDateEnd') {
+        handleDateItem(expArray, item, queryString[item]);
       } else if (Array.isArray(queryString[item])) {
         // Arrays are a list of options so will always be ors
         var orArray = [];
@@ -132,6 +134,21 @@ var getPCPValue = async function (roles, entry) {
 
   console.log('pcp', pcp);
   return pcp;
+}
+
+var handleDateItem = function(expArray, item, entry) {
+  var date = new Date(entry);
+
+  // Validate: valid date?
+  if (!isNaN(date)) {
+    if (item === 'decisionDateStart') {
+      var start = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+      expArray.push({ decisionDate: { $gte: start } });
+    } else if (item === 'decisionDateEnd') {
+      var end = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+      expArray.push({ decisionDate: { $lt: end } });
+    }
+  }
 }
 
 var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
