@@ -29,7 +29,7 @@ source ~/.bash_profile
 env
 ```
 
-The above env command will show you your environment variables and allow you to check that the correct values are present.
+The above `env` command will show you your environment variables and allow you to check that the correct values are present.
 
 Start the server by running `npm start`
 
@@ -50,31 +50,15 @@ Check the swagger-ui on `http://localhost:3000/api/docs/`
 
 ## Initial Setup
 
-We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  asdf uses a config file called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
+### Node and NPM 
 
-Run the following commands:
-```
-asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-```
+We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  Installation of *asdf* and required node packages is covered [here](https://github.com/bcgov/eagle-common-components/dev_guides/.md)
 
-Next open .tool-versions and take the node version there and use it in the following command so that that specific version of node is present on your local machine for asdf to switch to.  Replace the "x" characters in the following command with what's in .tool-versions.
+### Database 
 
-```
-asdf install nodejs x.xx.x
-```
+If possible, acquire a dump of the database from one of the live environments.  
 
-Then run the following commands every time you need to switch npm versions in a project.
-
-```
-asdf reshim nodejs
-npm i -g yarn
-yarn install
-```
-
-
-Acquire a dump of the database from one of the live environments.  
-
-Make sure you don't have an old copy (careful, this is destructive):
+To make sure you don't have an existing old copy (careful, this is destructive):
 
 ```
 mongo
@@ -82,7 +66,21 @@ use epic
 db.dropDatabase()
 ```
 
-Restore the database dump you have from the old epic system.
+#### Load database dump:
+
+1. Download and unzip archived dump file.
+2. Restore the dump into your local mongo:
+
+```
+mongorestore -d epic epic/
+```
+
+#### Seed with generated data:
+
+Described in [seed README](seed/README.md)
+
+#### Loading legacy data:
+To restore the database dump you have from the old epic system (ie ESM):
 
 ```
 mongorestore -d epic dump/[old_database_name_most_likely_esm]
@@ -90,13 +88,10 @@ mongorestore -d epic dump/[old_database_name_most_likely_esm]
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
-Seed local database as described in [seed README](seed/README.md)
-
-Start server by running `npm start` in root
 
 ## Developing
 
-See [Code Reuse Strategy](code_reuse_strategy.md)
+See [Code Reuse Strategy](https://github.com/bcgov/eagle-common-components/dev_guides/code_reuse_strategy.md)
 
 ## Testing
 
