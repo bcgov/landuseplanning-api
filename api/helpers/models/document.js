@@ -44,4 +44,4 @@ module.exports = require ('../models')('Document', {
     // TODO
     labels           : [{ type: Mixed, default: {} }]
 
-}, 'gcpe-lup');
+}, 'document');

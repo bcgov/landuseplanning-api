@@ -1,0 +1,8 @@
+[
+  {
+    'repeat(5, 10)': {
+        tags: 'sysadmin',
+        orgName: '{{lorem(1)}}',
+    }
+  }
+]

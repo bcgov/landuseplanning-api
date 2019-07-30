@@ -6,4 +6,4 @@ module.exports = require('../models')('Topic', {
 
     // TODO: Decide who should be able to access.
     read: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-}, 'gcpe-lup');
+}, 'topic');

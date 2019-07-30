@@ -7,4 +7,4 @@ module.exports = require('../models')('Organization', {
     write: [{ type: String, trim: true, default: '[["sysadmin"]]' }],
     delete: [{ type: String, trim: true, default: '[["sysadmin"]]' }]
 
-}, 'gcpe-lup');
+}, 'organization');

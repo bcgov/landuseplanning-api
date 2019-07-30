@@ -49,7 +49,7 @@ module.exports = require ('../models')('Project', {
     proMember               : { type: String, default: '' },
     provElecDist            : { type: String, default: '' },
     sector                  : { type: String, default: '' },
-    shortName               : { type: String, default: '', index: true },
+    shortName               : { type: String, default: '', text: true },
     status                  : { type: String, default: '' },
     substitution            : { type: Boolean, default: false },
 
@@ -67,4 +67,4 @@ module.exports = require ('../models')('Project', {
     read                    : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     write                   : [{ type: String, trim: true, default: '["project-system-admin"]' }],
     delete                  : [{ type: String, trim: true, default: '["project-system-admin"]' }],
-}, 'gcpe-lup');
+}, 'project');

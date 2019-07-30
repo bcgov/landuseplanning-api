@@ -1,3 +1,4 @@
+
 module.exports = require('../models')('User', {
     firstName: { type: String, trim: true, default: '' },
     middleName: { type: String, trim: true, default: null },
@@ -18,4 +19,4 @@ module.exports = require('../models')('User', {
     country: { type: String, default: '' },
     postalCode: { type: String, default: '' },
     notes: { type: String, default: '' },
-}, 'gcpe-lup');
+}, 'user');
