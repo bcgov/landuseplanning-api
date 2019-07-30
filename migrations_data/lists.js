@@ -57,10 +57,6 @@ module.exports = [{
 },{
   "type" : "doctype",
   "_schemaName" : "List",
-  "name" : "Enforcement Action"
-},{
-  "type" : "doctype",
-  "_schemaName" : "List",
   "name" : "Inspection Record"
 },{
   "type" : "doctype",
