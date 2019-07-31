@@ -95,6 +95,8 @@ See [Code Reuse Strategy](https://github.com/bcgov/eagle-common-components/dev_g
 
 ## Testing
 
+An overview of the EPIC test stack can be found [here](https://github.com/bcgov/eagle-common-components/blob/master/dev_guides/testing_components.md).
+
 This project is using [jest](http://jestjs.io/) as a testing framework. You can run tests with
 `yarn test` or `jest`. Running either command with the `--watch` flag will re-run the tests every time a file is changed.
 
