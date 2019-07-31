@@ -38,6 +38,7 @@ exports.protectedPost = async function (args, res, next) {
 
     // Define security tag defaults
     var theTopic = await topic.save()
+    Utils.recordAction('Post', 'Topic', args.swagger.params.auth_payload.preferred_username, theTopic._id);
     return Actions.sendResponse(res, 200, theTopic);
 };
 
@@ -70,6 +71,7 @@ exports.protectedGet = async function (args, res, next) {
         skip, // skip
         limit, // limit
         true) // count
+    Utils.recordAction('Get', 'Topic', args.swagger.params.auth_payload.preferred_username, args.swagger.params.topicId && args.swagger.params.topicId.value ? args.swagger.params.topicId.value : null);
     return Actions.sendResponse(res, 200, data);
 };
 
@@ -89,6 +91,7 @@ exports.protectedPut = async function (args, res, next) {
     topic._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
     var data = await topic.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
+    Utils.recordAction('Put', 'Topic', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, data);
 }
 
@@ -102,5 +105,6 @@ exports.protectedDelete = async function (args, res, next) {
     topic._deletedBy = args.swagger.params.auth_payload.preferred_username;
 
     var data = await topic.remove({ _id: objId }).exec();
+    Utils.recordAction('Delete', 'Topic', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, data);
 };

@@ -1,7 +1,7 @@
 swagger: "2.0"
 info:
   version: "1.0.6"
-  title: EAGLE API
+  title: Land Use Planning API
 host: localhost:3000
 basePath: /api
 tags:
@@ -98,6 +98,12 @@ definitions:
         type: string
         example: "[['public']]"
         ## TODO: Add more fields here.
+  GroupObject:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool user"
   Project:
     type: string
     description: "Optional fields to return."
@@ -126,6 +132,8 @@ definitions:
       - responsibleEPDPhone
       - type
       - read
+      - build
+      - nature
   TopicSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
@@ -198,6 +206,7 @@ definitions:
       - internalOriginalName
       - internalURL
       - internalMime
+      - internalSize
 
 ### Comment Definitions
   CommentId:
@@ -733,7 +742,7 @@ paths:
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query project publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instances and supported."
           type: string
           format: date-time
       responses:
@@ -854,7 +863,7 @@ paths:
           name: publishDate
           collectionFormat: multi
           required: false
-          description: "Query project publish dates.  Multiple parameter instaces is supported."
+          description: "Query project publish dates.  Multiple parameter instances and supported."
           type: string
           format: date-time
         - in: query
@@ -1132,6 +1141,599 @@ paths:
           description: "ID of project to update"
           required: true
           type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/project/{projId}/pin:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - project
+      summary: "Get pins on a project"
+      operationId: publicPinGet
+      description: "Authenticated access to retreiving pins on a project."
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - in: query
+          name: sortBy
+          description: "Fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *searchSortByFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/pin:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - project
+      summary: "Get pins on a project"
+      operationId: protectedPinGet
+      description: "Authenticated access to retreiving pins on a project."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - in: query
+          name: sortBy
+          description: "Fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *searchSortByFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - project
+      summary: "Add Pins to a project"
+      operationId: protectedAddPins
+      description: "Adds pins to a project."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to update"
+          required: true
+          type: string
+        - name: pins
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/ProjObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/pin/{pinId}:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - name: pinId
+          in: path
+          description: "ID of pin to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - project
+      summary: "Delete a PIN"
+      operationId: protectedPinDelete
+      description: "Delete specific PINS."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+      parameters:
+          - name: projId
+            in: path
+            type: string
+            required: true
+            description: "PINS corresponding to a project."
+          - name: pinId
+            in: path
+            type: string
+            required: true
+            description: "Delete PIN."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/RecentActivityObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/group:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    # get:
+    #   tags:
+    #     - project
+    #   summary: "Get groups on a project"
+    #   operationId: protectedProjectGet
+    #   description: "Authenticated access to retreiving groups on a project."
+    #   security:
+    #     - Bearer: []
+    #   x-security-scopes:
+    #     - staff
+    #     - sysadmin
+    #     - project-system-admin
+    #   parameters:
+    #     - name: projId
+    #       in: path
+    #       description: "ID of project to get"
+    #       required: true
+    #       type: string
+    #     - in: query
+    #       name: sortBy
+    #       description: "Fields to sort by."
+    #       required: false
+    #       type: array
+    #       items:
+    #         type: string
+    #         enum: *searchSortByFields
+    #     - in: query
+    #       name: pageNum
+    #       type: number
+    #       required: false
+    #       description: "Page number."
+    #     - in: query
+    #       name: pageSize
+    #       type: number
+    #       required: false
+    #       description: "Number of results per page (if 'pageNum' is specified)."
+    #   responses:
+    #     "200":
+    #       description: "Success"
+    #       schema:
+    #         $ref: "#/definitions/ProjObject"
+    #     "403":
+    #       description: "Access Denied"
+    #       schema:
+    #         $ref: "#/definitions/Error"
+    post:
+      tags:
+        - project
+      summary: "Add Groups to a project"
+      operationId: protectedAddGroup
+      description: "Adds group to a project."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to update"
+          required: true
+          type: string
+        - name: group
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/ProjObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/group/{groupId}:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - project
+      summary: "Delete a Group"
+      operationId: protectedGroupDelete
+      description: "Delete specific group."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+        - staff
+      parameters:
+          - name: projId
+            in: path
+            type: string
+            required: true
+            description: "Groups corresponding to a project."
+          - name: groupId
+            in: path
+            type: string
+            required: true
+            description: "Delete Group."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - project
+      summary: "Update a group"
+      operationId: protectedGroupPut
+      description: "Update a group"
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to update"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to update"
+          required: true
+          type: string
+        - name: groupObject
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/GroupObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/OrgObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/group/{groupId}/members:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - project
+      summary: "Add Contact to a project group"
+      operationId: protectedAddGroupMembers
+      description: "Adds contact to a project group."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - staff
+        - sysadmin
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to update"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to update"
+          required: true
+          type: string
+        - name: members
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/ProjObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/RecentActivityObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - project
+      summary: "Get a Group"
+      operationId: protectedGroupGetMembers
+      description: "Get specific group."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+        - staff
+      parameters:
+          - name: projId
+            in: path
+            type: string
+            required: true
+            description: "Group corresponding to a project."
+          - name: groupId
+            in: path
+            type: string
+            required: true
+            description: "Get Group."
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /project/{projId}/group/{groupId}/members/{memberId}:
+    x-swagger-router-controller: project
+    options:
+      tags:
+        - project
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Project Route"
+      parameters:
+        - name: projId
+          in: path
+          description: "ID of project to get"
+          required: true
+          type: string
+        - name: groupId
+          in: path
+          description: "ID of group to get"
+          required: true
+          type: string
+        - name: memberId
+          in: path
+          description: "ID of member to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ProjObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - project
+      summary: "Delete a member from a group"
+      operationId: protectedDeleteGroupMembers
+      description: "Delete specific members from a project group."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+        - sysadmin
+        - staff
+      parameters:
+          - name: projId
+            in: path
+            type: string
+            required: true
+            description: "Members corresponding to a project."
+          - name: groupId
+            in: path
+            type: string
+            required: true
+            description: "Group."
+          - name: memberId
+            in: path
+            type: string
+            required: true
+            description: "Delete Member."
       responses:
         "200":
           description: "Success"
@@ -1780,6 +2382,11 @@ paths:
           description: "The milestone of the file."
           required: false
           type: string
+        - name: projectPhase
+          in: formData
+          description: "The project phase of the file."
+          required: false
+          type: string
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
@@ -2002,6 +2609,11 @@ paths:
         - name: milestone
           in: formData
           description: "The milestone of the file."
+          required: false
+          type: string
+        - name: projectPhase
+          in: formData
+          description: "The project phase of the file."
           required: false
           type: string
         - name: datePosted
@@ -2554,7 +3166,8 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - staff
+        - sysadmin
       parameters:
         - name: org
           in: body
@@ -2681,6 +3294,11 @@ paths:
           description: "ID of organization to update"
           required: true
           type: string
+        - name: org
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/OrgObject"
       responses:
         "200":
           description: "Success"
@@ -2927,35 +3545,6 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-    get:
-      tags:
-        - user
-      summary: "Get a list of users"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving users."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - project-system-admin
-      parameters:
-        - in: query
-          name: fields
-          description: "User fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *userFields
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/UserObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
   /user/{userId}:
     x-swagger-router-controller: user
     options:
@@ -2970,40 +3559,6 @@ paths:
           description: "ID of user to get"
           required: true
           type: string
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/UserObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
-    get:
-      tags:
-        - user
-      summary: "Get a user"
-      operationId: protectedGet
-      description: "Authenticated access to retreiving users."
-      security:
-        - Bearer: []
-      x-security-scopes:
-        - project-system-admin
-      parameters:
-        - name: userId
-          in: path
-          description: "ID of user to get"
-          required: true
-          type: string
-        - in: query
-          name: fields
-          description: "User fields to return."
-          required: false
-          type: array
-          collectionFormat: pipes
-          items:
-            type: string
-            enum: *userFields
       responses:
         "200":
           description: "Success"
@@ -4250,10 +4805,16 @@ paths:
             type: string
             enum: *searchSortByFields
         - in: query
-          name: query
+          name: and
           collectionFormat: multi
           required: false
-          description: "Query: multiple parameter instaces is supported."
+          description: "Query: multiple parameter instances are supported using AND."
+          type: string
+        - in: query
+          name: or
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using OR."
           type: string
       responses:
         "200":
@@ -4335,6 +4896,18 @@ paths:
           items:
             type: string
             enum: *searchSortByFields
+        - in: query
+          name: and
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using AND."
+          type: string
+        - in: query
+          name: or
+          collectionFormat: multi
+          required: false
+          description: "Query: multiple parameter instances are supported using OR."
+          type: string
       responses:
         "200":
           description: "Success"

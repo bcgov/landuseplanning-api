@@ -9,20 +9,25 @@ Before running the api, you must set some environment variables:
 2) MINIO_ACCESS_KEY='xxxx'
 3) MINIO_SECRET_KEY='xxxx'
 4) KEYCLOAK_ENABLED=true
-5) MONGODB_DATABASE='gcpe-lup'
+5) MONGODB_DATABASE='landuseplanning'
 
-One way to do this is to edit your ~/.bashrc file to contain:
-export MONGODB_DATABASE="gcpe-lup"
+One way to do this is to edit your ~/.bash_profile file to contain:
+
+```
+export MONGODB_DATABASE="landuseplanning"
 export MINIO_HOST="foo.pathfinder.gov.bc.ca"
 export MINIO_ACCESS_KEY="xxxx"
 export MINIO_SECRET_KEY="xxxx"
 export KEYCLOAK_ENABLED=true
+```
+
+Please note that these values are case sensitive so don't use upper-case TRUE for example.
 
 Don't forget to reload your .bash_profile file so that your terminal environment is up to date with the correct values
-``
+```
 source ~/.bash_profile
 env
-``
+```
 
 The above env command will show you your environment variables and allow you to check that the correct values are present.
 
@@ -63,59 +68,12 @@ npm start
 
     _Note: To change the default port edit `swagger.yaml`._
 
-# Linting and Formatting
-
-## Info
-
-Linting and formatting is handled by a combiation of `TSlint` and `Prettier`.  The reason for this, is that you get the best of both worlds: TSlint's larger selection of linting rules with Prettier's robust formatting rules.
-
-These 2 linters (tslint, Prettier) do have overlapping rules.  To avoid weird rule interactions, TSlint has been configured to defer any overlapping rules to Prettier, via the use of `tslint-config-prettier` in `tslint.json`.
-
-Recommend installing the [VSCode Prettier extension](https://github.com/prettier/prettier-vscode), so Prettier's formatting can be applied on-the-fly.
-
-### Technolgies used
-
-[TSLint](https://palantir.github.io/tslint/), [Prettier](https://prettier.io/), [Stylelint](https://stylelint.io/), [husky](https://www.npmjs.com/package/husky), [lint-staged](https://github.com/okonet/lint-staged)
-
-### Configuration files
-
-* ESlint: eslint.json
-* Prettier: .prettierrc .prettierignore
-* Husky: package.json
-* lint-staged: package.json
-
-### Pre-Commit Hooks
-
-Package.json has been configured to use `husky`/`lint-staged` to run the `lint-fix` (linting + formatting) commands, against the files staged to be committed, whenever you perform a commit.  This ensures that all committed code has been linted and formatted correctly.
-
-If the linters or formatters find issues that cannot be automatically fixed, it will throw an error and provide output as to what is wrong.  Fix the issues and commit again.
-
-## Run Linters
-
-* Lint the `*.js` files using `ESLint`.
+4. POST `http://localhost:3000/api/login/token` with the following body
 ```
-npm run lint
-```
-
-## Run Linters + Formatters
-
-_Note: In the worst case scenario, where linting/formatting has been neglected, then these `lint-fix` commands have the potential to create 100's of file changes.  In this case, it is recommended to only run these commands as part of a separate commit._
-
-_Note: Not all linting/formatting errors can be automatically fixed, and will require human intervention._
-
-* Lint and fix the `*.js` files using `ESLint` + `Prettier`.
-
-```
-npm run lint-fix
-```
-
-# Testing
-
-## Info
-
-### Technolgies used
-
-[Jasmine](https://jasmine.github.io/), [Karma](https://karma-runner.github.io/latest/index.html), [Protractor](http://www.protractortest.org/)
+{
+"username": #{username},
+"password": #{password}
+}
 
 # API Specification
 
@@ -129,33 +87,43 @@ Recommend reviewing the [Open API Specification](https://swagger.io/docs/specifi
 
 # Initial Setup
 
-We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.
+We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  asdf uses a config file called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
 
 Run the following commands:
-``
+```
 asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-asdf install nodejs 8.16.0
+```
+
+Next open .tool-versions and take the node version there and use it in the following command so that that specific version of node is present on your local machine for asdf to switch to.  Replace the "x" characters in the following command with what's in .tool-versions.
+
+```
+asdf install nodejs x.xx.x
+```
+
+Then run the following commands every time you need to switch npm versions in a project.
+
+```
 asdf reshim nodejs
 npm i -g yarn
 yarn install
-``
+```
 
 
 Acquire a dump of the database from one of the live environments.  
 
 Make sure you don't have an old copy (careful, this is destructive):
 
-``
+```
 mongo
-use epic
+use landuseplanning
 db.dropDatabase()
-``
+```
 
 Restore the database dump you have from the old epic system.
 
-``
+```
 mongorestore -d epic dump/[old_database_name_most_likely_esm]
-``
+```
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
@@ -163,6 +131,9 @@ Seed local database as described in [seed README](seed/README.md)
 
 Start server by running `npm start` in root
 
+## Developing
+
+See [Code Reuse Strategy](code_reuse_strategy.md)
 
 # Testing
 
@@ -255,15 +226,15 @@ Recall the environment variables we need for local dev:
 1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
 2) MINIO_ACCESS_KEY='xxxx'
 3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=TRUE
+4) KEYCLOAK_ENABLED=true
 5) MONGODB_DATABASE='epic'
 
 To get actual values for the above fields in the deployed environments, examine the openshift environment you wish to target:
 
-``
+```
 oc project [projectname]
 oc get routes | grep 'minio'
 oc get secrets | grep 'minio'
-``
+```
 
 You will not be able to see the above value of the secret if you try examine it.  You will only see the encrypted values.  Approach your team member with admin access in the openshift project in order to get the access key and secret key values for the secret name you got from the above command.  Make sure to ask for the correct environment (dev, test, prod) for the appropriate values.

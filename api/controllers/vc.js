@@ -38,13 +38,13 @@ exports.protectedPost = async function (args, res, next) {
     console.log(vc);
     console.log("***************************************************");
     vc._schemaName = 'Vc';
-    vc.read = ['public','project-system-admin', 'staff'];
+    vc.read = ['public', 'project-system-admin', 'staff'];
     vc.write = ['project-system-admin', 'staff'];
     vc.delete = ['project-system-admin', 'staff'];
 
     // Define security tag defaults
     var theVc = await vc.save()
-    console.log("saved:", theVc);
+    Utils.recordAction('Post', 'Vc', args.swagger.params.auth_payload.preferred_username, theVc._id);
     return Actions.sendResponse(res, 200, theVc);
 };
 
@@ -56,14 +56,14 @@ exports.protectedGet = async function (args, res, next) {
         query = Utils.buildQuery("_id", args.swagger.params.vcId.value, query);
     }
     if (args.swagger.params.projectId && args.swagger.params.projectId.value) {
-      _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.projectId.value) });
+        _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.projectId.value) });
     }
     if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-      args.swagger.params.sortBy.value.forEach(function (value) {
-        var order_by = value.charAt(0) == '-' ? -1 : 1;
-        var sort_by = value.slice(1);
-        sort[sort_by] = order_by;
-      }, this);
+        args.swagger.params.sortBy.value.forEach(function (value) {
+            var order_by = value.charAt(0) == '-' ? -1 : 1;
+            var sort_by = value.slice(1);
+            sort[sort_by] = order_by;
+        }, this);
     }
     var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
     skip = processedParameters.skip;
@@ -81,6 +81,7 @@ exports.protectedGet = async function (args, res, next) {
         skip, // skip
         limit, // limit
         true) // count
+    Utils.recordAction('Get', 'Vc', args.swagger.params.auth_payload.preferred_username, args.swagger.params.vcId && args.swagger.params.vcId.value ? args.swagger.params.vcId.value : null);
     return Actions.sendResponse(res, 200, data);
 };
 
@@ -96,6 +97,7 @@ exports.protectedPut = async function (args, res, next) {
 
     var valuedComponent = require('mongoose').model('Vc');
     var data = await valuedComponent.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
+    Utils.recordAction('Put', 'Vc', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, data);
 }
 
@@ -105,5 +107,6 @@ exports.protectedDelete = async function (args, res, next) {
 
     var commentperiod = require('mongoose').model('Vc');
     var data = await commentperiod.remove({ _id: objId }).exec();
+    Utils.recordAction('Delete', 'Vc', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, data);
 };
