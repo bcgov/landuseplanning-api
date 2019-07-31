@@ -37,6 +37,7 @@ var getSanitizedFields = function (fields) {
       'project',
       'type',
       'documentAuthor',
+      'documentAuthorType',
       'milestone',
       'projectPhase',
       'description',
@@ -151,7 +152,8 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              doc.documentAuthor = mongoose.Types.ObjectId(args.body.documentAuthor);
+              doc.documentAuthor = args.body.documentAuthor;
+              doc.documentAuthorType = mongoose.Types.ObjectId(args.body.documentAuthorType);
 
               doc.save()
                 .then(async function (d) {
@@ -523,7 +525,7 @@ exports.protectedPost = async function (args, res, next) {
               }
               doc.milestone = mongoose.Types.ObjectId(args.swagger.params.milestone.value);
               doc.type = mongoose.Types.ObjectId(args.swagger.params.type.value);
-              doc.documentAuthor = mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value);
+              doc.documentAuthor = args.swagger.params.documentAuthor.value;
 
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
@@ -611,7 +613,7 @@ exports.protectedPut = async function (args, res, next) {
 
   obj.milestone = args.swagger.params.milestone ? mongoose.Types.ObjectId(args.swagger.params.milestone.value) : null;
   obj.type = args.swagger.params.type ? mongoose.Types.ObjectId(args.swagger.params.type.value) : null;
-  obj.documentAuthor = args.swagger.params.documentAuthor ? mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value) : null;
+  obj.documentAuthorType = args.swagger.params.documentAuthorType ? mongoose.Types.ObjectId(args.swagger.params.documentAuthorType.value) : null;
   obj.projectPhase = args.swagger.params.projectPhase ? mongoose.Types.ObjectId(args.swagger.params.projectPhase.value) : null;
 
   obj.dateUploaded = args.swagger.params.dateUploaded.value;

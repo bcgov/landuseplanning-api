@@ -2377,6 +2377,11 @@ paths:
           description: "The documentAuthor of the file."
           required: false
           type: string
+        - name: documentAuthorType
+          in: formData
+          description: "The documentAuthorType of the file."
+          required: false
+          type: string
         - name: milestone
           in: formData
           description: "The milestone of the file."
@@ -2604,6 +2609,11 @@ paths:
         - name: documentAuthor
           in: formData
           description: "The documentAuthor of the file."
+          required: false
+          type: string
+        - name: documentAuthorType
+          in: formData
+          description: "The documentAuthorType of the file."
           required: false
           type: string
         - name: milestone
