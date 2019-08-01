@@ -14,4 +14,4 @@ module.exports = require('../models')('Vc', {
     read: [{ type: String, trim: true, default: '["public"]' }],
     write: [{ type: String, trim: true, default: '["project-system-admin"]' }],
     delete: [{ type: String, trim: true, default: '["project-system-admin"]' }]
-}, 'gcpe-lup');
+}, 'lup');

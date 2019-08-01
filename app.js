@@ -17,7 +17,7 @@ var bodyParser    = require('body-parser');
 var dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
                     + '/'
-                    + (process.env.MONGODB_DATABASE || 'epic');
+                    + (process.env.MONGODB_DATABASE || 'landuseplanning');
 var db_username = process.env.MONGODB_USERNAME || '';
 var db_password = process.env.MONGODB_PASSWORD || '';
 
@@ -112,6 +112,8 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/audit');
       require('./api/helpers/models/list');
       require('./api/helpers/models/user');
+      require('./api/helpers/models/group');
+      require('./api/helpers/models/pin');
       require('./api/helpers/models/organization');
       require('./api/helpers/models/vc');
       require('./api/helpers/models/project');

@@ -12,6 +12,7 @@ var _applications = [];
 var _commentPeriods = [];
 var _decisions = [];
 var _comments = [];
+var _projects = [];
 var username = '';
 var password = '';
 var protocol = 'http';
@@ -194,6 +195,9 @@ var doWork = function(e, route) {
             if (route === 'api/decision') {
               _decisions.push(data);
             }
+            if (route === 'api/project') {
+              _projects.push(data);
+            }
 
             if (route === 'api/public/comment') {
               // Swap to the authenticated access route.
@@ -259,6 +263,10 @@ var insertAll = function(route, entries) {
 console.log('Logging in and getting JWT:');
 login(username, password)
   .then(function() {
+    var projectlist = require('./projectlist.json');
+    return insertAll('api/project', projectlist);
+  })/*
+  .then(function () {
     var applist = require('./applist.json');
     return insertAll('api/application', applist);
   })
@@ -277,7 +285,7 @@ login(username, password)
   .then(function() {
     var doclist = require('./doclist.json');
     return insertAll('api/document', doclist);
-  })
+  })*/
   .catch(function(err) {
     console.log('ERR:', err);
   });

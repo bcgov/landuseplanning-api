@@ -5,6 +5,7 @@ module.exports = require('../models')('User', {
     displayName: { type: String, trim: true },
     email: { type: String, trim: true, default: '' },
     org: { type: 'ObjectId', ref: 'Organization', default: null },
+    orgName: { type: String, default: '' },
     title: { type: String, default: '' },
     phoneNumber: { type: String, default: '' },
     salutation: { type: String, default: '' },
@@ -18,4 +19,7 @@ module.exports = require('../models')('User', {
     country: { type: String, default: '' },
     postalCode: { type: String, default: '' },
     notes: { type: String, default: '' },
-}, 'gcpe-lup');
+    read: [{ type: String, trim: true, default: 'sysadmin' }],
+    write: [{ type: String, trim: true, default: 'sysadmin' }],
+    delete: [{ type: String, trim: true, default: 'sysadmin' }]
+}, 'lup');

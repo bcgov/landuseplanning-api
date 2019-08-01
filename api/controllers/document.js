@@ -32,11 +32,13 @@ var getSanitizedFields = function (fields) {
       'eaoStatus',
       'internalURL',
       'internalMime',
+      'internalSize',
       'checkbox',
       'project',
       'type',
       'documentAuthor',
       'milestone',
+      'projectPhase',
       'description',
       'keywords',
       'isPublished',
@@ -51,7 +53,7 @@ exports.protectedOptions = function(args, res, rest) {
 exports.publicGet = async function (args, res, next) {
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId) {
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
@@ -74,6 +76,7 @@ exports.publicGet = async function (args, res, next) {
       null, // limit
       false); // count
     defaultLog.info('Got document(s):', data);
+    Utils.recordAction('Get', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -85,7 +88,6 @@ exports.unProtectedPost = async function (args, res, next) {
   console.log("Creating new object");
   var _comment = args.swagger.params._comment.value;
   var project = args.swagger.params.project.value;
-  var displayName = args.swagger.params.displayName.value;
   var upfile = args.swagger.params.upfile.value;
   var guid = intformat(generator.next(), 'dec');
   var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
@@ -140,7 +142,7 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.internalOriginalName = upfile.originalname;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
-              doc.internalSize = "0";  // TODO
+              doc.internalSize = upfile.size;
               doc.passedAVCheck = true;
               doc.internalMime = upfile.mimetype;
 
@@ -150,9 +152,8 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              doc.documentAuthor = 'public';
-              // Update who did this?
-              console.log('unlink');
+              doc.documentAuthor = mongoose.Types.ObjectId(args.body.documentAuthor);
+
               doc.save()
                 .then(async function (d) {
                   defaultLog.info("Saved new document object:", d._id);
@@ -160,7 +161,7 @@ exports.unProtectedPost = async function (args, res, next) {
                   var Comment = mongoose.model('Comment');
                   var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
                   defaultLog.info('Comment updated:', c);
-
+                  Utils.recordAction('Post', 'Document', 'public', d._id);
                   return Actions.sendResponse(res, 200, d);
                 })
                 .catch(async function (error) {
@@ -187,8 +188,8 @@ exports.protectedHead = function (args, res, next) {
 
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId) {
-    query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
   if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery('_application', args.swagger.params._application.value, query);
@@ -216,6 +217,7 @@ exports.protectedHead = function (args, res, next) {
     null, // limit
     true) // count
     .then(function (data) {
+      Utils.recordAction('Head', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
       // /api/commentperiod/ route, return 200 OK with 0 items if necessary
       if (!(args.swagger.params.docId && args.swagger.params.docId.value) || (data && data.length > 0)) {
         res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
@@ -255,7 +257,7 @@ exports.protectedGet = async function (args, res, next) {
       skip, // skip
       limit, // limit
       count); // count
-    Utils.recordAction('get', 'document', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('Get', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
     defaultLog.info('Got document(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -270,7 +272,7 @@ exports.publicDownload = function (args, res, next) {
 
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId) {
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   } else {
     return Actions.sendResponse(res, 404, {});
@@ -308,7 +310,7 @@ exports.publicDownload = function (args, res, next) {
             return Actions.sendResponse(res, 404, {});
           })
           .then(function (docURL) {
-            console.log('docURL:', docURL);
+            Utils.recordAction('Download', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
@@ -331,7 +333,7 @@ exports.protectedDownload = function (args, res, next) {
 
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId) {
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
   // Set query type
@@ -367,7 +369,7 @@ exports.protectedDownload = function (args, res, next) {
             return Actions.sendResponse(res, 404, {});
           })
           .then(function (docURL) {
-            console.log('docURL:', docURL);
+            Utils.recordAction('Download', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
@@ -390,8 +392,8 @@ exports.protectedOpen = function (args, res, next) {
 
   // Build match query if on docId route
   var query = {};
-  if (args.swagger.params.docId) {
-    query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
+  if (args.swagger.params.docId && args.swagger.params.docId.value) {
+    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
   }
   // Set query type
   _.assignIn(query, { "_schemaName": "Document" });
@@ -432,7 +434,7 @@ exports.protectedOpen = function (args, res, next) {
             return Actions.sendResponse(res, 404, {});
           })
           .then(function (docURL) {
-            console.log('docURL:', docURL);
+            Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
@@ -504,7 +506,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
-              doc.internalSize = "0";  // TODO
+              doc.internalSize = upfile.size;
               doc.passedAVCheck = true;
               doc.internalMime = upfile.mimetype;
 
@@ -520,18 +522,20 @@ exports.protectedPost = async function (args, res, next) {
                   doc.read.push('public');
                 }
               }
-              doc.milestone = args.swagger.params.milestone.value;
+              doc.milestone = mongoose.Types.ObjectId(args.swagger.params.milestone.value);
+              doc.type = mongoose.Types.ObjectId(args.swagger.params.type.value);
+              doc.documentAuthor = mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value);
+
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
-              doc.type = args.swagger.params.type.value;
               doc.description = args.swagger.params.description.value;
-              doc.keywords = args.swagger.params.keywords.value;
-              doc.documentAuthor = args.swagger.params.documentAuthor.value;
+              doc.projectPhase = mongoose.Types.ObjectId(args.swagger.params.projectPhase.value);
               // Update who did this?
               console.log('unlink');
               doc.save()
                 .then(function (d) {
                   defaultLog.info("Saved new document object:", d._id);
+                  Utils.recordAction('Post', 'Document', args.swagger.params.auth_payload.preferred_username, d._id);
                   return Actions.sendResponse(res, 200, d);
                 })
                 .catch(function (error) {
@@ -562,7 +566,7 @@ exports.protectedPublish = async function (args, res, next) {
       defaultLog.info("Document:", document);
       document.eaoStatus = "Published";
       var published = await Actions.publish(await document.save());
-      Utils.recordAction('publish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+      Utils.recordAction('Publish', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
       return Actions.sendResponse(res, 200, published);
     } else {
       defaultLog.info("Couldn't find that document!");
@@ -584,7 +588,7 @@ exports.protectedUnPublish = async function (args, res, next) {
       defaultLog.info("Document:", document);
       document.eaoStatus = "Rejected";
       var unPublished = await Actions.unPublish(await document.save());
-      Utils.recordAction('unPublish', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+      Utils.recordAction('Unpublish', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
       return Actions.sendResponse(res, 200, unPublished);
     } else {
       defaultLog.info("Couldn't find that document!");
@@ -605,13 +609,16 @@ exports.protectedPut = async function (args, res, next) {
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   obj.displayName = args.swagger.params.displayName.value;
-  obj.milestone = args.swagger.params.milestone.value;
+
+  obj.milestone = args.swagger.params.milestone ? mongoose.Types.ObjectId(args.swagger.params.milestone.value) : null;
+  obj.type = args.swagger.params.type ? mongoose.Types.ObjectId(args.swagger.params.type.value) : null;
+  obj.documentAuthor = args.swagger.params.documentAuthor ? mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value) : null;
+  obj.projectPhase = args.swagger.params.projectPhase ? mongoose.Types.ObjectId(args.swagger.params.projectPhase.value) : null;
+
   obj.dateUploaded = args.swagger.params.dateUploaded.value;
   obj.datePosted = args.swagger.params.datePosted.value;
-  obj.type = args.swagger.params.type.value;
   obj.description = args.swagger.params.description.value;
   obj.keywords = args.swagger.params.keywords.value;
-  obj.documentAuthor = args.swagger.params.documentAuthor.value;
 
   obj.eaoStatus = args.swagger.params.eaoStatus.value;
   if (args.swagger.params.eaoStatus.value === 'Published') {
@@ -655,7 +662,7 @@ exports.protectedDelete = async function (args, res, next) {
     var doc = await Document.findOneAndRemove({ _id: objId });
     console.log('deleting document', doc);
     await MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
-    Utils.recordAction('delete', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Delete', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
     console.log("Error:", e);

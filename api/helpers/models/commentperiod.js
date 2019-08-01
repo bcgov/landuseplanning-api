@@ -42,4 +42,4 @@ module.exports = require('../models')('CommentPeriod', {
     read                : [{ type: String, trim: true, default: 'sysadmin' }],
     write               : [{ type: String, trim: true, default: 'sysadmin' }],
     delete              : [{ type: String, trim: true, default: 'sysadmin' }]
-}, 'gcpe-lup');
+}, 'lup');

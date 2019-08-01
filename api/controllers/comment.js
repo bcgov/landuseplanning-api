@@ -31,7 +31,7 @@ var getSanitizedFields = function (fields) {
       'delete'
     ], f) !== -1);
   });
-};
+}
 
 var setPermissionsFromEaoStatus = function (status, comment) {
   console.log(status);
@@ -69,7 +69,7 @@ var setPermissionsFromEaoStatus = function (status, comment) {
 
 // Function 'warms up' the query so that we can project the field that we're sorting on
 // extract 'contactName' and lower-case it
-var sortWarmUp = function(sort, fields) {
+var sortWarmUp = function (sort, fields) {
   if (sort) {
     var projection = {};
     _.each(fields, function (f) {
@@ -78,9 +78,9 @@ var sortWarmUp = function(sort, fields) {
     return sort.contactName ? { $project: Object.assign({ contactName: { $toLower: '$commentAuthor.contactName' } }, projection) } : null;
   }
   return null;
-};
+}
 
-exports.protectedOptions = function(args, res, rest) {
+exports.protectedOptions = function (args, res, rest) {
   res.status(200).send();
 };
 
@@ -107,6 +107,7 @@ exports.publicHead = async function (args, res, next) {
     null, // skip
     null, // limit
     true); // count
+  Utils.recordAction('Head', 'CommentPeriod', 'public');
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
@@ -127,7 +128,7 @@ exports.publicGet = async function (args, res, next) {
     }
     // Sort
     if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-      args.swagger.params.sortBy.value.forEach(function(value) {
+      args.swagger.params.sortBy.value.forEach(function (value) {
         var order_by = value.charAt(0) == '-' ? -1 : 1;
         var sort_by = value.slice(1);
         sort[sort_by] = order_by;
@@ -166,6 +167,7 @@ exports.publicGet = async function (args, res, next) {
     }
   });
   if (args.swagger.params.count.value) {
+    Utils.recordAction('Get', 'Comment', 'public', args.swagger.params.commentId && args.swagger.params.commentId.value ? args.swagger.params.commentId.value : null);
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
     return Actions.sendResponse(res, 200, data.length !== 0 ? data[0].results : []);
   } else {
@@ -202,6 +204,7 @@ exports.protectedHead = async function (args, res, next) {
     null, // skip
     null, // limit
     true); // count
+  Utils.recordAction('Head', 'Comment', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentId && args.swagger.params.commentId.value ? args.swagger.params.commentId.value : null);
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.commentId && args.swagger.params.commentId.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
@@ -275,7 +278,7 @@ exports.protectedGet = async function (args, res, next) {
       skip, // skip
       limit, // limit
       count); // count
-    Utils.recordAction('get', 'comment', args.swagger.params.auth_payload.preferred_username);
+    Utils.recordAction('Get', 'Comment', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentId && args.swagger.params.commentId.value ? args.swagger.params.commentId.value : null);
     defaultLog.info('Got comment(s):', data);
 
     // This is to get the next pending comment information.
@@ -318,6 +321,7 @@ exports.protectedPost = async function (args, res, next) {
   obj.valuedComponents.forEach(function (vc) {
     vcs.push(mongoose.Types.ObjectId(vc));
   });
+
   var docs = [];
   obj.documents.forEach(function (doc) {
     docs.push(mongoose.Types.ObjectId(doc));
@@ -353,7 +357,7 @@ exports.protectedPost = async function (args, res, next) {
 
   try {
     var c = await comment.save();
-    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, c._id);
+    Utils.recordAction('Post', 'Comment', args.swagger.params.auth_payload.preferred_username, c._id);
     defaultLog.info('Saved new comment object:', c);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
@@ -397,7 +401,7 @@ exports.unProtectedPost = async function (args, res, next) {
 
   try {
     var c = await comment.save();
-    // Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, c._id);
+    Utils.recordAction('Post', 'Comment', 'public', c._id);
     defaultLog.info('Saved new comment object:', c);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
@@ -441,7 +445,7 @@ exports.protectedPut = async function (args, res, next) {
 
   try {
     var c = await Comment.update({ _id: objId }, { $set: comment });
-    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Put', 'Comment', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment updated:', c);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
@@ -460,11 +464,12 @@ exports.protectedStatus = async function (args, res, next) {
     updatedBy: args.swagger.params.auth_payload.preferred_username
   }
   var Comment = mongoose.model('Comment');
+
   comment = setPermissionsFromEaoStatus(status, comment);
 
   try {
     var c = await Comment.update({ _id: objId }, { $set: comment });
-    Utils.recordAction('put', 'comment', args.swagger.params.auth_payload.preferred_username, objId);
+    Utils.recordAction('Status', 'Comment', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment updated:', c);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
@@ -516,10 +521,10 @@ exports.protectedExport = async function (args, res, next) {
   });
 
   var data = mongoose.model('Comment')
-                     .aggregate(aggregation)
-                     .cursor()
-                     .exec()
-                     .stream();
+    .aggregate(aggregation)
+    .cursor()
+    .exec()
+    .stream();
 
   const filename = 'export.csv';
   res.setHeader('Content-disposition', `attachment; filename=${filename}`);
@@ -530,48 +535,48 @@ exports.protectedExport = async function (args, res, next) {
   var csv = require('csv');
   const transform = require('stream-transform');
   data.stream()
-  .pipe(transform(function (d) {
-    let read = d.read;
-    delete d.userCan;
-    delete d._schemaName;
-    delete d.isPublished;
-    delete d.delete;
-    delete d.read;
-    delete d.write;
-    delete d.dateUpdated;
-    delete d.dateAdded;
-    delete d.resolvedBy;
-    delete d.isResolved;
-    delete d.isAnonymous;
-    delete d.original;
-    delete d.ancestor;
-    delete d.parent;
-    delete d.period;
-    delete d.project;
-    delete d.__v;
-    delete d.updatedBy;
-    delete d.datePosted;
+    .pipe(transform(function (d) {
+      let read = d.read;
+      delete d.userCan;
+      delete d._schemaName;
+      delete d.isPublished;
+      delete d.delete;
+      delete d.read;
+      delete d.write;
+      delete d.dateUpdated;
+      delete d.dateAdded;
+      delete d.resolvedBy;
+      delete d.isResolved;
+      delete d.isAnonymous;
+      delete d.original;
+      delete d.ancestor;
+      delete d.parent;
+      delete d.period;
+      delete d.project;
+      delete d.__v;
+      delete d.updatedBy;
+      delete d.datePosted;
 
-    // todo: translate valuedComponents
-    delete d.valuedComponents;
+      // todo: translate valuedComponents
+      delete d.valuedComponents;
 
-    // Translate documents into links.
-    let docLinks = [];
-    if (d.documents) {
-      d.documents.map((theDoc) => {
-        docLinks.push('https://projects.eao.gov.bc.ca/api/document/' + theDoc + '/fetch');
-      });
-    }
+      // Translate documents into links.
+      let docLinks = [];
+      if (d.documents) {
+        d.documents.map((theDoc) => {
+          docLinks.push('https://projects.eao.gov.bc.ca/api/document/' + theDoc + '/fetch');
+        });
+      }
 
-    delete d.documents;
+      delete d.documents;
 
-    if (d.isAnonymous) {
-      delete d.author;
-      return { author: 'Anonymous', isPublished: read.includes('public'), documents: docLinks, ...d };
-    } else {
-      return { isPublished: read.includes('public'), documents: docLinks, ...d };
-    }
-  }))
-  .pipe(csv.stringify({header: true}))
-  .pipe(res);
+      if (d.isAnonymous) {
+        delete d.author;
+        return { author: 'Anonymous', isPublished: read.includes('public'), documents: docLinks, ...d };
+      } else {
+        return { isPublished: read.includes('public'), documents: docLinks, ...d };
+      }
+    }))
+    .pipe(csv.stringify({ header: true }))
+    .pipe(res);
 }

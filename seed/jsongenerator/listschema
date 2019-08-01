@@ -1,0 +1,9 @@
+[
+  {
+    'repeat(5, 10)': {
+        type: '{{lorem(1, "words")}}',
+        item: '{{lorem(1, "words")}}',
+        guid: '{{guid()}}',
+    }
+  }
+]
