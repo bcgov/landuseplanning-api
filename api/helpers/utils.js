@@ -29,7 +29,7 @@ exports.buildQuery = function (property, values, query) {
     }
     return _.assignIn(query, { [property]: {
         $in: oids
-      } 
+      }
     });
 };
 
@@ -112,12 +112,12 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
         _.each(defaultFields, function (f) {
             projection[f] = 1;
         });
-    
+
         // Add requested fields - sanitize first by including only those that we can/want to return
         _.each(fields, function (f) {
             projection[f] = 1;
         });
-        
+
         var aggregations = _.compact([
         {
             '$match': query
@@ -176,9 +176,9 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
             }
           }
         },
-        
+
         sortWarmUp, // Used to setup the sort if a temporary projection is needed.
-        
+
         !_.isEmpty(sort) ? { $sort: sort } : null,
 
         sort ? { $project: projection } : null, // Reset the projection just in case the sortWarmUp changed it.
@@ -214,7 +214,13 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
             }
         }
 
+        let collation = {
+            locale: 'en',
+            strength: 2
+        };
+
         theModel.aggregate(aggregations)
+        .collation(collation)
         .exec()
         .then(resolve, reject);
     });

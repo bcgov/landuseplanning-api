@@ -432,6 +432,9 @@ definitions:
     #TODO: Fix enums
     enum: &organizationFields
       - name
+    enum: &organizationSortByFields
+      - +name
+      - -name
 
 ### Topic Definitions
   TopicId:
@@ -3441,6 +3444,11 @@ paths:
       description: "Retreiving public organizations."
       parameters:
         - in: query
+          name: companyType
+          description: "Organizations of a particular company type"
+          type: string
+          required: false
+        - in: query
           name: fields
           description: "Organization fields to return."
           required: false
@@ -3449,6 +3457,14 @@ paths:
           items:
             type: string
             enum: *organizationFields
+        - in: query
+          name: sortBy
+          description: "Organization fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *organizationSortByFields
       responses:
         "200":
           description: "Success"
