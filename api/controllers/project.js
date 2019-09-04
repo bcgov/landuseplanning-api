@@ -7,42 +7,28 @@ var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var request = require('request');
 var tagList = [
-  'CEAAInvolvement',
-  'CELead',
-  'CELeadEmail',
-  'CELeadPhone',
+  'existingLandUsePlans',
   'centroid',
   'description',
-  'eacDecision',
-  'activeStatus',
-  'location',
+  'engagementStatus',
+  'backgroundInfo',
+  'overlappingRegionalDistricts',
   'name',
-  'projectLead',
-  'projectLeadEmail',
-  'projectLeadPhone',
-  'proponent',
+  'partner',
   'region',
-  'responsibleEPD',
-  'responsibleEPDEmail',
-  'responsibleEPDPhone',
-  'subtype',
-  'type',
+  'projectDirector',
+  'agreements',
   'addedBy',
-  'build',
-  'intake',
-  'CEAALink',
+  'existingLandUsePlanURLs',
   'code',
   'eaDecision',
   'operational',
-  'substantiallyStarted',
-  'nature',
   'commodity',
   'currentPhaseName',
   'dateAdded',
   'dateCommentsClosed',
   'dateCommentsOpen',
   'dateUpdated',
-  'decisionDate',
   'duration',
   'eaoMember',
   'epicProjectID',
@@ -52,20 +38,12 @@ var tagList = [
   'primaryContact',
   'proMember',
   'provElecDist',
-  'sector',
   'shortName',
-  'status',
-  'substantiallyDate',
-  'substantially',
+  'projectPhase',
   'substitution',
-  'eaStatus',
-  'eaStatusDate',
-  'projectStatusDate',
-  'activeDate',
   'updatedBy',
-  'projLead',
-  'execProjectDirector',
-  'complianceLead',
+  'projectLead',
+  'projectDirector',
   'read',
   'write',
   'delete'
@@ -176,7 +154,9 @@ exports.publicGet = async function (args, res, next) {
       limit, // limit
       false, // count
       null, // steps
-      true, // proponent populate
+      false, // proponent populate,
+      true, //proj lead
+      true, // proj director
       commentPeriodPipeline);
     defaultLog.info('Got project(s):', data);
 
@@ -188,7 +168,7 @@ exports.publicGet = async function (args, res, next) {
         }
       });
     }
-    serializeProjectVirtuals(data);
+    //serializeProjectVirtuals(data);
     Utils.recordAction('Get', 'Project', 'public', args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -220,6 +200,7 @@ exports.protectedGet = async function (args, res, next) {
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
     console.log(JSON.stringify(commentPeriodPipeline));
+    console.log('PROJECT HERE: ', commentPeriodPipeline);
   } else {
     // Getting multiple projects
     try {
@@ -268,11 +249,13 @@ exports.protectedGet = async function (args, res, next) {
       skip, // skip
       limit, // limit
       count, // count
-      null,
-      true,
+      null, // pre query steps
+      false, // pop proponent
+      true, // pop projectLead
+      true, // pop projectDirector
       commentPeriodPipeline);
     Utils.recordAction('Get', 'Project', args.swagger.params.auth_payload.preferred_username, args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
-    serializeProjectVirtuals(data);
+    //serializeProjectVirtuals(data);
     defaultLog.info('Got comment project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -366,7 +349,8 @@ exports.protectedPost = function (args, res, next) {
 
   var Project = mongoose.model('Project');
   var project = new Project(obj);
-  project.proponent = mongoose.Types.ObjectId(obj.proponent)
+  project.projectLead = mongoose.Types.ObjectId(obj.projectLead);
+  project.projectDirector = mongoose.Types.ObjectId(obj.projectDirector);
   // Define security tag defaults
   project.read = ['sysadmin', 'staff'];
   project.write = ['sysadmin', 'staff'];
@@ -751,45 +735,25 @@ exports.protectedPut = async function (args, res, next) {
   delete projectObj.write;
   delete projectObj.delete;
 
-  obj.type = projectObj.type;
-  obj.build = projectObj.build;
-  obj.sector = projectObj.sector;
+  obj.agreements = projectObj.agreements;
   obj.description = projectObj.description;
-  obj.location = projectObj.location;
+  obj.overlappingRegionalDistricts = projectObj.overlappingRegionalDistricts;
   obj.region = projectObj.region;
-  obj.status = projectObj.status;
-  obj.eaStatus = projectObj.eaStatus;
+  obj.projectPhase = projectObj.projectPhase;
   obj.name = projectObj.name;
-  // obj.eaStatusDate = new Date(projectObj.eaStatusDate);
-  // obj.projectStatusDate = new Date(projectObj.projectStatusDate);
-  // obj.substantiallyDate = new Date(projectObj.substantiallyDate);
-  // obj.activeDate = new Date(projectObj.activeDate);
-  obj.substantially = projectObj.substantially;
 
   obj.centroid = projectObj.centroid;
 
   // Contacts
-  obj.projLead = projectObj.projLead;
-  obj.execProjectDirector = projectObj.execProjectDirector;
-  obj.complianceLead = projectObj.complianceLead;
+  obj.projectLead = projectObj.projectLead;
+  obj.projectDirector = projectObj.projectDirector;
 
-  obj.CEAAInvolvement = projectObj.CEAAInvolvement;
-  obj.CEAALink = projectObj.CEAALink;
-  obj.eacDecision = projectObj.eacDecision;
-  if (projectObj.decisionDate) {
-    obj.decisionDate = new Date(projectObj.decisionDate);
-  }
+  obj.existingLandUsePlans = projectObj.existingLandUsePlans;
+  obj.existingLandUsePlanURLs = projectObj.existingLandUsePlanURLs;
+  obj.engagementStatus = projectObj.engagementStatus;
+  obj.backgroundInfo = projectObj.backgroundInfo;
 
-  try {
-    obj.intake = {};
-    obj.intake.investment = projectObj.intake.investment;
-    obj.intake.investmentNotes = projectObj.intake.notes;
-  } catch (e) {
-    // Missing info
-    console.log("Missing:", e);
-    // fall through
-  }
-  obj.proponent = projectObj.proponent;
+  obj.partner = projectObj.partner;
 
   console.log("Updating with:", obj);
   console.log("--------------------------");
@@ -1021,14 +985,4 @@ var addStandardQueryFilters = function (query, args) {
     });
   }
   return query;
-}
-
-var serializeProjectVirtuals = function (data) {
-  var Project = mongoose.model('Project');
-  _.each(data, function (item) {
-    if (item) {
-      var project = new Project(item);
-      item.nature = project.get('nature');
-    }
-  });
 }

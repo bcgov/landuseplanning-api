@@ -99,10 +99,13 @@ exports.recordAction = async function (action, meta, payload, objId = null) {
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, postQueryPipelineSteps = false, populateProject = false) {
+exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
   return new Promise(async function (resolve, reject) {
     var theModel = mongoose.model(modelType);
     var projection = {};
+    console.log('populateProponent: ', populateProponent);
+    console.log('populateProjectLead: ', populateProjectLead);
+    console.log('populateProjectDirector: ', populateProjectDirector);
 
     // Fields we always return
     var defaultFields = ['_id',
@@ -136,6 +139,34 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
       },
       populateProponent && {
         "$unwind": "$proponent"
+      },
+      populateProjectLead && {
+        '$lookup': {
+          "from": "lup",
+          "localField": "projectLead",
+          "foreignField": "_id",
+          "as": "projectLead"
+        }
+      },
+      populateProjectLead && {
+        "$unwind": {
+          "path": "$projectLead",
+          "preserveNullAndEmptyArrays": true
+        }
+      },
+      populateProjectDirector && {
+        '$lookup': {
+          "from": "lup",
+          "localField": "projectDirector",
+          "foreignField": "_id",
+          "as": "projectDirector"
+        }
+      },
+      populateProjectDirector && {
+        "$unwind": {
+          "path": "$projectDirector",
+          "preserveNullAndEmptyArrays": true
+        }
       },
       populateProject && {
         '$lookup': {
@@ -215,7 +246,13 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
       }
     }
 
+    let collation = {
+      locale: 'en',
+      strength: 2
+    };
+
     theModel.aggregate(aggregations)
+      .collation(collation)
       .exec()
       .then(resolve, reject);
   });

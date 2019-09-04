@@ -22,7 +22,6 @@ module.exports = require('../models')('CommentPeriod', {
     isPublished          : { type: Boolean, default: '' },
     isResolved           : { type: Boolean, default: '' },
     isVetted             : { type: String, default: '' },
-    milestone            : { type: 'ObjectId', ref: 'Milestone', default: null, index: true },
     openHouses           : [{ type: Mixed, default: {} }],
     periodType           : { type: String, default: '' },
     phase                : { type: String, default: '' },

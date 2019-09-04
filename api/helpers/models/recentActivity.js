@@ -8,6 +8,7 @@
     documentUrl         : { type: String, default: null },
     contentUrl          : { type: String, default: null },
     type                : { type: String, default: null },
+    pcp                 : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
     active              : { type: Boolean, default: false },
     project             : { type: 'ObjectId', ref: 'Project', default: null, index: true },
     content             : { type: String, default: null },

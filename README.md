@@ -29,7 +29,7 @@ source ~/.bash_profile
 env
 ```
 
-The above env command will show you your environment variables and allow you to check that the correct values are present.
+The above `env` command will show you your environment variables and allow you to check that the correct values are present.
 
 Start the server by running `npm start`
 
@@ -87,31 +87,26 @@ Recommend reviewing the [Open API Specification](https://swagger.io/docs/specifi
 
 # Initial Setup
 
-We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  asdf uses a config file called .tool-versions that the reshim command picks up so that all collaborators are using the same versions.
+### Node and NPM 
 
-Run the following commands:
-```
-asdf plugin-add nodejs https://github.com/asdf-vm/asdf-nodejs.git
-```
+We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  Installation of *asdf* and required node packages is covered [here](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/node_npm_requirements.md)
 
-Next open .tool-versions and take the node version there and use it in the following command so that that specific version of node is present on your local machine for asdf to switch to.  Replace the "x" characters in the following command with what's in .tool-versions.
+### Database 
 
-```
-asdf install nodejs x.xx.x
-```
+If possible, acquire a dump of the database from one of the live environments.  
 
-Then run the following commands every time you need to switch npm versions in a project.
+To make sure you don't have an existing old copy (careful, this is destructive):
 
 ```
-asdf reshim nodejs
-npm i -g yarn
-yarn install
+mongo
+use epic
+db.dropDatabase()
 ```
 
+#### Load database dump:
 
-Acquire a dump of the database from one of the live environments.  
-
-Make sure you don't have an old copy (careful, this is destructive):
+1. Download and unzip archived dump file.
+2. Restore the dump into your local mongo:
 
 ```
 mongo
@@ -119,7 +114,12 @@ use landuseplanning
 db.dropDatabase()
 ```
 
-Restore the database dump you have from the old epic system.
+#### Seed with generated data:
+
+Described in [seed README](seed/README.md)
+
+#### Loading legacy data:
+To restore the database dump you have from the old epic system (ie ESM):
 
 ```
 mongorestore -d epic dump/[old_database_name_most_likely_esm]
@@ -127,15 +127,36 @@ mongorestore -d epic dump/[old_database_name_most_likely_esm]
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
-Seed local database as described in [seed README](seed/README.md)
 
-Start server by running `npm start` in root
+### Database Conversions
+
+NB: These are useless once they are run on an environments' database, and are only stored here for historical record.
+
+In the process of developing this application, we have database conversion scripts that must be run in order to update the db model so that the newest codebase can work properly.  There are currently two methods of doing the database conversion depending on how long-lived and memory intensive the conversion is.
+
+### Method 1: db-migrate
+### Method 2: node scripts named migration* in the root folder
+
+### Method 1
+
+See https://www.npmjs.com/package/db-migrate for documentation on running the db migrate command.  General use case for local development at the root folder:
+
+```./node_modules/db-migrate/bin/db-migrate up```
+
+For dev/test/prod environments, you will need to change the database.json file in the root folder accordingly and run with the --env param.  See https://www.npmjs.com/package/db-migrate for more information.
+
+### Method 2
+
+In the root folder, there are files named migrateDocuments*.js.  These are large, long-running, memory intensive scripts that operated on the vast majority of the EPIC documents.  As a result, db-migrate was slow and unreliable given the nature of the connection to our database.  As a result, these nodejs scripts operate using the mongodb driver in nodejs and can handle a more complicated, robust approach to doing the database conversion.  They can be run from your local machine as long as there is a ```oc port-forward``` tunnel from your machine to the openshift mongdb database.  Change the user/pass/port/host/authenticationDatabase params and the script will execute against the mongodb pod directly. 
+
 
 ## Developing
 
-See [Code Reuse Strategy](code_reuse_strategy.md)
+See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/dev_guides/code_reuse_strategy.md)
 
 # Testing
+
+An overview of the EPIC test stack can be found [here](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/testing_components.md).
 
 This project is using [jest](http://jestjs.io/) as a testing framework. You can run tests with
 `yarn test` or `jest`. Running either command with the `--watch` flag will re-run the tests every time a file is changed.

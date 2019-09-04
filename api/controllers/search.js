@@ -252,24 +252,6 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     );
   }
 
-  if (collection === 'Project') {
-    // pop proponent if exists.
-    aggregation.push(
-      {
-        '$lookup': {
-          "from": "lup",
-          "localField": "proponent",
-          "foreignField": "_id",
-          "as": "proponent"
-        }
-      });
-    aggregation.push(
-      {
-        "$unwind": "$proponent"
-      },
-    );
-  }
-
   if (collection === 'Group') {
     // pop project and user if exists.
     aggregation.push(

@@ -31,16 +31,14 @@ module.exports = require('../models')('Document', {
     documentSource: { type: String, default: '' },  // PROJECT/COMMENT/COMMENT_PERIOD/etc
 
     // Pre-filled with documentFileName in the UI
-    displayName: { type: String, default: '' },
-    milestone: { type: 'ObjectId', default: null },
-    dateUploaded: { type: Date, default: Date.now() },
-    datePosted: { type: Date, default: Date.now() },
-    type: { type: 'ObjectId', default: null },
-    description: { type: String, default: '' },
-    documentAuthor: { type: 'ObjectId', default: null },
-    projectPhase: { type: 'ObjectId', default: null },
-    eaoStatus: { type: String, default: '' },
-    keywords: { type: String, default: '' },
+    displayName      : { type:String, default:'' },
+    dateUploaded     : { type: Date, default: Date.now() },
+    datePosted       : { type: Date, default: Date.now() },
+    description      : { type:String, default:'' },
+    documentAuthor   : { type: String, default: ''},
+    projectPhase     : { type: String, default: '' },
+    eaoStatus        : { type: String, default: '' },
+    keywords         : { type: String, default: '' },
 
     // TODO
     labels: [{ type: Mixed, default: {} }]

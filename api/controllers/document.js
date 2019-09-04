@@ -23,7 +23,6 @@ var getSanitizedFields = function (fields) {
       'internalOriginalName',
       'displayName',
       'labels',
-      'documentType',
       'datePosted',
       'dateUploaded',
       'dateReceived',
@@ -35,9 +34,7 @@ var getSanitizedFields = function (fields) {
       'internalSize',
       'checkbox',
       'project',
-      'type',
       'documentAuthor',
-      'milestone',
       'projectPhase',
       'description',
       'keywords',
@@ -152,7 +149,7 @@ exports.unProtectedPost = async function (args, res, next) {
               doc.documentFileName = upfile.originalname;
               doc.dateUploaded = new Date();
               doc.datePosted = new Date();
-              doc.documentAuthor = mongoose.Types.ObjectId(args.body.documentAuthor);
+              doc.documentAuthor = args.body.documentAuthor;
 
               doc.save()
                 .then(async function (d) {
@@ -522,18 +519,18 @@ exports.protectedPost = async function (args, res, next) {
                   doc.read.push('public');
                 }
               }
-              doc.milestone = mongoose.Types.ObjectId(args.swagger.params.milestone.value);
-              doc.type = mongoose.Types.ObjectId(args.swagger.params.type.value);
-              doc.documentAuthor = mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value);
+              doc.documentAuthor = args.swagger.params.documentAuthor.value;
 
               doc.dateUploaded = args.swagger.params.dateUploaded.value;
               doc.datePosted = args.swagger.params.datePosted.value;
               doc.description = args.swagger.params.description.value;
-              doc.projectPhase = mongoose.Types.ObjectId(args.swagger.params.projectPhase.value);
+              doc.projectPhase = args.swagger.params.projectPhase.value;
+
               // Update who did this?
               console.log('unlink');
               doc.save()
                 .then(function (d) {
+                  console.log(d._id);
                   defaultLog.info("Saved new document object:", d._id);
                   Utils.recordAction('Post', 'Document', args.swagger.params.auth_payload.preferred_username, d._id);
                   return Actions.sendResponse(res, 200, d);
@@ -610,10 +607,7 @@ exports.protectedPut = async function (args, res, next) {
 
   obj.displayName = args.swagger.params.displayName.value;
 
-  obj.milestone = args.swagger.params.milestone ? mongoose.Types.ObjectId(args.swagger.params.milestone.value) : null;
-  obj.type = args.swagger.params.type ? mongoose.Types.ObjectId(args.swagger.params.type.value) : null;
-  obj.documentAuthor = args.swagger.params.documentAuthor ? mongoose.Types.ObjectId(args.swagger.params.documentAuthor.value) : null;
-  obj.projectPhase = args.swagger.params.projectPhase ? mongoose.Types.ObjectId(args.swagger.params.projectPhase.value) : null;
+  obj.projectPhase = args.swagger.params.projectPhase.value;
 
   obj.dateUploaded = args.swagger.params.dateUploaded.value;
   obj.datePosted = args.swagger.params.datePosted.value;

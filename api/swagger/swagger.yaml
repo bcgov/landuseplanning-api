@@ -110,30 +110,22 @@ definitions:
     example: name|type
     #TODO: Fix enums
     enum: &projectFields
-      - cEAAInvolvement
-      - cELead
-      - cELeadEmail
-      - cELeadPhone
+      - existingLandUsePlans
       - centroid
       - currentPhase
       - currentPhaseCode
       - currentPhaseName
       - description
-      - eacDecision
-      - location
+      - engagementStatus
+      - backgroundInfo
+      - overlappingRegionalDistricts
       - name
       - projectLead
-      - projectLeadEmail
-      - projectLeadPhone
-      - proponent
+      - partner
       - region
-      - responsibleEPD
-      - responsibleEPDEmail
-      - responsibleEPDPhone
+      - projectDirector
       - type
       - read
-      - build
-      - nature
   TopicSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
@@ -147,8 +139,8 @@ definitions:
       - -region
       - +currentPhaseName
       - -currentPhaseName
-      - +eacDecision
-      - -eacDecision
+      - +engagementStatus
+      - -engagementStatus
 
 ### Project Definitions
   RecentActivityId:
@@ -316,7 +308,6 @@ definitions:
       - isPublished
       - isResolved
       - isVetted
-      - milestone
       - openHouses
       - periodType
       - phase
@@ -432,6 +423,9 @@ definitions:
     #TODO: Fix enums
     enum: &organizationFields
       - name
+    enum: &organizationSortByFields
+      - +name
+      - -name
 
 ### Topic Definitions
   TopicId:
@@ -693,20 +687,15 @@ paths:
           description: "Get a Project that relates to this subpurpose."
         - in: query
           collectionFormat: multi
-          name: status
+          name: projectPhase
           type: string
           required: false
-          description: "Get a Project that relates to this status."
+          description: "Get a Project that relates to this Project Phase."
         - in: query
-          name: type
+          name: agreements
           type: string
           required: false
-          description: "Get a Project that relates to this type."
-        - in: query
-          name: subtype
-          type: string
-          required: false
-          description: "Get a Project that relates to this subtype."
+          description: "Get a Project that relates to this agreements."
         - in: query
           name: agency
           type: string
@@ -814,20 +803,15 @@ paths:
           description: "Get a Project that relates to this subpurpose."
         - in: query
           collectionFormat: multi
-          name: status
+          name: projectPhase
           type: string
           required: false
-          description: "Get a Project that relates to this status."
+          description: "Get a Project that relates to this Project Phase."
         - in: query
-          name: type
+          name: agreements
           type: string
           required: false
-          description: "Get a Project that relates to this type."
-        - in: query
-          name: subtype
-          type: string
-          required: false
-          description: "Get a Project that relates to this subtype."
+          description: "Get a Project that relates to this agreements."
         - in: query
           name: agency
           type: string
@@ -1777,25 +1761,10 @@ paths:
             type: string
             enum: *projectFields
         - in: query
-          name: cEAAInvolvement
+          name: existingLandUsePlans
           type: string
           required: false
-          description: "CEAA Involvement"
-        - in: query
-          name: cELead
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's name"
-        - in: query
-          name: cELeadEmail
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's email"
-        - in: query
-          name: cELeadPhone
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's phone number"
+          description: "Existing Land Use Plans"
         - in: query
           name: centroid
           required: false
@@ -1822,14 +1791,19 @@ paths:
           description: "A description of the project"
           type: string
         - in: query
-          name: eacDecision
+          name: engagementStatus
           required: false
-          description: "The decision determined by the EAO"
+          description: "The status of the engagement determined by the LUP team"
           type: string
         - in: query
-          name: location
+          name: backgroundInfo
           required: false
-          description: "The location of the proposed project"
+          description: "The background information for the project"
+          type: string
+        - in: query
+          name: overlappingRegionalDistricts
+          required: false
+          description: "The Overlapping Regional Districts of the proposed project"
           type: string
         - in: query
           name: name
@@ -1842,19 +1816,9 @@ paths:
           description: "The name of the lead of the project"
           type: string
         - in: query
-          name: projectLeadEmail
+          name: partner
           required: false
-          description: "The email of the lead of the project"
-          type: string
-        - in: query
-          name: projectLeadPhone
-          required: false
-          description: "The phone number of the lead of the project"
-          type: string
-        - in: query
-          name: proponent
-          required: false
-          description: "A reference to an organization object"
+          description: "Partner organizations"
           type: string
         - in: query
           name: region
@@ -1862,24 +1826,14 @@ paths:
           description: "Region of the project"
           type: string
         - in: query
-          name: responsibleEPD
+          name: projectDirector
           required: false
-          description: "Name of the EPD"
+          description: "Name of the PD"
           type: string
         - in: query
-          name: responsibleEPDEmail
+          name: agreements
           required: false
-          description: "Email of the EPD"
-          type: string
-        - in: query
-          name: responsibleEPDPhone
-          required: false
-          description: "Phone of the EPD"
-          type: string
-        - in: query
-          name: type
-          required: false
-          description: "Type of the project"
+          description: "agreements of the project"
           type: string
         - in: query
           name: read
@@ -1924,25 +1878,10 @@ paths:
             type: string
             enum: *projectFields
         - in: query
-          name: cEAAInvolvement
+          name: existingLandUsePlans
           type: string
           required: false
-          description: "CEAA Involvement"
-        - in: query
-          name: cELead
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's name"
-        - in: query
-          name: cELeadEmail
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's email"
-        - in: query
-          name: cELeadPhone
-          type: string
-          required: false
-          description: "The Compliance and Enforcement Lead's phone number"
+          description: "Existing Land Use Plans"
         - in: query
           name: centroid
           required: false
@@ -1969,14 +1908,19 @@ paths:
           description: "A description of the project"
           type: string
         - in: query
-          name: eacDecision
+          name: engagementStatus
           required: false
-          description: "The decision determined by the EAO"
+          description: "The engagement status determined by the LUP team"
           type: string
         - in: query
-          name: location
+          name: backgroundInfo
           required: false
-          description: "The location of the proposed project"
+          description: "The background information for the project"
+          type: string
+        - in: query
+          name: overlappingRegionalDistricts
+          required: false
+          description: "The Overlapping Regional Districts of the proposed project"
           type: string
         - in: query
           name: name
@@ -1989,19 +1933,9 @@ paths:
           description: "The name of the lead of the project"
           type: string
         - in: query
-          name: projectLeadEmail
+          name: partner
           required: false
-          description: "The email of the lead of the project"
-          type: string
-        - in: query
-          name: projectLeadPhone
-          required: false
-          description: "The phone number of the lead of the project"
-          type: string
-        - in: query
-          name: proponent
-          required: false
-          description: "A reference to an organization object"
+          description: "Partner organizations"
           type: string
         - in: query
           name: region
@@ -2009,24 +1943,14 @@ paths:
           description: "Region of the project"
           type: string
         - in: query
-          name: responsibleEPD
+          name: projectDirector
           required: false
-          description: "Name of the EPD"
+          description: "Name of the PD"
           type: string
         - in: query
-          name: responsibleEPDEmail
+          name: agreements
           required: false
-          description: "Email of the EPD"
-          type: string
-        - in: query
-          name: responsibleEPDPhone
-          required: false
-          description: "Phone of the EPD"
-          type: string
-        - in: query
-          name: type
-          required: false
-          description: "Type of the project"
+          description: "agreements of the project"
           type: string
         - in: query
           name: read
@@ -2377,11 +2301,6 @@ paths:
           description: "The documentAuthor of the file."
           required: false
           type: string
-        - name: milestone
-          in: formData
-          description: "The milestone of the file."
-          required: false
-          type: string
         - name: projectPhase
           in: formData
           description: "The project phase of the file."
@@ -2604,11 +2523,6 @@ paths:
         - name: documentAuthor
           in: formData
           description: "The documentAuthor of the file."
-          required: false
-          type: string
-        - name: milestone
-          in: formData
-          description: "The milestone of the file."
           required: false
           type: string
         - name: projectPhase
@@ -3431,6 +3345,11 @@ paths:
       description: "Retreiving public organizations."
       parameters:
         - in: query
+          name: companyType
+          description: "Organizations of a particular company type"
+          type: string
+          required: false
+        - in: query
           name: fields
           description: "Organization fields to return."
           required: false
@@ -3439,6 +3358,14 @@ paths:
           items:
             type: string
             enum: *organizationFields
+        - in: query
+          name: sortBy
+          description: "Organization fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *organizationSortByFields
       responses:
         "200":
           description: "Success"
