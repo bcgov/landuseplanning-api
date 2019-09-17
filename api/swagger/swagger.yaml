@@ -122,6 +122,8 @@ definitions:
       - name
       - projectLead
       - partner
+      - traditionalTerritory
+      - agreements
       - region
       - projectDirector
       - type
@@ -165,7 +167,6 @@ definitions:
     example: name|type
     #TODO: Fix enums
     enum: &activityFields
-      - type
       - tags
       - geometry
       - geometryName
@@ -1821,6 +1822,11 @@ paths:
           description: "Partner organizations"
           type: string
         - in: query
+          name: traditionalTerritory
+          required: false
+          description: "First Nation Traditional Territory"
+          type: string
+        - in: query
           name: region
           required: false
           description: "Region of the project"
@@ -1936,6 +1942,11 @@ paths:
           name: partner
           required: false
           description: "Partner organizations"
+          type: string
+        - in: query
+          name: traditionalTerritory
+          required: false
+          description: "First Nation Traditional Territory"
           type: string
         - in: query
           name: region

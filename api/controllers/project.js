@@ -15,6 +15,7 @@ var tagList = [
   'overlappingRegionalDistricts',
   'name',
   'partner',
+  'traditionalTerritory',
   'region',
   'projectDirector',
   'agreements',
@@ -754,6 +755,7 @@ exports.protectedPut = async function (args, res, next) {
   obj.backgroundInfo = projectObj.backgroundInfo;
 
   obj.partner = projectObj.partner;
+  obj.traditionalTerritory = projectObj.traditionalTerritory;
 
   console.log("Updating with:", obj);
   console.log("--------------------------");

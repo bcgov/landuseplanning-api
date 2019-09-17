@@ -13,8 +13,9 @@ var definition = {
   overlappingRegionalDistricts: { type: String, default: '' },
   name: { type: String, trim: true, text: true },
   partner: { type: String, trim: true },
+  traditionalTerritory: { type: String, trim: true },
   region: { type: String, default: '' },
-  agreements: { agreements: String, default: '' },
+  agreements: { type: String, trim: true },
 
   //Everything else
   addedBy: { type: String, default: '' },
