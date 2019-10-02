@@ -39,7 +39,7 @@ var setPermissionsFromEaoStatus = function (status, comment) {
     case 'Published':
       defaultLog.info('Publishing Comment');
       comment.eaoStatus = 'Published';
-      comment.read = ['public', 'staff', 'sysadmin'];
+      comment.read = ['staff', 'sysadmin'];
       break;
     case 'Pending':
       defaultLog.info('Pending Comment');
