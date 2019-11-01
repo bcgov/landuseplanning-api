@@ -14,7 +14,7 @@
     "body-parser": "^1.18.3",
     "fast-csv": "^2.4.1",
     "lodash": "^4.17.12",
-    "mongoose": "^4.13.6",
+    "mongoose": "^5.7.7",
     "request": "^2.88.0"
   },
   "scripts": {
