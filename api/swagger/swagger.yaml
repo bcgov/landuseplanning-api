@@ -118,6 +118,8 @@ definitions:
       - description
       - engagementStatus
       - backgroundInfo
+      - engagementInfo
+      - documentInfo
       - overlappingRegionalDistricts
       - name
       - projectLead
@@ -294,6 +296,7 @@ definitions:
       - classificationRoles
       - classifiedPercent
       - commenterRoles
+      - commentPeriodInfo
       - dateAdded
       - dateCompleted
       - dateCompletedEst
@@ -1801,6 +1804,16 @@ paths:
           description: "The background information for the project"
           type: string
         - in: query
+          name: engagementInfo
+          required: false
+          description: "The engagement information for the project"
+          type: string
+        - in: query
+          name: documentInfo
+          required: false
+          description: "The document page information for the project"
+          type: string
+        - in: query
           name: overlappingRegionalDistricts
           required: false
           description: "The Overlapping Regional Districts of the proposed project"
@@ -1916,6 +1929,16 @@ paths:
           name: backgroundInfo
           required: false
           description: "The background information for the project"
+          type: string
+        - in: query
+          name: engagementInfo
+          required: false
+          description: "The engagement information for the project"
+          type: string
+        - in: query
+          name: documentInfo
+          required: false
+          description: "The document page information for the project"
           type: string
         - in: query
           name: overlappingRegionalDistricts
@@ -4587,6 +4610,11 @@ paths:
           items:
             type: string
             enum: *commentPeriodSortByFields
+        - in: query
+          name: commentPeriodInfo
+          required: false
+          description: "The information for the comment period"
+          type: string
       responses:
         "200":
           description: "Success"

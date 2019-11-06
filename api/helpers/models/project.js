@@ -10,6 +10,8 @@ var definition = {
   description: { type: String, default: '' },
   engagementStatus: { type: String, default: '' },
   backgroundInfo: { type: String, default: '' },
+  engagementInfo: { type: String, default: '' },
+  documentInfo: { type: String, default: '' },
   overlappingRegionalDistricts: { type: String, default: '' },
   name: { type: String, trim: true, text: true },
   partner: { type: String, trim: true },

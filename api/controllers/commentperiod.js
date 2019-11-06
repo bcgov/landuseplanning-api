@@ -43,6 +43,7 @@ var getSanitizedFields = function (fields) {
       'userCan',
       'vettedPercent',
       'vettingRoles',
+      'commentPeriodInfo',
 
       'read',
       'write',
@@ -284,6 +285,7 @@ exports.protectedPost = async function (args, res, next) {
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     project: mongoose.Types.ObjectId(obj.project),
+    commentPeriodInfo: obj.commentPeriodInfo,
     read: ['staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
     delete: ['staff', 'sysadmin']
@@ -320,6 +322,7 @@ exports.protectedPut = async function (args, res, next) {
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
+    commentPeriodInfo: obj.commentPeriodInfo
   };
 
   // TODO: Revise this so we are not explicitly setting permissions

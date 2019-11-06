@@ -12,6 +12,8 @@ var tagList = [
   'description',
   'engagementStatus',
   'backgroundInfo',
+  'engagementInfo',
+  'documentInfo',
   'overlappingRegionalDistricts',
   'name',
   'partner',
@@ -752,6 +754,8 @@ exports.protectedPut = async function (args, res, next) {
   obj.existingLandUsePlanURLs = projectObj.existingLandUsePlanURLs;
   obj.engagementStatus = projectObj.engagementStatus;
   obj.backgroundInfo = projectObj.backgroundInfo;
+  obj.engagementInfo = projectObj.engagementInfo;
+  obj.documentInfo = projectObj.documentInfo;
 
   obj.partner = projectObj.partner;
 

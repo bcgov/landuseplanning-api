@@ -36,6 +36,7 @@ module.exports = require('../models')('CommentPeriod', {
     vettedPercent        : { type: Number, default: '' },
     vettingRoles         : [{ type: String, default: '' }],
     commentIdCount       : { type: Number, default: 0 },
+    commentPeriodInfo    : { type: String, default: '' },
 
     // Permissions
     read                : [{ type: String, trim: true, default: 'sysadmin' }],
