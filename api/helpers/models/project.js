@@ -13,7 +13,7 @@ var definition = {
   engagementInfo: { type: String, default: '' },
   documentInfo: { type: String, default: '' },
   overlappingRegionalDistricts: { type: String, default: '' },
-  name: { type: String, trim: true, text: true },
+  name: { type: String, trim: true },
   partner: { type: String, trim: true },
   region: { type: String, default: '' },
   agreements: { type: String, trim: true },

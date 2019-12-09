@@ -10,8 +10,8 @@
     pcp                 : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
     active              : { type: Boolean, default: false },
     project             : { type: 'ObjectId', ref: 'Project', default: null, index: true },
-    content             : { type: String, default: null },
-    headline            : { type: String, default: null },
+    content             : { type: String, default: null, index: true },
+    headline            : { type: String, default: null, index: true },
 
     // Permissions
     read             : [{ type: String, trim: true, default: 'sysadmin' }],
