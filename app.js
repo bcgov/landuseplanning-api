@@ -10,6 +10,7 @@ var mongoose      = require("mongoose");
 var passport      = require("passport");
 var auth          = require("./api/helpers/auth");
 var models        = require("./api/helpers/models");
+var textSchema    = require("./api/helpers/textSchema");
 var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
 var winston       = require('winston');
 var bodyParser    = require('body-parser');
@@ -123,6 +124,9 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/commentperiod');
       require('./api/helpers/models/topic');
       defaultLog.info("db model loading done.");
+
+      // Build text index
+      textSchema.genTextSchema();
 
       app.listen(3000, '0.0.0.0', function() {
         defaultLog.info("Started server on port 3000");
