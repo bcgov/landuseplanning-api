@@ -2,6 +2,22 @@ import groovy.json.JsonOutput
 import groovy.json.JsonSlurper
 import java.util.regex.Pattern
 
+@NonCPS
+String getUrlFromRoute(String routeName, String projectNameSpace = '') {
+
+  def nameSpaceFlag = ''
+  if(projectNameSpace?.trim()) {
+    nameSpaceFlag = "-n ${projectNameSpace}"
+  }
+
+  def url = sh (
+    script: "oc get routes ${nameSpaceFlag} -o wide --no-headers | awk \'/${routeName}/{ print match(\$0,/edge/) ?  \"https://\"\$2 : \"http://\"\$2 }\'",
+    returnStdout: true
+  ).trim()
+
+  return url
+}
+
 /*
  * Sends a rocket chat notification
  */
@@ -123,19 +139,75 @@ def nodejsSonarqube () {
           checkout scm
           dir('sonar-runner') {
             try {
+
+              // get sonarqube url
+              def SONARQUBE_URL = getUrlFromRoute('sonarqube').trim()
+              echo "${SONARQUBE_URL}"
+
+              // sonarqube report link
+              def SONARQUBE_STATUS_URL = "${SONARQUBE_URL}/api/qualitygates/project_status?projectKey=lup-api"
+
+              // The name of your SonarQube project
+              def SONAR_PROJECT_NAME = 'lup-api'
+
+              // The project key of your SonarQube project
+              def SONAR_PROJECT_KEY = 'lup-api'
+
+              // The base directory of your project.
+              // This is relative to the location of the `sonar-runner` directory within your project.
+              // More accurately this is relative to the Gradle build script(s) that manage the SonarQube Scanning
+              def SONAR_PROJECT_BASE_DIR = '../'
+
+              // The source code directory you want to scan.
+              // This is relative to the project base directory.
+              def SONAR_SOURCES = './api'
+
+              boolean firstScan = false;
+
+              def OLD_SONAR_DATE
+
+              try {
+                // get old sonar report date
+                def OLD_SONAR_DATE_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
+                OLD_SONAR_DATE = sonarGetDate (OLD_SONAR_DATE_JSON)
+              } catch (error) {
+                firstScan = true
+              }
+
               // run scan
-              sh("oc extract secret/sonarqube-secrets --to=${env.WORKSPACE}/sonar-runner --confirm")
-              SONARQUBE_URL = sh(returnStdout: true, script: 'cat sonarqube-route-url')
+              //sh("oc extract secret/sonarqube-secrets --to=${env.WORKSPACE}/sonar-runner --confirm")
+              //SONARQUBE_URL = sh(returnStdout: true, script: 'cat sonarqube-route-url')
 
-              sh "npm install typescript"
-              sh returnStdout: true, script: "./gradlew sonarqube -Dsonar.host.url=${SONARQUBE_URL} -Dsonar. -Dsonar.verbose=true --stacktrace --info"
+              sh "npm install typescript@3.2.1"
+              sh returnStdout: true, script: "./gradlew sonarqube --stacktrace --info --debug \
+                -Dsonar.host.url=${SONARQUBE_URL} \
+                -Dsonar. \
+                -Dsonar.verbose=true \
+                -Dsonar.projectName='${SONAR_PROJECT_NAME}' \
+                -Dsonar.projectKey=${SONAR_PROJECT_KEY} \
+                -Dsonar.projectBaseDir=${SONAR_PROJECT_BASE_DIR} \
+                -Dsonar.sources=${SONAR_SOURCES}"
 
-              // wiat for scan status to update
-              sleep(30)
+              if ( !firstScan ) {
+                // wiat for report to be updated
+                if ( !sonarqubeReportComplete ( OLD_SONAR_DATE, SONARQUBE_STATUS_URL ) ) {
+                  echo "sonarqube report failed to complete, or timed out"
+
+                  notifyRocketChat(
+                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                    ROCKET_DEPLOY_WEBHOOK
+                  )
+
+                  currentBuild.result = "FAILURE"
+                  exit 1
+                }
+              } else {
+                sleep (30)
+              }
 
               // check if sonarqube passed
-              sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
-              SONARQUBE_STATUS_URL = sh(returnStdout: true, script: 'cat sonarqube-status-api')
+              //sh("oc extract secret/sonarqube-status-urls --to=${env.WORKSPACE}/sonar-runner --confirm")
+              //SONARQUBE_STATUS_URL = sh(returnStdout: true, script: 'cat sonarqube-status-api')
 
               SONARQUBE_STATUS_JSON = sh(returnStdout: true, script: "curl -w '%{http_code}' '${SONARQUBE_STATUS_URL}'")
               SONARQUBE_STATUS = sonarGetStatus (SONARQUBE_STATUS_JSON)
@@ -196,7 +268,6 @@ pipeline {
               try {
                 sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
                 ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
-                ROCKET_QA_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-qa-webhook')
 
                 echo "Building lup-api develop branch"
                 openshiftBuild bldCfg: 'lup-api', showBuildLogs: 'true'
@@ -256,10 +327,6 @@ pipeline {
               ROCKET_DEPLOY_WEBHOOK
             )
 
-            notifyRocketChat(
-              "@all A new version of lup-api is now in Dev and ready for QA. \n Changes to Dev: \n ${CHANGELOG}",
-              ROCKET_QA_WEBHOOK
-            )
           } catch (error) {
             notifyRocketChat(
               "@all The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
