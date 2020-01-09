@@ -90,7 +90,9 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   }
   // Load up DB
   var options = {
-    useMongoClient: true,
+    //useMongoClient: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
     poolSize: 10,
     user: db_username,
     pass: db_password,
