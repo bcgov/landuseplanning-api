@@ -338,7 +338,7 @@ pipeline {
             }
           }
         }
-        
+        /*
         stage('Unit Tests') {
           steps {
             script {
@@ -346,7 +346,7 @@ pipeline {
               def result = nodejsTester()
             }
           }
-        }
+        }*/
 
         stage('Sonarqube') {
           steps {
