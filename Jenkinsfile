@@ -290,7 +290,7 @@ pipeline {
             }
           }
         }
-
+/*
         stage('Unit Tests') {
           steps {
             script {
@@ -307,7 +307,7 @@ pipeline {
               def result = nodejsSonarqube()
             }
           }
-        }
+        }*/
       }
     }
 
