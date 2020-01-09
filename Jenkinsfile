@@ -44,6 +44,54 @@ def sonarGetStatus (jsonPayload) {
 }
 
 /*
+ * takes in a sonarqube status json payload
+ * and returns the date string
+ */
+def sonarGetDate (jsonPayload) {
+  def jsonSlurper = new JsonSlurper()
+  return jsonSlurper.parseText(jsonPayload).projectStatus.periods[0].date
+}
+
+boolean imageTaggingComplete ( String sourceTag, String destinationTag, String action, def iterations = 6 ) {
+  def sourceImageName = sh returnStdout: true, script: "oc describe istag/lup-admin-static:${sourceTag} | head -n 1".trim()
+  def destinationImageName = sh returnStdout: true, script: "oc describe istag/lup-admin-static:${destinationTag} | head -n 1".trim()
+  int delay = 0
+
+  for (int i=0; i<iterations; i++){
+    echo "waiting to ${action}, iterator is: ${i}, the max iterator is: ${iterations} \n ${sourceTag}: ${sourceImageName} ${destinationTag}: ${destinationImageName}"
+
+    if(sourceImageName == destinationImageName){
+      echo "${action} complete"
+      return true
+    } else {
+      delay = (1<<i) // exponential backoff
+      sleep(delay)
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/lup-admin-static:${destinationTag} | head -n 1".trim()
+    }
+  }
+  return false
+}
+
+boolean sonarqubeReportComplete ( String oldDate, String sonarqubeStatusUrl, def iterations = 6 ) {
+  def oldSonarqubeReportDate = oldDate
+  def newSonarqubeReportDate = sonarGetDate ( sh ( returnStdout: true, script: "curl -w '%{http_code}' '${sonarqubeStatusUrl}'" ) )
+  int delay = 0
+
+  for (int i=0; i<iterations; i++) {
+    echo "waiting for sonarqube report, iterator is: ${i}, max iterator is: ${iterations} \n Old Date: ${oldSonarqubeReportDate} \n New Date: ${newSonarqubeReportDate}"
+    if (oldSonarqubeReportDate != newSonarqubeReportDate) {
+      echo "sonarqube report complete"
+      return true
+    } else {
+      delay = (1<<i) // exponential backoff
+      sleep(delay)
+      newSonarqubeReportDate = sonarGetDate ( sh ( returnStdout: true, script: "curl -w '%{http_code}' '${sonarqubeStatusUrl}'" ) )
+    }
+  }
+  return false
+}
+
+/*
  * Updates the global pastBuilds array: it will iterate recursively
  * and add all the builds prior to the current one that had a result
  * different than 'SUCCESS'.
@@ -290,7 +338,7 @@ pipeline {
             }
           }
         }
-/*
+        
         stage('Unit Tests') {
           steps {
             script {
@@ -307,7 +355,7 @@ pipeline {
               def result = nodejsSonarqube()
             }
           }
-        }*/
+        }
       }
     }
 
