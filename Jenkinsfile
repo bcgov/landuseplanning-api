@@ -319,7 +319,7 @@ pipeline {
             openshiftTag destStream: 'lup-api', verbose: 'false', destTag: 'dev', srcStream: 'lup-api', srcTag: "${IMAGE_HASH}"
             sleep 5
             // todo lup-test? what depCfg?
-            openshiftVerifyDeployment depCfg: 'lup-api', namespace: 'esm-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            openshiftVerifyDeployment depCfg: 'gcpe-lup-api-dev', namespace: 'xti26n-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
