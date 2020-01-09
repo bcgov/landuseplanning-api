@@ -5,7 +5,7 @@ var Mixed = mongoose.Schema.Types.Mixed;
 var definition = {
 
   //Needed for default view
-  existingLandUsePlans: { type: String, default: '' },
+  existingLandUsePlans: { type: Array, default: [] },
   centroid: [{ type: Mixed, default: 0.00 }],
   description: { type: String, default: '' },
   engagementStatus: { type: String, default: '' },
@@ -20,7 +20,7 @@ var definition = {
 
   //Everything else
   addedBy: { type: String, default: '' },
-  existingLandUsePlanURLs: { type: String, default: '' },
+  // existingLandUsePlanURLs: { type: String, default: '' },
   code: { type: String, default: '' },
   commodity: { type: String, default: '' },
   currentPhaseName: { type: String, default: '' },
