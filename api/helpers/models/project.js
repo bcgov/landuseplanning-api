@@ -12,7 +12,7 @@ var definition = {
   backgroundInfo: { type: String, default: '' },
   engagementInfo: { type: String, default: '' },
   documentInfo: { type: String, default: '' },
-  overlappingRegionalDistricts: { type: String, default: '' },
+  overlappingRegionalDistricts: { type: Array, default: [] },
   name: { type: String, trim: true },
   partner: { type: String, trim: true },
   region: { type: String, default: '' },
