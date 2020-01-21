@@ -1,7 +1,6 @@
 module.exports = require('../models')('Comment', {
     author: { type: String, default: null },
     comment: { type: String, default: null },
-    commentId: { type: Number, default: null },
     dateAdded: { type: Date, default: Date.now() },
     datePosted: { type: Date, default: Date.now() },
     dateUpdated: { type: Date, default: Date.now() },

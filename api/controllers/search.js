@@ -18,7 +18,7 @@ function isEmpty(obj) {
 
 var generateExpArray = async function (field, roles) {
   var expArray = [];
-  if (field && field !== undefined) {
+  if (field && field != undefined) {
     var queryString = qs.parse(field);
     console.log("queryString:", queryString);
     await Promise.all(Object.keys(queryString).map(async item => {
@@ -393,7 +393,7 @@ var executeQuery = async function (args, res, next) {
   var sortField = undefined;
 
   var sortingValue = {};
-  sortBy.map((value) => {
+  sortBy.forEach((value) => {
     sortDirection = value.charAt(0) == '-' ? -1 : 1;
     sortField = value.slice(1);
     sortingValue[sortField] = sortDirection;

@@ -291,6 +291,99 @@ def nodejsSonarqube () {
   }
 }
 
+def zapScanner () {
+  openshift.withCluster() {
+    openshift.withProject() {
+      // The jenkins-slave-zap image has been purpose built for supporting ZAP scanning.
+      podTemplate(
+        label: 'owasp-zap',
+        name: 'owasp-zap',
+        serviceAccount: 'jenkins',
+        cloud: 'openshift',
+        slaveConnectTimeout: 300,
+        containers: [
+          containerTemplate(
+            name: 'jnlp',
+            image: '172.50.0.2:5000/openshift/jenkins-slave-zap',
+            resourceRequestCpu: '500m',
+            resourceLimitCpu: '1000m',
+            resourceRequestMemory: '3Gi',
+            resourceLimitMemory: '4Gi',
+            workingDir: '/home/jenkins',
+            command: '',
+            args: '${computer.jnlpmac} ${computer.name}'
+          )
+        ]
+      ){
+        node('owasp-zap') {
+          // The name  of the ZAP report
+          def ZAP_REPORT_NAME = "zap-report.xml"
+
+          // The location of the ZAP reports
+          def ZAP_REPORT_PATH = "/zap/wrk/${ZAP_REPORT_NAME}"
+
+          // The name of the "stash" containing the ZAP report
+          def ZAP_REPORT_STASH = "zap-report"
+
+          // Dynamicaly determine the target URL for the ZAP scan ...
+          def TARGET_URL = getUrlFromRoute('lup-public-dev', 'xti26n-dev').trim() + "/api"
+
+          echo "Target URL: ${TARGET_URL}"
+
+          dir('zap') {
+            try {
+              // The ZAP scripts are installed on the root of the jenkins-slave-zap image.
+              // When running ZAP from there the reports will be created in /zap/wrk/ by default.
+              // ZAP has problems with creating the reports directly in the Jenkins
+              // working directory, so they have to be copied over after the fact.
+              def retVal = sh (
+                returnStatus: true,
+                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
+              )
+              echo "Return value is: ${retVal}"
+
+              // Copy the ZAP report into the Jenkins working directory so the Jenkins tools can access it.
+              sh (
+                returnStdout: true,
+                script: "mkdir -p ./wrk/ && cp /zap/wrk/${ZAP_REPORT_NAME} ./wrk/"
+              )
+            } catch (error) {
+              /*
+              // revert dev from backup
+              echo "Reverting dev image form backup..."
+              openshiftTag destStream: 'lup-public-static', verbose: 'false', destTag: 'dev', srcStream: 'lup-public-static', srcTag: 'dev-backup'
+
+              // wait for revert to complete
+              if(!imageTaggingComplete ('dev-backup', 'dev', 'revert')) {
+                echo "Failed to revert dev image after Zap scan failed, please revert the dev image manually from dev-backup"
+
+                notifyRocketChat(
+                  "@all The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n Automatic revert of the deployment also failed, please revert the dev image manually from dev-backup",
+                  ROCKET_DEPLOY_WEBHOOK
+                )
+
+                currentBuild.result = "FAILURE"
+                exit 1
+              }
+              */
+              notifyRocketChat(
+                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              currentBuild.result = "FAILURE"
+              exit 1
+            }
+          }
+          // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
+          echo "Stash the report for the publishing stage ..."
+          stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
+        }
+      }
+    }
+  }
+}
+
 def CHANGELOG = "No new changes"
 def IMAGE_HASH = "latest"
 
@@ -359,6 +452,15 @@ pipeline {
       }
     }
 
+    stage('Zap') {
+      steps {
+        script {
+          echo "Running Zap Scan"
+          def result = zapScanner()
+        }
+      }
+    }
+
     stage('Deploy to dev'){
       steps {
         script {
@@ -381,7 +483,36 @@ pipeline {
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
-            throw new Exception("Deploy failed")
+            throw new Exception("Dev Deploy failed")
+          }
+        }
+      }
+    }
+
+    stage('Deploy to test'){
+      steps {
+        script {
+          try {
+            input "Deploy to test?"
+            echo "Deploying to test..."
+            openshiftTag destStream: 'lup-api', verbose: 'false', destTag: 'test', srcStream: 'lup-api', srcTag: "${IMAGE_HASH}"
+            sleep 5
+            // todo lup-test? what depCfg?
+            openshiftVerifyDeployment depCfg: 'lup-api-test', namespace: 'xti26n-test', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            echo ">>>> Deployment Complete"
+
+            notifyRocketChat(
+              "A new version of lup-api is now in test, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+
+          } catch (error) {
+            notifyRocketChat(
+              "@all The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+            currentBuild.result = "FAILURE"
+            throw new Exception("Test Deploy failed")
           }
         }
       }
