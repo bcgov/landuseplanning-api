@@ -452,15 +452,6 @@ pipeline {
       }
     }
 
-    stage('Zap') {
-      steps {
-        script {
-          echo "Running Zap Scan"
-          def result = zapScanner()
-        }
-      }
-    }
-
     stage('Deploy to dev'){
       steps {
         script {
@@ -485,6 +476,15 @@ pipeline {
             currentBuild.result = "FAILURE"
             throw new Exception("Dev Deploy failed")
           }
+        }
+      }
+    }
+
+    stage('Zap') {
+      steps {
+        script {
+          echo "Running Zap Scan"
+          def result = zapScanner()
         }
       }
     }

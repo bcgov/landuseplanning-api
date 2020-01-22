@@ -1,0 +1,186 @@
+import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
+import java.util.regex.Pattern
+
+/*
+ * Sends a rocket chat notification
+ */
+def notifyRocketChat(text, url) {
+    def rocketChatURL = url
+    def message = text.replaceAll(~/\'/, "")
+    def payload = JsonOutput.toJson([
+      "username":"Jenkins",
+      "icon_url":"https://wiki.jenkins.io/download/attachments/2916393/headshot.png",
+      "text": message
+    ])
+
+    sh("curl -X POST -H 'Content-Type: application/json' --data \'${payload}\' ${rocketChatURL}")
+}
+
+boolean imageTaggingComplete ( String sourceTag, String destinationTag, String action, def iterations = 6 ) {
+  def sourceImageName = sh returnStdout: true, script: "oc describe istag/lup-api:${sourceTag} | head -n 1".trim()
+  def destinationImageName = sh returnStdout: true, script: "oc describe istag/lup-api:${destinationTag} | head -n 1".trim()
+  int delay = 0
+
+  for (int i=0; i<iterations; i++){
+    echo "waiting to ${action}, iterator is: ${i}, the max iterator is: ${iterations} \n ${sourceTag}: ${sourceImageName} ${destinationTag}: ${destinationImageName}"
+
+    if(sourceImageName == destinationImageName){
+      echo "${action} complete"
+      return true
+    } else {
+      delay = (1<<i) // exponential backoff
+      sleep(delay)
+      destinationImageName = sh returnStdout: true, script: "oc describe istag/lup-api:${destinationTag} | head -n 1".trim()
+    }
+  }
+  return false
+}
+
+/*
+ * Updates the global pastBuilds array: it will iterate recursively
+ * and add all the builds prior to the current one that had a result
+ * different than 'SUCCESS'.
+ */
+def buildsSinceLastSuccess(previousBuild, build) {
+  if ((build != null) && (build.result != 'SUCCESS')) {
+    pastBuilds.add(build)
+    buildsSinceLastSuccess(pastBuilds, build.getPreviousBuild())
+  }
+}
+
+/*
+ * Generates a string containing all the commit messages from
+ * the builds in pastBuilds.
+ */
+@NonCPS
+def getChangeLog(pastBuilds) {
+  def log = ""
+  for (int x = 0; x < pastBuilds.size(); x++) {
+    for (int i = 0; i < pastBuilds[x].changeSets.size(); i++) {
+      def entries = pastBuilds[x].changeSets[i].items
+      for (int j = 0; j < entries.length; j++) {
+        def entry = entries[j]
+        log += "* ${entry.msg} by ${entry.author} \n"
+      }
+    }
+  }
+  return log;
+}
+
+def CHANGELOG = "No new changes"
+def IMAGE_HASH = "latest"
+
+pipeline {
+  agent any
+  options {
+    disableResume()
+  }
+  stages {
+    stage('Prepare for deployment') {
+      agent any
+      steps {
+        script {
+          pastBuilds = []
+          buildsSinceLastSuccess(pastBuilds, currentBuild);
+          CHANGELOG = getChangeLog(pastBuilds);
+
+          echo ">>>>>>Changelog: \n ${CHANGELOG}"
+
+          try {
+            sh("oc extract secret/rocket-chat-secrets --to=${env.WORKSPACE} --confirm")
+            ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
+          } catch (error) {
+            notifyRocketChat(
+              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+            throw error
+          }
+        }
+      }
+    }
+
+    stage('Tag image') {
+      agent any
+      steps {
+        script {
+          try {
+            // backup
+            echo "Backing up prod image..."
+            openshiftTag destStream: 'lup-api', verbose: 'false', destTag: 'prod-backup', srcStream: 'lup-api', srcTag: 'prod'
+
+            // wait for backup to complete
+            if( !imageTaggingComplete ('prod', 'prod-backup', 'backup')) {
+              echo "Prod image backup failed"
+
+              notifyRocketChat(
+                "@all The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n prod image backup failed",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              currentBuild.result = "FAILURE"
+              exit 1
+            }
+
+            // deploy
+            echo "Tagging prod image"
+            openshiftTag destStream: 'lup-api', verbose: 'false', destTag: 'prod', srcStream: 'lup-api', srcTag: "test"
+
+            // wait for deployment to complete
+            if ( !imageTaggingComplete ('latest', 'prod', 'deploy')) {
+              echo "Prod image deployment failed"
+
+              notifyRocketChat(
+                "@all The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n Prod image deployment failed",
+                ROCKET_DEPLOY_WEBHOOK
+              )
+
+              currentBuild.result = "FAILURE"
+              exit 1
+            } else {
+              sleep (5)
+            }
+          } catch (error) {
+            notifyRocketChat(
+              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+            throw error
+          }
+        }
+      }
+    }
+
+    stage('Verify deployment'){
+      steps {
+        script {
+          try {
+            echo "Verifying that the deployment was successful"
+            openshiftVerifyDeployment depCfg: 'landuseplanning-api', namespace: 'xti26n-prod', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
+            echo ">>>> Deployment Complete"
+
+          } catch (error) {
+            notifyRocketChat(
+              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
+              ROCKET_DEPLOY_WEBHOOK
+            )
+            currentBuild.result = "FAILURE"
+            throw new Exception("Deploy failed")
+          }
+        }
+      }
+    }
+
+    stage('Success Notifications') {
+      steps {
+        script {
+          notifyRocketChat(
+            "A new version of landuseplanning-api is now in Production, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+            ROCKET_DEPLOY_WEBHOOK
+          )
+        }
+      }
+    }
+  }
+}
