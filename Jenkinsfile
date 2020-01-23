@@ -493,7 +493,7 @@ pipeline {
               ROCKET_DEPLOY_WEBHOOK
             )
             input "Deploy to test?"
-          } catch (error)
+          } catch (error) {
             echo "User has chosen to not deploy to test"
             echo ">>>> Pipeline Complete"
             currentBuild.result = 'SUCCESS'
