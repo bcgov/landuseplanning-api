@@ -463,11 +463,6 @@ pipeline {
             openshiftVerifyDeployment depCfg: 'gcpe-lup-api-dev', namespace: 'xti26n-dev', replicaCount: 1, verbose: 'false', verifyReplicaCount: 'false', waitTime: 600000
             echo ">>>> Deployment Complete"
 
-            notifyRocketChat(
-              "*[API][DEV]* A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
-              ROCKET_DEPLOY_WEBHOOK
-            )
-
           } catch (error) {
             notifyRocketChat(
               "@all *[API][ERROR]* The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
@@ -494,7 +489,7 @@ pipeline {
         script {
           try {
             notifyRocketChat(
-              "@all *[API][DEV][INPUT]* A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG} \n\n _*Input is required to move this build to TEST*_",
+              "@all *[API][DEV][INPUT]* A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG} \n\n _*Input is required to move this build to TEST*_\n${env.BUILD_URL}/input",
               ROCKET_DEPLOY_WEBHOOK
             )
             input "Deploy to test?"
