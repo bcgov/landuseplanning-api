@@ -92,7 +92,7 @@ pipeline {
             ROCKET_DEPLOY_WEBHOOK = sh(returnStdout: true, script: 'cat rocket-deploy-webhook')
           } catch (error) {
             notifyRocketChat(
-              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              "@all *[API][ERROR]* The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             throw error
@@ -115,7 +115,7 @@ pipeline {
               echo "Prod image backup failed"
 
               notifyRocketChat(
-                "@all The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n prod image backup failed",
+                "@all *[API][ERROR]* The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n prod image backup failed",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -132,7 +132,7 @@ pipeline {
               echo "Prod image deployment failed"
 
               notifyRocketChat(
-                "@all The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n Prod image deployment failed",
+                "@all *[API][ERROR]* The latest deployment, ${env.BUILD_DISPLAY_NAME} of landuseplanning-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n Prod image deployment failed",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -143,7 +143,7 @@ pipeline {
             }
           } catch (error) {
             notifyRocketChat(
-              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              "@all *[API][ERROR]* The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             throw error
@@ -162,7 +162,7 @@ pipeline {
 
           } catch (error) {
             notifyRocketChat(
-              "@all The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
+              "@all *[API][ERROR]* The deployment ${env.BUILD_DISPLAY_NAME} of landuseplanning-api, seems to be broken.\n ${env.BUILD_URL}\n Error: ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
@@ -176,7 +176,7 @@ pipeline {
       steps {
         script {
           notifyRocketChat(
-            "A new version of landuseplanning-api is now in Production, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+            "*[API][PROD]* A new version of landuseplanning-api is now in Production, build ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
             ROCKET_DEPLOY_WEBHOOK
           )
         }

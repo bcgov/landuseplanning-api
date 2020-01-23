@@ -242,7 +242,7 @@ def nodejsSonarqube () {
                   echo "sonarqube report failed to complete, or timed out"
 
                   notifyRocketChat(
-                    "@all The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
+                    "@all *[API][ERROR]* The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-admin seems to be broken. \n ${env.BUILD_URL}\n Error: \n sonarqube report failed to complete, or timed out : ${SONARQUBE_URL}",
                     ROCKET_DEPLOY_WEBHOOK
                   )
 
@@ -264,7 +264,7 @@ def nodejsSonarqube () {
                 echo "Scan Failed"
 
                 notifyRocketChat(
-                  "@all The latest build ${env.BUILD_DISPLAY_NAME} of lup-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed",
+                  "@all *[API][ERROR]* The latest build ${env.BUILD_DISPLAY_NAME} of lup-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n Sonarqube scan failed",
                   ROCKET_DEPLOY_WEBHOOK
                 )
 
@@ -276,7 +276,7 @@ def nodejsSonarqube () {
 
             } catch (error) {
               notifyRocketChat(
-                "@all The latest build ${env.BUILD_DISPLAY_NAME} of lup-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error}",
+                "@all *[API][ERROR]* The latest build ${env.BUILD_DISPLAY_NAME} of lup-api seems to be broken. \n ${env.BUILD_URL}\n Error: \n ${error}",
                 ROCKET_DEPLOY_WEBHOOK
               )
               throw error
@@ -367,7 +367,7 @@ def zapScanner () {
               }
               */
               notifyRocketChat(
-                "@all The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                "@all *[API][ERROR]* The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
@@ -423,7 +423,7 @@ pipeline {
                 echo ">> IMAGE_HASH: ${IMAGE_HASH}"
               } catch (error) {
                 notifyRocketChat(
-                  "@all The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+                  "@all *[API][ERROR]* The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
                   ROCKET_DEPLOY_WEBHOOK
                 )
                 throw error
@@ -464,13 +464,13 @@ pipeline {
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
-              "A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+              "*[API][DEV]* A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
               ROCKET_DEPLOY_WEBHOOK
             )
 
           } catch (error) {
             notifyRocketChat(
-              "@all The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              "@all *[API][ERROR]* The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
@@ -493,6 +493,10 @@ pipeline {
       steps {
         script {
           try {
+            notifyRocketChat(
+              "@all *[API][DEV][INPUT]* A new version of lup-api is now in Dev, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG} \n\n _*Input is required to move this build to TEST*_",
+              ROCKET_DEPLOY_WEBHOOK
+            )
             input "Deploy to test?"
             echo "Deploying to test..."
             openshiftTag destStream: 'lup-api', verbose: 'false', destTag: 'test', srcStream: 'lup-api', srcTag: "${IMAGE_HASH}"
@@ -502,13 +506,13 @@ pipeline {
             echo ">>>> Deployment Complete"
 
             notifyRocketChat(
-              "A new version of lup-api is now in test, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
+              "*[API][TEST]* A new version of lup-api is now in test, build: ${env.BUILD_DISPLAY_NAME} \n Changes: \n ${CHANGELOG}",
               ROCKET_DEPLOY_WEBHOOK
             )
 
           } catch (error) {
             notifyRocketChat(
-              "@all The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
+              "@all *[API][ERROR]* The build ${env.BUILD_DISPLAY_NAME} of lup-api, seems to be broken.\n ${env.BUILD_URL}\n Error: \n ${error.message}",
               ROCKET_DEPLOY_WEBHOOK
             )
             currentBuild.result = "FAILURE"
