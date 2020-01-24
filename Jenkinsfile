@@ -326,7 +326,7 @@ def zapScanner () {
           def ZAP_REPORT_STASH = "zap-report"
 
           // Dynamicaly determine the target URL for the ZAP scan ...
-          def TARGET_URL = getUrlFromRoute('lup-public-dev', 'xti26n-dev').trim() + "/api/docs"
+          def TARGET_URL = getUrlFromRoute('lup-public-dev', 'xti26n-dev').trim() + "/api/docs/"
 
           echo "Target URL: ${TARGET_URL}"
 
