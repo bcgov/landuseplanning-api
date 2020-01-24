@@ -326,7 +326,7 @@ def zapScanner () {
           def ZAP_REPORT_STASH = "zap-report"
 
           // Dynamicaly determine the target URL for the ZAP scan ...
-          def TARGET_URL = getUrlFromRoute('lup-public-dev', 'xti26n-dev').trim() + "/api"
+          def TARGET_URL = getUrlFromRoute('lup-public-dev', 'xti26n-dev').trim() + "/api/docs"
 
           echo "Target URL: ${TARGET_URL}"
 
@@ -338,7 +338,7 @@ def zapScanner () {
               // working directory, so they have to be copied over after the fact.
               def retVal = sh (
                 returnStatus: true,
-                script: "/zap/zap-api-scan.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL} -f openapi"
+                script: "/zap/zap-api-scan.py -d -x ${ZAP_REPORT_NAME} -t ${TARGET_URL} -f openapi"
               )
               echo "Return value is: ${retVal}"
 
@@ -367,7 +367,7 @@ def zapScanner () {
               }
               */
               notifyRocketChat(
-                "@all *[API][ERROR]* \n The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: ${SONARQUBE_URL} \n dev mage was reverted",
+                "@all *[API][ERROR]* \n The latest build, ${env.BUILD_DISPLAY_NAME} of landuseplanning-public seems to be broken. \n ${env.BUILD_URL}\n Error: \n Zap scan failed: \n dev image was reverted",
                 ROCKET_DEPLOY_WEBHOOK
               )
 
