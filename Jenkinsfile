@@ -338,7 +338,7 @@ def zapScanner () {
               // working directory, so they have to be copied over after the fact.
               def retVal = sh (
                 returnStatus: true,
-                script: "/zap/zap-baseline.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL}"
+                script: "/zap/zap-api-scan.py -x ${ZAP_REPORT_NAME} -t ${TARGET_URL} -f openapi"
               )
               echo "Return value is: ${retVal}"
 
