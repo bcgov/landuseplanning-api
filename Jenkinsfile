@@ -305,7 +305,7 @@ def zapScanner () {
           containerTemplate(
             name: 'jnlp',
             //image: '172.50.0.2:5000/openshift/jenkins-slave-zap',
-            image: 'hub.docker.com/r/owasp/zap2docker-weekly',
+            image: '172.50.0.2:5000/owasp/zap2docker-weekly',
             resourceRequestCpu: '500m',
             resourceLimitCpu: '1000m',
             resourceRequestMemory: '3Gi',
