@@ -379,8 +379,8 @@ def zapScanner () {
             }
           }
           // Stash the ZAP report for publishing in a different stage (which will run on a different pod).
-          echo "Stash the report for the publishing stage ..."
-          stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
+          //echo "Stash the report for the publishing stage ..."
+          //stash name: "${ZAP_REPORT_STASH}", includes: "zap/wrk/*.xml"
         }
       }
     }
