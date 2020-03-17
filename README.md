@@ -1,6 +1,6 @@
-# bcgov/gcpe-lup-api
+# bcgov/landuseplanning-api
 
-Minimal API for the GCPE LUP [Public](https://github.com/bcgov/gcpe-lup-public) and [Admin](https://github.com/bcgov/gcpe-lup-admin) apps -->
+Minimal API for the GCPE LUP [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
 
 ## How to run this
 
@@ -79,7 +79,7 @@ npm start
 
 The API is defined in `swagger.yaml`.
 
-If the this gcpe-lup-api is running locally, you can view the api docs at: `http://localhost:3000/api/docs/`
+If the this landuseplanning-api is running locally, you can view the api docs at: `http://localhost:3000/api/docs/`
 
 This project uses npm package `swagger-tools` via `./app.js` to automatically generate the express server and its routes.
 
