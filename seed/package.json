@@ -1,11 +1,11 @@
 {
-  "name": "gcpe-lup-api-seed",
+  "name": "landuseplanning-api-seed",
   "version": "0.0.1",
   "author": "Mark Lisé",
   "contributors": [
     "Mark Lisé <mark@digitalspace.ca>"
   ],
-  "description": "GCPE LUP API SEED",
+  "description": "LUP API SEED",
   "keywords": [],
   "license": "Apache 2.0",
   "main": "seed",

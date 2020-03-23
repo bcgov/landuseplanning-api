@@ -58,7 +58,7 @@
         "displayName": "GIT Source Repo URL",
         "description": "A GIT URL to your source code.",
         "required": true,
-        "value": "https://github.com/bcgov/gcpe-lup-api"
+        "value": "https://github.com/bcgov/landuseplanning-api"
       },
       {
         "name": "GIT_REPO_BRANCH",

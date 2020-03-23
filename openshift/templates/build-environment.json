@@ -339,7 +339,7 @@
       "displayName": "Name",
       "description": "The name assigned to all of the frontend objects defined in this template.",
       "required": true,
-      "value": "gcpe-lup-api"
+      "value": "landuseplanning-api"
     },
     {
       "name": "MONGO_IMAGE_NAMESPACE",
@@ -363,7 +363,7 @@
       "name": "APPLICATION_DOMAIN",
       "displayName": "Application Hostname",
       "description": "The exposed hostname that will route to the Node.js service, if left blank a value will be defaulted.",
-      "value": "gcpe-lup-dev.pathfinder.gov.bc.ca/api"
+      "value": "lup-dev.pathfinder.gov.bc.ca/api"
 
     },
     {
@@ -394,7 +394,7 @@
     {
       "name": "DATABASE_NAME",
       "displayName": "Database Name",
-      "value": "gcpe-lup"
+      "value": "landuseplanning"
     },
     {
       "name": "DATABASE_ADMIN_PASSWORD",
@@ -428,7 +428,7 @@
       "name": "APP_IMAGE_NAME",
       "displayName": "Application image name.",
       "description": "Application image name.",
-      "value": "gcpe-lup-api",
+      "value": "landuseplanning-api",
       "required": true
     },
     {

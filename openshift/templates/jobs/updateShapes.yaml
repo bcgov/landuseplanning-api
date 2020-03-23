@@ -34,12 +34,12 @@ spec:
             - name: AUTH_ENDPOINT
               value: ''
             - name: JSON_PAYLOAD
-              value: '{"text":"Shapes Import Job for gcpe-lup Completed Successfully!"}'
+              value: '{"text":"Shapes Import Job for landuseplanning Completed Successfully!"}'
             - name: JSON_PAYLOAD_FAIL
-              value: '{"text":"Shapes Import Job for gcpe-lup Failed!"}'
+              value: '{"text":"Shapes Import Job for landuseplanning Failed!"}'
             - name: NOTIFICATION_URL
               value: ''
-            image: docker-registry.default.svc:5000/xti26n-tools/gcpe-lup-api:master
+            image: docker-registry.default.svc:5000/xti26n-tools/landuseplanning-api:master
             command:
             - bash
             - -c

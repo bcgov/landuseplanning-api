@@ -7,12 +7,12 @@ var projects = [];
 // Dev
 // MongoClient.connect("mongodb://user7DW:KKmTLpYBBvbUKAVD@localhost:5555/epic", async function(err, client) {
 // Test
-MongoClient.connect("mongodb://userS1J:lD8w0UKaYcGaFtW4@localhost:5555/gcpe-lup", async function(err, client) {
+MongoClient.connect("mongodb://userS1J:lD8w0UKaYcGaFtW4@localhost:5555/landuseplanninglanduseplanning", async function(err, client) {
 // Local
 //MongoClient.connect("mongodb://localhost/epic", async function(err, client) {
   if(!err) {
     console.log("We are connected");
-    const db = client.db('gcpe-lup');
+    const db = client.db('landuseplanning');
 
     var data = await getProjects(db);
     console.log("data:", data.length);
@@ -27,7 +27,7 @@ MongoClient.connect("mongodb://userS1J:lD8w0UKaYcGaFtW4@localhost:5555/gcpe-lup"
 
 async function getProjects(db) {
   return new Promise(function (resolve, reject) {
-    db.collection('gcpe-lup').find({_schemaName: "Project"})
+    db.collection('landuseplanning').find({_schemaName: "Project"})
       .toArray()
       .then(async function (data) {
         resolve(data);
@@ -37,7 +37,7 @@ async function getProjects(db) {
 
 async function processWork(project, db) {
   return new Promise(function (resolve, reject) {
-    db.collection('gcpe-lup')
+    db.collection('landuseplanning')
     .find({_schemaName: "Document", documentSource: "PROJECT", project: project._id})
     .toArray()
     .then(async function (docs) {
@@ -62,7 +62,7 @@ async function updateDocument(document, labels, db) {
   return new Promise(function (resolve, reject) {
     console.log("updating:", document._id);
     console.log("labels:", labels);
-    db.collection('gcpe-lup')
+    db.collection('landuseplanning')
     .update(
       {
           '_id': document._id

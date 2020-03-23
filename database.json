@@ -2,12 +2,12 @@
   "defaultEnv": "local",
   "local": {
     "driver": "mongodb",
-    "database": "gcpe-lup",
+    "database": "landuseplanning",
     "host": "localhost"
   },
   "dev": {
     "driver": "mongodb",
-    "database": "gcpe-lup",
+    "database": "landuseplanning",
     "user": "admin",
     "password": {
       "ENV": "MONGODB_PASSWORD"
@@ -18,7 +18,7 @@
   },
   "test": {
     "driver": "mongodb",
-    "database": "gcpe-lup",
+    "database": "landuseplanning",
     "user": "admin",
     "password": {
       "ENV": "MONGODB_PASSWORD"

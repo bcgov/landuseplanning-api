@@ -24,7 +24,7 @@ spec:
             - name: MONGODB_SVC_HOST
               value: '127.0.0.1'
             - name: JSON_PAYLOAD
-              value: '{"text":"Backup Job for GCPE-LUP Completed Successfully!"}'
+              value: '{"text":"Backup Job for LUP Completed Successfully!"}'
             - name: NOTIFICATION_URL
               value: ''
             image: registry.access.redhat.com/rhscl/mongodb-32-rhel7

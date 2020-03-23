@@ -9,42 +9,42 @@ tags:
   description: "Everything about Logging in"
   externalDocs:
     description: "Find out more"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "project"
   description: "Operations about projects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "recentActivity"
   description: "Operations about activities"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "document"
   description: "Operations about documents"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "organization"
   description: "Operations about organizations"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "user"
   description: "Operations about users"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "search"
   description: "Operations about searching"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "topic"
   description: "Operations about topic"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 schemes:
   - http
 securityDefinitions:

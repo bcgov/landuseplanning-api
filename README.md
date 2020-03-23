@@ -1,6 +1,6 @@
 # bcgov/landuseplanning-api
 
-Minimal API for the GCPE LUP [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
+Minimal API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
 
 ## How to run this
 
