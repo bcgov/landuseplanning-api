@@ -9,42 +9,42 @@ tags:
   description: "Everything about Logging in"
   externalDocs:
     description: "Find out more"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "project"
   description: "Operations about projects"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "recentActivity"
   description: "Operations about activities"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "document"
   description: "Operations about documents"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "organization"
   description: "Operations about organizations"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "user"
   description: "Operations about users"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "search"
   description: "Operations about searching"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 - name: "topic"
   description: "Operations about topic"
   externalDocs:
     description: "Find out more about our API"
-    url: "http://github.com/bcgov/gcpe-lup-api.git"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -534,6 +534,53 @@ definitions:
     enum: &vcSortByFields
       - +Type
       - -Type
+
+### Email Subscribe Definitions
+  EmailSubscribeId:
+    type: object
+    properties:
+      email:
+        type: string
+        example: "noreply@gov.bc.ca"
+  EmailSubscribeObject:
+    type: object
+    properties:
+      commentAuthor:
+        type: object
+        example: "A cool comment"
+        ## TODO: Add more fields here.
+        properties:
+          email:
+            type: string
+            example: "noreply@gov.bc.ca"
+          confirmed:
+            type: boolean
+            example: false
+  EmailSubscribeFields:
+    type: string
+    description: "Optional fields to return."
+    example: email|projects
+    #TODO: Fix enums
+    enum: &emailSubscribeFields
+      - 'email'
+      - 'project'
+      - 'confirmed'
+      - 'dateSubscribed'
+      - 'dateConfirmed'
+      - 'read'
+      - 'write'
+      - 'delete'
+  EmailSubscribeSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +project,-dateSubscribed
+    enum: &emailSubscribeSortByFields
+      - +email
+      - -email
+      - +project
+      - -project
+      - +dateSubscribed
+      - -dateSubscribed
 
 ### Resource Definitions
   Coordinates:
@@ -5371,6 +5418,236 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/VcObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  ### Email subscribe
+  /public/emailSubscribe:
+    x-swagger-router-controller: emailSubscribe
+    options:
+      tags:
+        - emailSubscribe
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on emailSubscribe Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - emailSubscribe
+      summary: "Create a new email subscribe object"
+      operationId: unProtectedPost
+      description: "Create a new emailSubscribe object."
+      summary: "Create a new emailSubscribe object."
+      parameters:
+        - name: emailSubscribe
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - emailSubscribe
+      summary: "Confirm an email address"
+      operationId: unProtectedPut
+      summary: "Confirm an email address"
+      parameters:
+        - in: query
+          name: email
+          type: string
+          required: true
+          description: "the email address to be confirmed"
+        - in: query
+          name: confirmKey
+          type: string
+          required: true
+          description: "The unique key to authenticate the request"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - emailSubscribe
+      summary: "Unsubscribe an email address"
+      operationId: unProtectedDelete
+      summary: "Unsubscribe an email address"
+      parameters:
+        - in: query
+          name: email
+          type: string
+          required: true
+          description: "the email address to be unsubscribed"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    head:
+      tags:
+        - emailSubscribe
+      summary: "Retrieve META associated with an email subscribe object."
+      operationId: publicHead
+      description: "Get META from the request, without returning the payload in question."
+      parameters:
+        - in: query
+          name: period
+          description: "The ID of the period associated with the email subscribe objects."
+          type: array
+          required: true
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Email Subscribe fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *emailSubscribeFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /emailSubscribe:
+    x-swagger-router-controller: emailSubscribe
+    options:
+      tags:
+        - emailSubscribe
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on emailSubscribe Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - emailSubscribe
+      summary: "Create a new email subscribe object"
+      operationId: protectedGet
+      description: "Create a new emailSubscribe object."
+      summary: "Create a new emailSubscribe object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - in: query
+          name: fields
+          description: "Email Subscribe fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *emailSubscribeFields
+        - in: query
+          name: email
+          type: string
+          required: false
+          description: "Email address of the subscriber"
+        - in: query
+          name: project
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+          description: "Project that emails belong to"
+        - in: query
+          name: confirmed
+          type: boolean
+          required: false
+          description: "If the email address has been confirmed"
+        - in: query
+          name: dateSubscribed
+          type: string
+          required: false
+          description: "The date that the email address was subscribed"
+        - in: query
+          name: dateConfirmed
+          type: string
+          required: false
+          description: "The date that the email address was confirmed"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    head:
+      tags:
+        - emailSubscribe
+      summary: "Retrieve META associated with an email subscribe object."
+      operationId: protectedHead
+      description: "Get META from the request, without returning the payload in question."
+      parameters:
+        - in: query
+          name: period
+          description: "The ID of the period associated with the email subscribe objects."
+          type: array
+          required: true
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Email Subscribe fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *emailSubscribeFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
         "403":
           description: "Access Denied"
           schema:
