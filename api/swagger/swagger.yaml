@@ -565,6 +565,7 @@ definitions:
       - 'email'
       - 'project'
       - 'confirmed'
+      - 'confirmKey'
       - 'dateSubscribed'
       - 'dateConfirmed'
       - 'read'
@@ -5567,7 +5568,6 @@ paths:
       summary: "Create a new email subscribe object"
       operationId: protectedGet
       description: "Create a new emailSubscribe object."
-      summary: "Create a new emailSubscribe object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -5643,6 +5643,54 @@ paths:
           items:
             type: string
             enum: *emailSubscribeFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /emailSubscribe/{email}:
+    x-swagger-router-controller: emailSubscribe
+    options:
+      tags:
+        - emailSubscribe
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on emailSubscribe Route"
+      parameters:
+        - name: email
+          in: path
+          description: "the email address to delete"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - emailSubscribe
+      summary: "Delete an email address"
+      operationId: protectedDelete
+      description: "Delete an email address"
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - project-system-admin
+      parameters:
+        - in: path
+          name: email
+          type: string
+          required: true
+          description: "the email address to be deleted"
       responses:
         "200":
           description: "Success"
