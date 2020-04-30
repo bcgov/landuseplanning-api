@@ -4,6 +4,7 @@ var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
+var Email = require('../helpers/email');
 
 /**
  * 
@@ -62,10 +63,12 @@ exports.publicHead = async function (args, res, next) {
 exports.unProtectedPost = async function (args, res, next) {
   var obj = args.swagger.params.emailSubscribe.value;
   defaultLog.info('Incoming new object:', obj);
-  var existingEmailId, existingProject;
+  var existingEmailId, existingProject, projectName, alreadyConfirmed, confirmKey;
   var isDuplicate = false;
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
+  var Project = mongoose.model('Project');
+  
 
   var emailSubscribe = new EmailSubscribe(obj);
   emailSubscribe._schemaName = 'EmailSubscribe';
@@ -78,12 +81,24 @@ exports.unProtectedPost = async function (args, res, next) {
   emailSubscribe.write = ['staff', 'sysadmin'];
   emailSubscribe.delete = ['staff', 'sysadmin'];
 
+  // get the project name
+  await Project.findOne({ _id: obj.project }, null, async function (err, entity) {
+    if (entity) {
+      projectName = entity.name;
+    } else {
+      projectName = 'Land Use Planning';
+    }
+  });
+
   // check if already exists
   // if so either update with the new project or exit graacefully
   await EmailSubscribe.findOne({ email: emailSubscribe.email }, null, async function (err, entity) {
     if (entity) {
+      defaultLog.info('Findone entity', entity);
       existingEmailId = entity._id;
       existingProjectArray = entity.project;
+      alreadyConfirmed = entity.confirmed;
+      confirmKey = entity.confirmKey;
       // check if pushed project is in array
       if (existingProjectArray.includes(mongoose.Types.ObjectId(obj.project)) ) {
         isDuplicate = true;
@@ -101,6 +116,17 @@ exports.unProtectedPost = async function (args, res, next) {
     var es = await EmailSubscribe.update({ _id: existingEmailId }, { $set: { project: existingProjectArray } });
     Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
     defaultLog.info('New project added to email subscribe:', es);
+    // have they already confirmed their email?
+    // if so, send the welcome for the new project
+    if (alreadyConfirmed) {
+      defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
+      await Email.sendWelcomeEmail(projectName, emailSubscribe.email);
+    }
+    // if not, resend the confirmation email for the new project
+    else {
+      defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
+      await Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey);
+    }
     return Actions.sendResponse(res, 200, es);
   }
  
@@ -108,6 +134,7 @@ exports.unProtectedPost = async function (args, res, next) {
     var c = await emailSubscribe.save();
     Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
     defaultLog.info('Saved new EmailSubscribe object:', c);
+    await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -128,10 +155,11 @@ exports.unProtectedPut = async function (args, res, next) {
   
   var emailAddress = args.swagger.params.email.value;
   var confirmKey = args.swagger.params.confirmKey.value;
-  var emailId, correctConfirmKey, confirmDate, previousConfirmed;
+  var emailId, correctConfirmKey, confirmDate, previousConfirmed, projectId, projectName;
   defaultLog.info('Put email subscribe:', emailAddress);
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
+  var Project = mongoose.model('Project');
 
   // find the object ID based on the email address
   await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
@@ -142,14 +170,20 @@ exports.unProtectedPut = async function (args, res, next) {
       correctConfirmKey = entity.confirmKey;
       confirmDate = new Date();
       previousConfirmed = entity.confirmed;
+      projectId = entity.project;
     } catch(e) {
       defaultLog.info('Error:', e);
       return Actions.sendResponse(res, 404, e);
     }
   });
 
+  defaultLog.info('PROJECT ID', projectId);
+
   // check if the auth key is valid, else respond with a 403
   if ( correctConfirmKey !== confirmKey) {
+    defaultLog.info('Confirm key mismatch', confirmKey, correctConfirmKey);
+    defaultLog.info('Submitted confirm key: ', confirmKey);
+    defaultLog.info('Correct confirm key:', correctConfirmKey);
     return Actions.sendResponse(res, 403, 'Access denied');
   }
 
@@ -164,6 +198,15 @@ exports.unProtectedPut = async function (args, res, next) {
     dateConfirmed: confirmDate,
   };
 
+  // get the project name
+  await Project.findOne({ _id: projectId }, null, async function (err, entity) {
+    if (entity) {
+      projectName = entity.name;
+    } else {
+      projectName = 'Land Use Planning';
+    }
+  });
+
   defaultLog.info('Incoming updated object:', emailSubscribe);
 
   try {
@@ -171,6 +214,7 @@ exports.unProtectedPut = async function (args, res, next) {
     var es = await EmailSubscribe.update({ _id: emailId }, { $set: emailSubscribe });
     Utils.recordAction('Put', 'EmailSubscribe', 'public', emailAddress);
     defaultLog.info('Email confirmed:', es);
+    await Email.sendWelcomeEmail(projectName, emailAddress);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -260,7 +304,7 @@ exports.protectedGet = async function (args, res, next) {
   // Build match query for project ID
   if (args.swagger.params.project && args.swagger.params.project.value) {
     console.log('ES Project ID', args.swagger.params.project.value);
-    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value), confirmed: true });
   }
 
   // Sort
