@@ -311,8 +311,9 @@ definitions:
       - isPublished
       - isResolved
       - isVetted
-      - externalEngagementTool
+      - commentingMethod
       - externalToolPopupText
+      - surveySelected
       - openHouses
       - periodType
       - phase
@@ -341,6 +342,95 @@ definitions:
       - -dateStarted
       - +dateCompleted
       - -dateCompleted
+
+### Survey Response Definitions
+  SurveyStatus:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be the following commands: publish, defer, reject, reset."
+        example: "publish"
+  SurveyResponseId:
+    type: object
+    properties:
+      survey:
+        type: string
+        example: "A survey response Id"
+  SurveyResponseObject:
+    type: object
+    properties:
+      project:
+        type: string
+        # example: ""
+  SurveyResponseFields:
+    type: string
+    description: "Optional fields to return."
+    example: author|dateAdded|project
+    enum: &surveyFields
+      - author
+      - location
+      - dateAdded
+      - project
+      - commentPeriod
+      - survey
+      - responses
+      - read
+      - write
+      - delete
+  SurveyResponseSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +author,-dateAdded
+    enum: &surveyResponseSortByFields
+      - +author
+      - -author
+      - +dateAdded
+      - -dateAdded
+
+      ### Survey Definitions
+  SurveyStatus:
+    type: object
+    properties:
+      status:
+        type: string
+        description: "Can be the following commands: publish, defer, reject, reset."
+        example: "publish"
+  SurveyId:
+    type: object
+    properties:
+      survey:
+        type: string
+        example: "A survey Id"
+  SurveyObject:
+    type: object
+    properties:
+      project:
+        type: string
+        # example: ""
+  SurveyFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|lastSaved|project
+    enum: &surveyFields
+      - name
+      - lastSaved
+      - project
+      - commentPeriod
+      - questions
+      - read
+      - write
+      - delete
+  SurveySortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or - for order)"
+    example: +name,-lastSaved
+    enum: &surveySortByFields
+      - +name
+      - -name
+      - +lastSaved
+      - -lastSaved
+
 ### Search Definitions
   SearchObject:
     type: object
@@ -4955,6 +5045,482 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/AuditObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## Survey Routes
+  /survey:
+    x-swagger-router-controller: survey
+    options:
+      tags:
+        - survey
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - survey
+      summary: "Create a new survey"
+      operationId: protectedPost
+      description: "Create a new survey object."
+      summary: "Create a new survey object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: survey
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        - in: query
+          name: projectId
+          type: string
+          required: true
+          description: "Id of the project"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - survey
+      summary: "Get a list of surveys"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a survey."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - in: query
+          name: project
+          description: "Surveys relating to a particular Project(s)"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: commentPeriod
+          description: "Survey selected by a particular CommentPeriod"
+          type: string
+          required: false
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: count
+          description: "Enables/Disables count. Query count=true to enable."
+          required: false
+          type: boolean
+        - in: query
+          name: sortBy
+          description: "Survey fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *surveySortByFields
+        - in: query
+          name: fields
+          description: "survey fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /survey/{surveyId}:
+    x-swagger-router-controller: survey
+    options:
+      tags:
+        - survey
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey GET Route"
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    head:
+      tags:
+        - survey
+      summary: "Retrieve META associated with a survey."
+      operationId: protectedHead
+      description: "Get META from the request, without returning the payload in question."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to get"
+          required: true
+          type: string
+        - in: query
+          name: project
+          description: "Surveys relating to a particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "Surveys that are deleted or not"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - survey
+      summary: "Get a survey"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a survey."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to get"
+          required: true
+          type: string
+        - in: query
+          name: project
+          description: "Surveys relating to a particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "survey fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - survey
+      summary: "Update/Upload a survey"
+      operationId: protectedPut
+      description: "Update a survey object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - application/json
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to update"
+          required: true
+          type: string
+        - name: cp
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/SurveyObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - survey
+      summary: "Delete a survey"
+      operationId: protectedDelete
+      description: "Delete a survey object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - application/json
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to delete"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/survey:
+    x-swagger-router-controller: survey
+    options:
+      tags:
+        - survey
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - survey
+      summary: "Get a list of surveys(s)"
+      operationId: publicGet
+      description: "Retreiving public survey(s)."
+      parameters:
+        - in: query
+          name: project
+          description: "Surveys relating to a particular Project(s)"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: commentPeriod
+          description: "Survey selected by a particular CommentPeriod"
+          type: string
+          required: false
+        - in: query
+          name: fields
+          description: "survey fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyFields
+        - in: query
+          name: sortBy
+          description: "Survey fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *surveySortByFields
+        - in: query
+          name: surveyInfo
+          required: false
+          description: "The information for the survey"
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/survey/{surveyId}:
+    x-swagger-router-controller: survey
+    options:
+      tags:
+        - survey
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey GET Route"
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - survey
+      summary: "Get a survey"
+      operationId: publicGet
+      description: "Public access to retreiving surveys."
+      parameters:
+        - name: surveyId
+          in: path
+          description: "ID of survey to get"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "survey fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyFields
+        
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+### Survey Response Routes
+  /public/survey:
+    x-swagger-router-controller: surveyResponse
+    options:
+      tags:
+        - survey
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey response route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - surveyResponse
+      summary: "Get a list of survey responses"
+      operationId: publicGet
+      description: "Retreiving public survey response(s)."
+      parameters:
+        - in: query
+          name: project
+          description: "Survey responses relating to a particular Project(s)"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        # - in: query
+        #   name: commentPeriod
+        #   description: "Survey response selected by a particular CommentPeriod"
+        #   type: string
+        #   required: false
+        - in: query
+          name: fields
+          description: "survey response fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyResponseFields
+        - in: query
+          name: sortBy
+          description: "Survey response fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *surveyResponseSortByFields
+        - in: query
+          name: surveyResponseInfo
+          required: false
+          description: "The information for the survey response"
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
         "403":
           description: "Access Denied"
           schema:

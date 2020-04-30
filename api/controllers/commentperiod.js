@@ -29,8 +29,9 @@ var getSanitizedFields = function (fields) {
       'isPublished',
       'isResolved',
       'isVetted',
-      'externalEngagementTool',
+      'commentingMethod',
       'externalToolPopupText',
+      'surveySelected',
       'openHouses',
       'periodType',
       'phase',
@@ -284,8 +285,9 @@ exports.protectedPost = async function (args, res, next) {
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
     instructions: obj.instructions,
-    externalEngagementTool: obj.externalEngagementTool,
+    commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    surveySelected: obj.surveySelected,
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     project: mongoose.Types.ObjectId(obj.project),
@@ -323,8 +325,9 @@ exports.protectedPut = async function (args, res, next) {
     dateStarted: obj.dateStarted,
     dateUpdated: new Date(),
     instructions: obj.instructions,
-    externalEngagementTool: obj.externalEngagementTool,
+    commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    surveySelected: obj.surveySelected,
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
@@ -373,14 +376,27 @@ exports.protectedPublish = async function (args, res, next) {
   defaultLog.info('Publish comment period:', objId);
 
   var CommentPeriod = mongoose.model('CommentPeriod');
+  
   try {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
+
+    if (commentPeriod.surveySelected) {
+      console.log('YES IT IS SELECTED', commentPeriod.surveySelected)
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.findOne({ _id: commentPeriod.surveySelected });
+      console.log('YES IT IS FOUND', survey)
+      const publishedSurvey = await Actions.publish(commentPeriod);
+      console.log('YES IT IS PUBLISH')
+      Utils.recordAction('Publish', 'Survey', args.swagger.params.auth_payload.preferred_username, commentPeriod.surveySelected);
+    }
+
     defaultLog.info('Comment period object:', commentPeriod);
     // Add public to read array.
-    var published = await Actions.publish(commentPeriod);
+    var publishedCP = await Actions.publish(commentPeriod);
+
     Utils.recordAction('Publish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-    return Actions.sendResponse(res, 200, published);
+    return Actions.sendResponse(res, 200, publishedCP);
   } catch (e) {
     return Actions.sendResponse(res, 400, e);
   }
@@ -394,6 +410,14 @@ exports.protectedUnPublish = async function (args, res, next) {
   try {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
+
+    if (commentPeriod.surveySelected) {
+      const Survey = mongoose.model('Survey');
+      const survey = await Survey.findOne({ _id: commentPeriod.surveySelected });
+      const publishedSurvey = await Actions.unPublish(commentPeriod);
+      Utils.recordAction('Unpublish', 'Survey', args.swagger.params.auth_payload.preferred_username, commentPeriod.surveySelected);
+    }
+
     defaultLog.info('Comment period object:', commentPeriod);
     // Remove public from read array.
     var unpublished = await Actions.unPublish(commentPeriod);
