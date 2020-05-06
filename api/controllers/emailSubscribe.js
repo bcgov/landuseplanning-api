@@ -212,7 +212,7 @@ exports.unProtectedPut = async function (args, res, next) {
   try {
     
     var es = await EmailSubscribe.update({ _id: emailId }, { $set: emailSubscribe });
-    Utils.recordAction('Put', 'EmailSubscribe', 'public', emailAddress);
+    Utils.recordAction('Put', 'EmailSubscribe', 'public', emailId);
     defaultLog.info('Email confirmed:', es);
     await Email.sendWelcomeEmail(projectName, emailAddress);
     return Actions.sendResponse(res, 200, es);
@@ -250,7 +250,7 @@ exports.unProtectedDelete = async function (args, res, next) {
   try {
 
     var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-    Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailAddress);
+    Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailId);
     defaultLog.info('Email unsubscribed:', es);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
@@ -362,7 +362,8 @@ exports.protectedDelete = async function (args, res, next) {
   }
 
   var emailAddress = args.swagger.params.email.value;
-  var emailId;
+  var projectId = args.swagger.params.projectId.value;
+  var emailId, projectList;
   defaultLog.info('Delete email subscribe:', emailAddress);
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
@@ -371,20 +372,43 @@ exports.protectedDelete = async function (args, res, next) {
   await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
     try {
       emailId = entity._id;
+      projectList = entity.project;
     } catch (e) {
       defaultLog.info('Error:', e);
       return Actions.sendResponse(res, 404, e);
     }
   });
 
-  try {
-
-    var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-    Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailAddress);
-    defaultLog.info('Email deleted:', es);
-    return Actions.sendResponse(res, 200, es);
-  } catch (e) {
-    defaultLog.info('Error:', e);
-    return Actions.sendResponse(res, 400, e);
+  // check if project id is in project list
+  const index = projectList.indexOf(projectId);
+  if ( index > -1) {
+    projectList.splice(index, 1);
+    if (projectList.length > 0 ) {
+      // update existing email object with new project list
+      try {
+        var es = await EmailSubscribe.update({ _id: emailId }, { $set: { project: projectList }});
+        Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+        defaultLog.info('Email deleted from one project:', es);
+        return Actions.sendResponse(res, 200, es);
+      } catch (e) {
+        defaultLog.info('Error:', e);
+        return Actions.sendResponse(res, 400, e);
+      }
+    } else {
+      // delete email object
+      try {
+        var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
+        Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+        defaultLog.info('Email deleted from system:', es);
+        return Actions.sendResponse(res, 200, es);
+      } catch (e) {
+        defaultLog.info('Error:', e);
+        return Actions.sendResponse(res, 400, e);
+      }
+    }
+  } else {
+    // if not return 404
+    console.log('Project ID not found: ', projectId);
+    return Actions.sendResponse(res, 404, 'Project ID not found');
   }
 }

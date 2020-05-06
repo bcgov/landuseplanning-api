@@ -5652,7 +5652,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /emailSubscribe/{email}:
+  /emailSubscribe/{email}/{projectId}:
     x-swagger-router-controller: emailSubscribe
     options:
       tags:
@@ -5663,7 +5663,12 @@ paths:
       parameters:
         - name: email
           in: path
-          description: "the email address to delete"
+          description: "The email address to unsubscribe"
+          required: true
+          type: "string"
+        - name: projectId
+          in: path
+          description: "The project ID to be unsubscribed from"
           required: true
           type: "string"
       responses:
@@ -5690,7 +5695,12 @@ paths:
           name: email
           type: string
           required: true
-          description: "the email address to be deleted"
+          description: "The email address to be deleted"
+        - name: projectId
+          in: path
+          description: "The project ID to be unsubscribed from"
+          required: true
+          type: "string"
       responses:
         "200":
           description: "Success"

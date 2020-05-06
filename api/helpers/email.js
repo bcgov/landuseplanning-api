@@ -41,7 +41,7 @@ exports.sendConfirmEmail = async function ( projectName, email, confirmKey) {
             }
         ],
         "encoding": "utf-8",
-        "from": "BC Gov Land Use Planning – Project Team <noreply@gov.bc.ca>",
+        "from": "BC Gov Land Use Planning <noreply@gov.bc.ca>",
         "priority": "normal",
         "subject": "Confirming your email for the {{ projectName }} distribution list"
     };
@@ -88,7 +88,7 @@ exports.sendWelcomeEmail = async function (projectName, email) {
     // Set/Get the template
     let emailTemplate = {
         "bodyType": "text",
-        "body": "Thank you for signing up. Your email has been added to the project distribution list and you are now set up to receive updates from the {{ projectName }} Project Team directly to your inbox.\r\n\r\nIf at any time you want to unsubscribe, click the link below.\r\n\r\n{{ unsubcribeHost }}unsubscribe\r\n\r\nThis is an automatically generated email, please do not reply.\r\n\r\n",
+        "body": "Thank you for signing up. Your email has been added to the {{ projectName }} distribution list and you are now set up to receive project updates directly to your inbox.\r\n\r\nIf at any time you want to unsubscribe, click the link below.\r\n\r\n{{ unsubcribeHost }}unsubscribe\r\n\r\nThis is an automatically generated email, please do not reply.\r\n\r\n",
         "contexts": [
             {
                 "to": [email],
@@ -100,7 +100,7 @@ exports.sendWelcomeEmail = async function (projectName, email) {
             }
         ],
         "encoding": "utf-8",
-        "from": "BC Gov Land Use Planning – Project Team <noreply@gov.bc.ca>",
+        "from": "BC Gov Land Use Planning  <noreply@gov.bc.ca>",
         "priority": "normal",
         "subject": "Welcome to the {{ projectName }} distribution list"
     };
