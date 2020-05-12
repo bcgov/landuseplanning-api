@@ -4,10 +4,17 @@ const surveyQuestionAnswer = require('./surveyQuestionAnswer').schema;
 
 
 module.exports = require('../models')('SurveyResponse', {
+    dateAdded                   : { type: Date },
     project                     : { type: 'ObjectId', ref: 'Project '},
-    commentPeriod               : { type: 'ObjectId', ref: 'CommentPeriod' },
+    period                      : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true  },
     survey                      : { type: 'ObjectId', ref: 'Survey' },
-    answer                      : [{question: surveyQuestion, answer: surveyQuestionAnswer}],
+    documents                   : [{ type: 'ObjectId', ref: 'Document', default: null, index: true }],
+    author                      : { type: String },
+    location                    : { type: String },
+    responses                   : [{ question: surveyQuestion, answer: surveyQuestionAnswer }],
+
+    // Number auto-incremented.  Do not set manually.
+    commentId                   : { type: Number, default: null },
 
     // Permissions
     read                : [{ type: String, trim: true, default: 'sysadmin' }],

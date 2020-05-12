@@ -2,8 +2,10 @@ const Schema = require('mongoose').Schema;
 
 module.exports = require('../models')('SurveyQuestionAnswer', {
     textAnswer: { type: String },
-    singleChoiceAnswer: { type: String },
-    multiChoiceAnswers: [String],
-    likertAnswers: [String],
+    singleChoice: { type: String },
+    multiChoices: [String],
+    attributeChoices: [String],
     otherText: {type: String},
+    emailAnswer: {type: String},
+    phoneNumberAnswer: {type: String},
 }, 'lup');

@@ -10,6 +10,7 @@ var getSanitizedFields = function (fields) {
       '_schemaName',
       'name',
       'lastSaved',
+      'dateAdded',
       'project',
       'commentPeriod',
       'questions',
@@ -45,7 +46,6 @@ exports.publicGet = async function (args, res, next) {
     await CommentPeriod.findById(args.swagger.params.commentPeriod.value)
     .exec()
     .then(cp => {
-        console.log('ive got it', cp)
         query = Utils.buildQuery('_id', cp.surveySelected, query);
     })
   }
@@ -194,9 +194,6 @@ exports.publicGet = async function (args, res, next) {
 exports.protectedGet = async function (args, res, next) {
   defaultLog.info('Getting survey(s)');
 
-  const CommentPeriod = mongoose.model('CommentPeriod');
-
-
   var query = {}, sort = null, skip = null, limit = null, count = false;
 
   // Build match query if on survey route
@@ -212,6 +209,7 @@ exports.protectedGet = async function (args, res, next) {
 
   // 
   if (args.swagger.params.commentPeriod && args.swagger.params.commentPeriod.value) {
+    const CommentPeriod = mongoose.model('CommentPeriod');
     await CommentPeriod.findById(args.swagger.params.commentPeriod.value)
     .exec()
     .then(cp => {
@@ -239,6 +237,8 @@ exports.protectedGet = async function (args, res, next) {
     count = args.swagger.params.count.value;
   }
 
+  console.log('the fields', args.swagger.params.fields.value)
+
   // Set query type
   _.assignIn(query, { '_schemaName': 'Survey' });
 
@@ -253,7 +253,6 @@ exports.protectedGet = async function (args, res, next) {
       limit,  // limit
       count); // count
 
-    console.log('is this what youre looking for', data)
     Utils.recordAction('Get', 'Survey', args.swagger.params.auth_payload.preferred_username, args.swagger.params.surveyId && args.swagger.params.surveyId.value ? args.swagger.params.surveyId.value : null);
     defaultLog.info('Got survey(s):', data);
     return Actions.sendResponse(res, 200, data);
@@ -296,79 +295,55 @@ exports.protectedPost = async function (args, res, next) {
   }
 };
 
-// // Update an existing CommentPeriod
-// exports.protectedPut = async function (args, res, next) {
-//   var objId = args.swagger.params.commentPeriodId.value;
-//   var obj = args.swagger.params.cp.value;
-//   defaultLog.info('Put comment period:', objId);
+// Update an existing Survey
+exports.protectedPut = async function (args, res, next) {
+  var objId = args.swagger.params.surveyId.value;
+  var obj = args.swagger.params.s.value;
+  defaultLog.info('Put survey:', objId);
 
-//   var CommentPeriod = mongoose.model('CommentPeriod');
+  var Survey = mongoose.model('Survey');
 
-//   var commentPeriod = {
-//     dateCompleted: obj.dateCompleted,
-//     dateStarted: obj.dateStarted,
-//     dateUpdated: new Date(),
-//     instructions: obj.instructions,
-//     externalEngagementTool: obj.externalEngagementTool,
-//     externalToolPopupText: obj.externalToolPopupText,
-//     openHouses: obj.openHouses,
-//     relatedDocuments: obj.relatedDocuments,
-//     updatedBy: args.swagger.params.auth_payload.preferred_username,
-//     commentPeriodInfo: obj.commentPeriodInfo
-//   };
+  var survey = {
+    name: obj.name,
+    lastSaved: new Date(),
+    project: obj.project,
+    commentPeriod: obj.commentPeriod,
+    questions: obj.questions
+  };
 
-//   // TODO: Revise this so we are not explicitly setting permissions
-//   if (obj.isPublished) {
-//     commentPeriod['read'] = ['public', 'staff', 'sysadmin'];
-//   } else {
-//     commentPeriod['read'] = ['staff', 'sysadmin'];
-//   }
+  // TODO: Revise this so we are not explicitly setting permissions
+  // if (obj.isPublished) {
+  //   commentPeriod['read'] = ['public', 'staff', 'sysadmin'];
+  // } else {
+  //   commentPeriod['read'] = ['staff', 'sysadmin'];
+  // }
 
-//   defaultLog.info('Incoming updated object:', commentPeriod);
+  defaultLog.info('Incoming updated object:', survey);
 
-//   try {
-//     var cp = await CommentPeriod.update({ _id: objId }, { $set: commentPeriod });
-//     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-//     defaultLog.info('Comment period updated:', cp);
-//     return Actions.sendResponse(res, 200, cp);
-//   } catch (e) {
-//     defaultLog.info('Error:', e);
-//     return Actions.sendResponse(res, 400, e);
-//   }
-// }
+  try {
+    var s = await Survey.update({ _id: objId }, { $set: survey });
+    Utils.recordAction('Put', 'Survey', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Survey updated:', s);
+    return Actions.sendResponse(res, 200, s);
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
 
 // //  Delete a new CommentPeriod
-// exports.protectedDelete = async function (args, res, next) {
-//   var objId = args.swagger.params.commentPeriodId.value;
-//   defaultLog.info('Delete comment period:', objId);
+exports.protectedDelete = async function (args, res, next) {
+  var objId = args.swagger.params.surveyId.value;
+  defaultLog.info('Delete survey:', objId);
 
-//   var CommentPeriod = mongoose.model('CommentPeriod');
-//   try {
-//     await CommentPeriod.findOneAndRemove({ _id: objId });
-//     Utils.recordAction('Delete', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-//     return Actions.sendResponse(res, 200, {});
-//   } catch (e) {
-//     defaultLog.info('Error:', e);
-//     return Actions.sendResponse(res, 400, e);
-//   }
-// };
+  var Survey = mongoose.model('Survey');
+  try {
+    await Survey.findOneAndRemove({ _id: objId });
+    Utils.recordAction('Delete', 'Survey', args.swagger.params.auth_payload.preferred_username, objId);
+    return Actions.sendResponse(res, 200, {});
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+};
 
-
-// exports.protectedUnPublish = async function (args, res, next) {
-//   var objId = args.swagger.params.commentPeriodId.value;
-//   defaultLog.info('UnPublish comment period:', objId);
-
-//   var CommentPeriod = mongoose.model('CommentPeriod');
-//   try {
-//     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
-//     delete commentPeriod.__v;
-//     defaultLog.info('Comment period object:', commentPeriod);
-//     // Remove public from read array.
-//     var unpublished = await Actions.unPublish(commentPeriod);
-//     Utils.recordAction('Unpublish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-//     return Actions.sendResponse(res, 200, unpublished);
-//   } catch (e) {
-//     defaultLog.info('Error:', e);
-//     return Actions.sendResponse(res, 400, e);
-//   }
-// };

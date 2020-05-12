@@ -197,8 +197,9 @@ exports.protectedGet = async function (args, res, next) {
 
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
-  if (args.swagger.params.projId && args.swagger.params.projId.value) {
+  if (args.swagger.params.projId && args.swagger.params.projId.value !== 'undefined') {
     // Getting a single project
+    console.log('what the problem', args.swagger.params.projId, args.swagger.params.projId.value)
     _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
     console.log(JSON.stringify(commentPeriodPipeline));

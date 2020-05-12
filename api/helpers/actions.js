@@ -5,7 +5,6 @@ var defaultLog = require('winston').loggers.get('default');
 exports.publish = async function (o) {
     return new Promise(function (resolve, reject) {
         // Object wasn't already published?
-        console.log('survey says; ', o)
         if (!o.read.includes('public')) {
             var newReadArray = o.read;
             newReadArray.push('public');

@@ -367,12 +367,12 @@ definitions:
     type: string
     description: "Optional fields to return."
     example: author|dateAdded|project
-    enum: &surveyFields
+    enum: &surveyResponseFields
       - author
       - location
       - dateAdded
       - project
-      - commentPeriod
+      - period
       - survey
       - responses
       - read
@@ -388,7 +388,7 @@ definitions:
       - +dateAdded
       - -dateAdded
 
-      ### Survey Definitions
+  ### Survey Definitions
   SurveyStatus:
     type: object
     properties:
@@ -411,9 +411,10 @@ definitions:
   SurveyFields:
     type: string
     description: "Optional fields to return."
-    example: name|lastSaved|project
+    example: name|lastSaved|dateAdded
     enum: &surveyFields
       - name
+      - dateAdded
       - lastSaved
       - project
       - commentPeriod
@@ -430,6 +431,8 @@ definitions:
       - -name
       - +lastSaved
       - -lastSaved
+      - +dateAdded
+      - -dateAdded
 
 ### Search Definitions
   SearchObject:
@@ -5291,7 +5294,7 @@ paths:
           description: "ID of survey to update"
           required: true
           type: string
-        - name: cp
+        - name: s
           in: body
           required: true
           schema:
@@ -5457,7 +5460,209 @@ paths:
             $ref: "#/definitions/Error"
 
 ### Survey Response Routes
-  /public/survey:
+  /surveyResponse:
+    x-swagger-router-controller: surveyResponse
+    options:
+      tags:
+        - surveyResponse
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey response Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - surveyResponse
+      summary: "Get a list of survey responses"
+      operationId: protectedGet
+      description: "Authenticated access to retrieving survey responses."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - in: query
+          name: period
+          description: "Survey responses relating to a particular Comment Period"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: project
+          description: "Surveys relating to a particular Project(s)"
+          type: string
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Survey response fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyResponseFields
+        - in: query
+          name: pageNum
+          type: number
+          required: false
+          description: "Page number (100 results each)."
+        - in: query
+          name: pageSize
+          type: number
+          required: false
+          description: "Number of results per page (if 'pageNum' is specified)."
+        - in: query
+          name: count
+          description: "Enables/Disables count. Query count=true to enable."
+          required: false
+          type: boolean
+        - in: query
+          name: sortBy
+          description: "Survey response fields to sort by."
+          required: false
+          type: array
+          items:
+            type: string
+            enum: *surveyResponseSortByFields
+        - in: query
+          name: pending
+          description: "Filter where eaoStatus is pending"
+          required: false
+          type: boolean
+        - in: query
+          name: published
+          description: "Filter where eaoStatus is published"
+          required: false
+          type: boolean
+        - in: query
+          name: deferred
+          description: "Filter where eaoStatus is deferred"
+          required: false
+          type: boolean
+        - in: query
+          name: rejected
+          description: "Filter where eaoStatus is rejected"
+          required: false
+          type: boolean
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /surveyResponse/{surveyResponseId}:
+    x-swagger-router-controller: surveyResponse
+    options:
+      tags:
+        - surveyResponse
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on survey response GET Route"
+      parameters:
+        - name: surveyResponseId
+          in: path
+          description: "ID of survey response to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - surveyResponse
+      summary: "Get a survey response"
+      operationId: protectedGet
+      description: "Authenticated access to retrieving a survey response."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: surveyResponseId
+          in: path
+          description: "ID of survey response to get"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "Survey response fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *surveyResponseFields
+        - in: query
+          name: populateNextComment
+          description: "Flag to get next comment information."
+          required: false
+          type: boolean
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - surveyResponse
+      summary: "Update a survey response"
+      operationId: protectedPut
+      description: "Update a surveyResponse object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: surveyResponseId
+          in: path
+          description: "ID of survey response to update"
+          required: true
+          type: string
+        - name: surveyResponse
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/surveyResponse:
     x-swagger-router-controller: surveyResponse
     options:
       tags:
@@ -5516,6 +5721,28 @@ paths:
           required: false
           description: "The information for the survey response"
           type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - surveyResponse
+      summary: "Create a new survey response"
+      operationId: unProtectedPost
+      description: "Create a new survey response object."
+      summary: "Create a new survey response object."
+      parameters:
+        - name: surveyResponse
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
       responses:
         "200":
           description: "Success"
