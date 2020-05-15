@@ -13,6 +13,7 @@
   "dependencies": {
     "@turf/helpers": "^6.1.4",
     "@turf/turf": "^5.1.6",
+    "axios": "^0.19.2",
     "bcrypt-nodejs": "^0.0.3",
     "biguint-format": "^1.0.0",
     "body-parser": "^1.18.3",
@@ -34,6 +35,7 @@
     "path": "^0.12.7",
     "proj4": "^2.5.0",
     "qs": "^6.5.2",
+    "rand-token": "^1.0.1",
     "reproject": "^1.2.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
