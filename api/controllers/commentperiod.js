@@ -29,8 +29,9 @@ var getSanitizedFields = function (fields) {
       'isPublished',
       'isResolved',
       'isVetted',
-      'externalEngagementTool',
+      'commentingMethod',
       'externalToolPopupText',
+      'surveySelected',
       'openHouses',
       'periodType',
       'phase',
@@ -284,8 +285,9 @@ exports.protectedPost = async function (args, res, next) {
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
     instructions: obj.instructions,
-    externalEngagementTool: obj.externalEngagementTool,
+    commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    surveySelected: mongoose.Types.ObjectId(obj.surveySelected),
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     project: mongoose.Types.ObjectId(obj.project),
@@ -303,6 +305,12 @@ exports.protectedPost = async function (args, res, next) {
     var cp = await commentPeriod.save();
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
     defaultLog.info('Saved new comment period object:', cp);
+
+    // Only update survey visibilities if survey selected
+    if (commentPeriod.surveySelected) {
+      await updateSurveyVisibilities(CommentPeriod);
+    }
+
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -318,13 +326,17 @@ exports.protectedPut = async function (args, res, next) {
 
   var CommentPeriod = mongoose.model('CommentPeriod');
 
+  await updateSurveyVisibilities(CommentPeriod) 
+
+
   var commentPeriod = {
     dateCompleted: obj.dateCompleted,
     dateStarted: obj.dateStarted,
     dateUpdated: new Date(),
     instructions: obj.instructions,
-    externalEngagementTool: obj.externalEngagementTool,
+    commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    surveySelected: obj.surveySelected,
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     updatedBy: args.swagger.params.auth_payload.preferred_username,
@@ -344,6 +356,9 @@ exports.protectedPut = async function (args, res, next) {
     var cp = await CommentPeriod.update({ _id: objId }, { $set: commentPeriod });
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment period updated:', cp);
+
+    await updateSurveyVisibilities(CommentPeriod);
+
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -360,6 +375,9 @@ exports.protectedDelete = async function (args, res, next) {
   try {
     await CommentPeriod.findOneAndRemove({ _id: objId });
     Utils.recordAction('Delete', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+
+    await updateSurveyVisibilities(CommentPeriod);
+    
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -373,18 +391,24 @@ exports.protectedPublish = async function (args, res, next) {
   defaultLog.info('Publish comment period:', objId);
 
   var CommentPeriod = mongoose.model('CommentPeriod');
+  
   try {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
+
     defaultLog.info('Comment period object:', commentPeriod);
     // Add public to read array.
-    var published = await Actions.publish(commentPeriod);
+    var publishedCP = await Actions.publish(commentPeriod);
     Utils.recordAction('Publish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-    return Actions.sendResponse(res, 200, published);
+
+    await updateSurveyVisibilities(CommentPeriod);
+
+    return Actions.sendResponse(res, 200, publishedCP);
   } catch (e) {
     return Actions.sendResponse(res, 400, e);
   }
 };
+
 
 exports.protectedUnPublish = async function (args, res, next) {
   var objId = args.swagger.params.commentPeriodId.value;
@@ -394,13 +418,53 @@ exports.protectedUnPublish = async function (args, res, next) {
   try {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
+
     defaultLog.info('Comment period object:', commentPeriod);
     // Remove public from read array.
     var unpublished = await Actions.unPublish(commentPeriod);
     Utils.recordAction('Unpublish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
+
+    await updateSurveyVisibilities(CommentPeriod);
+    
     return Actions.sendResponse(res, 200, unpublished);
   } catch (e) {
     defaultLog.info('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
+
+const publishSelectedSurveys = async function (surveyId) {
+  const Survey = mongoose.model('Survey');
+  const survey = await Survey.findOne({ _id: surveyId });
+  const publishedSurvey = await Actions.publish(survey);
+  console.log('YES IT IS PUBLISH', publishedSurvey)
+}
+
+const unpublishSelectedSurveys = async function (survey) {
+  // const Survey = mongoose.model('Survey');
+  // const survey = await Survey.findOne({ _id: surveyId });
+  const unpublishedSurvey = await Actions.unPublish(survey);
+  console.log('YES IT IS UNPUBLISH', unpublishedSurvey)
+}
+
+const updateSurveyVisibilities = async function (CommentPeriod) {
+    const surveysToPublish = await CommentPeriod.find({_schemaName: 'CommentPeriod', read: 'public'})
+    .where("surveySelected")
+    .ne(null)
+    .select('surveySelected');
+
+    const publishIDs = surveysToPublish.map(surveyObj => surveyObj.surveySelected)
+
+    const Survey = mongoose.model('Survey')
+    const surveysToUnpublish = await Survey.find({_schemaName: 'Survey'})
+        .where("_id")
+        .nin(publishIDs)
+        // .select('_id')
+
+    // const unpublishIDs = surveysToUnpublish.map(surveyObj => surveyObj._id)
+
+    publishIDs.forEach(surveyId => publishSelectedSurveys(surveyId))
+    surveysToUnpublish.forEach(survey => unpublishSelectedSurveys(survey))
+
+    console.log('\x1b[36m%s\x1b[0m', 'publish then not', publishIDs, surveysToUnpublish);
+}

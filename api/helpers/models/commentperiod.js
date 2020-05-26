@@ -22,8 +22,9 @@ module.exports = require('../models')('CommentPeriod', {
     isPublished                 : { type: Boolean, default: false },
     isResolved                  : { type: Boolean, default: false },
     isVetted                    : { type: String, default: '' },
-    externalEngagementTool      : { type: Boolean, default: false },
+    commentingMethod            : { type: String, default: ''},
     externalToolPopupText       : { type: String, default: '' },
+    surveySelected              : { type: 'ObjectId', ref: 'Survey', default: null, index: true },
     openHouses                  : [{ type: Mixed, default: {} }],
     periodType                  : { type: String, default: '' },
     phase                       : { type: String, default: '' },
@@ -38,6 +39,7 @@ module.exports = require('../models')('CommentPeriod', {
     vettedPercent               : { type: Number, default: '' },
     vettingRoles                : [{ type: String, default: '' }],
     commentIdCount              : { type: Number, default: 0 },
+    surveyResponseIdCount       : { type: Number, default: 0 },
     commentPeriodInfo           : { type: String, default: '' },
 
     // Permissions

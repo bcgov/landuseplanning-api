@@ -9,6 +9,7 @@ exports.publish = async function (o) {
             var newReadArray = o.read;
             newReadArray.push('public');
             o.read = newReadArray;
+
             // Remove publish, save then return.
             resolve(o.save());
         } else {
