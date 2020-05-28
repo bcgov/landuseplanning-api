@@ -306,9 +306,9 @@ exports.protectedPost = async function (args, res, next) {
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
     defaultLog.info('Saved new comment period object:', cp);
 
-    // Only update survey visibilities if survey selected
+    // Only update survey visibility if survey selected by CP
     if (commentPeriod.surveySelected) {
-      await updateSurveyVisibilities(CommentPeriod);
+      await updateVisibleSurveys(CommentPeriod);
     }
 
     return Actions.sendResponse(res, 200, cp);
@@ -326,7 +326,7 @@ exports.protectedPut = async function (args, res, next) {
 
   var CommentPeriod = mongoose.model('CommentPeriod');
 
-  await updateSurveyVisibilities(CommentPeriod) 
+  await updateVisibleSurveys(CommentPeriod) 
 
 
   var commentPeriod = {
@@ -357,7 +357,7 @@ exports.protectedPut = async function (args, res, next) {
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment period updated:', cp);
 
-    await updateSurveyVisibilities(CommentPeriod);
+    await updateVisibleSurveys(CommentPeriod);
 
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
@@ -376,7 +376,7 @@ exports.protectedDelete = async function (args, res, next) {
     await CommentPeriod.findOneAndRemove({ _id: objId });
     Utils.recordAction('Delete', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
 
-    await updateSurveyVisibilities(CommentPeriod);
+    await updateVisibleSurveys(CommentPeriod);
     
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
@@ -401,7 +401,7 @@ exports.protectedPublish = async function (args, res, next) {
     var publishedCP = await Actions.publish(commentPeriod);
     Utils.recordAction('Publish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
 
-    await updateSurveyVisibilities(CommentPeriod);
+    await updateVisibleSurveys(CommentPeriod);
 
     return Actions.sendResponse(res, 200, publishedCP);
   } catch (e) {
@@ -424,7 +424,7 @@ exports.protectedUnPublish = async function (args, res, next) {
     var unpublished = await Actions.unPublish(commentPeriod);
     Utils.recordAction('Unpublish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
 
-    await updateSurveyVisibilities(CommentPeriod);
+    await updateVisibleSurveys(CommentPeriod);
     
     return Actions.sendResponse(res, 200, unpublished);
   } catch (e) {
@@ -437,21 +437,17 @@ const publishSelectedSurveys = async function (surveyId) {
   const Survey = mongoose.model('Survey');
   const survey = await Survey.findOne({ _id: surveyId });
   const publishedSurvey = await Actions.publish(survey);
-  console.log('YES IT IS PUBLISH', publishedSurvey)
 }
 
 const unpublishSelectedSurveys = async function (survey) {
-  // const Survey = mongoose.model('Survey');
-  // const survey = await Survey.findOne({ _id: surveyId });
   const unpublishedSurvey = await Actions.unPublish(survey);
-  console.log('YES IT IS UNPUBLISH', unpublishedSurvey)
 }
 
-const updateSurveyVisibilities = async function (CommentPeriod) {
+const updateVisibleSurveys = async function (CommentPeriod) {
     const surveysToPublish = await CommentPeriod.find({_schemaName: 'CommentPeriod', read: 'public'})
-    .where("surveySelected")
-    .ne(null)
-    .select('surveySelected');
+        .where("surveySelected")
+        .ne(null)
+        .select('surveySelected');
 
     const publishIDs = surveysToPublish.map(surveyObj => surveyObj.surveySelected)
 
@@ -459,12 +455,7 @@ const updateSurveyVisibilities = async function (CommentPeriod) {
     const surveysToUnpublish = await Survey.find({_schemaName: 'Survey'})
         .where("_id")
         .nin(publishIDs)
-        // .select('_id')
-
-    // const unpublishIDs = surveysToUnpublish.map(surveyObj => surveyObj._id)
 
     publishIDs.forEach(surveyId => publishSelectedSurveys(surveyId))
     surveysToUnpublish.forEach(survey => unpublishSelectedSurveys(survey))
-
-    console.log('\x1b[36m%s\x1b[0m', 'publish then not', publishIDs, surveysToUnpublish);
 }

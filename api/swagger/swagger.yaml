@@ -362,7 +362,6 @@ definitions:
     properties:
       project:
         type: string
-        # example: ""
   SurveyResponseFields:
     type: string
     description: "Optional fields to return."
@@ -417,7 +416,6 @@ definitions:
       - dateAdded
       - lastSaved
       - project
-      - commentPeriod
       - questions
       - read
       - write
