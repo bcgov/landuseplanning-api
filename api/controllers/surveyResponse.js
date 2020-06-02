@@ -3,6 +3,8 @@ var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
+const csv = require('csv');
+const transform = require('stream-transform');
 
 var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
@@ -59,7 +61,6 @@ exports.unProtectedPost = async function (args, res, next) {
   
     try {
       var sr = await surveyResponse.save();
-      console.log('SURCEY REAPONEEEEEEEE', sr)
       Utils.recordAction('Post', 'SurveyResponse', 'public', sr._id);
       defaultLog.info('Saved new surveyResponse object:', sr);
       return Actions.sendResponse(res, 200, sr);
@@ -176,4 +177,118 @@ async function getNextSurveyResponseIdCount(period) {
   var CommentPeriod = mongoose.model('CommentPeriod');
   var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { surveyResponseIdCount: 1 } }, { new: true, useFindAndModify: false  });
   return period.surveyResponseIdCount;
+}
+
+// Export survey responses for a given survey
+exports.protectedExport = async function (args, res, next) {
+  const period = args.swagger.params.periodId.value;
+  // const roles = args.swagger.params.auth_payload.realm_access.roles;
+
+  const match = {
+    _schemaName: 'SurveyResponse',
+    period: mongoose.Types.ObjectId(period)
+  };
+
+  const aggregation = [
+    {
+      $match: match
+    }
+  ];
+
+  // aggregation.push({
+  //   $redact: {
+  //     $cond: {
+  //       if: {
+  //         // This way, if read isn't present, we assume public no roles array.
+  //         $and: [
+  //           { $cond: { if: "$read", then: true, else: false } },
+  //           {
+  //             $anyElementTrue: {
+  //               $map: {
+  //                 input: "$read",
+  //                 as: "fieldTag",
+  //                 in: { $setIsSubset: [["$$fieldTag"], roles] }
+  //               }
+  //             }
+  //           }
+  //         ]
+  //       },
+  //       then: "$$KEEP",
+  //       else: {
+  //         $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+  //       }
+  //     }
+  //   }
+  // });
+
+  const data = mongoose.model('SurveyResponse')
+    .aggregate(aggregation)
+    .cursor()
+    .exec();
+
+  const filename = `export_${new Date().toISOString().split('T')[0]}.csv`;
+  res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+  res.writeHead(200, { 'Content-Type': 'text/csv' });
+
+  res.flushHeaders();
+
+  data.pipe(transform(function (d) {
+      let read = d.read;
+      delete d._schemaName;
+      delete d.delete;
+      delete d.read;
+      delete d.write;
+      delete d.dateAdded;
+      delete d.period;
+      delete d.project;
+      delete d.survey;
+      delete d.__v;
+      delete d._id;
+      
+      for (let i = 0; i < d.responses.length; i++) {
+        let answer;
+
+        if (d.responses[i].answer.textAnswer) {
+          answer = d.responses[i].answer.textAnswer;
+        } else if (d.responses[i].answer.singleChoice) {
+          answer = d.responses[i].answer.singleChoice;
+        } else if (d.responses[i].answer.multiChoices.length !== 0) {
+          answer = d.responses[i].answer.multiChoices;
+        } else if (d.responses[i].answer.attributeChoices.length !== 0) {
+          answer = d.responses[i].answer.attributeChoices;
+        } else if (d.responses[i].answer.emailAnswer) {
+          answer = d.responses[i].answer.emailAnswer;
+        } else if (d.responses[i].answer.phoneNumberAnswer) {
+          answer = d.responses[i].answer.phoneNumberAnswer;
+        }
+
+        d[d.responses[i].question.questionText ||
+          d.responses[i].question.phoneNumberText ||
+          d.responses[i].question.emailText] = answer;
+
+        if (d.responses[i].question.docPickerText) {
+          d[d.responses[i].question.docPickerText] = '';
+        }
+
+        if (d.responses[i].question.infoText) {
+          d[d.responses[i].question.infoText] = '';
+        }
+      }
+      delete d.responses;
+
+      // Translate documents into links.
+      const docLinks = [];
+      if (d.documents) {
+        d.documents.map((theDoc) => {
+          docLinks.push('https://landuseplanning.gov.bc.ca/api/document/' + theDoc + '/fetch');
+        });
+      }
+
+      delete d.documents;
+      
+      return { documents: docLinks, ...d };
+      
+    }))
+    .pipe(csv.stringify({ header: true }))
+    .pipe(res);
 }
