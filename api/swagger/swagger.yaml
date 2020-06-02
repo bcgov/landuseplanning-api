@@ -362,7 +362,6 @@ definitions:
     properties:
       project:
         type: string
-        # example: ""
   SurveyResponseFields:
     type: string
     description: "Optional fields to return."
@@ -417,7 +416,6 @@ definitions:
       - dateAdded
       - lastSaved
       - project
-      - commentPeriod
       - questions
       - read
       - write
@@ -5742,11 +5740,6 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-        # - in: query
-        #   name: commentPeriod
-        #   description: "Survey response selected by a particular CommentPeriod"
-        #   type: string
-        #   required: false
         - in: query
           name: fields
           description: "survey response fields to return."
@@ -5791,6 +5784,55 @@ paths:
           required: true
           schema:
             $ref: "#/definitions/SurveyResponseObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /surveyResponse/export/{periodId}:
+    x-swagger-router-controller: surveyResponse
+    options:
+      tags:
+        - surveyResponse
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID comment period responses to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Export survey responses for a given comment period"
+      operationId: protectedExport
+      description: "Authenticated access to retrieving an export of survey responses for a particular period."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID of comment period responses to get"
+          required: true
+          type: string
       responses:
         "200":
           description: "Success"

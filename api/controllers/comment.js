@@ -2,6 +2,9 @@ var auth = require('../helpers/auth');
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
+const csv = require('csv');
+const transform = require('stream-transform');
+
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 
@@ -523,8 +526,7 @@ exports.protectedExport = async function (args, res, next) {
   var data = mongoose.model('Comment')
     .aggregate(aggregation)
     .cursor()
-    .exec()
-    .stream();
+    .exec();
 
   const filename = 'export.csv';
   res.setHeader('Content-disposition', `attachment; filename=${filename}`);
@@ -532,9 +534,7 @@ exports.protectedExport = async function (args, res, next) {
 
   res.flushHeaders();
 
-  var csv = require('csv');
-  const transform = require('stream-transform');
-  data.stream()
+  data
     .pipe(transform(function (d) {
       let read = d.read;
       delete d.userCan;
