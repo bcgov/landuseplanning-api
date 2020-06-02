@@ -173,11 +173,11 @@ exports.protectedGet = async function (args, res, next) {
     
 };
 
-async function getNextSurveyResponseIdCount(period) {
-  var CommentPeriod = mongoose.model('CommentPeriod');
-  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { surveyResponseIdCount: 1 } }, { new: true, useFindAndModify: false  });
-  return period.surveyResponseIdCount;
-}
+// async function getNextSurveyResponseIdCount(period) {
+//   var SurveyResponse = mongoose.model('SurveyResponse');
+//   var period = await SurveyResponse.findOneAndUpdate({ _id: period }, { $inc: { surveyResponseIdCount: 1 } }, { new: true, useFindAndModify: false  });
+//   return period.surveyResponseIdCount;
+// }
 
 // Export survey responses for a given survey
 exports.protectedExport = async function (args, res, next) {
@@ -233,7 +233,7 @@ exports.protectedExport = async function (args, res, next) {
   res.flushHeaders();
 
   data.pipe(transform(function (d) {
-      let read = d.read;
+      // let read = d.read;
       delete d._schemaName;
       delete d.delete;
       delete d.read;
@@ -244,34 +244,48 @@ exports.protectedExport = async function (args, res, next) {
       delete d.survey;
       delete d.__v;
       delete d._id;
+
+      d['responseId'] = d.commentId;
+
+      delete d.commentId;
       
       for (let i = 0; i < d.responses.length; i++) {
+        let question = d.responses[i].question.questionText ||
+        d.responses[i].question.phoneNumberText ||
+        d.responses[i].question.emailText || null;
         let answer;
 
         if (d.responses[i].answer.textAnswer) {
           answer = d.responses[i].answer.textAnswer;
         } else if (d.responses[i].answer.singleChoice) {
-          answer = d.responses[i].answer.singleChoice;
+          if (d.responses[i].answer.otherText) {
+            answer = d.responses[i].answer.otherText;
+          } else {
+            answer = d.responses[i].answer.singleChoice;
+          }
         } else if (d.responses[i].answer.multiChoices.length !== 0) {
-          answer = d.responses[i].answer.multiChoices;
+          let multiChoiceArray = d.responses[i].answer.multiChoices;
+          if (d.responses[i].answer.otherText) {
+            multiChoiceArray.push(d.responses[i].answer.otherText)
+          }
+          answer = multiChoiceArray.join(', ')
         } else if (d.responses[i].answer.attributeChoices.length !== 0) {
-          answer = d.responses[i].answer.attributeChoices;
+          let attributesArray = d.responses[i].question.attributes;
+          let attributeChoices = d.responses[i].answer.attributeChoices;
+          attributeChoiceArray = _.zipWith(attributesArray, attributeChoices, (a, b) => {
+            return a.attribute + ': ' + b;
+          })
+          answer = attributeChoiceArray.join(', ');
         } else if (d.responses[i].answer.emailAnswer) {
           answer = d.responses[i].answer.emailAnswer;
         } else if (d.responses[i].answer.phoneNumberAnswer) {
           answer = d.responses[i].answer.phoneNumberAnswer;
+        } else {
+
         }
 
-        d[d.responses[i].question.questionText ||
-          d.responses[i].question.phoneNumberText ||
-          d.responses[i].question.emailText] = answer;
-
-        if (d.responses[i].question.docPickerText) {
-          d[d.responses[i].question.docPickerText] = '';
-        }
-
-        if (d.responses[i].question.infoText) {
-          d[d.responses[i].question.infoText] = '';
+        if (question !== null) {
+          d[question] = answer;
         }
       }
       delete d.responses;
@@ -285,7 +299,7 @@ exports.protectedExport = async function (args, res, next) {
       }
 
       delete d.documents;
-      
+
       return { documents: docLinks, ...d };
       
     }))
