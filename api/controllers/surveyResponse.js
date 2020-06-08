@@ -173,25 +173,33 @@ exports.protectedGet = async function (args, res, next) {
     
 };
 
-// async function getNextSurveyResponseIdCount(period) {
-//   var SurveyResponse = mongoose.model('SurveyResponse');
-//   var period = await SurveyResponse.findOneAndUpdate({ _id: period }, { $inc: { surveyResponseIdCount: 1 } }, { new: true, useFindAndModify: false  });
-//   return period.surveyResponseIdCount;
-// }
+async function getNextSurveyResponseIdCount(period) {
+  var CommentPeriod = mongoose.model('CommentPeriod');
+  var period = await CommentPeriod.findOneAndUpdate({ _id: period }, { $inc: { surveyResponseIdCount: 1 } }, { new: true, useFindAndModify: false  });
+  return period.surveyResponseIdCount;
+}
 
 // Export survey responses for a given survey
 exports.protectedExport = async function (args, res, next) {
   const period = args.swagger.params.periodId.value;
-  // const roles = args.swagger.params.auth_payload.realm_access.roles;
 
   const match = {
     _schemaName: 'SurveyResponse',
     period: mongoose.Types.ObjectId(period)
   };
 
+  // Most recent survey response at the top
+  const sort = {
+    dateAdded: -1
+  }
+
+  // Define aggregation stages
   const aggregation = [
     {
       $match: match
+    },
+    {
+      $sort: sort
     }
   ];
 
@@ -233,7 +241,6 @@ exports.protectedExport = async function (args, res, next) {
   res.flushHeaders();
 
   data.pipe(transform(function (d) {
-      // let read = d.read;
       delete d._schemaName;
       delete d.delete;
       delete d.read;

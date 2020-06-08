@@ -5,6 +5,8 @@ var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var Email = require('../helpers/email');
+const csv = require('csv');
+const transform = require('stream-transform');
 
 /**
  * 
@@ -411,4 +413,53 @@ exports.protectedDelete = async function (args, res, next) {
     console.log('Project ID not found: ', projectId);
     return Actions.sendResponse(res, 404, 'Project ID not found');
   }
+}
+
+
+// Export all subscribers
+exports.protectedExport = async function (args, res) {
+  const projectId = args.swagger.params.projectId.value;
+
+  const match = {
+    _schemaName: 'EmailSubscribe',
+    project: mongoose.Types.ObjectId(projectId),
+    confirmed: true
+  };
+
+  const aggregation = [
+    {
+      $match: match
+    }
+  ];
+
+  const data = mongoose.model('EmailSubscribe')
+    .aggregate(aggregation)
+    .cursor()
+    .exec();
+
+  const filename = `export_${new Date().toISOString().split('T')[0]}.csv`;
+  res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+  res.writeHead(200, { 'Content-Type': 'text/csv' });
+
+  res.flushHeaders();
+
+  data
+    .pipe(transform(function (d) {
+      // let read = d.read;
+      delete d.__v
+      delete d._id;
+      delete d._schemaName;
+      delete d.confirmKey;
+      delete d.project;
+      delete d.confirmed;
+      delete d.dateSubscribed;
+      delete d.dateConfirmed;
+      delete d.read;
+      delete d.write;
+      delete d.delete;
+
+      return { ...d };
+    }))
+    .pipe(csv.stringify({ header: true }))
+    .pipe(res);
 }

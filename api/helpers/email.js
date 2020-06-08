@@ -4,6 +4,7 @@ const axios = require('axios');
 const qs = require('qs');
 const winston = require('winston');
 const defaultLog = winston.loggers.get('default');
+require('dotenv').config();
 
 const _publicServiceEndpoint = process.env.API_HOSTNAME !== undefined ? ('https://' + process.env.API_HOSTNAME + '/') : 'http://localhost:4300/';
 const _GETOK_endpoint = process.env.GETOK_ENDPOINT || 'https://sso-dev.pathfinder.gov.bc.ca/auth/realms/jbd6rnxw/protocol/openid-connect/token';
