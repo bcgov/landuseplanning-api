@@ -6487,7 +6487,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /emailSubscribe/{email}/{projectId}:
+  /emailSubscribe/{email}/project/{projectId}:
     x-swagger-router-controller: emailSubscribe
     options:
       tags:
@@ -6536,6 +6536,55 @@ paths:
           description: "The project ID to be unsubscribed from"
           required: true
           type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /emailSubscribe/export/{projectId}:
+    x-swagger-router-controller: emailSubscribe
+    options:
+      tags:
+        - emailSubscribe
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on emailSubscribe GET Route"
+      parameters:
+        - name: projectId
+          in: path
+          description: "ID of project email subscribers to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - emailSubscribe
+      summary: "Export email subscriptions for a given project"
+      operationId: protectedExport
+      description: "Authenticated access to retrieving an export of email subscribers for a particular project."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: projectId
+          in: path
+          description: "ID of project email subscribers to get"
+          required: true
+          type: string
       responses:
         "200":
           description: "Success"
