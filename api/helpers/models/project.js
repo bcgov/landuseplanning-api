@@ -16,11 +16,10 @@ var definition = {
   name: { type: String, trim: true },
   partner: { type: String, trim: true },
   region: { type: String, default: '' },
-  agreements: { type: String, trim: true },
+  agreements: { type: Array, default: [] },
 
   //Everything else
   addedBy: { type: String, default: '' },
-  // existingLandUsePlanURLs: { type: String, default: '' },
   code: { type: String, default: '' },
   commodity: { type: String, default: '' },
   currentPhaseName: { type: String, default: '' },
@@ -29,9 +28,7 @@ var definition = {
   dateCommentsOpen: { type: String, default: '' },
   dateUpdated: { type: Date, default: '' },
   duration: { type: String, default: '' },
-  // TODO: directoryStructure
   eaoMember: { type: String, default: '' },
-  // epicProjectID           : { type: Number, default: 0 },
   fedElecDist: { type: String, default: '' },
   isTermsAgreed: { type: Boolean, default: false },
   overallProgress: { type: Number },
