@@ -107,8 +107,6 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
     console.log('populateProjectLead: ', populateProjectLead);
     console.log('populateProjectDirector: ', populateProjectDirector);
 
-    console.log('here is your initial query: ', query)
-
     // Fields we always return
     var defaultFields = ['_id',
       'code',
@@ -124,9 +122,6 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
     _.each(fields, function (f) {
       projection[f] = 1;
     });
-
-    console.log('final query', query)
-    console.log('final projection', projection)
 
     var aggregations = _.compact([
       {
