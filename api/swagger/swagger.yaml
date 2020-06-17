@@ -5842,6 +5842,65 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /surveyResponse/export/{periodId}/survey/{surveyId}:
+    x-swagger-router-controller: surveyResponse
+    options:
+      tags:
+        - surveyResponse
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on comment GET Route"
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID of comment period responses to get"
+          required: true
+          type: string
+        - name: surveyId
+          in: path
+          description: "ID of a survey to get responses by"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - comment
+      summary: "Export survey responses for a given comment period and survey"
+      operationId: protectedExport
+      description: "Authenticated access to retrieving an export of survey responses for a particular period."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: periodId
+          in: path
+          description: "ID of comment period responses to get"
+          required: true
+          type: string
+        - name: surveyId
+          in: path
+          description: "ID of a survey to get responses by"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/SurveyResponseObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
 
 ### Topic Routes
   /topic:

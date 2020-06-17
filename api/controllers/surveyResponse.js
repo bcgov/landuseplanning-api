@@ -188,6 +188,12 @@ exports.protectedExport = async function (args, res, next) {
     period: mongoose.Types.ObjectId(period)
   };
 
+  // match by survey if included as a route parameter
+  if (args.swagger.params.surveyId) {
+    const survey = args.swagger.params.surveyId.value || null;
+    survey ? match['survey'] = mongoose.Types.ObjectId(survey) : null
+  }
+
   // Most recent survey response at the top
   const sort = {
     dateAdded: -1
@@ -202,32 +208,6 @@ exports.protectedExport = async function (args, res, next) {
       $sort: sort
     }
   ];
-
-  // aggregation.push({
-  //   $redact: {
-  //     $cond: {
-  //       if: {
-  //         // This way, if read isn't present, we assume public no roles array.
-  //         $and: [
-  //           { $cond: { if: "$read", then: true, else: false } },
-  //           {
-  //             $anyElementTrue: {
-  //               $map: {
-  //                 input: "$read",
-  //                 as: "fieldTag",
-  //                 in: { $setIsSubset: [["$$fieldTag"], roles] }
-  //               }
-  //             }
-  //           }
-  //         ]
-  //       },
-  //       then: "$$KEEP",
-  //       else: {
-  //         $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-  //       }
-  //     }
-  //   }
-  // });
 
   const data = mongoose.model('SurveyResponse')
     .aggregate(aggregation)
