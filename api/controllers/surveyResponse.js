@@ -179,7 +179,14 @@ async function getNextSurveyResponseIdCount(period) {
   return period.surveyResponseIdCount;
 }
 
-// Export survey responses for a given survey
+/**
+ * Uses the model of a survey response to give structure 
+ * to csv rows and columns
+ * 
+ * @param {*} args 
+ * @param {*} res 
+ * @param {*} next 
+ */
 exports.protectedExport = async function (args, res, next) {
   const period = args.swagger.params.periodId.value;
 
@@ -236,11 +243,19 @@ exports.protectedExport = async function (args, res, next) {
 
       delete d.commentId;
       
+      // Loop through all individual answers in a response
       for (let i = 0; i < d.responses.length; i++) {
-        let question = d.responses[i].question.questionText ||
+        let questionHTML = d.responses[i].question.questionText ||
         d.responses[i].question.phoneNumberText ||
         d.responses[i].question.emailText || null;
+        let question;
         let answer;
+
+        // first strip out question HTML tags, then $nbsp;
+        // for easier reading in csv
+        if (questionHTML !== null ) {
+          question = questionHTML.replace(/(<([^>]+)>)/gi, " ").replace(/(&nbsp;)/gi, " ");
+        }
 
         if (d.responses[i].answer.textAnswer) {
           answer = d.responses[i].answer.textAnswer;
