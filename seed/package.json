@@ -12,7 +12,7 @@
   "dependencies": {
     "@turf/helpers": "^6.1.4",
     "body-parser": "^1.18.3",
-    "fast-csv": "^2.4.1",
+    "fast-csv": "^4.3.6",
     "lodash": "^4.17.12",
     "mongoose": "^5.7.7",
     "request": "^2.88.0"
