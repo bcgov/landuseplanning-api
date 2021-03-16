@@ -1,0 +1,27 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: landuseplanning-api
+  namespace: e8b9ad-tools
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: 'landuseplanning-api:latest'
+  source:
+    git:
+      ref: dev
+      uri: 'https://github.com/bcgov/landuseplanning-api.git'
+    type: Git
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: 'nodejs:8'
+        namespace: openshift
+      env: []
+  triggers:
+    - type: ImageChange
+      imageChange: {}
+    - type: ConfigChange
