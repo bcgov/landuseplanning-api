@@ -11,7 +11,6 @@
 #    See the License for the specific language governing permissions and
 #    limitations under the License.
 
-mkdir -p $MINIO_DATA_DIR/landuseplanning-docs
-mkdir -p $MINIO_DATA_DIR/landuseplanning-docs-dev
+mkdir -p $MINIO_DATA_DIR/uploads
 
 /usr/bin/docker-entrypoint.sh $@
