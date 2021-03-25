@@ -151,10 +151,12 @@ var handleDateItem = function (expArray, item, entry) {
   }
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
+var searchCollection = async function (roles, projectPermissions, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
   var properties = undefined;
+  let projectId = '$project';
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
+    projectId = '$_id';
   }
 
   // optional search keys
@@ -293,20 +295,37 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     });
   }
 
+  console.log('Projects permissions', projectPermissions)
+
+  // Redact results based on user permissions.
   aggregation.push({
     $redact: {
       $cond: {
         if: {
           // This way, if read isn't present, we assume public no roles array.
           $and: [
-            { $cond: { if: "$read", then: true, else: false } },
             {
-              $anyElementTrue: {
-                $map: {
-                  input: "$read",
-                  as: "fieldTag",
-                  in: { $setIsSubset: [["$$fieldTag"], roles] }
+              $and: [
+                { $cond: { if: "$read", then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: "$read",
+                      as: "fieldTag",
+                      in: { $setIsSubset: [["$$fieldTag"], roles] }
+                    }
+                  }
                 }
+              ]
+            },
+            // Check if user either has the create-projects role or has project permissions.
+            { $cond: 
+              { if: { $in: ["public", roles] }, then: true, else:
+                { $or: [
+                  { $in: [ "create-projects" , roles] },
+                  { $in: [ projectId, projectPermissions ] } 
+                  ]
+                } 
               }
             }
           ]
@@ -367,6 +386,7 @@ var executeQuery = async function (args, res, next) {
   var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
   var and = args.swagger.params.and ? args.swagger.params.and.value : '';
   var or = args.swagger.params.or ? args.swagger.params.or.value : '';
+  let userProjectPermissions = [];
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
   defaultLog.info("Searching project:", project);
@@ -380,6 +400,12 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("populate:", populate);
 
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  // Get user project permissions array.
+  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.sub) {
+    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.sub)
+      .then(permissions => (permissions));
+  }
 
   console.log("Searching Collection:", dataset);
 
@@ -407,7 +433,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
+    var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
     if (dataset === 'Comment') {
       // Filter
       _.each(data[0].searchResults, function (item) {
@@ -438,6 +464,20 @@ var executeQuery = async function (args, res, next) {
                       input: "$read",
                       as: "fieldTag",
                       in: { $setIsSubset: [["$$fieldTag"], roles] }
+                    }
+                  }
+                },
+                // Check if user either has the create-projects role or has project permissions.
+                { $cond: 
+                  { if: { $in: ["public", role] }, then: true, else:
+                    { $cond: 
+                      { if: isUserQuery, then: { $in: [ "create-projects" , role] }, else: 
+                        { $or: [
+                          { $in: [ "create-projects" , role] },
+                          { $in: [ projectId, projectPermissions ] } 
+                          ]
+                        } 
+                      }
                     }
                   }
                 }

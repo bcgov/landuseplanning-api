@@ -4,8 +4,6 @@ var jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
 
 // Old keycloak endpoints
-// var ISSUER = process.env.SSO_ISSUER || "https://sso.pathfinder.gov.bc.ca/auth/realms/aaoozhcp";
-// var JWKSURI = process.env.SSO_JWKSURI || "https://sso.pathfinder.gov.bc.ca/auth/realms/aaoozhcp/protocol/openid-connect/certs";
 var ISSUER = process.env.SSO_ISSUER || "https://oidc.gov.bc.ca/auth/realms/aaoozhcp";
 var JWKSURI = process.env.SSO_JWKSURI || "https://oidc.gov.bc.ca/auth/realms/aaoozhcp/protocol/openid-connect/certs";
 var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.

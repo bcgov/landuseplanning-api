@@ -1,4 +1,5 @@
 module.exports = require('../models')('User', {
+    sub: { type: String, unique: true},
     firstName: { type: String, trim: true, default: '' },
     middleName: { type: String, trim: true, default: null },
     lastName: { type: String, trim: true, default: '' },
@@ -19,6 +20,7 @@ module.exports = require('../models')('User', {
     country: { type: String, default: '' },
     postalCode: { type: String, default: '' },
     notes: { type: String, default: '' },
+    projectPermissions: [{ type: 'ObjectId', ref: 'Project'}],
     read: [{ type: String, trim: true, default: 'sysadmin' }],
     write: [{ type: String, trim: true, default: 'sysadmin' }],
     delete: [{ type: String, trim: true, default: 'sysadmin' }]

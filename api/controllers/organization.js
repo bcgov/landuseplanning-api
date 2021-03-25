@@ -44,8 +44,9 @@ exports.publicGet = async function (args, res, next) {
   _.assignIn(query, { "_schemaName": "Organization" });
 
   var data = await Utils.runDataQuery('Organization',
-      ['public'],
-      query,
+      ['public'], // Public role
+      false, // Don't enter user sub when public.
+      query, // Search query.
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
       sort, // sort
