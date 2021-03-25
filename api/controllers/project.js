@@ -184,6 +184,8 @@ exports.protectedGet = async function (args, res, next) {
   var count = false;
   var query = {};
 
+  console.log('protected get')
+
   var commentPeriodPipeline = null;
 
   // Admin's only get this
@@ -244,6 +246,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       fields, // Fields
       null, // sort warmup
