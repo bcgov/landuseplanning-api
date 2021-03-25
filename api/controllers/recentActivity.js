@@ -51,8 +51,9 @@ exports.publicGet = async function (args, res, next) {
 
   try {
     var data = await Utils.runDataQuery('RecentActivity',
-      ['public'],
-      query,
+      ['public'], // Public role.
+      false, // Don't enter user sub when public.
+      query, // Search query.
       theFields, // Fields
       null, // sort warmup
       sort, // sort
@@ -76,6 +77,7 @@ exports.publicGet = async function (args, res, next) {
 
       var dataNext = await Utils.runDataQuery('RecentActivity',
         ['public'],
+        false,
         query,
         theFields, // Fields
         null, // sort warmup
