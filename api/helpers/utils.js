@@ -8,6 +8,7 @@ var request = require('request');
 var turf = require('@turf/turf');
 var helpers = require('@turf/helpers');
 var Wkt = require('wicket');
+const { model } = require('mongoose');
 var _serviceHost = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
 var _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
 var _tantalisAPI = process.env.TTLS_API_ENDPOINT || 'https://api.nrs.gov.bc.ca/ttls-api/v1/';
@@ -15,8 +16,15 @@ var webADEAPI = process.env.WEBADE_AUTH_ENDPOINT || 'https://api.nrs.gov.bc.ca/o
 var username = process.env.WEBADE_USERNAME || 'TTLS-EXT';
 var password = process.env.WEBADE_PASSWORD || 'x';
 var MAX_LIMIT = 1000;
-
 var DEFAULT_PAGESIZE = 100;
+
+const getUserProjectPermissions = async function (userSub) {
+  const User = mongoose.model('User');
+  const user = await User.findOne({ sub: userSub }).exec();
+  return user.projectPermissions;
+}
+
+exports.getUserProjectPermissions = getUserProjectPermissions;
 
 exports.buildQuery = function (property, values, query) {
   var oids = [];
@@ -99,10 +107,20 @@ exports.recordAction = async function (action, meta, payload, objId = null) {
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
+exports.runDataQuery = async function (modelType, role, userSub, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
   return new Promise(async function (resolve, reject) {
     var theModel = mongoose.model(modelType);
     var projection = {};
+    let projectPermissions = [];
+    const projectId = modelType === 'Project' ? '$_id' : '$project';
+    const isUserQuery = modelType === 'User';
+    if (userSub) {
+      projectPermissions = await getUserProjectPermissions(userSub)
+      .then(permissions => permissions)
+      .catch(error => error);
+    }
+
+    console.log('query model type:', modelType)
     console.log('populateProponent: ', populateProponent);
     console.log('populateProjectLead: ', populateProjectLead);
     console.log('populateProjectDirector: ', populateProjectDirector);
@@ -122,6 +140,7 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
     _.each(fields, function (f) {
       projection[f] = 1;
     });
+
 
     var aggregations = _.compact([
       {
@@ -190,13 +209,31 @@ exports.runDataQuery = async function (modelType, role, query, fields, sortWarmU
             if: {
               // This way, if read isn't present, we assume public no roles array.
               $and: [
-                { $cond: { if: "$read", then: true, else: false } },
                 {
-                  $anyElementTrue: {
-                    $map: {
-                      input: "$read",
-                      as: "fieldTag",
-                      in: { $setIsSubset: [["$$fieldTag"], role] }
+                  $and: [
+                    { $cond: { if: "$read", then: true, else: false } },
+                    {
+                      $anyElementTrue: {
+                        $map: {
+                          input: "$read",
+                          as: "fieldTag",
+                          in: { $setIsSubset: [["$$fieldTag"], role] }
+                        }
+                      }
+                    }
+                  ]
+                },
+                // Check if user either has the create-projects role or has project permissions.
+                { $cond: 
+                  { if: { $in: ["public", role] }, then: true, else:
+                    { $cond: 
+                      { if: isUserQuery, then: { $in: [ "create-projects" , role] }, else: 
+                        { $or: [
+                          { $in: [ "create-projects" , role] },
+                          { $in: [ projectId, projectPermissions ] } 
+                          ]
+                        } 
+                      }
                     }
                   }
                 }

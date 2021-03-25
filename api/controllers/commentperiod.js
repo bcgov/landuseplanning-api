@@ -129,9 +129,12 @@ exports.protectedHead = async function (args, res, next) {
   // Set query type
   _.assignIn(query, { '_schemaName': 'CommentPeriod' });
 
+  console.log('here it is', args.swagger.params.auth_payload.sub)
+
   try {
     var data = await Utils.runDataQuery('CommentPeriod',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       ['_id', 'read', 'write', 'delete'], // Fields
       null, // sort warmup
@@ -156,7 +159,7 @@ exports.protectedHead = async function (args, res, next) {
 }
 
 exports.protectedSummary = async function (args, res, next) {
-  defaultLog.info('Head for comment period summaries');
+  defaultLog.info('Summary for comment period summaries');
 
   // Build match query if on CommentPeriodId route
   var query = {};
@@ -187,6 +190,7 @@ exports.protectedSummary = async function (args, res, next) {
       console.log("optionQuery:", optionQuery);
       var res = await Utils.runDataQuery('CommentPeriod',
         args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.sub,
         optionQuery,
         ['_id', 'read', 'write', 'delete'], // Fields
         null, // sort warmup
@@ -253,6 +257,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('CommentPeriod',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,   // sort warmup

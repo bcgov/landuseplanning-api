@@ -274,6 +274,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Comment',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,
