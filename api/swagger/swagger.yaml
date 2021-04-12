@@ -212,6 +212,9 @@ definitions:
   CommentObject:
     type: object
     properties:
+      project:
+        type: string
+        example: "Example project"
       commentAuthor:
         type: object
         example: "A cool comment"
@@ -230,6 +233,7 @@ definitions:
     #TODO: Fix enums
     enum: &commentFields
       - 'author'
+      - 'project'
       - 'comment'
       - 'commentId'
       - 'dateAdded'
@@ -2340,6 +2344,41 @@ paths:
           description: "ID of recentActivity to get"
           required: true
           type: "string"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/RecentActivityObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - recentActivity
+      summary: "Get recentActivity by ID"
+      operationId: protectedGet
+      description: "Get recentActivity."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: recentActivityId
+          in: path
+          description: "ID of recentActivity to get"
+          required: true
+          type: "string"
+        - in: query
+          name: fields
+          description: "Recent Activity fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *activityFields
       responses:
         "200":
           description: "Success"

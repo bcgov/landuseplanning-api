@@ -109,18 +109,24 @@ exports.recordAction = async function (action, meta, payload, objId = null) {
 
 exports.runDataQuery = async function (modelType, role, userSub, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
   return new Promise(async function (resolve, reject) {
-    var theModel = mongoose.model(modelType);
-    var projection = {};
+    let projection = {};
     let projectPermissions = [];
-    const projectId = modelType === 'Project' ? '$_id' : '$project';
+    let projectKey;
+    const theModel = mongoose.model(modelType);
     const isUserQuery = modelType === 'User';
+    
+    projectKey = modelType === 'Project' ? '$_id' : '$project';
+
+    if (modelType === 'EmailSubscribe') {
+      projectKey = query.project;
+    }
+
     if (userSub) {
       projectPermissions = await getUserProjectPermissions(userSub)
       .then(permissions => permissions)
       .catch(error => error);
     }
 
-    console.log('query model type:', modelType)
     console.log('populateProponent: ', populateProponent);
     console.log('populateProjectLead: ', populateProjectLead);
     console.log('populateProjectDirector: ', populateProjectDirector);
@@ -140,7 +146,6 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
     _.each(fields, function (f) {
       projection[f] = 1;
     });
-
 
     var aggregations = _.compact([
       {
@@ -225,12 +230,12 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
                 },
                 // Check if user either has the create-projects role or has project permissions.
                 { $cond: 
-                  { if: { $in: ["public", role] }, then: true, else:
+                  { if: { $in: [ "public", role ] }, then: true, else:
                     { $cond: 
-                      { if: isUserQuery, then: { $in: [ "create-projects" , role] }, else: 
+                      { if: isUserQuery, then: true, else: 
                         { $or: [
-                          { $in: [ "create-projects" , role] },
-                          { $in: [ projectId, projectPermissions ] } 
+                          { $in: [ "create-projects" , role ] },
+                          { $in: [ projectKey, projectPermissions ] }
                           ]
                         } 
                       }
@@ -292,6 +297,8 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
     theModel.aggregate(aggregations)
       .collation(collation)
       .exec()
-      .then(resolve, reject);
+      .then(function(data) {
+        resolve(data)
+      }, reject);
   });
 };
