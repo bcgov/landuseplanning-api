@@ -91,6 +91,7 @@ exports.publicHead = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       ['public'],
+      false,
       query,
       requestedFields, // Fields
       null, // sort warmup
@@ -148,6 +149,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       ['public'],
+      false,
       query,
       requestedFields, // Fields
       null, // sort warmup

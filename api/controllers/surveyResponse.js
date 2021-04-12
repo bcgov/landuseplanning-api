@@ -58,6 +58,8 @@ exports.unProtectedPost = async function (args, res, next) {
     surveyResponse.read = ['staff', 'sysadmin'];
     surveyResponse.write = ['staff', 'sysadmin'];
     surveyResponse.delete = ['staff', 'sysadmin'];
+
+    console.log('do we have a project', mongoose.Types.ObjectId(obj.project))
   
     try {
       var sr = await surveyResponse.save();
