@@ -91,6 +91,7 @@ exports.publicHead = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       ['public'],
+      false,
       query,
       requestedFields, // Fields
       null, // sort warmup
@@ -148,6 +149,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       ['public'],
+      false,
       query,
       requestedFields, // Fields
       null, // sort warmup
@@ -183,6 +185,8 @@ exports.protectedGet = async function (args, res, next) {
   var skip = null, limit = null, sort = null;
   var count = false;
   var query = {};
+
+  console.log('protected get')
 
   var commentPeriodPipeline = null;
 
@@ -244,6 +248,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Project',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       fields, // Fields
       null, // sort warmup

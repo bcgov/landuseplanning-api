@@ -8,12 +8,6 @@ module.exports = require('../models')('Survey', {
     project                     : { type: 'ObjectId', ref: 'Project', default: null, index: true },
     commentPeriod               : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
     questions                   : [surveyQuestion],
-        // singleChoice               : [singleChoice],
-        // multipleChoice             : [multipleChoice],
-        // textBox                    : [textBox],
-        // likert                     : [likert],
-        // docPicker                  : [docPicker],
-        // info                       : [info]
 
     // Permissions
     read                : [{ type: String, trim: true, default: 'sysadmin' }],

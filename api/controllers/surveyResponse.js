@@ -58,6 +58,8 @@ exports.unProtectedPost = async function (args, res, next) {
     surveyResponse.read = ['staff', 'sysadmin'];
     surveyResponse.write = ['staff', 'sysadmin'];
     surveyResponse.delete = ['staff', 'sysadmin'];
+
+    console.log('do we have a project', mongoose.Types.ObjectId(obj.project))
   
     try {
       var sr = await surveyResponse.save();
@@ -133,6 +135,7 @@ exports.protectedGet = async function (args, res, next) {
     try {
       var data = await Utils.runDataQuery('SurveyResponse',
         args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.sub,
         query,
         getSanitizedFields(args.swagger.params.fields.value), // Fields
         null,

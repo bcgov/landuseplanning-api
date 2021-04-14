@@ -65,6 +65,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Document',
       ['public'],
+      null,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -205,6 +206,7 @@ exports.protectedHead = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.sub,
     query,
     ['_id',
       'read'], // Fields
@@ -247,6 +249,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Document',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -279,6 +282,7 @@ exports.publicDownload = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     ['public'],
+    null,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -338,6 +342,7 @@ exports.protectedDownload = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.sub,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -397,6 +402,7 @@ exports.protectedOpen = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.sub,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -407,6 +413,8 @@ exports.protectedOpen = function (args, res, next) {
     .then(function (data) {
       if (data && data.length === 1) {
         var blob = data[0];
+
+        console.log('the doc', data)
 
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;

@@ -71,6 +71,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Survey',
       ['public'],
+      '',
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -139,6 +140,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Survey',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,   // sort warmup

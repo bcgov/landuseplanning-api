@@ -151,10 +151,16 @@ var handleDateItem = function (expArray, item, entry) {
   }
 }
 
-var searchCollection = async function (roles, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
+var searchCollection = async function (roles, projectPermissions, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
   var properties = undefined;
+  let projectKey;
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
+    projectKey = "$project";
+  }
+
+  if (collection && collection === 'Project') {
+    projectKey = "$_id";
   }
 
   // optional search keys
@@ -270,6 +276,47 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     );
   }
 
+  // Redact results based on user permissions.
+  aggregation.push({
+    $redact: {
+      $cond: {
+        if: {
+          // This way, if read isn't present, we assume public no roles array.
+          $and: [
+            {
+              $and: [
+                { $cond: { if: "$read", then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: "$read",
+                      as: "fieldTag",
+                      in: { $setIsSubset: [["$$fieldTag"], roles] }
+                    }
+                  }
+                }
+              ]
+            },
+            // Check if user either has the create-projects role or has project permissions.
+            { $cond: 
+              { if: { $in: ["public", roles] }, then: true, else:
+                { $or: [
+                  { $in: [ "create-projects" , roles] },
+                  { $in: [ projectKey, projectPermissions ] }
+                  ]
+                } 
+              }
+            }
+          ]
+        },
+        then: "$$KEEP",
+        else: {
+          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
+        }
+      }
+    }
+  });
+
   console.log('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
@@ -293,32 +340,9 @@ var searchCollection = async function (roles, keywords, collection, pageNum, pag
     });
   }
 
-  aggregation.push({
-    $redact: {
-      $cond: {
-        if: {
-          // This way, if read isn't present, we assume public no roles array.
-          $and: [
-            { $cond: { if: "$read", then: true, else: false } },
-            {
-              $anyElementTrue: {
-                $map: {
-                  input: "$read",
-                  as: "fieldTag",
-                  in: { $setIsSubset: [["$$fieldTag"], roles] }
-                }
-              }
-            }
-          ]
-        },
-        then: "$$KEEP",
-        else: {
-          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-        }
-      }
-    }
-  });
+  console.log('Projects permissions', projectPermissions)
 
+  // Redact results based on user permissions.
   aggregation.push({
     $addFields: {
       score: { $meta: "textScore" }
@@ -367,6 +391,8 @@ var executeQuery = async function (args, res, next) {
   var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
   var and = args.swagger.params.and ? args.swagger.params.and.value : '';
   var or = args.swagger.params.or ? args.swagger.params.or.value : '';
+  let userProjectPermissions = [];
+  let projectKey = '$project';
   defaultLog.info("Searching keywords:", keywords);
   defaultLog.info("Searching datasets:", dataset);
   defaultLog.info("Searching project:", project);
@@ -379,7 +405,17 @@ var executeQuery = async function (args, res, next) {
   defaultLog.info("_id:", _id);
   defaultLog.info("populate:", populate);
 
+  if (project) {
+    projectKey = '$_id';
+  }
+
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+
+  // Get user project permissions array.
+  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.sub) {
+    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.sub)
+      .then(permissions => (permissions));
+  }
 
   console.log("Searching Collection:", dataset);
 
@@ -407,7 +443,7 @@ var executeQuery = async function (args, res, next) {
 
     console.log("Searching Collection:", dataset);
     console.log("sortField:", sortField);
-    var data = await searchCollection(roles, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
+    var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
     if (dataset === 'Comment') {
       // Filter
       _.each(data[0].searchResults, function (item) {
@@ -419,6 +455,7 @@ var executeQuery = async function (args, res, next) {
     return Actions.sendResponse(res, 200, data);
 
   } else if (dataset === 'Item') {
+
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
     console.log("ITEM GET", { _id: args.swagger.params._id.value })
     var data = await collectionObj.aggregate([
@@ -439,6 +476,16 @@ var executeQuery = async function (args, res, next) {
                       as: "fieldTag",
                       in: { $setIsSubset: [["$$fieldTag"], roles] }
                     }
+                  }
+                },
+                // Check if user either has the create-projects role or has project permissions.
+                { $cond: 
+                  { if: { $in: ["public", roles] }, then: true, else:
+                    { $or: [
+                      { $in: [ "create-projects" , roles] },
+                      { $in: [ projectKey, userProjectPermissions ] } 
+                      ]
+                    } 
                   }
                 }
               ]

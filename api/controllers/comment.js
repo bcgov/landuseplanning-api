@@ -12,6 +12,7 @@ var getSanitizedFields = function (fields) {
   return _.remove(fields, function (f) {
     return (_.indexOf([
       'author',
+      'project',
       'comment',
       'commentId',
       'dateAdded',
@@ -199,9 +200,9 @@ exports.protectedHead = async function (args, res, next) {
 
   var data = await Utils.runDataQuery('Comment',
     args.swagger.operation['x-security-scopes'],
+    args.swagger.params.auth_payload.sub,
     query,
-    ['_id',
-      'tags'], // Fields
+    ['_id', 'tags'], // Fields
     null, // sort warmup
     null, // sort
     null, // skip
@@ -271,11 +272,14 @@ exports.protectedGet = async function (args, res, next) {
     _.assignIn(query, { $or: filter });
   }
 
+  let sanitizedFields = getSanitizedFields(args.swagger.params.fields.value);
+
   try {
     var data = await Utils.runDataQuery('Comment',
       args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.sub,
       query,
-      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      sanitizedFields, // Fields
       null,
       sort, // sort
       skip, // skip
@@ -295,6 +299,7 @@ exports.protectedGet = async function (args, res, next) {
 
       var nextComment = await Utils.runDataQuery('Comment',
         args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.sub,
         queryForNextComment,
         [], // Fields
         null,

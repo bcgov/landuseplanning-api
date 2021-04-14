@@ -51,8 +51,9 @@ exports.publicGet = async function (args, res, next) {
 
   try {
     var data = await Utils.runDataQuery('RecentActivity',
-      ['public'],
-      query,
+      ['public'], // Public role.
+      false, // Don't enter user sub when public.
+      query, // Search query.
       theFields, // Fields
       null, // sort warmup
       sort, // sort
@@ -76,6 +77,7 @@ exports.publicGet = async function (args, res, next) {
 
       var dataNext = await Utils.runDataQuery('RecentActivity',
         ['public'],
+        false,
         query,
         theFields, // Fields
         null, // sort warmup
@@ -94,6 +96,38 @@ exports.publicGet = async function (args, res, next) {
       return Actions.sendResponse(res, 200, data);
     }
 
+  } catch (e) {
+    defaultLog.info('Error:', e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
+
+exports.protectedGet = async function (args, res, next) {
+  var query = {};
+  var theFields = getSanitizedFields(args.swagger.params.fields.value);
+  
+  if (args.swagger.params.recentActivityId && args.swagger.params.recentActivityId.value) {
+    query = Utils.buildQuery('_id', args.swagger.params.recentActivityId.value, query);
+  } 
+
+  try {
+    var data = await Utils.runDataQuery('RecentActivity',
+      args.swagger.params.auth_payload.realm_access.roles, // Public role.
+      args.swagger.params.auth_payload.sub,
+      query, // Search query.
+      theFields, // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      4, // limit
+      false,
+      null,
+      false,
+      false,
+      true); // count
+
+    Utils.recordAction('Get', 'RecentActivity', args.swagger.params.auth_payload.preferred_username);
+    return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
     return Actions.sendResponse(res, 400, e);
