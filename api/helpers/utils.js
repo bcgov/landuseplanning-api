@@ -147,7 +147,6 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
       projection[f] = 1;
     });
 
-
     var aggregations = _.compact([
       {
         '$match': query

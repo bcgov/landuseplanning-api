@@ -20,7 +20,7 @@ module.exports = require('../models')('User', {
     country: { type: String, default: '' },
     postalCode: { type: String, default: '' },
     notes: { type: String, default: '' },
-    projectPermissions: [{ type: 'ObjectId', ref: 'Project'}],
+    projectPermissions: [{ type: String, ref: 'Project'}],
     read: [{ type: String, trim: true, default: 'sysadmin' }],
     write: [{ type: String, trim: true, default: 'sysadmin' }],
     delete: [{ type: String, trim: true, default: 'sysadmin' }]

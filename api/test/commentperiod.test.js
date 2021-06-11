@@ -2,15 +2,12 @@ const test_helper = require('./test_helper');
 const app = test_helper.app;
 const mongoose = require('mongoose');
 const commentPeriodFactory = require('./factories/comment_period_factory').factory;
-const applicationFactory = require('./factories/application_factory').factory;
 const request = require('supertest');
 const fieldNames = ['name', '_application'];
 const _ = require('lodash');
 
 const commentPeriodController = require('../controllers/commentperiod.js');
 require('../helpers/models/commentperiod');
-require('../helpers/models/application');
-const Application = mongoose.model('Application');
 const CommentPeriod = mongoose.model('CommentPeriod');
 
 const idirUsername = 'idir/i_am_a_bot';
@@ -66,16 +63,12 @@ app.put('/api/commentperiod/:id/unpublish', function(req, res) {
 app.delete('/api/commentperiod/:id', function(req, res) {
   return commentPeriodController.protectedDelete(paramsWithCommentPerId(req), res);
 });
-const specialApplication = new Application();
-const vanillaApplication = new Application();
-const confidentialApplication = new Application();
-const deletedApplication = new Application();
 
 const commentPeriodsData = [
-  { name: 'Special Comment', _application: specialApplication.id, tags: [['public'], ['sysadmin']], isDeleted: false },
-  { name: 'Vanilla Ice Cream', _application: vanillaApplication.id, tags: [['public']], isDeleted: false },
-  { name: 'Confidential Comment', _application: confidentialApplication.id, tags: [['sysadmin']], isDeleted: false },
-  { name: 'Deleted Comment', _application: deletedApplication.id, tags: [['public'], ['sysadmin']], isDeleted: true }
+  { name: 'Special Comment', tags: [['public'], ['sysadmin']], isDeleted: false },
+  { name: 'Vanilla Ice Cream', tags: [['public']], isDeleted: false },
+  { name: 'Confidential Comment', tags: [['sysadmin']], isDeleted: false },
+  { name: 'Deleted Comment', tags: [['public'], ['sysadmin']], isDeleted: true }
 ];
 
 function setupCommentPeriods(commentPeriodsData) {

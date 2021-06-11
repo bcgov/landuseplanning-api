@@ -94,6 +94,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('CommentPeriod',
       ['public'],
+      false,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -112,7 +113,7 @@ exports.publicGet = async function (args, res, next) {
 
 exports.protectedHead = async function (args, res, next) {
   defaultLog.info('Head for comment period');
-
+ 
   // Build match query if on CommentPeriodId route
   var query = {};
   if (args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value) {
@@ -128,8 +129,6 @@ exports.protectedHead = async function (args, res, next) {
 
   // Set query type
   _.assignIn(query, { '_schemaName': 'CommentPeriod' });
-
-  console.log('here it is', args.swagger.params.auth_payload.sub)
 
   try {
     var data = await Utils.runDataQuery('CommentPeriod',

@@ -71,7 +71,7 @@ exports.publicGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Survey',
       ['public'],
-      '',
+      false,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup

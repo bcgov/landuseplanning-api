@@ -45,7 +45,7 @@ exports.protectedGet = async function (args, res, next) {
       skip, // skip
       limit, // limit
       count); // count
-    Utils.recordAction('Get', 'User', args.swagger.params.auth_payload.preferred_username, args.swagger.params.userId && args.swagger.params.userId.value ? args.swagger.params.userId.value : null);
+    Utils.recordAction('Get', 'User', args.swagger.params.auth_payload.preferred_username, data[0] && data[0]._id ? data[0]._id.toString() : null);
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
