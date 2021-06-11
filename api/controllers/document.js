@@ -24,7 +24,6 @@ var getSanitizedFields = function (fields) {
       'displayName',
       'labels',
       'datePosted',
-      'documentURLText',
       'dateUploaded',
       'dateReceived',
       'documentFileSize',
@@ -510,7 +509,6 @@ exports.protectedPost = async function (args, res, next) {
 
               doc.documentFileName = args.swagger.params.documentFileName.value;
               doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
-              doc.documentURLText = args.swagger.params.documentURLText.value;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
               doc.internalSize = upfile.size;
@@ -616,13 +614,11 @@ exports.protectedPut = async function (args, res, next) {
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   obj.displayName = args.swagger.params.displayName.value;
-  obj.documentURLText = args.swagger.params.documentURLText;
 
   obj.projectPhase = args.swagger.params.projectPhase.value;
 
   obj.dateUploaded = args.swagger.params.dateUploaded.value;
   obj.datePosted = args.swagger.params.datePosted.value;
-  obj.documentURLText = args.swagger.params.documentURLText.value;
   obj.description = args.swagger.params.description.value;
   obj.keywords = args.swagger.params.keywords.value;
 

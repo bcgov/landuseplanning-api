@@ -112,8 +112,6 @@ exports.protectedGet = async function (args, res, next) {
     query = Utils.buildQuery('_id', args.swagger.params.recentActivityId.value, query);
   } 
 
-  console.log('the fields', theFields)
-
   try {
     var data = await Utils.runDataQuery('RecentActivity',
       args.swagger.params.auth_payload.realm_access.roles, // Public role.
