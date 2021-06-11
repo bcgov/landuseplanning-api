@@ -412,6 +412,8 @@ var executeQuery = async function (args, res, next) {
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
 
   // Get user project permissions array.
+
+  console.log('auth', args.swagger.params.auth_payload)
   if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.sub) {
     userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.sub)
       .then(permissions => (permissions));

@@ -10,6 +10,9 @@
   "keywords": [],
   "license": "Apache 2.0",
   "main": "app",
+  "jest": {
+    "testEnvironment": "node"
+  },
   "dependencies": {
     "@turf/helpers": "^6.1.4",
     "@turf/turf": "^5.1.6",
@@ -51,8 +54,7 @@
   },
   "scripts": {
     "start": "node app",
-    "test": "echo 'Test suite should be run with \"`npm run tests` or npm `run tests-debug`\"'",
-    "tests": "UPLOAD_DIRECTORY='./api/test/uploads/' jest api --runInBand",
+    "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --runInBand",
     "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"
   },

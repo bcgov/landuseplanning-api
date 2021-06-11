@@ -104,6 +104,7 @@ exports.publicHead = async function (args, res, next) {
 
   var data = await Utils.runDataQuery('Comment',
     ['public'],
+    false,
     query,
     fields, // Fields
     null, // sort warmup
@@ -150,6 +151,7 @@ exports.publicGet = async function (args, res, next) {
 
   var data = await Utils.runDataQuery('Comment',
     ['public'],
+    false,
     query,
     fields, // Fields
     null,

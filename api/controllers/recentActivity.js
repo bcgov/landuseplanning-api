@@ -13,6 +13,7 @@ var getSanitizedFields = function (fields) {
       'dateAdded',
       'pinned',
       'documentUrl',
+      'documentUrlText',
       'contentUrl',
       'agreements',
       'pcp',
@@ -33,6 +34,7 @@ exports.publicGet = async function (args, res, next) {
     'dateAdded',
     'pinned',
     'documentUrl',
+    'documentUrlText',
     'contentUrl',
     'agreements',
     'pcp',
@@ -109,6 +111,8 @@ exports.protectedGet = async function (args, res, next) {
   if (args.swagger.params.recentActivityId && args.swagger.params.recentActivityId.value) {
     query = Utils.buildQuery('_id', args.swagger.params.recentActivityId.value, query);
   } 
+
+  console.log('the fields', theFields)
 
   try {
     var data = await Utils.runDataQuery('RecentActivity',

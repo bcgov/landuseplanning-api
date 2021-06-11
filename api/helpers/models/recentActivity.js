@@ -6,6 +6,7 @@
 
     pinned              : { type: Boolean, default: false },
     documentUrl         : { type: String, default: null },
+    documentUrlText     : { type: String, default: '' },
     contentUrl          : { type: String, default: null },
     pcp                 : { type: 'ObjectId', ref: 'CommentPeriod', default: null, index: true },
     active              : { type: Boolean, default: false },
