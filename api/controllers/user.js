@@ -132,77 +132,87 @@ exports.protectedPut = async function (args, res, next) {
 const addProjectPermission = async (user, projId) => {
   return new Promise((resolve, reject) => {
     if (!user.projectPermissions.includes(projId)) {
-      const project = mongoose.Types.ObjectId(projId)
-      user.projectPermissions.push(project)
+      const project = mongoose.Types.ObjectId(projId);
+      user.projectPermissions.push(project);
+      defaultLog.info(`added project ${projId} to user`);
       resolve(user.save());
     } else {
-      resolve(user);
+      reject(`Cannot add project to user ${user.displayName}.`);
     }
   })
 }
 
 const removeProjectPermission = async (user, projId) => {
   return new Promise((resolve, reject) => {
-    const project = mongoose.Types.ObjectId(projId)
-    if (user.projectPermissions.includes(project)) {
+    if (user.projectPermissions.includes(projId)) {
+      const project = mongoose.Types.ObjectId(projId)
       user.projectPermissions.pull(project);
+      defaultLog.info(`removed project ${projId} from user`);
       resolve(user.save());
     } else {
-      resolve(user);
+      reject(`Cannot remove project from user ${user.displayName}.`);
     }
   });
 }
 
 exports.protectedAddPermission = (args, res) => {
-  const userId = args.swagger.params.userId.value;
-  const projId = args.swagger.params.projId.value;
+  const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
+  const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
   defaultLog.info("Add project permission to user:", userId);
 
   const User = require('mongoose').model('User');
-  User.findOne({ _id: userId }, (err, user) => {
-    if (user) {
-      defaultLog.info("found user:", user);
 
-      return addProjectPermission(user, projId)
-        .then((permissionAdded) => {
-          Utils.recordAction('Add Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
-          return Actions.sendResponse(res, 200, permissionAdded);
-        })
-        .catch((err) => {
-          return Actions.sendResponse(res, err.code, err);
-        });
+  // Find all users that have the sub field(real users as opposed to Contacts).
+  User.find({_schemaName: 'User', sub: {$exists: true}}, (err, users) => {
+    if (users) {
+      users.forEach(user => {
+        if (user._id.equals(userId)) {
+          defaultLog.info("found user:", user);
+          addProjectPermission(user, projId)
+          .then((permissionAdded) => {
+            Utils.recordAction('Add Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+            // Return all users to be able to update list of users in Permissions tab.
+            return Actions.sendResponse(res, 200, users);
+          })
+          .catch((err) => {
+            return Actions.sendResponse(res, 500, err);
+          });
+        }
+      })
     } else {
       defaultLog.info("Couldn't find user!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
-  User.update(
-    { _id: userId },
-
-  )
+  })
 };
 
 exports.protectedRemovePermission = function (args, res) {
-  const userId = args.swagger.params.userId.value;
-  const projId = args.swagger.params.projId.value;
+  const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
+  const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
   defaultLog.info("Remove project permission from user:", userId);
 
   const User = require('mongoose').model('User');
-  User.findOne({ _id: userId }, (err, user) => {
-    if (user) {
-      defaultLog.info("found user:", user);
 
-      return removeProjectPermission(user, projId)
-        .then((permissionRemoved) => {
-          Utils.recordAction('Remove Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
-          return Actions.sendResponse(res, 200, permissionRemoved);
-        })
-        .catch((err) => {
-          return Actions.sendResponse(res, err.code, err);
-        });
+  // Find all users that have the sub field(real users as opposed to Contacts).
+  User.find({_schemaName: 'User', sub: {$exists: true}}, (err, users) => {
+    if (users) {
+      users.forEach(user => {
+        if (user._id.equals(userId)) {
+          defaultLog.info("found user:", user);
+          removeProjectPermission(user, projId)
+          .then((permissionAdded) => {
+            Utils.recordAction('Remove Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+            // Return all users to be able to update list of users in Permissions tab.
+            return Actions.sendResponse(res, 200, users);
+          })
+          .catch((err) => {
+            return Actions.sendResponse(res, 500, err);
+          });
+        }
+      })
     } else {
       defaultLog.info("Couldn't find user!");
       return Actions.sendResponse(res, 404, {});
     }
-  });
+  })
 };
