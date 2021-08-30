@@ -340,8 +340,6 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     });
   }
 
-  console.log('Projects permissions', projectPermissions)
-
   // Redact results based on user permissions.
   aggregation.push({
     $addFields: {
