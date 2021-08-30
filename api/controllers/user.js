@@ -132,8 +132,7 @@ exports.protectedPut = async function (args, res, next) {
 const addProjectPermission = async (user, projId) => {
   return new Promise((resolve, reject) => {
     if (!user.projectPermissions.includes(projId)) {
-      const project = mongoose.Types.ObjectId(projId);
-      user.projectPermissions.push(project);
+      user.projectPermissions.push(projId);
       defaultLog.info(`added project ${projId} to user`);
       resolve(user.save());
     } else {
@@ -145,8 +144,7 @@ const addProjectPermission = async (user, projId) => {
 const removeProjectPermission = async (user, projId) => {
   return new Promise((resolve, reject) => {
     if (user.projectPermissions.includes(projId)) {
-      const project = mongoose.Types.ObjectId(projId)
-      user.projectPermissions.pull(project);
+      user.projectPermissions.pull(projId);
       defaultLog.info(`removed project ${projId} from user`);
       resolve(user.save());
     } else {
