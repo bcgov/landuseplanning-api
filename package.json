@@ -1,6 +1,6 @@
 {
   "name": "landuseplanning-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Mark Lisé",
   "contributors": [
     "Mark Lisé <mark@digitalspace.ca>",
@@ -8,7 +8,7 @@
   ],
   "description": "LUP API",
   "keywords": [],
-  "license": "Apache 2.0",
+  "license": "Apache-2.0",
   "main": "app",
   "jest": {
     "testEnvironment": "node"
@@ -42,18 +42,19 @@
     "reproject": "^1.2.2",
     "request": "^2.88.0",
     "request-promise-native": "^1.0.7",
+    "start": "^5.1.0",
     "stream": "^0.0.2",
     "stream-transform": "^2.0.1",
     "swagger-tools": "^0.10.4",
     "tree-model": "^1.0.7",
     "underscore": "^1.9.1",
-    "validator": "^9.4.1",
     "wicket": "^1.3.3",
     "winston": "^2.4.4",
     "yamljs": "0.2.9"
   },
   "scripts": {
-    "start": "node app",
+    "preinstall": "npx npm-force-resolutions",
+    "start": "nodemon app",
     "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --runInBand",
     "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"
@@ -64,7 +65,11 @@
     "jest": "^23.6.0",
     "mongodb-memory-server": "^2.6.2",
     "nock": "^10.0.1",
+    "nodemon": "^2.0.15",
     "shelljs": "^0.8.3",
     "supertest": "^3.3.0"
+  },
+  "resolutions": {
+    "validator": "13.7.0"
   }
 }
