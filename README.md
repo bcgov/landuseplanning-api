@@ -33,7 +33,7 @@ env
 
 The above `env` command will show you your environment variables and allow you to check that the correct values are present.
 
-Start the server by running `npm start`
+Start the server by running `npm run start-watch`
 
 # Prerequisites
 
