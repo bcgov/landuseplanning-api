@@ -53,8 +53,9 @@
     "yamljs": "0.2.9"
   },
   "scripts": {
-    "preinstall": "npx npm-force-resolutions",
-    "start": "nodemon app",
+    "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
+    "start": "node app",
+    "start-watch": "nodemon app",
     "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --runInBand",
     "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"
