@@ -1,5 +1,7 @@
 # bcgov/landuseplanning-api
 
+[![Lifecycle:Stable](https://img.shields.io/badge/Lifecycle-Stable-97ca00)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
+
 Minimal API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
 
 ## How to run this
@@ -40,7 +42,7 @@ Start the server by running `npm start`
 | node       | 8.x.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
 | npm        | 6.x.x   | https://www.npmjs.com/                      | Node Package Manager                      |
 | yarn       | latest  | https://yarnpkg.com/en/                     | Package Manager (more efficient than npm) |
-| mongodb    | 3.2     | https://docs.mongodb.com/v3.2/installation/ | NoSQL database                            |
+| mongodb    | 3.6     | https://docs.mongodb.com/v3.6/installation/ | NoSQL database                            |
 
 ## Install [Node + NPM](https://nodejs.org/en/)
 
