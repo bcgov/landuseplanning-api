@@ -1,17 +1,17 @@
-var auth = require("../helpers/auth");
-var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('default');
-var mongoose = require('mongoose');
-var qs = require('qs');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
-var request = require('request');
-var tagList = [
+const { assignIn, remove, each, indexOf } = require('lodash');
+const defaultLog = require('winston').loggers.get('default');
+const mongoose = require('mongoose');
+const qs = require('qs');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
+const tagList = [
   'existingLandUsePlans',
   'centroid',
   'description',
+  'details',
   'engagementStatus',
   'backgroundInfo',
+  'engagementLabel',
   'engagementInfo',
   'documentInfo',
   'overlappingRegionalDistricts',
@@ -51,17 +51,35 @@ var tagList = [
   'delete'
 ];
 
-var getSanitizedFields = function (fields) {
-  return _.remove(fields, function (f) {
-    return (_.indexOf(tagList, f) !== -1);
+/**
+ * Get all project fields.
+ * 
+ * @param {*} fields 
+ * @returns 
+ */
+const getSanitizedFields = (fields) => {
+  return remove(fields, function (f) {
+    return (indexOf(tagList, f) !== -1);
   });
 }
 
-exports.protectedOptions = function (args, res, rest) {
+/**
+ * Options for projects.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.protectedOptions = (args, res) => {
   res.status(200).send();
 }
 
-exports.publicHead = async function (args, res, next) {
+/**
+ * Public head request.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.publicHead = async (args, res) => {
   defaultLog.info('Getting head for Project')
 
   // Build match query if on ProjId route
@@ -86,7 +104,7 @@ exports.publicHead = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "Project" });
+  assignIn(query, { "_schemaName": "Project" });
 
   try {
     var data = await Utils.runDataQuery('Project',
@@ -117,7 +135,14 @@ exports.publicHead = async function (args, res, next) {
   }
 };
 
-exports.publicGet = async function (args, res, next) {
+/**
+ * Public get of projects.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ * @returns 
+ */
+exports.publicGet = async (args, res) => {
   // Build match query if on projId route
   var query = {}, skip = null, limit = null;
   var commentPeriodPipeline = null;
@@ -144,7 +169,7 @@ exports.publicGet = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "Project" });
+  assignIn(query, { "_schemaName": "Project" });
 
   try {
     var data = await Utils.runDataQuery('Project',
@@ -166,7 +191,7 @@ exports.publicGet = async function (args, res, next) {
 
     // TODO: We should do this as a query
     if (commentPeriodPipeline) {
-      _.each(data, function (item) {
+      each(data, function (item) {
         if (item.commentPeriodForBanner.length > 0 && !item.commentPeriodForBanner[0].read.includes('public')) {
           delete item.commentPeriodForBanner;
         }
@@ -181,36 +206,41 @@ exports.publicGet = async function (args, res, next) {
   }
 };
 
-exports.protectedGet = async function (args, res, next) {
-  var skip = null, limit = null, sort = null;
-  var count = false;
-  var query = {};
+/**
+ * Protected get of a project or projects.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ * @returns 
+ */
+exports.protectedGet = async (args, res) => {
+  defaultLog.info('PROTECTED PROJECT GET');
 
-  console.log('protected get')
+  let skip = null;
+  let limit = null;
+  let sort = null;
+  let count = false;
+  let query = {};
+  let commentPeriodPipeline = null;
 
-  var commentPeriodPipeline = null;
-
-  // Admin's only get this
+  // Admin's only get this.
   if (args.swagger.params.fields.value) {
     args.swagger.params.fields.value.push('directoryStructure');
   }
-  var fields = getSanitizedFields(args.swagger.params.fields.value);
+
+  const fields = getSanitizedFields(args.swagger.params.fields.value);
 
   tagList.push('dateStarted');
   tagList.push('dateCompleted');
 
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
-
-  if (args.swagger.params.projId && args.swagger.params.projId.value !== 'undefined') {
-    // Getting a single project
-    _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
+  if (args.swagger.params.projId && 'undefined' !== args.swagger.params.projId.value) {
+    // Getting a single project.
+    assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.projId.value) });
     commentPeriodPipeline = handleCommentPeriodForBannerQueryParameters(args, args.swagger.params.projId.value);
-    console.log(JSON.stringify(commentPeriodPipeline));
-    console.log('PROJECT HERE: ', commentPeriodPipeline);
   } else {
-    // Getting multiple projects
+    // Getting multiple projects.
     try {
-      // Filters
+      // Filters.
       query = addStandardQueryFilters(query, args);
 
       // Sorting
@@ -237,7 +267,7 @@ exports.protectedGet = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "Project" });
+  assignIn(query, { "_schemaName": "Project" });
 
   console.log("*****************************************");
   console.log("query:", query);
@@ -263,7 +293,7 @@ exports.protectedGet = async function (args, res, next) {
       commentPeriodPipeline);
     Utils.recordAction('Get', 'Project', args.swagger.params.auth_payload.preferred_username, args.swagger.params.projId && args.swagger.params.projId.value ? args.swagger.params.projId.value : null);
     //serializeProjectVirtuals(data);
-    defaultLog.info('Got comment project(s):', data);
+    defaultLog.info('Got project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -271,7 +301,13 @@ exports.protectedGet = async function (args, res, next) {
   }
 };
 
-exports.protectedHead = function (args, res, next) {
+/**
+ * Handle a head api call.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.protectedHead = (args, res) => {
   defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
 
   // Build match query if on projId route
@@ -293,13 +329,11 @@ exports.protectedHead = function (args, res, next) {
 
   // Unless they specifically ask for it, hide deleted results.
   if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value !== undefined) {
-    _.assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-
+    assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "Project" });
+  assignIn(query, { "_schemaName": "Project" });
 
   Utils.runDataQuery('Project',
     args.swagger.operation["x-security-scopes"],
@@ -322,7 +356,13 @@ exports.protectedHead = function (args, res, next) {
     });
 };
 
-exports.protectedDelete = function (args, res, next) {
+/**
+ * Delete project.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.protectedDelete = (args, res) => {
   var projId = args.swagger.params.projId.value;
   defaultLog.info("Delete Project:", projId);
 
@@ -348,8 +388,15 @@ exports.protectedDelete = function (args, res, next) {
   });
 }
 
-//  Create a new project
-exports.protectedPost = function (args, res, next) {
+/**
+ * Add a new project.
+ * 
+ * @param {object} args 
+ * @param {HTTPRequest} res
+ */
+exports.protectedPost = (args, res) => {
+  defaultLog.info('PROTECTED PROJECT POST');
+
   var obj = args.swagger.params.project.value;
 
   defaultLog.info("Incoming new object:", obj);
@@ -375,7 +422,14 @@ exports.protectedPost = function (args, res, next) {
     });
 };
 
-exports.protectedPinDelete = async function (args, res, next) {
+/**
+ * Delete a project pin.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ * @returns 
+ */
+exports.protectedPinDelete = async (args, res) => {
   var projId = args.swagger.params.projId.value;
   var pinId = args.swagger.params.pinId.value;
   defaultLog.info("Delete PIN: ", pinId, " from Project:", projId);
@@ -395,19 +449,22 @@ exports.protectedPinDelete = async function (args, res, next) {
   }
 }
 
-handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, username, res) {
+/**
+ * 
+ */
+handleGetPins = async (projectId, roles, sortBy, pageSize, pageNum, username, res) => {
   var skip = null, limit = null, sort = null;
   var count = false;
   var query = {};
 
-  _.assignIn(query, { "_schemaName": "Project" });
+  assignIn(query, { "_schemaName": "Project" });
 
   var fields = ['_id', 'pins', 'name', 'website', 'province'];
 
   // First get the project
   if (projectId && projectId.value) {
     // Getting a single project
-    _.assignIn(query, { _id: mongoose.Types.ObjectId(projectId.value) });
+    assignIn(query, { _id: mongoose.Types.ObjectId(projectId.value) });
     var data = await Utils.runDataQuery('Project',
       roles,
       query,
@@ -422,7 +479,7 @@ handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, use
       null
     );
 
-    _.assignIn(query, { "_schemaName": "Organization" });
+    assignIn(query, { "_schemaName": "Organization" });
 
     let thePins = [];
     if (!data[0].pins) {
@@ -473,7 +530,13 @@ handleGetPins = async function (projectId, roles, sortBy, pageSize, pageNum, use
   }
 }
 
-exports.publicPinGet = async function (args, res, next) {
+/**
+ * Get project pin on public app.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.publicPinGet = async function (args, res) {
   handleGetPins(args.swagger.params.projId,
     ['public'],
     args.swagger.params.sortBy,
@@ -484,7 +547,13 @@ exports.publicPinGet = async function (args, res, next) {
   );
 }
 
-exports.protectedPinGet = async function (args, res, next) {
+/**
+ * Get project pin.
+ * 
+ * @param {object} args 
+ * @param {HTTPResponse} res 
+ */
+exports.protectedPinGet = async function (args, res) {
   handleGetPins(args.swagger.params.projId,
     args.swagger.params.auth_payload.realm_access.roles,
     args.swagger.params.sortBy,
@@ -596,14 +665,14 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
   var skip = null, limit = null, sort = null;
   var query = {};
 
-  _.assignIn(query, { "_schemaName": "Group" });
+  assignIn(query, { "_schemaName": "Group" });
 
   var fields = ['_id', 'members', 'name', 'project'];
 
   // First get the group
   if (groupId && groupId.value) {
     // Getting a single group
-    _.assignIn(query, { _id: mongoose.Types.ObjectId(groupId.value) });
+    assignIn(query, { _id: mongoose.Types.ObjectId(groupId.value) });
 
     var data = await Utils.runDataQuery('Group',
       roles,
@@ -626,7 +695,7 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
         total_items: 0
       }]);
     } else {
-      _.assignIn(query, { "_schemaName": "User" });
+      assignIn(query, { "_schemaName": "User" });
 
       let theUsers = [];
       data[0].members.map(user => {
@@ -728,8 +797,15 @@ exports.protectedGroupDelete = async function (args, res, next) {
   }
 }
 
-// Update an existing project
-exports.protectedPut = async function (args, res, next) {
+/**
+ * Update an existing project.
+ * 
+ * @param {*} args 
+ * @param {*} res 
+ * @returns 
+ */
+exports.protectedPut = async (args, res) => {
+  defaultLog.info('PROTECTED PROJECT PUT');
   var objId = args.swagger.params.projId.value;
   defaultLog.info("ObjectID:", args.swagger.params.projId.value);
 
@@ -737,39 +813,33 @@ exports.protectedPut = async function (args, res, next) {
   var obj = {};
   var projectObj = args.swagger.params.ProjObject.value;
 
-  // console.log("Incoming updated object:", projectObj);
-  console.log("*****************");
-
   delete projectObj.read;
   delete projectObj.write;
   delete projectObj.delete;
 
   obj.agreements = projectObj.agreements;
   obj.description = projectObj.description;
+  obj.details = projectObj.details;
   obj.overlappingRegionalDistricts = projectObj.overlappingRegionalDistricts;
   obj.region = projectObj.region;
   obj.projectPhase = projectObj.projectPhase;
   obj.name = projectObj.name;
-
   obj.centroid = projectObj.centroid;
-
-  // Contacts
   obj.projectLead = projectObj.projectLead;
   obj.projectDirector = projectObj.projectDirector;
-
   obj.existingLandUsePlans = projectObj.existingLandUsePlans;
   obj.existingLandUsePlanURLs = projectObj.existingLandUsePlanURLs;
   obj.engagementStatus = projectObj.engagementStatus;
   obj.backgroundInfo = projectObj.backgroundInfo;
+  obj.engagementLabel = projectObj.engagementLabel;
   obj.engagementInfo = projectObj.engagementInfo;
   obj.documentInfo = projectObj.documentInfo;
-
   obj.partner = projectObj.partner;
 
-  console.log("Updating with:", obj);
+  console.log("Updating project with:", obj);
   console.log("--------------------------");
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
-  // Project.update({ _id: mongoose.Types.ObjectId(objId) }, { $set: updateObj }, function (err, o) {
+
   if (doc) {
     Utils.recordAction('Put', 'Project', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, doc);
@@ -866,7 +936,7 @@ var addStandardQueryFilters = function (query, args) {
     var queryString = qs.parse(args.swagger.params.publishDate.value);
     if (queryString.since && queryString.until) {
       // Combine queries as logical AND for the dataset.
-      _.assignIn(query, {
+      assignIn(query, {
         $and: [
           {
             publishDate: { $gte: new Date(queryString.since) }
@@ -877,28 +947,28 @@ var addStandardQueryFilters = function (query, args) {
         ]
       });
     } else if (queryString.eq) {
-      _.assignIn(query, {
+      assignIn(query, {
         publishDate: { $eq: new Date(queryString.eq) }
       });
     } else {
       // Which param was set?
       if (queryString.since) {
-        _.assignIn(query, {
+        assignIn(query, {
           publishDate: { $gte: new Date(queryString.since) }
         });
       }
       if (queryString.until) {
-        _.assignIn(query, {
+        assignIn(query, {
           publishDate: { $lte: new Date(queryString.until) }
         });
       }
     }
   }
   if (args.swagger.params.tantalisId && args.swagger.params.tantalisId.value !== undefined) {
-    _.assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
+    assignIn(query, { tantalisID: args.swagger.params.tantalisId.value });
   }
   if (args.swagger.params.cl_file && args.swagger.params.cl_file.value !== undefined) {
-    _.assignIn(query, { cl_file: args.swagger.params.cl_file.value });
+    assignIn(query, { cl_file: args.swagger.params.cl_file.value });
   }
   if (args.swagger.params.purpose && args.swagger.params.purpose.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.purpose.value);
@@ -908,7 +978,7 @@ var addStandardQueryFilters = function (query, args) {
     } else {
       queryArray.push(queryString.eq);
     }
-    _.assignIn(query, { purpose: { $in: queryArray } });
+    assignIn(query, { purpose: { $in: queryArray } });
   }
   if (args.swagger.params.subpurpose && args.swagger.params.subpurpose.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.subpurpose.value);
@@ -918,13 +988,13 @@ var addStandardQueryFilters = function (query, args) {
     } else {
       queryArray.push(queryString.eq);
     }
-    _.assignIn(query, { subpurpose: { $in: queryArray } });
+    assignIn(query, { subpurpose: { $in: queryArray } });
   }
   if (args.swagger.params.type && args.swagger.params.type.value !== undefined) {
-    _.assignIn(query, { type: args.swagger.params.type.value });
+    assignIn(query, { type: args.swagger.params.type.value });
   }
   if (args.swagger.params.subtype && args.swagger.params.subtype.value !== undefined) {
-    _.assignIn(query, { subtype: args.swagger.params.subtype.value });
+    assignIn(query, { subtype: args.swagger.params.subtype.value });
   }
   if (args.swagger.params.status && args.swagger.params.status.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.status.value);
@@ -934,25 +1004,25 @@ var addStandardQueryFilters = function (query, args) {
     } else {
       queryArray.push(queryString.eq);
     }
-    _.assignIn(query, { status: { $in: queryArray } });
+    assignIn(query, { status: { $in: queryArray } });
   }
   if (args.swagger.params.agency && args.swagger.params.agency.value !== undefined) {
-    _.assignIn(query, { agency: args.swagger.params.agency.value });
+    assignIn(query, { agency: args.swagger.params.agency.value });
   }
   if (args.swagger.params.businessUnit && args.swagger.params.businessUnit.value !== undefined) {
-    _.assignIn(query, { businessUnit: args.swagger.params.businessUnit.value });
+    assignIn(query, { businessUnit: args.swagger.params.businessUnit.value });
   }
   if (args.swagger.params.client && args.swagger.params.client.value !== undefined) {
-    _.assignIn(query, { client: args.swagger.params.client.value });
+    assignIn(query, { client: args.swagger.params.client.value });
   }
   if (args.swagger.params.tenureStage && args.swagger.params.tenureStage.value !== undefined) {
-    _.assignIn(query, { tenureStage: args.swagger.params.tenureStage.value });
+    assignIn(query, { tenureStage: args.swagger.params.tenureStage.value });
   }
   if (args.swagger.params.areaHectares && args.swagger.params.areaHectares.value !== undefined) {
     var queryString = qs.parse(args.swagger.params.areaHectares.value);
     if (queryString.gte && queryString.lte) {
       // Combine queries as logical AND to compute a Rnage of values.
-      _.assignIn(query, {
+      assignIn(query, {
         $and: [
           {
             areaHectares: { $gte: parseFloat(queryString.gte, 10) }
@@ -964,18 +1034,18 @@ var addStandardQueryFilters = function (query, args) {
       });
     } else if (queryString.eq) {
       // invalid or not specified, treat as equal
-      _.assignIn(query, {
+      assignIn(query, {
         areaHectares: { $eq: parseFloat(queryString.eq, 10) }
       });
     } else {
       // Which param was set?
       if (queryString.gte) {
-        _.assignIn(query, {
+        assignIn(query, {
           areaHectares: { $gte: parseFloat(queryString.gte, 10) }
         });
       }
       if (queryString.lte) {
-        _.assignIn(query, {
+        assignIn(query, {
           areaHectares: { $lte: parseFloat(queryString.lte, 10) }
         });
       }
@@ -984,14 +1054,14 @@ var addStandardQueryFilters = function (query, args) {
   if (args.swagger.params.centroid && args.swagger.params.centroid.value !== undefined) {
     // defaultLog.info("Looking up features based on coords:", args.swagger.params.centroid.value);
     // Throws if parsing fails.
-    _.assignIn(query, {
+    assignIn(query, {
       centroid: { $geoIntersects: { $geometry: { type: "Polygon", coordinates: JSON.parse(args.swagger.params.centroid.value) } } }
     });
   }
   // Allows filtering of apps that have had their last status change greater than this epoch time.
   if (args.swagger.params.statusHistoryEffectiveDate && args.swagger.params.statusHistoryEffectiveDate !== undefined) {
     var queryString = qs.parse(args.swagger.params.statusHistoryEffectiveDate.value);
-    _.assignIn(query, {
+    assignIn(query, {
       $or: [{ statusHistoryEffectiveDate: null }, { statusHistoryEffectiveDate: { $gte: parseInt(queryString.gte, 10) } }]
     });
   }

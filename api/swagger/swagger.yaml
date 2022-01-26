@@ -116,8 +116,10 @@ definitions:
       - currentPhaseCode
       - currentPhaseName
       - description
+      - details
       - engagementStatus
       - backgroundInfo
+      - engagementLabel
       - engagementInfo
       - documentInfo
       - overlappingRegionalDistricts
@@ -2079,6 +2081,11 @@ paths:
           name: backgroundInfo
           required: false
           description: "The background information for the project"
+          type: string
+        - in: query
+          name: engagementLabel
+          required: false
+          description: "The engagement label for the project"
           type: string
         - in: query
           name: engagementInfo
