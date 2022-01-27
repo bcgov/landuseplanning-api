@@ -4,12 +4,16 @@
   "author": "Mark Lisé",
   "contributors": [
     "Mark Lisé <mark@digitalspace.ca>",
-    "Steve Howard <Steve.M.Howard@gov.bc.ca>"
+    "Steve Howard <Steve.M.Howard@gov.bc.ca>",
+    "Alexander Wintschel <alexander.wintschel@gov.bc.ca>"
   ],
   "description": "LUP API",
   "keywords": [],
   "license": "Apache-2.0",
   "main": "app",
+  "engines": {
+    "node": "^10.0.0"
+  },
   "jest": {
     "testEnvironment": "node"
   },
@@ -62,6 +66,7 @@
   },
   "devDependencies": {
     "database-cleaner": "^1.2.0",
+    "eslint": "^8.7.0",
     "factory-girl": "^5.0.2",
     "jest": "^23.6.0",
     "mongodb-memory-server": "^2.6.2",

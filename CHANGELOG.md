@@ -7,6 +7,10 @@
 * Update some methods with ES6 syntax.
 * Remove unused function params, libraries, variables, etc.
 * Remove old, commented-out code.
+* Add CODEOWNERS file to trigger automatic reviewer requests
+* Add node engine requirements for local installs
+* Add beginning of linting tools
+* Only use JS that is compatible with node ^10.0.0
 
 ### 1.0.1: November 16, 2021
 * Updating version in package.json
