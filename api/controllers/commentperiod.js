@@ -291,7 +291,7 @@ exports.protectedPost = async function (args, res, next) {
     instructions: obj.instructions,
     commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
-    surveySelected: mongoose.Types.ObjectId(obj.surveySelected),
+    surveySelected: obj.surveySelected ? mongoose.Types.ObjectId(obj.surveySelected) : obj.surveySelected,
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,
     project: mongoose.Types.ObjectId(obj.project),
