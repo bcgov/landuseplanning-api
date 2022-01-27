@@ -88,7 +88,7 @@ exports.unProtectedPost = async function (args, res, next) {
   var project = args.swagger.params.project.value;
   var upfile = args.swagger.params.upfile.value;
   var guid = intformat(generator.next(), 'dec');
-  var ext = mime.extension(args.swagger.params?.upfile?.value?.mimetype);
+  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   var tempFilePath = uploadDir + guid + "." + ext;
   try {
     Promise.resolve()
@@ -313,8 +313,8 @@ exports.publicDownload = function (args, res, next) {
           .then(function (docURL) {
             Utils.recordAction('Download', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
-            res.setHeader('Content-Length', fileMeta?.size);
-            res.setHeader('Content-Type', fileMeta?.metaData['content-type']);
+            res.setHeader('Content-Length', fileMeta.size);
+            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           });
@@ -374,8 +374,8 @@ exports.protectedDownload = function (args, res, next) {
           .then(function (docURL) {
             Utils.recordAction('Download', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
-            res.setHeader('Content-Length', fileMeta?.size);
-            res.setHeader('Content-Type', fileMeta?.metaData['content-type']);
+            res.setHeader('Content-Length', fileMeta.size);
+            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           });
@@ -442,8 +442,8 @@ exports.protectedOpen = function (args, res, next) {
           .then(function (docURL) {
             Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
             // stream file from Minio to client
-            res.setHeader('Content-Length', fileMeta?.size);
-            res.setHeader('Content-Type', fileMeta?.metaData['content-type']);
+            res.setHeader('Content-Length', fileMeta.size);
+            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           })
@@ -461,7 +461,7 @@ exports.protectedPost = async function (args, res, next) {
   var _comment = args.swagger.params._comment.value;
   var upfile = args.swagger.params.upfile.value;
   var guid = intformat(generator.next(), 'dec');
-  var ext = mime.extension(args.swagger.params?.upfile?.value?.mimetype);
+  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
   var tempFilePath = uploadDir + guid + "." + ext;
   try {
     Promise.resolve()
