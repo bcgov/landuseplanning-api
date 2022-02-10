@@ -1,4 +1,4 @@
-### 1.2.0 January 26, 2022
+### 1.1.0 January 26, 2022
 * Tree shaking lodash dependencies
 * Remove unnecessary console.log calls
 * Graceful error handling for some methods
@@ -11,6 +11,8 @@
 * Add node engine requirements for local installs
 * Add beginning of linting tools
 * Only use JS that is compatible with node ^10.0.0
+* Add support for project logos
+* Add support for document alt tags
 
 ### 1.0.1: November 16, 2021
 * Updating version in package.json

@@ -26,10 +26,10 @@ module.exports = require('../models')('Document', {
     internalSize: { type: String, default: '' },
     passedAVCheck: { type: Boolean, default: false },
     internalMime: { type: String, default: '' },
-
+    
     // META
     documentSource: { type: String, default: '' },  // PROJECT/COMMENT/COMMENT_PERIOD/etc
-
+    
     // Pre-filled with documentFileName in the UI
     displayName      : { type:String, default:'' },
     dateUploaded     : { type: Date, default: Date.now() },
@@ -39,8 +39,8 @@ module.exports = require('../models')('Document', {
     projectPhase     : { type: String, default: '' },
     eaoStatus        : { type: String, default: '' },
     keywords         : { type: String, default: '' },
-
-    // TODO
+    
+    alt: { type: String, default: '' },
     labels: [{ type: Mixed, default: {} }]
 
 }, 'lup');

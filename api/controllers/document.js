@@ -19,6 +19,7 @@ var getSanitizedFields = function (fields) {
     return (_.indexOf(['displayName',
       '_addedBy',
       'documentFileName',
+      'alt',
       'internalExt',
       'internalOriginalName',
       'displayName',
@@ -457,13 +458,13 @@ exports.protectedOpen = function (args, res, next) {
 //  Create a new document
 exports.protectedPost = async function (args, res, next) {
   console.log("Creating new protected document object");
-  var project = args.swagger.params.project.value;
-  var _comment = args.swagger.params._comment.value;
-  var upfile = args.swagger.params.upfile.value;
-  var guid = intformat(generator.next(), 'dec');
-  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
-  var tempFilePath = uploadDir + guid + "." + ext;
   try {
+    var project = args.swagger.params.project.value;
+    var _comment = args.swagger.params._comment.value;
+    var upfile = args.swagger.params.upfile.value;
+    var guid = intformat(generator.next(), 'dec');
+    var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+    var tempFilePath = uploadDir + guid + "." + ext;
     Promise.resolve()
       .then(function () {
         if (ENABLE_VIRUS_SCANNING == 'true') {
@@ -510,6 +511,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.delete = ['sysadmin', 'staff'];
 
               doc.documentFileName = args.swagger.params.documentFileName.value;
+              doc.alt = args.swagger.params.alt.value;
               doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
               doc.internalURL = minioFile.path;
               doc.internalExt = minioFile.extension;
@@ -617,6 +619,7 @@ exports.protectedPut = async function (args, res, next) {
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   obj.displayName = args.swagger.params.displayName.value;
+  obj.alt = args.swagger.params.alt.value;
 
   obj.projectPhase = args.swagger.params.projectPhase.value;
 

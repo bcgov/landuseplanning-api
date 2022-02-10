@@ -118,6 +118,7 @@ definitions:
       - description
       - details
       - engagementStatus
+      - logos
       - backgroundInfo
       - engagementLabel
       - engagementInfo
@@ -198,6 +199,7 @@ definitions:
     #TODO: Fix enums
     enum: &documentFields
       - displayName
+      - alt
       - documentFileName
       - internalOriginalName
       - internalURL
@@ -1951,6 +1953,11 @@ paths:
           description: "The status of the engagement determined by the LUP team"
           type: string
         - in: query
+          name: logos
+          type: string
+          required: false
+          description: "Project logos"
+        - in: query
           name: backgroundInfo
           required: false
           description: "The background information for the project"
@@ -2077,6 +2084,11 @@ paths:
           required: false
           description: "The engagement status determined by the LUP team"
           type: string
+        - in: query
+          name: logos
+          type: string
+          required: false
+          description: "Project logos"
         - in: query
           name: backgroundInfo
           required: false
@@ -2561,6 +2573,11 @@ paths:
           description: "The documentFileName of the file."
           required: false
           type: string
+        - name: alt
+          in: formData
+          description: "The alternative text of the file."
+          required: false
+          type: string
         - name: internalOriginalName
           in: formData
           description: "The internalOriginalName of the file. This is only used for documents related to comments."
@@ -2783,6 +2800,11 @@ paths:
         - name: documentFileName
           in: formData
           description: "The documentFileName of the file."
+          required: false
+          type: string
+        - name: alt
+          in: formData
+          description: "The alternative text of the file."
           required: false
           type: string
         - name: eaoStatus
