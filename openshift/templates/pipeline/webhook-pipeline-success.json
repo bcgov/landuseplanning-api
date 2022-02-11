@@ -1,0 +1,24 @@
+{
+    "@type": "MessageCard",
+    "@context": "https://schema.org/extensions",
+    "summary": "Issue 176715375",
+    "themeColor": "33cc33",
+    "title": "[LUP] Land Use Planning API has been deployed to (dev/test/prod)",
+    "sections": [
+        {
+            "text": "The latest version of Land Use Planning API has been built and deployed to **(dev/test/prod)**."
+        }
+    ],
+    "potentialAction": [
+        {
+            "@type": "OpenUri",
+            "name": "View on OpenShift",
+            "targets": [
+                {
+                    "os": "default",
+                    "uri": "https://pipeline.url"
+                }
+            ]
+        }
+    ]
+}
