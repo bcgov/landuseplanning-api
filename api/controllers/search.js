@@ -201,8 +201,8 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
 
-  // We don't want to have sort in the aggrigation if the front end doesn't need sort.
-  let searchResultAggrigation = [
+  // We don't want to have sort in the aggregation if the front end doesn't need sort.
+  let searchResultAggregation = [
     {
       $sort: sortingValue
     },
@@ -349,7 +349,7 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
 
   aggregation.push({
     $facet: {
-      searchResults: searchResultAggrigation,
+      searchResults: searchResultAggregation,
       meta: [
         {
           $count: "searchResultsTotal"
