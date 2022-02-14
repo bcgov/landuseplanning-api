@@ -1,0 +1,22 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: push-to-teams
+  namespace: e8b9ad-tools
+spec:
+  params:
+    - name: webhook-url
+      type: string
+    - name: webhook-payload
+      type: string
+  steps:
+    - args:
+        - >-
+          curl -X POST -H 'Content-Type: application/json' --data
+          '$(params.webhook-payload)' $(params.webhook-url)
+      command:
+        - /bin/bash
+        - '-c'
+      image: 'image-registry.openshift-image-registry.svc:5000/openshift/cli:latest'
+      name: apply
+      resources: {}

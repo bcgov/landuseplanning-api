@@ -1,0 +1,24 @@
+{
+	"@type": "MessageCard",
+	"@context": "https://schema.org/extensions",
+	"summary": "Issue 176715375",
+	"themeColor": "cc3333",
+	"title": "[FAIL][LUP] Land Use Planning API (dev/test/prod) pipeline failed",
+	"sections": [
+		{
+			"text": "There was an issue with the latest **(dev/test/prod)** pipeline run for Land Use Planning API."
+		}
+	],
+	"potentialAction": [
+		{
+			"@type": "OpenUri",
+			"name": "View on OpenShift",
+			"targets": [
+				{
+					"os": "default",
+					"uri": "https://pipeline.url"
+				}
+			]
+		}
+	]
+}
