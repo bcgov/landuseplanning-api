@@ -1,12 +1,12 @@
-var _ = require('lodash');
+const { remove, indexOf, assignIn} = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 
 var getSanitizedFields = function (fields) {
-  return _.remove(fields, function (f) {
-    return (_.indexOf([
+  return remove(fields, function (f) {
+    return (indexOf([
       '_schemaName',
       'name',
       'lastSaved',
@@ -66,7 +66,7 @@ exports.publicGet = async function (args, res, next) {
   // }
 
   // Set query type
-  _.assignIn(query, { '_schemaName': 'Survey' });
+  assignIn(query, { '_schemaName': 'Survey' });
 
   try {
     var data = await Utils.runDataQuery('Survey',
@@ -101,7 +101,7 @@ exports.protectedGet = async function (args, res, next) {
 
   // Build match query if on project's id
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+    assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
   }
 
   // 
@@ -135,7 +135,7 @@ exports.protectedGet = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { '_schemaName': 'Survey' });
+  assignIn(query, { '_schemaName': 'Survey' });
 
   try {
     var data = await Utils.runDataQuery('Survey',
