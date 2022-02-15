@@ -2,7 +2,7 @@ name: Lint and Test API Backend
 on:
   pull_request:
     branches:
-      - development
+      - dev
     paths:
       - "api/controllers/*.js"
       - "api/helpers/**/*.js"
