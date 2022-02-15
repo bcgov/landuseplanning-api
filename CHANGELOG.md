@@ -1,7 +1,6 @@
 ### 1.2.1 February 11, 2022
 * Added OpenShift templates for the API pipeline
-
-### 1.2.0 January 26, 2022
+* Added github workflow for linting and tests
 
 ### 1.1.0 January 26, 2022
 * Tree shaking lodash dependencies

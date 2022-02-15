@@ -1,0 +1,23 @@
+name: Lint and Test API Backend
+on:
+  pull_request:
+    branches:
+      - development
+    paths:
+      - "api/controllers/*.js"
+      - "api/helpers/**/*.js"
+      - "api/test/*.js"
+      - "api/test/**/*.js"
+      - "app.js"
+jobs:
+  static_checks:
+    if: github.repository_owner == 'bcgov' && github.event.pull_request.draft == false
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install packages
+        run: npm install
+      - name: Run ESLint
+        run: npm run lint
+      - name: Run Tests
+        run: npm run test
