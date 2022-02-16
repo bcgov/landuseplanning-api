@@ -1,0 +1,19 @@
+name: Build API Image.
+on:
+  push:
+    branches:
+      - dev
+jobs:
+  deploy:
+    if: github.repository_owner == 'bcgov'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Image Build for Land Use Planning API
+        uses: redhat-developer/openshift-actions@v1.1
+        with:
+          version: "latest"
+          openshift_server_url: ${{ secrets.OPENSHIFT_SERVER }}
+          parameters: '{"apitoken": "${{ secrets.OPENSHIFT_TOKEN }}", "acceptUntrustedCerts": "true"}'
+          cmd: |
+            oc project e8b9ad-tools
+            oc start-build lup-api-build-deploy-dev --follow
