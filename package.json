@@ -59,6 +59,7 @@
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "start": "nodemon app",
+    "lint": "eslint api/controllers/*.js api/helpers/**/*.js api/test/*.js api/test/**/*.js",
     "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --runInBand",
     "tests-debug": "node --inspect node_modules/.bin/jest --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"

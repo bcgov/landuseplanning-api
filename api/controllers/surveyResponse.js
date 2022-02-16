@@ -1,4 +1,4 @@
-var _ = require('lodash');
+var { zipWith, indexOf, assignIn, remove } = require('lodash');
 var defaultLog = require('winston').loggers.get('default');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
@@ -7,8 +7,8 @@ const csv = require('csv');
 const transform = require('stream-transform');
 
 var getSanitizedFields = function (fields) {
-  return _.remove(fields, function (f) {
-    return (_.indexOf([
+  return remove(fields, function (f) {
+    return (indexOf([
       '_schemaName',
       'author',
       'location',
@@ -80,7 +80,7 @@ exports.protectedGet = async function (args, res, next) {
   
     // Build match query if on surveyResponseId route.
     if (args.swagger.params.surveyResponseId && args.swagger.params.surveyResponseId.value) {
-      _.assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.surveyResponseId.value) });
+      assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.surveyResponseId.value) });
     }
 
     // Build query if on project's id
@@ -90,7 +90,7 @@ exports.protectedGet = async function (args, res, next) {
   
     // Build match query if on comment period's id
     if (args.swagger.params.period && args.swagger.params.period.value) {
-      _.assignIn(query, { period: mongoose.Types.ObjectId(args.swagger.params.period.value) });
+      assignIn(query, { period: mongoose.Types.ObjectId(args.swagger.params.period.value) });
     }
   
     // Sort
@@ -113,24 +113,7 @@ exports.protectedGet = async function (args, res, next) {
     }
   
     // Set query type
-    _.assignIn(query, { '_schemaName': 'SurveyResponse' });
-  
-    // Set filter for eaoStatus
-    // if (args.swagger.params.pending && args.swagger.params.pending.value === true) {
-    //   filter.push({ 'eaoStatus': 'Pending' });
-    // }
-    // if (args.swagger.params.published && args.swagger.params.published.value === true) {
-    //   filter.push({ 'eaoStatus': 'Published' });
-    // }
-    // if (args.swagger.params.deferred && args.swagger.params.deferred.value === true) {
-    //   filter.push({ 'eaoStatus': 'Deferred' });
-    // }
-    // if (args.swagger.params.rejected && args.swagger.params.rejected.value === true) {
-    //   filter.push({ 'eaoStatus': 'Rejected' });
-    // }
-    // if (filter.length !== 0) {
-    //   _.assignIn(query, { $or: filter });
-    // }
+    assignIn(query, { '_schemaName': 'SurveyResponse' });
   
     try {
       var data = await Utils.runDataQuery('SurveyResponse',
@@ -145,28 +128,7 @@ exports.protectedGet = async function (args, res, next) {
         count); // count
       Utils.recordAction('Get', 'SurveyResponse', args.swagger.params.auth_payload.preferred_username, args.swagger.params.surveyResponseId && args.swagger.params.surveyResponseId.value ? args.swagger.params.surveyResponseId.value : null);
       defaultLog.info('Got survey response(s):', data);
-  
-      // This is to get the next pending comment information.
-    //   if (args.swagger.params.populateNextComment && args.swagger.params.populateNextComment.value) {
-    //     defaultLog.info('Getting next pending comment information');
-    //     var queryForNextComment = {};
-  
-    //     _.assignIn(queryForNextComment, { _id: { $ne: data[0]._id } });
-    //     _.assignIn(queryForNextComment, { period: data[0].period });
-    //     _.assignIn(queryForNextComment, { eaoStatus: 'Pending' });
-  
-    //     var nextComment = await Utils.runDataQuery('Comment',
-    //       args.swagger.params.auth_payload.realm_access.roles,
-    //       queryForNextComment,
-    //       [], // Fields
-    //       null,
-    //       { commentId: 1 }, // sort
-    //       0, // skip
-    //       1, // limit
-    //       true); // count
-    //     res.setHeader('x-pending-comment-count', nextComment && nextComment.length > 0 ? nextComment[0].total_items : 0);
-    //     res.setHeader('x-next-comment-id', nextComment && nextComment.length > 0 && nextComment[0].results.length > 0 ? nextComment[0].results[0]._id : null);
-    //   }
+
       return Actions.sendResponse(res, 200, data);
     } catch (e) {
       defaultLog.info('Error:', e);
@@ -277,7 +239,7 @@ exports.protectedExport = async function (args, res, next) {
         } else if (d.responses[i].answer.attributeChoices.length !== 0) {
           let attributesArray = d.responses[i].question.attributes;
           let attributeChoices = d.responses[i].answer.attributeChoices;
-          attributeChoiceArray = _.zipWith(attributesArray, attributeChoices, (a, b) => {
+          attributeChoiceArray = zipWith(attributesArray, attributeChoices, (a, b) => {
             return a.attribute + ': ' + b;
           })
           answer = attributeChoiceArray.join(', ');
