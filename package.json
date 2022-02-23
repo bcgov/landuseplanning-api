@@ -27,8 +27,6 @@
     "clamav.js": "^0.12.0",
     "crypto": "^1.0.1",
     "csv": "^5.1.1",
-    "db-migrate": "^0.11.4",
-    "db-migrate-mongodb": "^1.5.0",
     "epsg": "^0.5.0",
     "express": "^4.16.0",
     "flake-idgen": "^1.1.0",
@@ -56,6 +54,14 @@
     "winston": "^2.4.4",
     "yamljs": "0.2.9"
   },
+  "overrides": {
+    "mongoose": {
+      "bson": "1.1.6",
+      "mongodb": {
+        "bson": "1.1.6"
+      }
+    }
+  },
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "start": "nodemon app",
@@ -66,6 +72,7 @@
   },
   "devDependencies": {
     "database-cleaner": "^1.2.0",
+    "dotenv": "^16.0.0",
     "eslint": "^7.0.0",
     "factory-girl": "^5.0.2",
     "jest": "^23.6.0",
