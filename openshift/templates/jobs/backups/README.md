@@ -26,7 +26,7 @@ Create a new CronJob using the ```backup-cron.yaml``` file in this directory, ma
 The cron has been set to run daily at 0 9 * * * (9am UTC, 1am PST)
 
 ## How to Restore a Mongo Database
-(these are old insstructions from a previous version of the backups, but should still apply)
+These are old instructions from a previous version of the backups, but should still apply.
 
 ### Mount your backup PVC
 
