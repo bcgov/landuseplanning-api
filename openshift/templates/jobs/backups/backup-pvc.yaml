@@ -1,0 +1,17 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: backup-lup-mongodb
+  labels:
+    app: backup-container
+    env: ${ENV} # env (e.g. dev, test, prod)
+    name: backup-lup-mongodb
+    role: backup-container
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: netapp-file-backup
+  volumeMode: Filesystem
