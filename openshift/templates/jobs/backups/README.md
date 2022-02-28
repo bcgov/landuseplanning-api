@@ -30,7 +30,7 @@ These are old instructions from a previous version of the backups, but should st
 
 ### Mount your backup PVC
 
-mount your backup PVC to a container so that you can access your backups. I use PVC migrator in this example (https://github.com/BCDevOps/StorageMigration/tree/master/openshift/templates) but you can use anything with a mount point. there should be a build of PVC migrator in the tools namespace so you should just have to deploy it in your working namespace from there.
+Mount your backup PVC to a container so that you can access your backups. I use PVC migrator in this example (https://github.com/BCDevOps/StorageMigration/tree/master/openshift/templates) but you can use anything with a mount point. there should be a build of PVC migrator in the tools namespace so you should just have to deploy it in your working namespace from there.
 
 In the OpenShift UI, on the deployments page click "Add to Project" then "Import YAML/ JSON" and paste the deployment config in there (https://raw.githubusercontent.com/BCDevOps/StorageMigration/master/openshift/templates/pvc-migrator-deploy.yaml). Input the correct values, deploy and spin up a pod.
 
