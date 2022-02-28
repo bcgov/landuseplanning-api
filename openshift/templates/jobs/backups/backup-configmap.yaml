@@ -1,0 +1,6 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: backup-lup-conf
+data:
+  backup.conf: 'mongo=landuseplanning-api-mongodb-${ENV}:27017/landuseplanning-${ENV}'  #env (e.q. dev, test, prod)

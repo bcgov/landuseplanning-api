@@ -1,0 +1,81 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: backup-mongodb
+  labels:
+    template: "backup-mongodb-cronjob"
+    cronjob: "backup-mongodb"
+spec:
+  schedule: "0 9 * * *" # 9am UTC = 1am PST
+  concurrencyPolicy: "Forbid"
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    metadata:
+      labels:
+        template: "backup-mongodb-job"
+        cronjob: "backup-mongodb"
+    spec:
+      backoffLimit: 0
+      template:
+        metadata:
+          labels:
+            template: "backup-mongodb-job"
+            cronjob: "backup-mongodb"
+        spec:
+          containers:
+            - name: "backup-mongodb-cronjob"
+              image: >-
+                artifacts.developer.gov.bc.ca/bcgov-docker-local/backup-container-mongo:latest
+              command:
+                - "/bin/bash"
+                - "-c"
+                - "/backup.sh -1"
+              volumeMounts:
+              - name: backup-lup-mongodb
+                mountPath: /backups/
+              - name: backup-lup-mongodb-verification
+                mountPath: /var/lib/mongodb/data
+              - name: backup-mongodb-config-volume
+                mountPath: /backup.conf
+                subPath: backup.conf
+              env:
+              - name: BACKUP_STRATEGY
+                value: rolling
+              - name: BACKUP_DIR
+                value: /backups/
+              - name: DATABASE_USER
+                valueFrom:
+                  secretKeyRef:
+                    name: landuseplanning-api-mongodb-${ENV} #env (e.q. dev, test, prod)
+                    key: database-user
+              - name: DATABASE_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: landuseplanning-api-mongodb-${ENV} #env (e.q. dev, test, prod)
+                    key: database-password
+              - name: ENVIRONMENT_FRIENDLY_NAME
+                value: landuseplanning-${ENV} #env (e.q. dev, test, prod)
+              - name: ENVIRONMENT_NAME
+                value: # openshift environment
+          volumes:
+            - name: backup-lup-mongodb
+              persistentVolumeClaim:
+                claimName: backup-lup-mongodb
+            - name: backup-lup-mongodb-verification
+              persistentVolumeClaim:
+                claimName: backup-lup-mongodb-verification
+            - name: backup-mongodb-config-volume
+              configMap:
+                name: backup-lup-conf
+                items:
+                  - key: backup.conf
+                    path: backup.conf
+          restartPolicy: "Never"
+          imagePullSecrets:
+            - name: artifactory-creds
+          terminationGracePeriodSeconds: 30
+          activeDeadlineSeconds: 1600
+          dnsPolicy: "ClusterFirst"
+          serviceAccountName: "default"
+          serviceAccount: "default"
