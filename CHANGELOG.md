@@ -1,3 +1,6 @@
+### 1.2.2 March 4, 2022
+* Resolve "useFindAndModify" deprecation warning [DESENG-65](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-65)
+
 ### 1.2.1 February 11, 2022
 * Added OpenShift templates for the API pipeline
 * Added github workflow for linting and tests
