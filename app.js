@@ -109,6 +109,9 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     () => {
       defaultLog.info("Database connected");
 
+      // Global mongoose config.
+      mongoose.set('useFindAndModify', false);
+
       // Load database models
       defaultLog.info("loading db models.");
       require('./api/helpers/models/audit');
