@@ -1,3 +1,6 @@
+### 1.2.3 March 17, 2022
+* Fix document text search bug [DESENG-90](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-90)
+
 ### 1.2.2 March 4, 2022
 * Resolve "useFindAndModify" deprecation warning [DESENG-65](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-65)
 
