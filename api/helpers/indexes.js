@@ -17,6 +17,12 @@ module.exports.generateTextIndex = async () => {
     try {
         await Project.collection.dropIndex('text_index');
     } catch {
+        /**
+         * We don't log an error here because it's alright if dropIndex()
+         * fails. We want to attempt to remove the old index and if it's not
+         * found then that's acceptable. Without this try/catch, the app can
+         * crash if dropIndex() doesn't find "text_index"
+         */
         defaultLog.info('Attempted to remove index: "text_index" not found.')
     }
 
