@@ -35,7 +35,7 @@ The above `env` command will show you your environment variables and allow you t
 
 Start the server by running `npm run start-watch`
 
-# Prerequisites
+## Prerequisites
 
 | Technology | Version | Website                                     | Description                               |
 |------------|---------|---------------------------------------------|-------------------------------------------|
@@ -44,19 +44,19 @@ Start the server by running `npm run start-watch`
 | yarn       | latest  | https://yarnpkg.com/en/                     | Package Manager (more efficient than npm) |
 | mongodb    | 3.6     | https://docs.mongodb.com/v3.6/installation/ | NoSQL database                            |
 
-## Install [Node + NPM](https://nodejs.org/en/)
+### Install [Node + NPM](https://nodejs.org/en/)
 
 _Note: Windows users can use [NVM Windows](https://github.com/coreybutler/nvm-windows) to install and manage multiple versions of Node+Npm._
 
-## Install [Yarn](https://yarnpkg.com/lang/en/docs/install/#alternatives-tab)
+### Install [Yarn](https://yarnpkg.com/lang/en/docs/install/#alternatives-tab)
 
 ```
 npm install -g yarn
 ```
 
-## Install [MongoDB](https://docs.mongodb.com/v3.2/installation/)
+### Install [MongoDB](https://docs.mongodb.com/v3.2/installation/)
 
-# Build and Run
+## Build and Run
 
 1. Download dependencies: `yarn install`
 2. Run the app: `npm start`
@@ -72,7 +72,7 @@ npm install -g yarn
 }
 ```
 
-# API Specification
+## API Specification
 
 The API is defined in `swagger.yaml`.
 
@@ -82,7 +82,7 @@ This project uses npm package `swagger-tools` via `./app.js` to automatically ge
 
 Recommend reviewing the [Open API Specification](https://swagger.io/docs/specification/about/) before making any changes to the `swagger.yaml` file.
 
-# Initial Setup
+## Initial Setup
 
 ### Node and NPM 
 
@@ -124,18 +124,18 @@ mongorestore -d epic dump/[old_database_name_most_likely_esm]
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
-# Developing
+## Developing
 
 1. [Code Reuse Strategy](#code-reuse-strategy)
 2. [Testing](#testing)
 3. [Configuring Environment Variables](#configuring-environment-variables)
 4. [Logging](#logging)
 
-## Code Reuse Strategy
+### Code Reuse Strategy
 
 See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/code_reuse_strategy.md)
 
-## Testing
+### Testing
 
 An overview of the EPIC test stack can be found [here](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/testing_components.md).
 
@@ -222,7 +222,7 @@ External http calls (such as GETs to BCGW) are mocked with a tool called [nock](
   });
 ```
 
-## Configuring Environment Variables
+### Configuring Environment Variables
 
 Recall the environment variables we need for local dev:
 1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
@@ -244,7 +244,7 @@ oc get secrets | grep 'minio'
 
 You will not be able to see the above value of the secret if you try examine it.  You will only see the encrypted values.  Approach your team member with admin access in the openshift project in order to get the access key and secret key values for the secret name you got from the above command.  Make sure to ask for the correct environment (dev, test, prod) for the appropriate values.
 
-## Logging
+### Logging
 
 The `winston` package is used to log nearly every operation in the app. `console.log  ` is discouraged in favour of `winston`.
 
