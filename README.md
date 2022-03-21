@@ -58,24 +58,19 @@ npm install -g yarn
 
 # Build and Run
 
-1. Download dependencies
-```
-yarn install
-```
-2. Run the app
-```
-npm start
-```
+1. Download dependencies: `yarn install`
+2. Run the app: `npm start`
 3. Go to http://localhost:3000/api/docs to verify that the application is running.
 
     _Note: To change the default port edit `swagger.yaml`._
 
-4. POST `http://localhost:3000/api/login/token` with the following body
+4. POST `http://localhost:3000/api/login/token` with the following body:
 ```
 {
 "username": #{username},
 "password": #{password}
 }
+```
 
 # API Specification
 
@@ -129,11 +124,18 @@ mongorestore -d epic dump/[old_database_name_most_likely_esm]
 
 Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) against that database.  You may need to edit the commands slightly to match your db name or to remove the ".gz --gzip" portion if your dump unpacks as straight ".bson" files.
 
-## Developing
+# Developing
 
-See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/dev_guides/code_reuse_strategy.md)
+1. [Code Reuse Strategy](#code-reuse-strategy)
+2. [Testing](#testing)
+3. [Configuring Environment Variables](#configuring-environment-variables)
+4. [Logging](#logging)
 
-# Testing
+## Code Reuse Strategy
+
+See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/code_reuse_strategy.md)
+
+## Testing
 
 An overview of the EPIC test stack can be found [here](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/testing_components.md).
 
@@ -188,12 +190,12 @@ This code will stand in for the swagger-tools router, and help build the objects
 Unfortunately, this results in a lot of boilerplate code in each of the controller tests. There are some helpers to reduce the amount you need to write, but you will still need to check the parameter field names sent by your middleware router match what the controller(and swagger router) expect. However, this method results in  pretty effective integration tests as they exercise the controller code and save objects in the database.
 
 
-## Test Database
+### Test Database
 The tests run on an in-memory MongoDB server, using the [mongodb-memory-server](https://github.com/nodkz/mongodb-memory-server) package. The setup can be viewed at [test_helper.js](api/test/test_helper.js), and additional config in [config/mongoose_options.js]. It is currently configured to wipe out the database after each test run to prevent database pollution.
 
 [Factory-Girl](https://github.com/aexmachina/factory-girl) is used to easily create models(persisted to db) for testing purposes.
 
-## Mocking http requests
+### Mocking http requests
 External http calls (such as GETs to BCGW) are mocked with a tool called [nock](https://github.com/nock/nock). Currently sample JSON responses are stored in the [test/fixtures](test/fixtures) directory. This allows you to intercept a call to an external service such as bcgw, and respond with your own sample data.
 
 ```javascript
@@ -228,6 +230,7 @@ Recall the environment variables we need for local dev:
 3) MINIO_SECRET_KEY='xxxx'
 4) KEYCLOAK_ENABLED=true
 5) MONGODB_DATABASE='epic'
+6) SILENCE_DEFAULT_LOG=false
 
 To get actual values for the above fields in the deployed environments, examine the openshift environment you wish to target:
 
@@ -237,4 +240,18 @@ oc get routes | grep 'minio'
 oc get secrets | grep 'minio'
 ```
 
+**Note:** SILENCE_DEFAULT_LOG is used for local development only. See [Logging](#logging) below.
+
 You will not be able to see the above value of the secret if you try examine it.  You will only see the encrypted values.  Approach your team member with admin access in the openshift project in order to get the access key and secret key values for the secret name you got from the above command.  Make sure to ask for the correct environment (dev, test, prod) for the appropriate values.
+
+## Logging
+
+The `winston` package is used to log nearly every operation in the app. `console.log  ` is discouraged in favour of `winston`.
+
+When developing, one may choose to silence the verbose log output to be able to focus on specific operations. To do this: 
+
+1. Set the SILENCE_DEFAULT_LOG environment variable to "true".
+2. Switch the `winston.loggers.get()` call argument from `defaultLog` to `devLog`.
+3. When you're finished, restore all logging to use `defaultLog`.
+
+The Winston loggers have been set up in config/loggers.js.

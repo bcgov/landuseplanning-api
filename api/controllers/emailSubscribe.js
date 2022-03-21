@@ -1,6 +1,6 @@
 var auth = require('../helpers/auth');
 var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('default');
+var defaultLog = require('winston').loggers.get('devLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
@@ -146,7 +146,7 @@ exports.unProtectedPost = async function (args, res, next) {
 
 // confirm a new email address
 exports.unProtectedPut = async function (args, res, next) {
-  console.log('ES Put', args.swagger.params);
+  defaultLog.info('ES Put', args.swagger.params);
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value) || !(args.swagger.params.confirmKey && args.swagger.params.confirmKey.value)) {
@@ -165,8 +165,8 @@ exports.unProtectedPut = async function (args, res, next) {
 
   // find the object ID based on the email address
   await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
-    console.log('Err', err);
-    console.log('Entity', entity);
+    defaultLog.info('Err', err);
+    defaultLog.info('Entity', entity);
     try {
       emailId = entity._id;
       correctConfirmKey = entity.confirmKey;
@@ -226,7 +226,7 @@ exports.unProtectedPut = async function (args, res, next) {
 
 // unsubscribe from updates
 exports.unProtectedDelete = async function (args, res, next) {
-  console.log('ES Delete', args.swagger.params);
+  defaultLog.info('ES Delete', args.swagger.params);
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value)) {
@@ -305,7 +305,7 @@ exports.protectedGet = async function (args, res, next) {
 
   // Build match query for project ID
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    console.log('ES Project ID', args.swagger.params.project.value);
+    defaultLog.info('ES Project ID', args.swagger.params.project.value);
     _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value), confirmed: true });
   }
 
@@ -357,7 +357,7 @@ exports.protectedGet = async function (args, res, next) {
 
 // Admin delete email
 exports.protectedDelete = async function (args, res, next) {
-  console.log('ES Delete', args.swagger.params);
+  defaultLog.info('ES Delete', args.swagger.params);
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value)) {
@@ -411,7 +411,7 @@ exports.protectedDelete = async function (args, res, next) {
     }
   } else {
     // if not return 404
-    console.log('Project ID not found: ', projectId);
+    defaultLog.info('Project ID not found: ', projectId);
     return Actions.sendResponse(res, 404, 'Project ID not found');
   }
 }

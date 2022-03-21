@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const winston = require('winston');
-
-const defaultLog = winston.loggers.get('default');
+const defaultLog = winston.loggers.get('defaultLog');
 
 /**
  * Runs once in app.js. Builds text schema for:

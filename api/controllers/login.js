@@ -1,5 +1,5 @@
 var auth = require('../helpers/auth');
-var defaultLog = require('winston').loggers.get('default');
+var defaultLog = require('winston').loggers.get('defaultLog');
 
 exports.loginOptions = function(args, res, next) {
   res.status(200).send();

@@ -1,5 +1,5 @@
 const { assignIn, remove, each, indexOf } = require('lodash');
-const defaultLog = require('winston').loggers.get('default');
+const defaultLog = require('winston').loggers.get('defaultLog');
 const mongoose = require('mongoose');
 const qs = require('qs');
 const Actions = require('../helpers/actions');
