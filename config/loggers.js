@@ -7,14 +7,20 @@ const { combine, label, colorize, printf, timestamp } = format;
 /**
  * Format the log output to include:
  * - log level
- * - log message
+ * - log message    
  * - label
  * - timestamp
  * - additional log messages passed as arguments to the logger("rest")
+ * 
+ * The "rest" arguments are any other arguments passed to a logger, i.e.
+ * defaultLog.info(message, additionalMessage1, additionalMessage2). 
  */
 const logFormat = printf(({ level, message, label = '', timestamp, ...rest }) => {
+    // Access internal Winston "splat" property which allows for messages that use string interpolation.
 	const splat = rest[Symbol.for('splat')];
+    // Manually pull out splat arguments, format them, and concatenate them into a string.
 	const strArgs = splat ? splat.map((s) => util.formatWithOptions({ colors: true, depth: 10 }, s)).join(' ') : '';
+    // Display all properties of Winston and all arguments passed to the logger in this format.
 	return `${label}[${timestamp}] ${level}:  ${util.formatWithOptions({ colors: true, depth: 10}, message)} ${strArgs}`;
 });
 
