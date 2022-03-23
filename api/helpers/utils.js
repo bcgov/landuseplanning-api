@@ -1,22 +1,13 @@
 'use strict';
 
-var _ = require('lodash');
+var { isArray, assignIn, each, compact, isEmpty } = require('lodash');
 var mongoose = require('mongoose');
 var clamav = require('clamav.js');
-var fs = require('fs');
-var request = require('request');
-var turf = require('@turf/turf');
-var helpers = require('@turf/helpers');
-var Wkt = require('wicket');
-const { model } = require('mongoose');
 var _serviceHost = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
 var _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
-var _tantalisAPI = process.env.TTLS_API_ENDPOINT || 'https://api.nrs.gov.bc.ca/ttls-api/v1/';
-var webADEAPI = process.env.WEBADE_AUTH_ENDPOINT || 'https://api.nrs.gov.bc.ca/oauth2/v1/';
-var username = process.env.WEBADE_USERNAME || 'TTLS-EXT';
-var password = process.env.WEBADE_PASSWORD || 'x';
 var MAX_LIMIT = 1000;
 var DEFAULT_PAGESIZE = 100;
+var defaultLog = require('winston').loggers.get('defaultLog');
 
 const getUserProjectPermissions = async function (userSub) {
   const User = mongoose.model('User');
@@ -28,14 +19,14 @@ exports.getUserProjectPermissions = getUserProjectPermissions;
 
 exports.buildQuery = function (property, values, query) {
   var oids = [];
-  if (_.isArray(values)) {
-    _.each(values, function (i) {
+  if (isArray(values)) {
+    each(values, function (i) {
       oids.push(mongoose.Types.ObjectId(i));
     });
   } else {
     oids.push(mongoose.Types.ObjectId(values));
   }
-  return _.assignIn(query, {
+  return assignIn(query, {
     [property]: {
       $in: oids
     }
@@ -53,22 +44,22 @@ exports.avScan = function (buffer) {
 
     clamav.ping(_servicePort, _serviceHost, 1000, function (err) {
       if (err) {
-        console.log('ClamAV service: ' + _serviceHost + ':' + _servicePort + ' is not available[' + err + ']');
+        defaultLog.info('ClamAV service: ' + _serviceHost + ':' + _servicePort + ' is not available[' + err + ']');
         resolve(false);
       } else {
-        console.log('ClamAV service is alive: ' + _serviceHost + ':' + _servicePort);
+        defaultLog.info('ClamAV service is alive: ' + _serviceHost + ':' + _servicePort);
         clamav.createScanner(_servicePort, _serviceHost)
           .scan(bufferStream, function (err, object, malicious) {
             if (err) {
-              console.log(err);
+              defaultLog.error(err);
               resolve(false);
             }
             else if (malicious) {
-              console.log('Malicious object FOUND');
+              defaultLog.info('Malicious object FOUND');
               resolve(false);
             }
             else {
-              console.log('Virus scan OK');
+              defaultLog.info('Virus scan OK');
               resolve(true);
             }
           });
@@ -127,9 +118,9 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
       .catch(error => error);
     }
 
-    console.log('populateProponent: ', populateProponent);
-    console.log('populateProjectLead: ', populateProjectLead);
-    console.log('populateProjectDirector: ', populateProjectDirector);
+    defaultLog.info('populateProponent: ', populateProponent);
+    defaultLog.info('populateProjectLead: ', populateProjectLead);
+    defaultLog.info('populateProjectDirector: ', populateProjectDirector);
 
     // Fields we always return
     var defaultFields = ['_id',
@@ -138,16 +129,16 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
       'tags',
       'read'];
 
-    _.each(defaultFields, function (f) {
+    each(defaultFields, function (f) {
       projection[f] = 1;
     });
 
     // Add requested fields - sanitize first by including only those that we can/want to return
-    _.each(fields, function (f) {
+    each(fields, function (f) {
       projection[f] = 1;
     });
 
-    var aggregations = _.compact([
+    var aggregations = compact([
       {
         '$match': query
       },
@@ -254,7 +245,7 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
 
       sortWarmUp, // Used to setup the sort if a temporary projection is needed.
 
-      !_.isEmpty(sort) ? { $sort: sort } : null,
+      !isEmpty(sort) ? { $sort: sort } : null,
 
       sort ? { $project: projection } : null, // Reset the projection just in case the sortWarmUp changed it.
 

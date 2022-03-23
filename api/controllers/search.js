@@ -1,11 +1,8 @@
-var auth = require("../helpers/auth");
-var _ = require('lodash');
+var { map, each } = require('lodash');
 var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
-var request = require('request');
-var _accessToken = null;
 var qs = require('qs');
 
 function isEmpty(obj) {
@@ -20,9 +17,9 @@ var generateExpArray = async function (field, roles) {
   var expArray = [];
   if (field && field != undefined) {
     var queryString = qs.parse(field);
-    console.log("queryString:", queryString);
+    defaultLog.info("queryString:", queryString);
     await Promise.all(Object.keys(queryString).map(async item => {
-      console.log("item:", item, queryString[item]);
+      defaultLog.info("item:", item, queryString[item]);
       if (item === 'pcp') {
         await handlePCPItem(roles, expArray, queryString[item]);
       } else if (item === 'decisionDateStart' || item === 'decisionDateEnd') {
@@ -39,33 +36,28 @@ var generateExpArray = async function (field, roles) {
       }
     }));
   }
-  console.log("expArray:", expArray);
+  defaultLog.info("expArray:", expArray);
   return expArray;
 }
 
 var getConvertedValue = function (item, entry) {
   if (isNaN(entry)) {
     if (mongoose.Types.ObjectId.isValid(entry)) {
-      console.log("objectid");
       // ObjectID
       return { [item]: mongoose.Types.ObjectId(entry) };
     } else if (entry === 'true') {
-      console.log("bool");
       // Bool
       var tempObj = {}
       tempObj[item] = true;
       tempObj.active = true;
       return tempObj;
     } else if (entry === 'false') {
-      console.log("bool");
       // Bool
       return { [item]: false };
     } else {
-      console.log("string");
       return { [item]: entry };
     }
   } else {
-    console.log("number");
     return { [item]: parseInt(entry) };
   }
 }
@@ -84,8 +76,6 @@ var handlePCPItem = async function (roles, expArray, value) {
 }
 
 var getPCPValue = async function (roles, entry) {
-  console.log('pcp: ', entry);
-
   var query = null;
   var now = new Date();
 
@@ -121,18 +111,18 @@ var getPCPValue = async function (roles, entry) {
       break;
 
     default:
-      console.log('Unknown PCP entry');
+      defaultLog.info('Unknown PCP entry');
   }
 
   var pcp = {};
 
   if (query) {
     var data = await Utils.runDataQuery('CommentPeriod', roles, query, ['project'], null, null, null, null, false, null);
-    var ids = _.map(data, 'project');
+    var ids = map(data, 'project');
     pcp = { _id: { $in: ids } };
   }
 
-  console.log('pcp', pcp);
+  defaultLog.info('pcp', pcp);
   return pcp;
 }
 
@@ -195,8 +185,8 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     ]
   };
 
-  console.log("modifier:", modifier);
-  console.log("match:", match);
+  defaultLog.info("modifier:", modifier);
+  defaultLog.info("match:", match);
 
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
@@ -225,7 +215,7 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     strength: 2
   };
 
-  console.log('collation:', collation);
+  defaultLog.info('collation:', collation);
 
   if (collection === 'Document') {
     // Allow documents to be sorted by status based on publish existence
@@ -317,7 +307,7 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     }
   });
 
-  console.log('populate:', populate);
+  defaultLog.info('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
       "$lookup": {
@@ -415,11 +405,11 @@ var executeQuery = async function (args, res, next) {
       .then(permissions => (permissions));
   }
 
-  console.log("Searching Collection:", dataset);
+  defaultLog.info("Searching Collection:", dataset);
 
-  console.log("******************************************************************");
-  console.log(roles);
-  console.log("******************************************************************");
+  defaultLog.info("******************************************************************");
+  defaultLog.info(roles);
+  defaultLog.info("******************************************************************");
 
   Utils.recordAction('Search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
 
@@ -433,18 +423,18 @@ var executeQuery = async function (args, res, next) {
     sortingValue[sortField] = sortDirection;
   });
 
-  console.log("sortingValue:", sortingValue);
+  defaultLog.info("sortingValue:", sortingValue);
   defaultLog.info("sortField:", sortField);
   defaultLog.info("sortDirection:", sortDirection);
 
   if (dataset !== 'Item') {
 
-    console.log("Searching Collection:", dataset);
-    console.log("sortField:", sortField);
+    defaultLog.info("Searching Collection:", dataset);
+    defaultLog.info("sortField:", sortField);
     var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
     if (dataset === 'Comment') {
       // Filter
-      _.each(data[0].searchResults, function (item) {
+      each(data[0].searchResults, function (item) {
         if (item.isAnonymous === true) {
           delete item.author;
         }
@@ -455,7 +445,7 @@ var executeQuery = async function (args, res, next) {
   } else if (dataset === 'Item') {
 
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
-    console.log("ITEM GET", { _id: args.swagger.params._id.value })
+    defaultLog.info("ITEM GET", { _id: args.swagger.params._id.value })
     var data = await collectionObj.aggregate([
       {
         "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
@@ -498,7 +488,7 @@ var executeQuery = async function (args, res, next) {
     ]);
     if (args.swagger.params._schemaName.value === 'Comment') {
       // Filter
-      _.each(data, function (item) {
+      each(data, function (item) {
         if (item.isAnonymous === true) {
           delete item.author;
         }
@@ -506,7 +496,7 @@ var executeQuery = async function (args, res, next) {
     }
     return Actions.sendResponse(res, 200, data);
   } else {
-    console.log('Bad Request');
+    defaultLog.error('Bad Request');
     return Actions.sendResponse(res, 400, {});
   }
 };
