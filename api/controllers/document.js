@@ -416,7 +416,7 @@ exports.protectedOpen = function (args, res, next) {
       if (data && data.length === 1) {
         var blob = data[0];
 
-        console.log('the doc', data)
+        defaultLog.info('the doc', data)
 
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;

@@ -10,7 +10,7 @@ const _publicServiceEndpoint = process.env.API_HOSTNAME !== undefined ? ('https:
 const _GETOK_endpoint = process.env.GETOK_ENDPOINT || 'https://dev.oidc.gov.bc.ca/auth/realms/jbd6rnxw/protocol/openid-connect/token';
 const _GETOK_CLIENTID = process.env._GETOK_CLIENTID || null;
 const _GETOK_CLIENT_SECRET = process.env._GETOK_CLIENT_SECRET || null;
-const _commonHostingEmailServiceEndpoint = process.env.CHES_ENDPOINT || 'https://ches-dev.pathfinder.gov.bc.ca/';
+const _commonHostingEmailServiceEndpoint = process.env.CHES_ENDPOINT || 'https://ches-dev.apps.silver.devops.gov.bc.ca/';
 
 const _CHES_emailMergeAPI = 'api/v1/emailMerge';
 

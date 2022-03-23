@@ -1,10 +1,21 @@
 require('dotenv').config();
+const util = require('util');
 const winston = require('winston');
 const { format, transports } = winston;
 const { combine, label, colorize, printf, timestamp } = format;
 
-const logFormat = printf(({ level, message, label = '', timestamp }) => {
-  return `${label}[${timestamp}] ${level}: ${message}`;
+/**
+ * Format the log output to include:
+ * - log level
+ * - log message
+ * - label
+ * - timestamp
+ * - additional log messages passed as arguments to the logger("rest")
+ */
+const logFormat = printf(({ level, message, label = '', timestamp, ...rest }) => {
+	const splat = rest[Symbol.for('splat')];
+	const strArgs = splat ? splat.map((s) => util.formatWithOptions({ colors: true, depth: 10 }, s)).join(' ') : '';
+	return `${label}[${timestamp}] ${level}:  ${util.formatWithOptions({ colors: true, depth: 10}, message)} ${strArgs}`;
 });
 
 /**
