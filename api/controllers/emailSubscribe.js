@@ -1,5 +1,4 @@
-var auth = require('../helpers/auth');
-var _ = require('lodash');
+var { remove, indexOf, assignIn } = require('lodash');
 var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
@@ -14,8 +13,8 @@ const transform = require('stream-transform');
  */
 
 var getSanitizedFields = function (fields) {
-  return _.remove(fields, function (f) {
-    return (_.indexOf([
+  return remove(fields, function (f) {
+    return (indexOf([
       'email',
       'project',
       'confirmed',
@@ -42,7 +41,7 @@ exports.publicHead = async function (args, res, next) {
   const fields = getSanitizedFields(args.swagger.params.fields.value);
 
   // Set query type
-  _.assignIn(query, { '_schemaName': 'EmailSubscribe' });
+  assignIn(query, { '_schemaName': 'EmailSubscribe' });
 
   var data = await Utils.runDataQuery('EmailSubscribe',
     ['public'],
@@ -94,7 +93,7 @@ exports.unProtectedPost = async function (args, res, next) {
 
   // check if already exists
   // if so either update with the new project or exit graacefully
-  await EmailSubscribe.findOne({ email: emailSubscribe.email }, null, async function (err, entity) {
+  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailSubscribe.email }, null, async function (err, entity) {
     if (entity) {
       defaultLog.info('Findone entity', entity);
       existingEmailId = entity._id;
@@ -139,7 +138,7 @@ exports.unProtectedPost = async function (args, res, next) {
     await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -151,8 +150,6 @@ exports.unProtectedPut = async function (args, res, next) {
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value) || !(args.swagger.params.confirmKey && args.swagger.params.confirmKey.value)) {
     return Actions.sendResponse(res, 403, 'Access denied');
-  } else {
-    //return Actions.sendResponse(res, 200, 'ok');
   }
   
   var emailAddress = args.swagger.params.email.value;
@@ -164,8 +161,8 @@ exports.unProtectedPut = async function (args, res, next) {
   var Project = mongoose.model('Project');
 
   // find the object ID based on the email address
-  await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
-    defaultLog.info('Err', err);
+  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, function (err, entity) {
+    defaultLog.error('Err', err);
     defaultLog.info('Entity', entity);
     try {
       emailId = entity._id;
@@ -174,7 +171,7 @@ exports.unProtectedPut = async function (args, res, next) {
       previousConfirmed = entity.confirmed;
       projectId = entity.project;
     } catch(e) {
-      defaultLog.info('Error:', e);
+      defaultLog.error('Error:', e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -219,7 +216,7 @@ exports.unProtectedPut = async function (args, res, next) {
     await Email.sendWelcomeEmail(projectName, emailAddress);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -244,7 +241,7 @@ exports.unProtectedDelete = async function (args, res, next) {
     try {
       emailId = entity._id;
     } catch (e) {
-      defaultLog.info('Error:', e);
+      defaultLog.error('Error:', e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -256,7 +253,7 @@ exports.unProtectedDelete = async function (args, res, next) {
     defaultLog.info('Email unsubscribed:', es);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -276,7 +273,7 @@ exports.protectedHead = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { '_schemaName': 'EmailSubscribe' });
+  assignIn(query, { '_schemaName': 'EmailSubscribe' });
 
   var data = await Utils.runDataQuery('EmailSubscribe',
     args.swagger.operation['x-security-scopes'],
@@ -306,7 +303,7 @@ exports.protectedGet = async function (args, res, next) {
   // Build match query for project ID
   if (args.swagger.params.project && args.swagger.params.project.value) {
     defaultLog.info('ES Project ID', args.swagger.params.project.value);
-    _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value), confirmed: true });
+    assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value), confirmed: true });
   }
 
   // Sort
@@ -329,10 +326,10 @@ exports.protectedGet = async function (args, res, next) {
   }
 
   // Set query type
-  _.assignIn(query, { '_schemaName': 'EmailSubscribe' });
+  assignIn(query, { '_schemaName': 'EmailSubscribe' });
 
   if (filter.length !== 0) {
-    _.assignIn(query, { $or: filter });
+    assignIn(query, { $or: filter });
   }
 
   try {
@@ -350,7 +347,7 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got email subscribers:', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -377,7 +374,7 @@ exports.protectedDelete = async function (args, res, next) {
       emailId = entity._id;
       projectList = entity.project;
     } catch (e) {
-      defaultLog.info('Error:', e);
+      defaultLog.error('Error:', e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -394,7 +391,7 @@ exports.protectedDelete = async function (args, res, next) {
         defaultLog.info('Email deleted from one project:', es);
         return Actions.sendResponse(res, 200, es);
       } catch (e) {
-        defaultLog.info('Error:', e);
+        defaultLog.error('Error:', e);
         return Actions.sendResponse(res, 400, e);
       }
     } else {
@@ -405,7 +402,7 @@ exports.protectedDelete = async function (args, res, next) {
         defaultLog.info('Email deleted from system:', es);
         return Actions.sendResponse(res, 200, es);
       } catch (e) {
-        defaultLog.info('Error:', e);
+        defaultLog.error('Error:', e);
         return Actions.sendResponse(res, 400, e);
       }
     }

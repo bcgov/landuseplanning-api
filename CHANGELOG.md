@@ -1,3 +1,10 @@
+### 1.3.0 March 23, 2022
+* Fix email subscribe confirmation bug [DESENG-96](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-96)
+* Add selective logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
+* Tree-shake lodash dependencies
+* Update "var" -> "const" in app.js
+* Remove unused code
+
 ### 1.2.3 March 17, 2022
 * Fix document text search bug [DESENG-90](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-90)
 

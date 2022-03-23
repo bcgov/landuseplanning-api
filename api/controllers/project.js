@@ -270,11 +270,11 @@ exports.protectedGet = async (args, res) => {
   // Set query type
   assignIn(query, { "_schemaName": "Project" });
 
-  console.log("*****************************************");
-  console.log("query:", query);
-  console.log("*****************************************");
+  defaultLog.info("*****************************************");
+  defaultLog.info("query:", query);
+  defaultLog.info("*****************************************");
 
-  console.log("PIPELINE", commentPeriodPipeline);
+  defaultLog.info("PIPELINE", commentPeriodPipeline);
 
   try {
     var data = await Utils.runDataQuery('Project',
@@ -418,7 +418,7 @@ exports.protectedPost = (args, res) => {
       return Actions.sendResponse(res, 200, theProject);
     })
     .catch(function (err) {
-      console.log("Error in API:", err);
+      defaultLog.error("Error in API:", err);
       return Actions.sendResponse(res, 400, err);
     });
 };
@@ -689,7 +689,7 @@ handleGetGroupMembers = async function (groupId, roles, sortBy, pageSize, pageNu
       null
     );
 
-    console.log("users:", data);
+    defaultLog.info("users:", data);
 
     if (data.length === 0) {
       return Actions.sendResponse(res, 200, [{
@@ -776,7 +776,7 @@ exports.protectedGroupPut = async function (args, res, next) {
     Utils.recordAction('Put', 'Group', args.swagger.params.auth_payload.preferred_username, groupId);
     return Actions.sendResponse(res, 200, group);
   } catch (e) {
-    console.log("Error:", e);
+    defaultLog.error("Error:", e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -789,11 +789,11 @@ exports.protectedGroupDelete = async function (args, res, next) {
   var Group = require('mongoose').model('Group');
   try {
     var doc = await Group.findOneAndRemove({ _id: groupId });
-    console.log('deleting group', doc);
+    defaultLog.info('deleting group', doc);
     Utils.recordAction('Delete', 'Group', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    console.log("Error:", e);
+    defaultLog.error("Error:", e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -838,8 +838,8 @@ exports.protectedPut = async (args, res) => {
   obj.documentInfo = projectObj.documentInfo;
   obj.partner = projectObj.partner;
 
-  console.log("Updating project with:", obj);
-  console.log("--------------------------");
+  defaultLog.info("Updating project with:", obj);
+  defaultLog.info("--------------------------");
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
 
   if (doc) {
