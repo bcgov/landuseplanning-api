@@ -1,38 +1,30 @@
 "use strict";
+/**
+ * We need to set up the app loggers before we import modules
+ * that also make use of it.
+ */
+const { configureAppLogging } = require('./config/loggers');
+configureAppLogging();
 
-var app           = require("express")();
-var fs            = require('fs');
-var uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
-var hostname      = process.env.API_HOSTNAME || "localhost:3000";
-var swaggerTools  = require("swagger-tools");
-var YAML          = require("yamljs");
-var mongoose      = require("mongoose");
-var passport      = require("passport");
-var auth          = require("./api/helpers/auth");
-var models        = require("./api/helpers/models");
-var indexes       = require("./api/helpers/indexes");
-var swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
-var winston       = require('winston');
-var bodyParser    = require('body-parser');
-
-var dbConnection  = 'mongodb://'
+const app           = require("express")();
+const fs            = require('fs');
+const uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
+const hostname      = process.env.API_HOSTNAME || "localhost:3000";
+const swaggerTools  = require("swagger-tools");
+const YAML          = require("yamljs");
+const mongoose      = require("mongoose");
+const auth          = require("./api/helpers/auth");
+const databaseIndexes = require("./api/helpers/databaseIndexes");
+const swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
+const winston       = require('winston');
+const bodyParser    = require('body-parser');
+const dbConnection  = 'mongodb://'
                     + (process.env.MONGODB_SERVICE_HOST || process.env.DB_1_PORT_27017_TCP_ADDR || 'localhost')
                     + '/'
                     + (process.env.MONGODB_DATABASE || 'landuseplanning');
-var db_username = process.env.MONGODB_USERNAME || '';
-var db_password = process.env.MONGODB_PASSWORD || '';
-
-// Logging middleware
-winston.loggers.add('default', {
-    console: {
-        colorize: 'true',
-        handleExceptions: true,
-        json: false,
-        level: 'silly',
-        label: 'default',
-    }
-});
-var defaultLog = winston.loggers.get('default');
+const dbUsername = process.env.MONGODB_USERNAME || '';
+const dbPassword = process.env.MONGODB_PASSWORD || '';
+const defaultLog = winston.loggers.get('defaultLog');
 
 // Increase postbody sizing
 app.use(bodyParser.json({limit: '10mb', extended: true}))
@@ -70,7 +62,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     })
   );
   
-  var routerConfig = {
+  const routerConfig = {
     controllers: "./api/controllers",
     useStubs: false
   };
@@ -89,12 +81,12 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     defaultLog.info("Couldn't create upload folder:", e);
   }
   // Load up DB
-  var options = {
+  const options = {
     useNewUrlParser: true,
     useUnifiedTopology: true,
     poolSize: 10,
-    user: db_username,
-    pass: db_password,
+    user: dbUsername,
+    pass: dbPassword,
     reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
     reconnectInterval: 500, // Reconnect every 500ms
     poolSize: 10, // Maintain up to 10 socket connections
@@ -105,7 +97,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   };
   defaultLog.info("Connecting to:", dbConnection);
   mongoose.Promise  = global.Promise;
-  var db = mongoose.connect(dbConnection, options).then(
+  mongoose.connect(dbConnection, options).then(
     () => {
       defaultLog.info("Database connected");
 
@@ -135,8 +127,8 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/emailSubscribe');
       defaultLog.info("db model loading done.");
 
-      // Build text index
-      indexes.generateTextIndex();
+      // Build text index.
+      databaseIndexes.generateTextIndex();
 
       app.listen(3000, '0.0.0.0', function() {
         defaultLog.info("Started server on port 3000");

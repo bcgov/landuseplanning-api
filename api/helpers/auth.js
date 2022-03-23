@@ -10,7 +10,7 @@ var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minu
 var SECRET          = process.env.SECRET || "defaultSecret";
 var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "true";
 var winston         = require('winston');
-var defaultLog      = winston.loggers.get('default');
+var defaultLog      = winston.loggers.get('defaultLog');
 
 exports.verifyToken = function(req, authOrSecDef, token, callback) {
   defaultLog.info('verifying token', token);

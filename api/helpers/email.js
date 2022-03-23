@@ -3,7 +3,7 @@
 const axios = require('axios');
 const qs = require('qs');
 const winston = require('winston');
-const defaultLog = winston.loggers.get('default');
+const defaultLog = winston.loggers.get('defaultLog');
 require('dotenv').config();
 
 const _publicServiceEndpoint = process.env.API_HOSTNAME !== undefined ? ('https://' + process.env.API_HOSTNAME + '/') : 'http://localhost:4300/';
