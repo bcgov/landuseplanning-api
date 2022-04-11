@@ -20,7 +20,6 @@ var getSanitizedFields = function (fields) {
       'commentId',
       'documents',
       'responses',
-
       'read',
       'write',
       'delete'
@@ -28,53 +27,54 @@ var getSanitizedFields = function (fields) {
   });
 }
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('SURVEY RESPONSE PROTECTED OPTIONS');
   res.status(200).send();
 }
 
 //  Create a new Survey Response
-exports.unProtectedPost = async function (args, res, next) {
-    var obj = args.swagger.params.surveyResponse.value;
-    defaultLog.info('Incoming new object:', obj);
-  
-    var SurveyResponse = mongoose.model('SurveyResponse');
-  
-    // get the next commentID for this period
-    const surveyResponseIdCount = await getNextSurveyResponseIdCount(mongoose.Types.ObjectId(obj.period));
-  
-    var surveyResponse = new SurveyResponse(obj);
-    surveyResponse._schemaName = 'SurveyResponse';
-    surveyResponse.dateAdded = new Date();
-    surveyResponse.author = obj.author;
-    surveyResponse.location = obj.location;
-    surveyResponse.response = obj.response;
-    surveyResponse.surveyResponseIdCount = surveyResponseIdCount;
-    surveyResponse.survey = mongoose.Types.ObjectId(obj.survey);
-    surveyResponse.project = mongoose.Types.ObjectId(obj.project);
-    surveyResponse.period = mongoose.Types.ObjectId(obj.period);
-    surveyResponse.documents = [];
-    surveyResponse.commentId = surveyResponseIdCount;
-  
-    surveyResponse.read = ['staff', 'sysadmin'];
-    surveyResponse.write = ['staff', 'sysadmin'];
-    surveyResponse.delete = ['staff', 'sysadmin'];
+exports.unProtectedPost = async function (args, res) {
+  defaultLog.info('SURVEY RESPONSE PUBLIC POST');
 
-    console.log('do we have a project', mongoose.Types.ObjectId(obj.project))
-  
-    try {
-      var sr = await surveyResponse.save();
-      Utils.recordAction('Post', 'SurveyResponse', 'public', sr._id);
-      defaultLog.info('Saved new surveyResponse object:', sr);
-      return Actions.sendResponse(res, 200, sr);
-    } catch (e) {
-      defaultLog.info('Error:', e);
-      return Actions.sendResponse(res, 400, e);
-    }
+  var obj = args.swagger.params.surveyResponse.value;
+  defaultLog.info('Incoming new survey response:', obj._id);
+
+  var SurveyResponse = mongoose.model('SurveyResponse');
+
+  // get the next commentID for this period
+  const surveyResponseIdCount = await getNextSurveyResponseIdCount(mongoose.Types.ObjectId(obj.period));
+
+  var surveyResponse = new SurveyResponse(obj);
+  surveyResponse._schemaName = 'SurveyResponse';
+  surveyResponse.dateAdded = new Date();
+  surveyResponse.author = obj.author;
+  surveyResponse.location = obj.location;
+  surveyResponse.response = obj.response;
+  surveyResponse.surveyResponseIdCount = surveyResponseIdCount;
+  surveyResponse.survey = mongoose.Types.ObjectId(obj.survey);
+  surveyResponse.project = mongoose.Types.ObjectId(obj.project);
+  surveyResponse.period = mongoose.Types.ObjectId(obj.period);
+  surveyResponse.documents = [];
+  surveyResponse.commentId = surveyResponseIdCount;
+
+  surveyResponse.read = ['staff', 'sysadmin'];
+  surveyResponse.write = ['staff', 'sysadmin'];
+  surveyResponse.delete = ['staff', 'sysadmin'];
+
+  try {
+    var sr = await surveyResponse.save();
+    Utils.recordAction('Post', 'SurveyResponse', 'public', sr._id);
+    defaultLog.info('Saved new surveyResponse:', sr._id);
+    return Actions.sendResponse(res, 200, sr);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
 
 };
 
-exports.protectedGet = async function (args, res, next) {
-    defaultLog.info('Getting survey response(s)')
+exports.protectedGet = async function (args, res) {
+    defaultLog.info('SURVEY RESPONSE GET');
   
     var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
   
@@ -131,11 +131,9 @@ exports.protectedGet = async function (args, res, next) {
 
       return Actions.sendResponse(res, 200, data);
     } catch (e) {
-      defaultLog.info('Error:', e);
+      defaultLog.error(e);
       return Actions.sendResponse(res, 400, e);
     }
-
-    
 };
 
 async function getNextSurveyResponseIdCount(period) {
@@ -152,7 +150,8 @@ async function getNextSurveyResponseIdCount(period) {
  * @param {*} res 
  * @param {*} next 
  */
-exports.protectedExport = async function (args, res, next) {
+exports.protectedExport = async function (args, res) {
+  defaultLog.info('SURVEY RESPONSE PROTECTED EXPORT');
   const period = args.swagger.params.periodId.value;
 
   const match = {
