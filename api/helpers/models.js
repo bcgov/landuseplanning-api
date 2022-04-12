@@ -1,5 +1,6 @@
 var mongoose = require('mongoose');
 var _ = require('lodash');
+var defaultLog = require('winston').loggers.get('defaultLog');
 
 var genSchema = function (name, definition) {
     //
@@ -111,17 +112,12 @@ var genSchema = function (name, definition) {
         });
     }
 
-    // Enable FTS on documents
-    // if (schema.obj._schemaName.default === "Document") {
-    //     schema.index({"$**":"text"});
-    // }
-
     return schema;
 };
 
 module.exports = function (name, definition, collection) {
     if (!name || !definition) {
-        console.error('No name or definition supplied when building schema');
+        defaultLog.error('No name or definition supplied when building schema');
         return;
     }
     return mongoose.model(name, genSchema(name, definition), collection);

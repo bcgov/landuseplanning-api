@@ -37,7 +37,7 @@ exports.unProtectedPost = async function (args, res) {
   defaultLog.info('SURVEY RESPONSE PUBLIC POST');
 
   var obj = args.swagger.params.surveyResponse.value;
-  defaultLog.info('Incoming new survey response:', obj._id);
+  defaultLog.info('Incoming new survey response:', obj);
 
   var SurveyResponse = mongoose.model('SurveyResponse');
 

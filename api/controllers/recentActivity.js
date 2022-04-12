@@ -1,4 +1,3 @@
-var auth = require("../helpers/auth");
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
@@ -24,11 +23,13 @@ var getSanitizedFields = function (fields) {
     ], f) !== -1);
   });
 }
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('RECENT ACTIVITY PROTECTED OPTIONS');
   res.status(200).send();
 }
 
-exports.publicGet = async function (args, res, next) {
+exports.publicGet = async function (args, res) {
+  defaultLog.info('RECENT ACTIVITY PUBLIC GET');
   var fields = ['_schemaName',
     'dateUpdated',
     'dateAdded',
@@ -42,7 +43,6 @@ exports.publicGet = async function (args, res, next) {
     'project',
     'content',
     'headline'];
-  var RecentActivity = mongoose.model('RecentActivity');
   var query = {};
   var sort = {
     dateAdded: -1
@@ -95,16 +95,18 @@ exports.publicGet = async function (args, res, next) {
       dataNext.slice(0, 4 - data.length).map(item => {
         data.push(item);
       });
+      defaultLog.info('Got recent activities', data);
       return Actions.sendResponse(res, 200, data);
     }
 
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
-exports.protectedGet = async function (args, res, next) {
+exports.protectedGet = async function (args, res) {
+  defaultLog.info('RECENT ACTIVITY PROTECTED GET');
   var query = {};
   var theFields = getSanitizedFields(args.swagger.params.fields.value);
   
@@ -129,16 +131,16 @@ exports.protectedGet = async function (args, res, next) {
       true); // count
 
     Utils.recordAction('Get', 'RecentActivity', args.swagger.params.auth_payload.preferred_username);
+    defaultLog.info('Got recent activities', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
-exports.protectedDelete = function (args, res, next) {
-  defaultLog.info("Deleting a RecentActivity(s)");
-  defaultLog.info("args.swagger.params:", args.swagger.operation["x-security-scopes"]);
+exports.protectedDelete = function (args, res) {
+  defaultLog.info("RECENT ACTIVITY PROTECTED DELETE");
 
   var RecentActivity = mongoose.model('RecentActivity');
   var query = {};
@@ -149,6 +151,7 @@ exports.protectedDelete = function (args, res, next) {
 
   if (!Object.keys(query).length > 0) {
     // Don't allow unilateral delete.
+    defaultLog.error('Cannot delete entire collection');
     return Actions.sendResponse(res, 400, "Can't delete entire collection.");
   }
 
@@ -156,17 +159,20 @@ exports.protectedDelete = function (args, res, next) {
   RecentActivity.remove(query, function (err, data) {
     if (data) {
       Utils.recordAction('Delete', 'RecentActivity', args.swagger.params.auth_payload.preferred_username, data._id);
+      defaultLog.info('Deleted recent activity: ', data._id);
       return Actions.sendResponse(res, 200, data);
     } else {
+      defaultLog.error('Could not delete recent activity');
       return Actions.sendResponse(res, 400, err);
     }
   });
 }
 
 //  Create a new RecentActivity
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async function (args, res) {
+  defaultLog.info('RECENT ACTIVITY PROTECTED POST');
   var obj = args.swagger.params.recentActivity.value;
-  defaultLog.info("Incoming new object:", obj);
+  defaultLog.info("Incoming new recent activity:", obj);
 
   var RecentActivity = mongoose.model('RecentActivity');
   delete obj._id;
@@ -186,28 +192,27 @@ exports.protectedPost = async function (args, res, next) {
   try {
     var rec = await recentActivity.save();
     Utils.recordAction('Post', 'RecentActivity', args.swagger.params.auth_payload.preferred_username, rec._id);
-    defaultLog.info('Saved new RecentActivity object:', rec);
+    defaultLog.info('Saved new RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing RecentActivity
-exports.protectedPut = async function (args, res, next) {
+exports.protectedPut = async function (args, res) {
+  defaultLog.info('RECENT ACTIVITY PROTECTED PUT');
   var objId = args.swagger.params.recentActivityId.value;
-  defaultLog.info("ObjectID:", args.swagger.params.recentActivityId.value);
+  defaultLog.info("Update recent activity:", objId);
 
   var obj = args.swagger.params.RecentActivityObject.value;
   // Strip security tags - these will not be updated on this route.
-  defaultLog.info("Incoming updated object:", obj);
   if (obj.active) {
     obj.read = ['sysadmin', 'staff', 'public'];
   } else {
     obj.read = ['sysadmin', 'staff'];
   }
-  // TODO sanitize/update audits.
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   var RecentActivity = require('mongoose').model('RecentActivity');
@@ -217,7 +222,7 @@ exports.protectedPut = async function (args, res, next) {
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 }

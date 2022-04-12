@@ -38,7 +38,6 @@ var getSanitizedFields = function (fields) {
 }
 
 var setPermissionsFromEaoStatus = function (status, comment) {
-  console.log(status);
   switch (status) {
     case 'Published':
       defaultLog.info('Publishing Comment');
@@ -84,13 +83,13 @@ var sortWarmUp = function (sort, fields) {
   return null;
 }
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('COMMENT PROTECTED OPTIONS');
   res.status(200).send();
 };
 
-exports.publicHead = async function (args, res, next) {
-  defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
-
+exports.publicHead = async function (args, res) {
+  defaultLog.info('COMMENT PUBLIC HEAD');
   // Build match query if on CommentPeriodId route
   var query = {};
   if (args.swagger.params.period && args.swagger.params.period.value) {
@@ -116,11 +115,16 @@ exports.publicHead = async function (args, res, next) {
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    defaultLog.info('Got comment headers: ', data);
     return Actions.sendResponse(res, 200, data);
+  } else {
+    defaultLog.info('Could not retrieve comment headers.');
+    return Actions.sendResponse(res, 404, data);
   }
 };
 
-exports.publicGet = async function (args, res, next) {
+exports.publicGet = async function (args, res) {
+  defaultLog.info('COMMENT PUBLIC GET');
   var query = {}, sort = {};
   var skip = null, limit = null;
 
@@ -172,6 +176,7 @@ exports.publicGet = async function (args, res, next) {
       delete item.author;
     }
   });
+  defaultLog.info('Got comment(s): ', data);
   if (args.swagger.params.count.value) {
     Utils.recordAction('Get', 'Comment', 'public', args.swagger.params.commentId && args.swagger.params.commentId.value ? args.swagger.params.commentId.value : null);
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
@@ -181,9 +186,9 @@ exports.publicGet = async function (args, res, next) {
   }
 };
 
-exports.protectedHead = async function (args, res, next) {
-  var skip = null, limit = null;
-  var sort = {}, query = {};
+exports.protectedHead = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED HEAD');
+  var query = {};
 
   if (args.swagger.params.commentId && args.swagger.params.commentId.value) {
     query = Utils.buildQuery('_id', args.swagger.params.commentId.value, query);
@@ -214,14 +219,16 @@ exports.protectedHead = async function (args, res, next) {
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.commentId && args.swagger.params.commentId.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    defaultLog.info('Got comment headers: ', data);
     return Actions.sendResponse(res, 200, data);
   } else {
+    defaultLog.info('Could not retrieve comment headers.');
     return Actions.sendResponse(res, 404, data);
   }
 };
 
-exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting comment(s)')
+exports.protectedGet = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED GET');
 
   var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
 
@@ -314,13 +321,14 @@ exports.protectedGet = async function (args, res, next) {
     }
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 //  Create a new Comment
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED POST');
   var obj = args.swagger.params.comment.value;
 
   defaultLog.info('Incoming new comment:', obj);
@@ -368,10 +376,10 @@ exports.protectedPost = async function (args, res, next) {
   try {
     var c = await comment.save();
     Utils.recordAction('Post', 'Comment', args.swagger.params.auth_payload.preferred_username, c._id);
-    defaultLog.info('Saved new comment object:', c);
+    defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -383,7 +391,8 @@ async function getNextCommentIdCount(period) {
 }
 
 //  Create a new Comment
-exports.unProtectedPost = async function (args, res, next) {
+exports.unProtectedPost = async function (args, res) {
+  defaultLog.info('COMMENT PUBLIC POST');
   var obj = args.swagger.params.comment.value;
   defaultLog.info('Incoming new object:', obj);
 
@@ -412,16 +421,17 @@ exports.unProtectedPost = async function (args, res, next) {
   try {
     var c = await comment.save();
     Utils.recordAction('Post', 'Comment', 'public', c._id);
-    defaultLog.info('Saved new comment object:', c);
+    defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing Comment
-exports.protectedPut = async function (args, res, next) {
+exports.protectedPut = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED PUT');
   var objId = args.swagger.params.commentId.value;
   var obj = args.swagger.params.comment.value;
   defaultLog.info('Put comment:', objId);
@@ -435,7 +445,6 @@ exports.protectedPut = async function (args, res, next) {
 
   var comment = {
     isAnonymous: obj.isAnonymous,
-    //dateUpdated: obj.dateAdded,
     datePosted: obj.datePosted,
     dateUpdated: new Date(),
     eaoNotes: obj.eaoNotes,
@@ -446,8 +455,6 @@ exports.protectedPut = async function (args, res, next) {
     rejectedNotes: obj.rejectedNotes,
     rejectedReason: obj.rejectedReason,
     valuedComponents: vcs,
-    // TODO
-    // documents: obj.documents,
   };
   comment = setPermissionsFromEaoStatus(obj.eaoStatus, comment);
 
@@ -456,7 +463,7 @@ exports.protectedPut = async function (args, res, next) {
   try {
     var c = await Comment.update({ _id: objId }, { $set: comment });
     Utils.recordAction('Put', 'Comment', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Comment updated:', c);
+    defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
     defaultLog.info('Error:', e);
@@ -465,7 +472,8 @@ exports.protectedPut = async function (args, res, next) {
 };
 
 // Publish the Comment
-exports.protectedStatus = async function (args, res, next) {
+exports.protectedStatus = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED STATUS');
   var objId = args.swagger.params.commentId.value;
   var status = args.swagger.params.status.value.status;
 
@@ -480,16 +488,17 @@ exports.protectedStatus = async function (args, res, next) {
   try {
     var c = await Comment.update({ _id: objId }, { $set: comment });
     Utils.recordAction('Status', 'Comment', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Comment updated:', c);
+    defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Export all comments
-exports.protectedExport = async function (args, res, next) {
+exports.protectedExport = async function (args, res) {
+  defaultLog.info('COMMENT PROTECTED EXPORT');
   var period = args.swagger.params.periodId.value;
   var roles = args.swagger.params.auth_payload.realm_access.roles;
 
