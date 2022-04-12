@@ -1,4 +1,3 @@
-var auth = require("../helpers/auth");
 var _ = require('lodash');
 var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
@@ -44,11 +43,13 @@ var getSanitizedFields = function (fields) {
   });
 };
 
-exports.protectedOptions = function(args, res, rest) {
+exports.protectedOptions = function(args, res) {
+  defaultLog.info('DOCUMENT PROTECTED OPTIONS');
   res.status(200).send();
 };
 
-exports.publicGet = async function (args, res, next) {
+exports.publicGet = async function (args, res) {
+  defaultLog.info('DOCUMENT PUBLIC GET');
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
@@ -78,13 +79,13 @@ exports.publicGet = async function (args, res, next) {
     Utils.recordAction('Get', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 exports.unProtectedPost = async function (args, res, next) {
-  console.log("Creating new object");
+  defaultLog.info('DOCUMENT PUBLIC POST');
   var _comment = args.swagger.params._comment.value;
   var project = args.swagger.params.project.value;
   var upfile = args.swagger.params.upfile.value;
@@ -106,27 +107,17 @@ exports.unProtectedPost = async function (args, res, next) {
           defaultLog.warn("File failed virus check.");
           return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
         } else {
-          console.log('writing file.');
           fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
-          console.log('wrote file successfully.');
-
-          console.log(MinioController.BUCKETS.DOCUMENTS_BUCKET,
-            mongoose.Types.ObjectId(project),
-            upfile.originalname,
-            tempFilePath);
-
+          defaultLog.info('wrote file successfully.');
           MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
             project,
             upfile.originalname,
             tempFilePath)
             .then(async function (minioFile) {
-              console.log("putDocument:", minioFile);
-
               // remove file from temp folder
               fs.unlinkSync(tempFilePath);
 
-              console.log('unlink');
-
+              defaultLog.info('File saved in minio. Now saving document in DB.');
               var Document = mongoose.model('Document');
               var doc = new Document();
               // Define security tag defaults
@@ -164,7 +155,7 @@ exports.unProtectedPost = async function (args, res, next) {
                   return Actions.sendResponse(res, 200, d);
                 })
                 .catch(async function (error) {
-                  console.log("error:", error);
+                  defaultLog.error(error);
                   // the model failed to be created - delete the document from minio so the database and minio remain in sync.
                   MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
                   return Actions.sendResponse(res, 400, error);
@@ -173,18 +164,15 @@ exports.unProtectedPost = async function (args, res, next) {
         }
       });
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     // Delete the path details before we return to the caller.
     delete e['path'];
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-exports.protectedHead = function (args, res, next) {
-  var Document = mongoose.model('Document');
-
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
-
+exports.protectedHead = function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED HEAD');
   // Build match query if on docId route
   var query = {};
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
@@ -229,7 +217,7 @@ exports.protectedHead = function (args, res, next) {
 }
 
 exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting document(s)');
+  defaultLog.info('DOCUMENT PROTECTED GET');
 
   var query = {}, sort = {}, skip = null, limit = null, count = false;
 
@@ -262,14 +250,13 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got document(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-exports.publicDownload = function (args, res, next) {
-  var self = this;
-  var Document = mongoose.model('Document');
+exports.publicDownload = function (args, res) {
+  defaultLog.info('DOCUMENT PUBLIC DOWNLOAD');
 
   // Build match query if on docId route
   var query = {};
@@ -317,16 +304,22 @@ exports.publicDownload = function (args, res, next) {
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
+            defaultLog.info('Downloading file: ', args.swagger.params.docId.value)
             return rp(docURL).pipe(res);
           });
       } else {
+        defaultLog.error('Error downloading file.');
         return Actions.sendResponse(res, 404, {});
       }
     })
-    .catch((error) => Actions.sendResponse(error, 500, {}));
+    .catch((error) => {
+      defaultLog.error(error);
+      Actions.sendResponse(error, 500, {})
+    });
 };
 
-exports.protectedDownload = function (args, res, next) {
+exports.protectedDownload = function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED DOWNLOAD');
   var self = this;
   self.scopes = args.swagger.params.auth_payload.realm_access.roles;
 
@@ -457,7 +450,7 @@ exports.protectedOpen = function (args, res, next) {
 
 //  Create a new document
 exports.protectedPost = async function (args, res, next) {
-  console.log("Creating new protected document object");
+  defaultLog.info('DOCUMENT PROTECTED POST');
   try {
     var project = args.swagger.params.project.value;
     var _comment = args.swagger.params._comment.value;
@@ -478,26 +471,18 @@ exports.protectedPost = async function (args, res, next) {
           defaultLog.warn("File failed virus check.");
           return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
         } else {
-          console.log('writing file.');
           fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
-          console.log('wrote file successfully.');
-
-          console.log(MinioController.BUCKETS.DOCUMENTS_BUCKET,
-            mongoose.Types.ObjectId(project),
-            args.swagger.params.documentFileName.value,
-            tempFilePath)
+          defaultLog.info('wrote file successfully.');
 
           MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
             project,
             args.swagger.params.documentFileName.value,
             tempFilePath)
             .then(async function (minioFile) {
-              console.log("putDocument:", minioFile);
+              defaultLog.info('File saved in minio. Now saving document in DB.');
 
               // remove file from temp folder
               fs.unlinkSync(tempFilePath);
-
-              console.log('unlink');
 
               var Document = mongoose.model('Document');
               var doc = new Document();
@@ -538,17 +523,14 @@ exports.protectedPost = async function (args, res, next) {
               doc.description = args.swagger.params.description.value;
               doc.projectPhase = args.swagger.params.projectPhase.value;
 
-              // Update who did this?
-              console.log('unlink');
               doc.save()
                 .then(function (d) {
-                  console.log(d._id);
                   defaultLog.info("Saved new document object:", d._id);
                   Utils.recordAction('Post', 'Document', args.swagger.params.auth_payload.preferred_username, d._id);
                   return Actions.sendResponse(res, 200, d);
                 })
                 .catch(function (error) {
-                  console.log("error:", error);
+                  defaultLog.error(error);
                   // the model failed to be created - delete the document from minio so the database and minio remain in sync.
                   MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
                   return Actions.sendResponse(res, 400, error);
@@ -556,16 +538,17 @@ exports.protectedPost = async function (args, res, next) {
             })
         }
       })
-      .catch(error => error)
+      .catch(error => defaultLog.error(error));
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     // Delete the path details before we return to the caller.
     delete e['path'];
     return Actions.sendResponse(res, 500, e);
   }
 };
 
-exports.protectedPublish = async function (args, res, next) {
+exports.protectedPublish = async function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED PUBLISH');
   var objId = args.swagger.params.docId.value;
   defaultLog.info("Publish Document:", objId);
 

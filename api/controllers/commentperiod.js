@@ -55,12 +55,13 @@ var getSanitizedFields = function (fields) {
   });
 }
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('COMMENT PERIOD PROTECTED OPTIONS');
   res.status(200).send();
 }
 
-exports.publicGet = async function (args, res, next) {
-  defaultLog.info('Public get for comment period');
+exports.publicGet = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD PUBLIC GET');
 
   // Build match query if on CommentPeriodId route
   var query = {}, sort = {};
@@ -111,8 +112,8 @@ exports.publicGet = async function (args, res, next) {
   }
 };
 
-exports.protectedHead = async function (args, res, next) {
-  defaultLog.info('Head for comment period');
+exports.protectedHead = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD PROTECTED HEAD');
  
   // Build match query if on CommentPeriodId route
   var query = {};
@@ -157,8 +158,8 @@ exports.protectedHead = async function (args, res, next) {
   }
 }
 
-exports.protectedSummary = async function (args, res, next) {
-  defaultLog.info('Summary for comment period summaries');
+exports.protectedSummary = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD SUMMARY');
 
   // Build match query if on CommentPeriodId route
   var query = {};
@@ -186,7 +187,6 @@ exports.protectedSummary = async function (args, res, next) {
     await Promise.all(options.map(async (item) => {
       var optionQuery = {};
       _.assignIn(optionQuery, { 'eaoStatus': item, period: mongoose.Types.ObjectId(args.swagger.params.commentPeriodId.value) });
-      console.log("optionQuery:", optionQuery);
       var res = await Utils.runDataQuery('CommentPeriod',
         args.swagger.params.auth_payload.realm_access.roles,
         args.swagger.params.auth_payload.sub,
@@ -198,24 +198,23 @@ exports.protectedSummary = async function (args, res, next) {
         null, // limit
         true); // count
       Utils.recordAction('Summary', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, args.swagger.params.commentPeriodId && args.swagger.params.commentPeriodId.value ? args.swagger.params.commentPeriodId.value : null);
-      console.log("RES:", res);
       if (res && res[0]) {
         summary[item] = res[0]['total_items'];
       }
       return summary;
     }));
 
-    console.log("sending summary:", summary);
+    defaultLog.info("Summary:", summary);
     return Actions.sendResponse(res, 200, summary);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
 
-exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting comment period(s)');
+exports.protectedGet = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD PROTECTED GET');
 
   var query = {}, sort = null, skip = null, limit = null, count = false;
 
@@ -268,13 +267,14 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got comment period(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 //  Create a new CommentPeriod
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async function (args, res) {
+  defaultLog.info("COMMENT PERIOD PROTECTED POST");
   var obj = args.swagger.params.period.value;
 
   defaultLog.info('Incoming new comment period:', obj);
@@ -308,7 +308,7 @@ exports.protectedPost = async function (args, res, next) {
   try {
     var cp = await commentPeriod.save();
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, cp._id);
-    defaultLog.info('Saved new comment period object:', cp);
+    defaultLog.info('Saved new comment period object:', cp._id);
 
     // Only update survey visibility if survey selected by CP
     if (commentPeriod.surveySelected) {
@@ -317,21 +317,21 @@ exports.protectedPost = async function (args, res, next) {
 
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing CommentPeriod
-exports.protectedPut = async function (args, res, next) {
+exports.protectedPut = async function (args, res) {
+  defaultLog.info("COMMENT PERIOD PROTECTED PUT");
   var objId = args.swagger.params.commentPeriodId.value;
   var obj = args.swagger.params.cp.value;
-  defaultLog.info('Put comment period:', objId);
+  defaultLog.info('Incoming comment period data:', objId);
 
   var CommentPeriod = mongoose.model('CommentPeriod');
 
-  await updateVisibleSurveys(CommentPeriod) 
-
+  await updateVisibleSurveys(CommentPeriod);
 
   var commentPeriod = {
     dateCompleted: obj.dateCompleted,
@@ -354,43 +354,43 @@ exports.protectedPut = async function (args, res, next) {
     commentPeriod['read'] = ['staff', 'sysadmin'];
   }
 
-  defaultLog.info('Incoming updated object:', commentPeriod);
-
   try {
     var cp = await CommentPeriod.update({ _id: objId }, { $set: commentPeriod });
     Utils.recordAction('Put', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Comment period updated:', cp);
+    defaultLog.info('Comment period updated:', cp._id);
 
     await updateVisibleSurveys(CommentPeriod);
 
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
 //  Delete a new CommentPeriod
-exports.protectedDelete = async function (args, res, next) {
+exports.protectedDelete = async function (args, res) {
+  defaultLog.info("COMMENT PERIOD PROTECTED DELETE");
   var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info('Delete comment period:', objId);
 
   var CommentPeriod = mongoose.model('CommentPeriod');
   try {
     await CommentPeriod.findOneAndRemove({ _id: objId });
+    defaultLog.info('Comment period deleted:', objId);
     Utils.recordAction('Delete', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
-
     await updateVisibleSurveys(CommentPeriod);
     
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-// Publish/Unpublish the CommentPeriod
-exports.protectedPublish = async function (args, res, next) {
+// Publish the CommentPeriod
+exports.protectedPublish = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD PROTECTED PUBLISH');
   var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info('Publish comment period:', objId);
 
@@ -400,21 +400,23 @@ exports.protectedPublish = async function (args, res, next) {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
 
-    defaultLog.info('Comment period object:', commentPeriod);
     // Add public to read array.
     var publishedCP = await Actions.publish(commentPeriod);
+    defaultLog.info('Published comment period:', objId);
     Utils.recordAction('Publish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
 
     await updateVisibleSurveys(CommentPeriod);
 
     return Actions.sendResponse(res, 200, publishedCP);
   } catch (e) {
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-
-exports.protectedUnPublish = async function (args, res, next) {
+// Unpublish the CommentPeriod
+exports.protectedUnPublish = async function (args, res) {
+  defaultLog.info('COMMENT PERIOD PROTECTED UNPUBLISH');
   var objId = args.swagger.params.commentPeriodId.value;
   defaultLog.info('UnPublish comment period:', objId);
 
@@ -423,16 +425,16 @@ exports.protectedUnPublish = async function (args, res, next) {
     var commentPeriod = await CommentPeriod.findOne({ _id: objId });
     delete commentPeriod.__v;
 
-    defaultLog.info('Comment period object:', commentPeriod);
     // Remove public from read array.
     var unpublished = await Actions.unPublish(commentPeriod);
+    defaultLog.info('Unpublished comment period:', objId);
     Utils.recordAction('Unpublish', 'CommentPeriod', args.swagger.params.auth_payload.preferred_username, objId);
 
     await updateVisibleSurveys(CommentPeriod);
     
     return Actions.sendResponse(res, 200, unpublished);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -440,26 +442,27 @@ exports.protectedUnPublish = async function (args, res, next) {
 const publishSelectedSurveys = async function (surveyId) {
   const Survey = mongoose.model('Survey');
   const survey = await Survey.findOne({ _id: surveyId });
-  const publishedSurvey = await Actions.publish(survey);
+  await Actions.publish(survey);
 }
 
 const unpublishSelectedSurveys = async function (survey) {
-  const unpublishedSurvey = await Actions.unPublish(survey);
+  await Actions.unPublish(survey);
 }
 
 const updateVisibleSurveys = async function (CommentPeriod) {
-    const surveysToPublish = await CommentPeriod.find({_schemaName: 'CommentPeriod', read: 'public'})
-        .where("surveySelected")
-        .ne(null)
-        .select('surveySelected');
+  defaultLog.info('UPDATE VISIBLE SURVEYS');  
+  const surveysToPublish = await CommentPeriod.find({_schemaName: 'CommentPeriod', read: 'public'})
+      .where("surveySelected")
+      .ne(null)
+      .select('surveySelected');
 
-    const publishIDs = surveysToPublish.map(surveyObj => surveyObj.surveySelected)
+  const publishIDs = surveysToPublish.map(surveyObj => surveyObj.surveySelected)
 
-    const Survey = mongoose.model('Survey')
-    const surveysToUnpublish = await Survey.find({_schemaName: 'Survey'})
-        .where("_id")
-        .nin(publishIDs)
+  const Survey = mongoose.model('Survey')
+  const surveysToUnpublish = await Survey.find({_schemaName: 'Survey'})
+      .where("_id")
+      .nin(publishIDs)
 
-    publishIDs.forEach(surveyId => publishSelectedSurveys(surveyId))
-    surveysToUnpublish.forEach(survey => unpublishSelectedSurveys(survey))
+  publishIDs.forEach(surveyId => publishSelectedSurveys(surveyId))
+  surveysToUnpublish.forEach(survey => unpublishSelectedSurveys(survey))
 }

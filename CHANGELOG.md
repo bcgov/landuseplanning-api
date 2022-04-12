@@ -1,3 +1,6 @@
+### 1.4.0 April 11, 2022
+* Improve logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
+
 ### 1.3.0 March 23, 2022
 * Fix email subscribe confirmation bug [DESENG-96](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-96)
 * Add selective logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
