@@ -17,9 +17,7 @@ var generateExpArray = async function (field, roles) {
   var expArray = [];
   if (field && field != undefined) {
     var queryString = qs.parse(field);
-    defaultLog.info("queryString:", queryString);
     await Promise.all(Object.keys(queryString).map(async item => {
-      defaultLog.info("item:", item, queryString[item]);
       if (item === 'pcp') {
         await handlePCPItem(roles, expArray, queryString[item]);
       } else if (item === 'decisionDateStart' || item === 'decisionDateEnd') {
@@ -36,7 +34,6 @@ var generateExpArray = async function (field, roles) {
       }
     }));
   }
-  defaultLog.info("expArray:", expArray);
   return expArray;
 }
 
@@ -185,9 +182,6 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     ]
   };
 
-  defaultLog.info("modifier:", modifier);
-  defaultLog.info("match:", match);
-
   var sortingValue = {};
   sortingValue[sortField] = sortDirection;
 
@@ -214,8 +208,6 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     locale: 'en',
     strength: 2
   };
-
-  defaultLog.info('collation:', collation);
 
   if (collection === 'Document') {
     // Allow documents to be sorted by status based on publish existence
@@ -307,7 +299,6 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     }
   });
 
-  defaultLog.info('populate:', populate);
   if (populate === true && collection !== 'Project') {
     aggregation.push({
       "$lookup": {
@@ -360,10 +351,12 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
 }
 
 exports.publicGet = async function (args, res, next) {
+  defaultLog.info('PUBLIC SEARCH COLLECTION');
   executeQuery(args, res, next);
 };
 
 exports.protectedGet = function (args, res, next) {
+  defaultLog.info('PROTECTED SEARCH COLLECTION');
   executeQuery(args, res, next);
 };
 
@@ -405,12 +398,6 @@ var executeQuery = async function (args, res, next) {
       .then(permissions => (permissions));
   }
 
-  defaultLog.info("Searching Collection:", dataset);
-
-  defaultLog.info("******************************************************************");
-  defaultLog.info(roles);
-  defaultLog.info("******************************************************************");
-
   Utils.recordAction('Search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
 
   var sortDirection = undefined;
@@ -423,14 +410,7 @@ var executeQuery = async function (args, res, next) {
     sortingValue[sortField] = sortDirection;
   });
 
-  defaultLog.info("sortingValue:", sortingValue);
-  defaultLog.info("sortField:", sortField);
-  defaultLog.info("sortDirection:", sortDirection);
-
   if (dataset !== 'Item') {
-
-    defaultLog.info("Searching Collection:", dataset);
-    defaultLog.info("sortField:", sortField);
     var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
     if (dataset === 'Comment') {
       // Filter
@@ -445,7 +425,6 @@ var executeQuery = async function (args, res, next) {
   } else if (dataset === 'Item') {
 
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
-    defaultLog.info("ITEM GET", { _id: args.swagger.params._id.value })
     var data = await collectionObj.aggregate([
       {
         "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
@@ -496,11 +475,12 @@ var executeQuery = async function (args, res, next) {
     }
     return Actions.sendResponse(res, 200, data);
   } else {
-    defaultLog.error('Bad Request');
+    defaultLog.error('Bad Request. Could not complete search.');
     return Actions.sendResponse(res, 400, {});
   }
 };
 
-exports.protectedOptions = function (args, res, next) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('SEARCH PROTECTED OPTIONS');
   res.status(200).send();
 };

@@ -34,9 +34,6 @@ exports.protectedPost = async function (args, res, next) {
 
     var Vc = mongoose.model('Vc');
     var vc = new Vc(obj);
-    console.log("***************************************************");
-    console.log(vc);
-    console.log("***************************************************");
     vc._schemaName = 'Vc';
     vc.read = ['public', 'project-system-admin', 'staff'];
     vc.write = ['project-system-admin', 'staff'];

@@ -27,7 +27,8 @@ var getSanitizedFields = function (fields) {
   });
 }
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog('EMAIL SUBSCRIBE PROTECTED OPTIONS');
   res.status(200).send();
 }
 
@@ -35,9 +36,8 @@ exports.protectedOptions = function (args, res, rest) {
  * Public
  */
 
-exports.publicHead = async function (args, res, next) {
-  defaultLog.info('args.swagger.params:', args.swagger.operation['x-security-scopes']);
-
+exports.publicHead = async function (args, res) {
+  defaultLog.info('EMAIL SUBSCRIBE PUBLIC HEAD');
   const fields = getSanitizedFields(args.swagger.params.fields.value);
 
   // Set query type
@@ -53,23 +53,21 @@ exports.publicHead = async function (args, res, next) {
     null, // limit
     true); // count
   Utils.recordAction('Head', 'EmailSubscribe', 'public');
-  // /api/comment/ route, return 200 OK with 0 items if necessary
-  //if (!(args.swagger.params.period && args.swagger.params.period.value) || (data && data.length > 0)) {
-    res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
-    return Actions.sendResponse(res, 200, data);
-  //}
+  res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+  defaultLog('Got email subscribe headers:', data);
+  return Actions.sendResponse(res, 200, data);
 };
 
 // subscribe a new email address
-exports.unProtectedPost = async function (args, res, next) {
+exports.unProtectedPost = async function (args, res) {
+  defaultLog.info('EMAIL SUBCRIBE PUBLIC POST');
   var obj = args.swagger.params.emailSubscribe.value;
   defaultLog.info('Incoming new object:', obj);
-  var existingEmailId, existingProject, projectName, alreadyConfirmed, confirmKey;
+  var existingEmailId, projectName, alreadyConfirmed, confirmKey;
   var isDuplicate = false;
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
   var Project = mongoose.model('Project');
-  
 
   var emailSubscribe = new EmailSubscribe(obj);
   emailSubscribe._schemaName = 'EmailSubscribe';
@@ -95,7 +93,6 @@ exports.unProtectedPost = async function (args, res, next) {
   // if so either update with the new project or exit graacefully
   await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailSubscribe.email }, null, async function (err, entity) {
     if (entity) {
-      defaultLog.info('Findone entity', entity);
       existingEmailId = entity._id;
       existingProjectArray = entity.project;
       alreadyConfirmed = entity.confirmed;
@@ -116,7 +113,7 @@ exports.unProtectedPost = async function (args, res, next) {
     existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
     var es = await EmailSubscribe.update({ _id: existingEmailId }, { $set: { project: existingProjectArray } });
     Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
-    defaultLog.info('New project added to email subscribe:', es);
+    defaultLog.info('New project added to email subscribe:', es._id);
     // have they already confirmed their email?
     // if so, send the welcome for the new project
     if (alreadyConfirmed) {
@@ -134,18 +131,18 @@ exports.unProtectedPost = async function (args, res, next) {
   try {
     var c = await emailSubscribe.save();
     Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
-    defaultLog.info('Saved new EmailSubscribe object:', c);
+    defaultLog.info('Saved new EmailSubscribe object:', c._id);
     await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // confirm a new email address
-exports.unProtectedPut = async function (args, res, next) {
-  defaultLog.info('ES Put', args.swagger.params);
+exports.unProtectedPut = async function (args, res) {
+  defaultLog.info('EMAIL SUBSCRIBE PUT');
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value) || !(args.swagger.params.confirmKey && args.swagger.params.confirmKey.value)) {
@@ -171,7 +168,7 @@ exports.unProtectedPut = async function (args, res, next) {
       previousConfirmed = entity.confirmed;
       projectId = entity.project;
     } catch(e) {
-      defaultLog.error('Error:', e);
+      defaultLog.error(e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -212,18 +209,18 @@ exports.unProtectedPut = async function (args, res, next) {
     
     var es = await EmailSubscribe.update({ _id: emailId }, { $set: emailSubscribe });
     Utils.recordAction('Put', 'EmailSubscribe', 'public', emailId);
-    defaultLog.info('Email confirmed:', es);
+    defaultLog.info('Email confirmed:', emailId);
     await Email.sendWelcomeEmail(projectName, emailAddress);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
 // unsubscribe from updates
 exports.unProtectedDelete = async function (args, res, next) {
-  defaultLog.info('ES Delete', args.swagger.params);
+  defaultLog.info('EMAIL SUBSCRIBE PUBLIC DELETE');
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value)) {
@@ -241,7 +238,7 @@ exports.unProtectedDelete = async function (args, res, next) {
     try {
       emailId = entity._id;
     } catch (e) {
-      defaultLog.error('Error:', e);
+      defaultLog.error(e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -253,7 +250,7 @@ exports.unProtectedDelete = async function (args, res, next) {
     defaultLog.info('Email unsubscribed:', es);
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -264,9 +261,9 @@ exports.unProtectedDelete = async function (args, res, next) {
 
 // get list of subscribers
 
-exports.protectedHead = async function (args, res, next) {
-  var skip = null, limit = null;
-  var sort = {}, query = {};
+exports.protectedHead = async function (args, res) {
+  defaultLog.info('');
+  var query = {};
 
   if (args.swagger.params.email && args.swagger.params.email.value) {
     query = Utils.buildQuery('_id', args.swagger.params.email.value, query);
@@ -289,14 +286,16 @@ exports.protectedHead = async function (args, res, next) {
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.email && args.swagger.params.email.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
+    defaultLog.info('Got email subscribe headers: ', data);
     return Actions.sendResponse(res, 200, data);
   } else {
+    defaultLog.info('Could not retrieve email subscribe headers.');
     return Actions.sendResponse(res, 404, data);
   }
 };
 
 exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting email subscribers')
+  defaultLog.info('EMAIL SUBSCRIBE PROTECTED GET');
 
   var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
 
@@ -347,17 +346,18 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got email subscribers:', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Admin delete email
 exports.protectedDelete = async function (args, res, next) {
-  defaultLog.info('ES Delete', args.swagger.params);
+  defaultLog.info('EMAIL SUBSCRIBE PROTECTED DELETE');
 
   // verify that the email and key have been set in the request
   if (!(args.swagger.params.email && args.swagger.params.email.value)) {
+    defaultLog.info('Email not found');
     return Actions.sendResponse(res, 404, 'Not found');
   }
 
@@ -374,7 +374,7 @@ exports.protectedDelete = async function (args, res, next) {
       emailId = entity._id;
       projectList = entity.project;
     } catch (e) {
-      defaultLog.error('Error:', e);
+      defaultLog.error(e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -391,7 +391,7 @@ exports.protectedDelete = async function (args, res, next) {
         defaultLog.info('Email deleted from one project:', es);
         return Actions.sendResponse(res, 200, es);
       } catch (e) {
-        defaultLog.error('Error:', e);
+        defaultLog.error(e);
         return Actions.sendResponse(res, 400, e);
       }
     } else {
@@ -399,10 +399,10 @@ exports.protectedDelete = async function (args, res, next) {
       try {
         var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
         Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
-        defaultLog.info('Email deleted from system:', es);
+        defaultLog.info('Email deleted from system:', emailId);
         return Actions.sendResponse(res, 200, es);
       } catch (e) {
-        defaultLog.error('Error:', e);
+        defaultLog.error(e);
         return Actions.sendResponse(res, 400, e);
       }
     }
@@ -416,6 +416,7 @@ exports.protectedDelete = async function (args, res, next) {
 
 // Export all subscribers
 exports.protectedExport = async function (args, res) {
+  defaultLog.info('EMAIL SUBSCRIBE PROTECTED EXPORT');
   const projectId = args.swagger.params.projectId.value;
 
   const match = {
@@ -443,7 +444,6 @@ exports.protectedExport = async function (args, res) {
 
   data
     .pipe(transform(function (d) {
-      // let read = d.read;
       delete d.__v
       delete d._id;
       delete d._schemaName;

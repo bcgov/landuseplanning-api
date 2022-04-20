@@ -255,3 +255,10 @@ When developing, one may choose to silence the verbose log output to be able to 
 3. When you're finished, restore all logging to use `defaultLog`.
 
 The Winston loggers have been set up in config/loggers.js.
+
+API Controllers begin with a log output that states:
+- The model name
+- The level of access
+- The HTTP method
+
+So an example log for a controller would be "COMMENT PERIOD PROTECTED GET."

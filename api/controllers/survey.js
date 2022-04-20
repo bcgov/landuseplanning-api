@@ -20,14 +20,13 @@ var getSanitizedFields = function (fields) {
   });
 }
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('SURVEY PROTECTED OPTIONS');
   res.status(200).send();
 }
 
-
-
-exports.publicGet = async function (args, res, next) {
-  defaultLog.info('Public get for survey questions');
+exports.publicGet = async function (args, res) {
+  defaultLog.info('SURVEY PUBLIC GET');
 
   const CommentPeriod = mongoose.model('CommentPeriod');
 
@@ -48,22 +47,6 @@ exports.publicGet = async function (args, res, next) {
     })
   }
 
-  // sort
-  // if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-  //   args.swagger.params.sortBy.value.forEach(function (value) {
-  //     var order_by = value.charAt(0) == '-' ? -1 : 1;
-  //     var sort_by = value.slice(1);
-  //     // only accept certain fields
-  //     switch (sort_by) {
-  //       case 'dateStarted':
-  //       case 'dateCompleted':
-  //       case 'author':
-  //         sort[sort_by] = order_by;
-  //         break;
-  //     }
-  //   }, this);
-  // }
-
   // Set query type
   assignIn(query, { '_schemaName': 'Survey' });
 
@@ -80,21 +63,21 @@ exports.publicGet = async function (args, res, next) {
       false); // count
 
     Utils.recordAction('Get', 'Survey', 'public', args.swagger.params.surveyId && args.swagger.params.surveyId.value ? args.swagger.params.surveyId.value : null);
+    defaultLog.info('Got survey(s): ', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting survey(s)');
-
+exports.protectedGet = async function (args, res) {
+  defaultLog.info('SURVEY PROTECTED GET');
   var query = {}, sort = null, skip = null, limit = null, count = false;
 
   // Build match query if on survey route
   if (args.swagger.params.surveyId && args.swagger.params.surveyId.value) {
-    defaultLog.info('Survey id:', args.swagger.params.surveyId.value);
+    defaultLog.info('Get survey by id:', args.swagger.params.surveyId.value);
     query = Utils.buildQuery('_id', args.swagger.params.surveyId.value, query);
   }
 
@@ -152,16 +135,17 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got survey(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 //  Create a new Survey
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async function (args, res) {
+  defaultLog.info('SURVEY PROTECTED POST');
   var obj = args.swagger.params.survey.value;
 
-  defaultLog.info('Create new survey:', obj);
+  defaultLog.info('Incoming new survey:', obj);
 
   var Survey = mongoose.model('Survey');
 
@@ -181,16 +165,17 @@ exports.protectedPost = async function (args, res, next) {
   try {
     var sq = await survey.save();
     Utils.recordAction('Post', 'Survey', args.swagger.params.auth_payload.preferred_username, sq._id);
-    defaultLog.info('Saved new survey object:', sq);
+    defaultLog.info('Saved new survey object:', sq._id);
     return Actions.sendResponse(res, 200, sq);
   } catch (e) {
-    defaultLog.info('The error was:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing Survey
-exports.protectedPut = async function (args, res, next) {
+exports.protectedPut = async function (args, res) {
+  defaultLog.info('SURVEY PROTECTED PUT');
   var objId = args.swagger.params.surveyId.value;
   var obj = args.swagger.params.s.value;
   defaultLog.info('Put survey:', objId);
@@ -204,21 +189,20 @@ exports.protectedPut = async function (args, res, next) {
     questions: obj.questions
   };
 
-  defaultLog.info('Incoming updated object:', survey);
-
   try {
     var s = await Survey.update({ _id: objId }, { $set: survey });
     Utils.recordAction('Put', 'Survey', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Survey updated:', s);
+    defaultLog.info('Survey updated:', objId);
     return Actions.sendResponse(res, 200, s);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
 // //  Delete a survey
-exports.protectedDelete = async function (args, res, next) {
+exports.protectedDelete = async function (args, res) {
+  defaultLog.info('SURVEY PROTECTED DELETE');
   var objId = args.swagger.params.surveyId.value;
   defaultLog.info('Delete survey:', objId);
 
@@ -230,9 +214,10 @@ exports.protectedDelete = async function (args, res, next) {
     // Delete survey
     await Survey.findOneAndRemove({ _id: objId });
     Utils.recordAction('Delete', 'Survey', args.swagger.params.auth_payload.preferred_username, objId);
+    defaultLog.info('Survey deleted: ', objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };

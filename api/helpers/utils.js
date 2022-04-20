@@ -55,7 +55,7 @@ exports.avScan = function (buffer) {
               resolve(false);
             }
             else if (malicious) {
-              defaultLog.info('Malicious object FOUND');
+              defaultLog.warn('Malicious object FOUND');
               resolve(false);
             }
             else {
@@ -117,10 +117,6 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
       .then(permissions => permissions)
       .catch(error => error);
     }
-
-    defaultLog.info('populateProponent: ', populateProponent);
-    defaultLog.info('populateProjectLead: ', populateProjectLead);
-    defaultLog.info('populateProjectDirector: ', populateProjectDirector);
 
     // Fields we always return
     var defaultFields = ['_id',

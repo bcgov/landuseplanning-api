@@ -570,7 +570,8 @@ exports.protectedPublish = async function (args, res) {
   }
 };
 
-exports.protectedUnPublish = async function (args, res, next) {
+exports.protectedUnPublish = async function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED UNPUBLISH');
   var objId = args.swagger.params.docId.value;
   defaultLog.info("UnPublish Document:", objId);
 
@@ -578,23 +579,24 @@ exports.protectedUnPublish = async function (args, res, next) {
   try {
     var document = await Document.findOne({ _id: objId });
     if (document) {
-      defaultLog.info("Document:", document);
       document.eaoStatus = "Rejected";
       var unPublished = await Actions.unPublish(await document.save());
       Utils.recordAction('Unpublish', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
+      defaultLog.info("Published document:", objId);
       return Actions.sendResponse(res, 200, unPublished);
     } else {
       defaultLog.info("Couldn't find that document!");
       return Actions.sendResponse(res, 404, e);
     }
   } catch (e) {
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing document
-exports.protectedPut = async function (args, res, next) {
-  console.log("args:", args.swagger.params);
+exports.protectedPut = async function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED PUT');
   var objId = args.swagger.params.docId.value;
   var obj = {};
   defaultLog.info('Put document:', objId);
@@ -617,46 +619,38 @@ exports.protectedPut = async function (args, res, next) {
   } else if (args.swagger.params.eaoStatus.value === 'Rejected') {
     obj.read = ['staff', 'sysadmin'];
   }
-
-  // TODO Not Yet
-  // obj.labels = JSON.parse(args.swagger.params.labels.value);
-
-  defaultLog.info("ObjectID:", objId);
-
-  // Update who did this?
-
   var Document = mongoose.model('Document');
 
   try {
     var doc = await Document.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true });
     if (doc) {
       Utils.recordAction('put', 'document', args.swagger.params.auth_payload.preferred_username, objId);
-      defaultLog.info('Document updated:', doc);
+      defaultLog.info('Document updated:', objId);
       return Actions.sendResponse(res, 200, doc);
     } else {
       defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
 
 //  Delete a Document
-exports.protectedDelete = async function (args, res, next) {
+exports.protectedDelete = async function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED DELETE');
   var objId = args.swagger.params.docId.value;
   defaultLog.info("Delete Document:", objId);
 
   var Document = require('mongoose').model('Document');
   try {
     var doc = await Document.findOneAndRemove({ _id: objId });
-    console.log('deleting document', doc);
     await MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
     Utils.recordAction('Delete', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    console.log("Error:", e);
+    defaultLog.error("Error:", e);
     return Actions.sendResponse(res, 400, e);
   }
 };

@@ -17,12 +17,13 @@ const getSanitizedFields = (fields) => {
   });
 };
 
-exports.protectedOptions = function (args, res, rest) {
+exports.protectedOptions = function (args, res) {
+  defaultLog.info('USER PROTECTED OPTIONS');
   res.status(200).send();
 }
 
-exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('Getting users.');
+exports.protectedGet = async function (args, res) {
+  defaultLog.info('USER PROTECTED GET');
 
   let query = {}, sort = {}, skip = null, limit = null, count = false;
 
@@ -49,13 +50,14 @@ exports.protectedGet = async function (args, res, next) {
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 //  Create a new user
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async function (args, res) {
+  defaultLog.info('USER PROTECTED POST');
   var obj = args.swagger.params.user.value;
   defaultLog.info("Incoming new object:", obj);
 
@@ -77,19 +79,20 @@ exports.protectedPost = async function (args, res, next) {
   try {
     var u = await user.save();
     Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, u._id);
-    defaultLog.info('Saved new user object:', u);
-    return Actions.sendResponse(res, 200, u);
+    defaultLog.info('Saved new user:', u._id);
+    return Actions.sendResponse(res, 200, u._id);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
 // Update an existing user
-exports.protectedPut = async function (args, res, next) {
+exports.protectedPut = async function (args, res) {
+  defaultLog.info('USER PROTECTED PUT');
   var objId = args.swagger.params.userId.value;
   var obj = args.swagger.params.user.value;
-  defaultLog.info("ObjectID:", args.swagger.params.userId.value);
+  defaultLog.info("Put user:", args.swagger.params.userId.value);
 
   var User = require('mongoose').model('User');
 
@@ -116,15 +119,13 @@ exports.protectedPut = async function (args, res, next) {
     notes: obj.notes ? obj.notes : ''
   }
 
-  defaultLog.info("Incoming updated object:", user);
-
   try {
     var u = await User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
     Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('Organization updated:', u);
+    defaultLog.info('User updated:', u._id);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -154,6 +155,7 @@ const removeProjectPermission = async (user, projId) => {
 }
 
 exports.protectedAddPermission = (args, res) => {
+  defaultLog.info('USER PROTECTED ADD PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
   defaultLog.info("Add project permission to user:", userId);
@@ -165,14 +167,15 @@ exports.protectedAddPermission = (args, res) => {
     if (users) {
       users.forEach(user => {
         if (user._id.equals(userId)) {
-          defaultLog.info("found user:", user);
           addProjectPermission(user, projId)
           .then((permissionAdded) => {
             Utils.recordAction('Add Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+            defaultLog.info('Permission added to user', userId);
             // Return all users to be able to update list of users in Permissions tab.
             return Actions.sendResponse(res, 200, users);
           })
           .catch((err) => {
+            defaultLog.error(err);
             return Actions.sendResponse(res, 500, err);
           });
         }
@@ -185,6 +188,7 @@ exports.protectedAddPermission = (args, res) => {
 };
 
 exports.protectedRemovePermission = function (args, res) {
+  defaultLog.info('USER PROTECTED REMOVE PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
   defaultLog.info("Remove project permission from user:", userId);
@@ -196,14 +200,15 @@ exports.protectedRemovePermission = function (args, res) {
     if (users) {
       users.forEach(user => {
         if (user._id.equals(userId)) {
-          defaultLog.info("found user:", user);
           removeProjectPermission(user, projId)
           .then((permissionAdded) => {
             Utils.recordAction('Remove Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+            defaultLog.info('Permission removed from user', userId);
             // Return all users to be able to update list of users in Permissions tab.
             return Actions.sendResponse(res, 200, users);
           })
           .catch((err) => {
+            defaultLog.error(err);
             return Actions.sendResponse(res, 500, err);
           });
         }

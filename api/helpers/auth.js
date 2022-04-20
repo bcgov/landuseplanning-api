@@ -13,7 +13,7 @@ var winston         = require('winston');
 var defaultLog      = winston.loggers.get('defaultLog');
 
 exports.verifyToken = function(req, authOrSecDef, token, callback) {
-  defaultLog.info('verifying token', token);
+  defaultLog.info('verifying authentication token', token);
   // scopes/roles defined for the current endpoint
   var currentScopes = req.swagger.operation['x-security-scopes'];
   function sendError() {
@@ -67,9 +67,6 @@ function _verifySecret(currentScopes, tokenString, secret, req, callback, sendEr
     verificationError,
     decodedToken
   ) {
-    // defaultLog.info("verificationError:", verificationError);
-    // defaultLog.info("decodedToken:", decodedToken);
-
     // check if the JWT was verified correctly
     if (verificationError == null &&
       // Array.isArray(currentScopes) &&
@@ -77,12 +74,7 @@ function _verifySecret(currentScopes, tokenString, secret, req, callback, sendEr
       decodedToken.realm_access.roles
     ) {
       defaultLog.info("JWT decoded:", decodedToken);
-
-      // check if the role is valid for this endpoint
-      // var roleMatch = currentScopes.some(r=> decodedToken.realm_access.roles.indexOf(r) >= 0)
-      // defaultLog.info("currentScopes", currentScopes);
       defaultLog.info("decodedToken.realm_access.roles", decodedToken.realm_access.roles);
-      // defaultLog.info("role match", roleMatch);
 
       // check if the dissuer matches
       var issuerMatch = decodedToken.iss == ISSUER;
@@ -97,12 +89,12 @@ function _verifySecret(currentScopes, tokenString, secret, req, callback, sendEr
         defaultLog.info("JWT Verified.");
         return callback(null);
       } else {
-        defaultLog.info("JWT Role/Issuer mismatch.");
+        defaultLog.error("JWT Role/Issuer mismatch.");
         return callback(sendError());
       }
     } else {
       // return the error in the callback if the JWT was not verified
-      defaultLog.info("JWT Verification Err:", verificationError);
+      defaultLog.error("JWT Verification Err:", verificationError);
       return callback(sendError());
     }
   });

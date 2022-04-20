@@ -39,7 +39,6 @@ module.exports.configureAppLogging = () => {
             new transports.Console({
             level: 'info',
             format: combine(
-                colorize(),
                 timestamp(new Date().toLocaleString("en-US", {timeZone: "America/Vancouver"})),
                 logFormat
             )
