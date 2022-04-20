@@ -100,7 +100,7 @@ exports.publicGet = async function (args, res) {
     }
 
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -134,7 +134,7 @@ exports.protectedGet = async function (args, res) {
     defaultLog.info('Got recent activities', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -195,7 +195,7 @@ exports.protectedPost = async function (args, res) {
     defaultLog.info('Saved new RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -222,7 +222,7 @@ exports.protectedPut = async function (args, res) {
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }

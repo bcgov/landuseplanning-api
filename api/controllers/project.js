@@ -606,7 +606,7 @@ exports.protectedAddPins = async function (args, res) {
     Utils.recordAction('Add', 'Pin', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, doc);
   } else {
-    defaultLog.info("Error adding project pins");
+    defaultLog.error("Error adding project pins");
     return Actions.sendResponse(res, 404, {});
   }
 }

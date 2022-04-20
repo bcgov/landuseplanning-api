@@ -374,7 +374,7 @@ exports.protectedDelete = async function (args, res, next) {
       emailId = entity._id;
       projectList = entity.project;
     } catch (e) {
-      defaultLog.error('Error:', e);
+      defaultLog.error(e);
       return Actions.sendResponse(res, 404, e);
     }
   });
@@ -391,7 +391,7 @@ exports.protectedDelete = async function (args, res, next) {
         defaultLog.info('Email deleted from one project:', es);
         return Actions.sendResponse(res, 200, es);
       } catch (e) {
-        defaultLog.error('Error:', e);
+        defaultLog.error(e);
         return Actions.sendResponse(res, 400, e);
       }
     } else {

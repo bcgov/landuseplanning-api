@@ -632,7 +632,7 @@ exports.protectedPut = async function (args, res) {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }

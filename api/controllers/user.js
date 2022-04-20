@@ -50,7 +50,7 @@ exports.protectedGet = async function (args, res) {
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -82,7 +82,7 @@ exports.protectedPost = async function (args, res) {
     defaultLog.info('Saved new user:', u._id);
     return Actions.sendResponse(res, 200, u._id);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -125,7 +125,7 @@ exports.protectedPut = async function (args, res) {
     defaultLog.info('User updated:', u._id);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }

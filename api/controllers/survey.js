@@ -66,7 +66,7 @@ exports.publicGet = async function (args, res) {
     defaultLog.info('Got survey(s): ', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -135,7 +135,7 @@ exports.protectedGet = async function (args, res) {
     defaultLog.info('Got survey(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -195,7 +195,7 @@ exports.protectedPut = async function (args, res) {
     defaultLog.info('Survey updated:', objId);
     return Actions.sendResponse(res, 200, s);
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -217,7 +217,7 @@ exports.protectedDelete = async function (args, res) {
     defaultLog.info('Survey deleted: ', objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
