@@ -3184,6 +3184,11 @@ paths:
           items:
             type: string
             enum: *documentFields
+        - in: query
+          name: documentSource
+          type: string
+          required: false
+          description: "The type of document(shapefile, banner image, etc.)"
       responses:
         "200":
           description: "Success"

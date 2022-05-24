@@ -1,3 +1,6 @@
+### 1.5.0 May 24, 2022
+* Add ability to retrieve documents by documentSource [DESENG-4](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-4)
+
 ### 1.4.0 April 11, 2022
 * Improve logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
 

@@ -1,5 +1,5 @@
 var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
+var defaultLog = require('winston').loggers.get('devLog');
 var mongoose = require('mongoose');
 var mime = require('mime-types');
 var Actions = require('../helpers/actions');
@@ -57,9 +57,12 @@ exports.publicGet = async function (args, res) {
   } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
   }
+
   if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
+
+  _.assignIn(query, { "documentSource": args.swagger.params.documentSource.value });
 
   // Set query type
   _.assignIn(query, { "_schemaName": "Document" });
