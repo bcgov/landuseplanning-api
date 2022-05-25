@@ -1,3 +1,6 @@
+### 1.5.1 May 25, 2022
+* Remove unused nconf package [DESENG-135](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-135)
+
 ### 1.5.0 May 24, 2022
 * Add ability to retrieve documents by documentSource [DESENG-4](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-4)
 
