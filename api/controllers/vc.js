@@ -35,9 +35,9 @@ exports.protectedPost = async function (args, res, next) {
     var Vc = mongoose.model('Vc');
     var vc = new Vc(obj);
     vc._schemaName = 'Vc';
-    vc.read = ['public', 'project-system-admin', 'staff'];
-    vc.write = ['project-system-admin', 'staff'];
-    vc.delete = ['project-system-admin', 'staff'];
+    vc.read = ['public', 'sysadmin', 'staff'];
+    vc.write = ['sysadmin', 'staff'];
+    vc.delete = ['sysadmin', 'staff'];
 
     // Define security tag defaults
     var theVc = await vc.save()
@@ -70,7 +70,7 @@ exports.protectedGet = async function (args, res, next) {
     _.assignIn(query, { "_schemaName": "Vc" });
 
     var data = await Utils.runDataQuery('Vc',
-        args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.client_roles,
         query,
         getSanitizedFields(args.swagger.params.fields.value), // Fields
         null, // sort warmup

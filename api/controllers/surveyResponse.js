@@ -117,7 +117,7 @@ exports.protectedGet = async function (args, res) {
   
     try {
       var data = await Utils.runDataQuery('SurveyResponse',
-        args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.client_roles,
         args.swagger.params.auth_payload.sub,
         query,
         getSanitizedFields(args.swagger.params.fields.value), // Fields

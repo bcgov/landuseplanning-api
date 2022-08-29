@@ -768,7 +768,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
         - name: project
@@ -794,7 +794,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: query
           name: fields
@@ -1056,7 +1056,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: projId
           in: path
@@ -1142,7 +1142,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: projId
           in: path
@@ -1172,7 +1172,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: projId
           in: path
@@ -1225,7 +1225,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         # TODO: Define publish roles.
       parameters:
         - name: projId
@@ -1274,7 +1274,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         # TODO: Define publish roles.
       parameters:
         - name: projId
@@ -1429,7 +1429,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - staff
         - sysadmin
       parameters:
@@ -1489,7 +1489,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
           - name: projId
@@ -1545,7 +1545,7 @@ paths:
     #   x-security-scopes:
     #     - staff
     #     - sysadmin
-    #     - project-system-admin
+    #     - sysadmin
     #   parameters:
     #     - name: projId
     #       in: path
@@ -1588,7 +1588,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - staff
         - sysadmin
       parameters:
@@ -1648,7 +1648,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
         - staff
       parameters:
@@ -1680,7 +1680,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - staff
         - sysadmin
       parameters:
@@ -1745,7 +1745,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - staff
         - sysadmin
       parameters:
@@ -1791,7 +1791,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
         - staff
       parameters:
@@ -1856,7 +1856,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
         - staff
       parameters:
@@ -2306,7 +2306,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
         - name: recentActivity
@@ -2332,7 +2332,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
           - name: applicationID
@@ -2416,7 +2416,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
         - name: recentActivityId
@@ -2447,7 +2447,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
         - name: recentActivityId
@@ -2723,7 +2723,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       consumes:
         - multipart/form-data
       parameters:
@@ -2830,7 +2830,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       consumes:
         - application/json
       parameters:
@@ -3409,7 +3409,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: orgId
           in: path
@@ -3443,7 +3443,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: orgId
           in: path
@@ -3496,7 +3496,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         # TODO: Define publish roles.
       parameters:
         - name: orgId
@@ -3545,7 +3545,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         # TODO: Define publish roles.
       parameters:
         - name: orgId
@@ -3728,7 +3728,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: user
           in: body
@@ -3744,7 +3744,7 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /user/{userId}:
+  /user/{userId}/{queryBy}:
     x-swagger-router-controller: user
     options:
       tags:
@@ -3756,6 +3756,11 @@ paths:
         - name: userId
           in: path
           description: "ID of user to get"
+          required: true
+          type: string
+        - name: queryBy
+          in: path
+          description: "Specify DB field to search by(_id, sub, email, etc.)"
           required: true
           type: string
       responses:
@@ -3782,6 +3787,11 @@ paths:
         - name: userId
           in: path
           description: "ID of user to get"
+          required: true
+          type: string
+        - name: queryBy
+          in: path
+          description: "Specify DB field to search by(_id, sub, email, etc.)"
           required: true
           type: string
         - in: query
@@ -3811,11 +3821,16 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: userId
           in: path
           description: "ID of user to update"
+          required: true
+          type: string
+        - name: queryBy
+          in: path
+          description: "Specify DB field to search by(_id, sub, email, etc.)"
           required: true
           type: string
         - name: user
@@ -5108,7 +5123,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: query
           name: _id
@@ -5304,7 +5319,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
         - sysadmin
       parameters:
         - in: query
@@ -6218,7 +6233,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: query
           name: pageNum
@@ -6288,7 +6303,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: topicId
           in: path
@@ -6322,7 +6337,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       consumes:
         - application/json
       parameters:
@@ -6354,7 +6369,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: topicId
           in: path
@@ -6398,7 +6413,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: vc
           in: body
@@ -6423,7 +6438,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: query
           name: projectId
@@ -6498,7 +6513,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: vcId
           in: path
@@ -6532,7 +6547,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       consumes:
         - application/json
       parameters:
@@ -6564,7 +6579,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - name: vcId
           in: path
@@ -6728,7 +6743,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: query
           name: fields
@@ -6846,7 +6861,7 @@ paths:
       security:
         - Bearer: []
       x-security-scopes:
-        - project-system-admin
+        - sysadmin
       parameters:
         - in: path
           name: email

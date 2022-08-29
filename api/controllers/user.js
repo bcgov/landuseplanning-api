@@ -1,6 +1,6 @@
 var auth = require("../helpers/auth");
 var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
+var defaultLog = require('winston').loggers.get('devLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
@@ -27,9 +27,13 @@ exports.protectedGet = async function (args, res) {
 
   let query = {}, sort = {}, skip = null, limit = null, count = false;
 
-  // Build match query if on userId route. Query by user sub so as to only get real users(not Contacts).
+  // Build match query if on userId route. Query by user guid so as to only get real users(not Contacts).
   if (args.swagger.params.userId && args.swagger.params.userId.value) {
-    _.assignIn(query, { sub: args.swagger.params.userId.value });
+    let queryBy = '_id';
+    if (args.swagger.params.queryBy && args.swagger.params.queryBy.value) {
+      queryBy = args.swagger.params.queryBy.value;
+    }
+    _.assignIn(query, { [queryBy]: args.swagger.params.userId.value });
   }
 
   // Set query type
@@ -37,7 +41,7 @@ exports.protectedGet = async function (args, res) {
 
   try {
     const data = await Utils.runDataQuery('User',
-      args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.client_roles,
       false, // User sub not needed here as results should only get returned to 'create-projects' users.
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
@@ -63,7 +67,6 @@ exports.protectedPost = async function (args, res) {
 
   var User = mongoose.model('User');
   var user = new User({
-    sub: obj.sub,
     firstName: obj.firstName,
     lastName: obj.lastName,
     displayName: obj.displayName,
@@ -97,6 +100,7 @@ exports.protectedPut = async function (args, res) {
   var User = require('mongoose').model('User');
 
   var user = {
+    idir_user_guid: obj.idir_user_guid ? obj.idir_user_guid : '',
     firstName: obj.firstName ? obj.firstName : '',
     middleName: obj.middleName ? obj.middleName : '',
     lastName: obj.lastName ? obj.lastName : '',

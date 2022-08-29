@@ -1,5 +1,5 @@
 const { assignIn, remove, each, indexOf } = require('lodash');
-const defaultLog = require('winston').loggers.get('defaultLog');
+const defaultLog = require('winston').loggers.get('devLog');
 const mongoose = require('mongoose');
 const qs = require('qs');
 const Actions = require('../helpers/actions');
@@ -101,6 +101,7 @@ exports.publicHead = async (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (error) {
+      defaultLog.error('Error getting project head', error);
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
@@ -168,7 +169,7 @@ exports.publicGet = async (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (error) {
-      defaultLog.info('Error getting projects.');
+      defaultLog.info('Error getting projects.', error);
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
@@ -206,7 +207,7 @@ exports.publicGet = async (args, res) => {
     defaultLog.info('Got projects: ', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Error getting projects', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -267,7 +268,7 @@ exports.protectedGet = async (args, res) => {
       count = true
 
     } catch (error) {
-      defaultLog.error(error);
+      defaultLog.error('Error getting projects', error);
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
@@ -281,10 +282,12 @@ exports.protectedGet = async (args, res) => {
 
   defaultLog.info("PIPELINE", commentPeriodPipeline);
 
+  defaultLog.info("the auth", args.swagger.params)
+
   try {
     var data = await Utils.runDataQuery('Project',
-      args.swagger.params.auth_payload.realm_access.roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.client_roles,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       fields, // Fields
       null, // sort warmup
@@ -302,7 +305,7 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Error getting projects', e);
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -329,6 +332,7 @@ exports.protectedHead = (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (error) {
+      defaultLog.error('Error getting project head', error);
       return Actions.sendResponse(res, 400, { error: error.message });
     }
   }
@@ -387,7 +391,7 @@ exports.protectedDelete = (args, res) => {
           return Actions.sendResponse(res, 200, deleted);
         }, function (err) {
           // Error
-          defaultLog.error(err);
+          defaultLog.error('Error deleting projects', err);
           return Actions.sendResponse(res, 400, err);
         });
     } else {
@@ -427,7 +431,7 @@ exports.protectedPost = (args, res) => {
       return Actions.sendResponse(res, 200, theProject);
     })
     .catch(function (err) {
-      defaultLog.error(err);
+      defaultLog.error('Error adding project(s)', err);
       return Actions.sendResponse(res, 400, err);
     });
 };
@@ -569,7 +573,7 @@ exports.publicPinGet = async function (args, res) {
 exports.protectedPinGet = async function (args, res) {
   defaultLog.info('PROJECT PIN PROTECTED GET');
   handleGetPins(args.swagger.params.projId,
-    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.client_roles,
     args.swagger.params.sortBy,
     args.swagger.params.pageSize,
     args.swagger.params.pageNum,
@@ -669,7 +673,7 @@ exports.protectedAddGroupMembers = async function (args, res, next) {
 
 exports.protectedGroupGetMembers = async function (args, res, next) {
   handleGetGroupMembers(args.swagger.params.groupId,
-    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.client_roles,
     args.swagger.params.sortBy,
     args.swagger.params.pageSize,
     args.swagger.params.pageNum,
@@ -765,7 +769,7 @@ exports.protectedAddGroup = async function (args, res, next) {
 
   var Group = mongoose.model('Group');
   var doc = new Group({ project: mongoose.Types.ObjectId(objId), name: groupName.group });
-  ['project-system-admin', 'sysadmin', 'staff'].forEach(item => {
+  ['sysadmin', 'sysadmin', 'staff'].forEach(item => {
     doc.read.push(item); 
     doc.write.push(item); 
     doc.delete.push(item);

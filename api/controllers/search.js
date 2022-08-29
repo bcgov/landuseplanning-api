@@ -1,5 +1,5 @@
 var { map, each } = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
+var defaultLog = require('winston').loggers.get('devLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
@@ -390,11 +390,11 @@ var executeQuery = async function (args, res, next) {
     projectKey = '$_id';
   }
 
-  var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.realm_access.roles : ['public'];
+  var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.client_roles : ['public'];
 
   // Get user project permissions array.
-  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.sub) {
-    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.sub)
+  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.idir_user_guid) {
+    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.idir_user_guid)
       .then(permissions => (permissions));
   }
 

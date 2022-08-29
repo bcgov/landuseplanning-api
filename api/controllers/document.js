@@ -197,7 +197,7 @@ exports.protectedHead = function (args, res) {
   assignIn(query, { "_schemaName": "Document" });
 
   Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.client_roles,
     args.swagger.params.auth_payload.sub,
     query,
     ['_id',
@@ -240,7 +240,7 @@ exports.protectedGet = async function (args, res, next) {
 
   try {
     var data = await Utils.runDataQuery('Document',
-      args.swagger.params.auth_payload.realm_access.roles,
+      args.swagger.params.auth_payload.client_roles,
       args.swagger.params.auth_payload.sub,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
@@ -324,11 +324,11 @@ exports.publicDownload = function (args, res) {
 exports.protectedDownload = function (args, res) {
   defaultLog.info('DOCUMENT PROTECTED DOWNLOAD');
   var self = this;
-  self.scopes = args.swagger.params.auth_payload.realm_access.roles;
+  self.scopes = args.swagger.params.auth_payload.client_roles;
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
 
   // Build match query if on docId route
   var query = {};
@@ -339,7 +339,7 @@ exports.protectedDownload = function (args, res) {
   assignIn(query, { "_schemaName": "Document" });
 
   Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.client_roles,
     args.swagger.params.auth_payload.sub,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
@@ -384,11 +384,11 @@ exports.protectedDownload = function (args, res) {
 
 exports.protectedOpen = function (args, res, next) {
   var self = this;
-  self.scopes = args.swagger.params.auth_payload.realm_access.roles;
+  self.scopes = args.swagger.params.auth_payload.client_roles;
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.realm_access.roles);
+  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
 
   // Build match query if on docId route
   var query = {};
@@ -399,7 +399,7 @@ exports.protectedOpen = function (args, res, next) {
   assignIn(query, { "_schemaName": "Document" });
 
   Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.realm_access.roles,
+    args.swagger.params.auth_payload.client_roles,
     args.swagger.params.auth_payload.sub,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields

@@ -13,7 +13,7 @@ module.exports = require('../models')('EmailSubscribe', {
     }},
 
     // permissions
-    read: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-    write: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-    delete: [{ type: String, trim: true, default: '["project-system-admin"]' }]
+    read: [{ type: String, trim: true, default: '["sysadmin"]' }],
+    write: [{ type: String, trim: true, default: '["sysadmin"]' }],
+    delete: [{ type: String, trim: true, default: '["sysadmin"]' }]
 }, 'lup');

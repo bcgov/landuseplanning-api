@@ -12,6 +12,6 @@ module.exports = require('../models')('Vc', {
 
     // Permissions
     read: [{ type: String, trim: true, default: '["public"]' }],
-    write: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-    delete: [{ type: String, trim: true, default: '["project-system-admin"]' }]
+    write: [{ type: String, trim: true, default: '["sysadmin"]' }],
+    delete: [{ type: String, trim: true, default: '["sysadmin"]' }]
 }, 'lup');
