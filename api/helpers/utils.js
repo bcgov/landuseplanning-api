@@ -7,14 +7,18 @@ var _serviceHost = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
 var _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
 var MAX_LIMIT = 1000;
 var DEFAULT_PAGESIZE = 100;
-var defaultLog = require('winston').loggers.get('devLog');
+var defaultLog = require('winston').loggers.get('defaultLog');
 
 const getUserProjectPermissions = async function (userGuid) {
+  let projectPermissions = [];
   const User = mongoose.model('User');
   const user = await User.findOne({ idir_user_guid: userGuid }).exec();
 
-  console.log('the user tho', user)
-  return user.projectPermissions;
+  if (user && "projectPermissions" in user) {
+    projectPermissions = user.projectPermissions;
+  }
+
+  return projectPermissions;
 }
 
 exports.getUserProjectPermissions = getUserProjectPermissions;

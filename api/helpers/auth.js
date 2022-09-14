@@ -1,18 +1,14 @@
 'use strict';
 
-var jwt = require('jsonwebtoken');
+const jwt = require('jsonwebtoken');
 const jwksClient = require('jwks-rsa');
-
-// Old keycloak endpoints
 var ISSUER = process.env.SSO_ISSUER || "https://dev.loginproxy.gov.bc.ca/auth/realms/standard";
 var JWKSURI = process.env.SSO_JWKSURI || "https://dev.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/certs";
-// var ISSUER = process.env.SSO_ISSUER || "https://oidc.gov.bc.ca/auth/realms/aaoozhcp";
-// var JWKSURI = process.env.SSO_JWKSURI || "https://oidc.gov.bc.ca/auth/realms/aaoozhcp/protocol/openid-connect/certs";
 var JWT_SIGN_EXPIRY = process.env.JWT_SIGN_EXPIRY || "1440"; // 24 hours in minutes.
 var SECRET          = process.env.SECRET || "defaultSecret";
 var KEYCLOAK_ENABLED = process.env.KEYCLOAK_ENABLED || "true";
 var winston         = require('winston');
-var defaultLog      = winston.loggers.get('devLog');
+var defaultLog      = winston.loggers.get('defaultLog');
 
 exports.verifyToken = function(req, authOrSecDef, token, callback) {
   defaultLog.info('verifying authentication token', token);
@@ -44,7 +40,6 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
           callback(sendError());
         } else {
           const signingKey = key.publicKey || key.rsaPublicKey;
-          console.log('got signing key', signingKey)
           _verifySecret(currentScopes, tokenString, signingKey, req, callback, sendError);
         }
       });
@@ -67,7 +62,6 @@ exports.verifyToken = function(req, authOrSecDef, token, callback) {
 function _verifySecret(currentScopes, tokenString, secret, req, callback, sendError) {
   var decoded = jwt.decode(tokenString, {complete: true});
 
-  console.log('the decoded token', decoded)
   jwt.verify(tokenString, secret, function (
     verificationError,
     decodedToken

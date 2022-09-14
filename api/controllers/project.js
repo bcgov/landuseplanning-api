@@ -1,5 +1,5 @@
 const { assignIn, remove, each, indexOf } = require('lodash');
-const defaultLog = require('winston').loggers.get('devLog');
+const defaultLog = require('winston').loggers.get('defaultLog');
 const mongoose = require('mongoose');
 const qs = require('qs');
 const Actions = require('../helpers/actions');
@@ -287,7 +287,7 @@ exports.protectedGet = async (args, res) => {
   try {
     var data = await Utils.runDataQuery('Project',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.idir_user_guid,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       fields, // Fields
       null, // sort warmup

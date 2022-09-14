@@ -134,7 +134,7 @@ exports.protectedHead = async function (args, res) {
   try {
     var data = await Utils.runDataQuery('CommentPeriod',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       ['_id', 'read', 'write', 'delete'], // Fields
       null, // sort warmup
@@ -189,7 +189,7 @@ exports.protectedSummary = async function (args, res) {
       _.assignIn(optionQuery, { 'eaoStatus': item, period: mongoose.Types.ObjectId(args.swagger.params.commentPeriodId.value) });
       var res = await Utils.runDataQuery('CommentPeriod',
         args.swagger.params.auth_payload.client_roles,
-        args.swagger.params.auth_payload.sub,
+        args.swagger.params.auth_payload.idirUserGuid,
         optionQuery,
         ['_id', 'read', 'write', 'delete'], // Fields
         null, // sort warmup
@@ -255,7 +255,7 @@ exports.protectedGet = async function (args, res) {
   try {
     var data = await Utils.runDataQuery('CommentPeriod',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,   // sort warmup

@@ -1,6 +1,6 @@
 var auth = require("../helpers/auth");
 var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('devLog');
+var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
@@ -27,13 +27,9 @@ exports.protectedGet = async function (args, res) {
 
   let query = {}, sort = {}, skip = null, limit = null, count = false;
 
-  // Build match query if on userId route. Query by user guid so as to only get real users(not Contacts).
+  // Build match query if on userId route. Query by user sub so as to only get real users(not Contacts).
   if (args.swagger.params.userId && args.swagger.params.userId.value) {
-    let queryBy = '_id';
-    if (args.swagger.params.queryBy && args.swagger.params.queryBy.value) {
-      queryBy = args.swagger.params.queryBy.value;
-    }
-    _.assignIn(query, { [queryBy]: args.swagger.params.userId.value });
+    _.assignIn(query, { sub: args.swagger.params.userId.value });
   }
 
   // Set query type
@@ -42,7 +38,40 @@ exports.protectedGet = async function (args, res) {
   try {
     const data = await Utils.runDataQuery('User',
       args.swagger.params.auth_payload.client_roles,
-      false, // User sub not needed here as results should only get returned to 'create-projects' users.
+      false, // User GUID not needed here as results should only get returned to 'create-projects' users.
+      query,
+      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      null, // sort warmup
+      sort, // sort
+      skip, // skip
+      limit, // limit
+      count); // count
+    Utils.recordAction('Get', 'User', args.swagger.params.auth_payload.preferred_username, data[0] && data[0]._id ? data[0]._id.toString() : null);
+    defaultLog.info('Got user(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+};
+
+exports.protectedGetByEmail = async function (args, res) {
+  defaultLog.info('USER PROTECTED GET BY EMAIL', args.swagger.params.userEmail);
+
+  let query = {}, sort = {}, skip = null, limit = null, count = false;
+
+  // Build match query if on userId route. Query by user guid so as to only get real users(not Contacts).
+  if (args.swagger.params.userEmail && args.swagger.params.userEmail.value) {
+    _.assignIn(query, { email: args.swagger.params.userEmail.value });
+  }
+
+  // Set query type
+  _.assignIn(query, { "_schemaName": "User" });
+
+  try {
+    const data = await Utils.runDataQuery('User',
+      args.swagger.params.auth_payload.client_roles,
+      false, // User GUID not needed here as results should only get returned to 'create-projects' users.
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -71,6 +100,7 @@ exports.protectedPost = async function (args, res) {
     lastName: obj.lastName,
     displayName: obj.displayName,
     email: obj.email,
+    idirUserGuid: obj.idirUserGuid,
     read: ['staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
     delete: ['staff', 'sysadmin']
@@ -135,6 +165,7 @@ exports.protectedPut = async function (args, res) {
 }
 
 const addProjectPermission = async (user, projId) => {
+  defaultLog.info('add project permission', user, projId)
   return new Promise((resolve, reject) => {
     if (!user.projectPermissions.includes(projId)) {
       user.projectPermissions.push(projId);

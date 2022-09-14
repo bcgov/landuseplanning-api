@@ -1,5 +1,5 @@
 const { remove, indexOf, assignIn } = require('lodash');
-var defaultLog = require('winston').loggers.get('devLog');
+var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
 var mime = require('mime-types');
 var Actions = require('../helpers/actions');
@@ -198,7 +198,7 @@ exports.protectedHead = function (args, res) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.sub,
+    args.swagger.params.auth_payload.idirUserGuid,
     query,
     ['_id',
       'read'], // Fields
@@ -241,7 +241,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Document',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -340,7 +340,7 @@ exports.protectedDownload = function (args, res) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.sub,
+    args.swagger.params.auth_payload.idirUserGuid,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -400,7 +400,7 @@ exports.protectedOpen = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.sub,
+    args.swagger.params.auth_payload.idirUserGuid,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup

@@ -334,7 +334,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('EmailSubscribe',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,

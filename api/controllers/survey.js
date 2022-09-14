@@ -122,7 +122,7 @@ exports.protectedGet = async function (args, res) {
   try {
     var data = await Utils.runDataQuery('Survey',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,   // sort warmup

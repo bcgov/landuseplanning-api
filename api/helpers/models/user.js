@@ -1,6 +1,6 @@
 module.exports = require('../models')('User', {
     sub: { type: String, unique: true},
-    idir_user_guid: { type: String, unique: true},
+    idirUserGuid: { type: String, unique: true},
     firstName: { type: String, trim: true, default: '' },
     middleName: { type: String, trim: true, default: null },
     lastName: { type: String, trim: true, default: '' },

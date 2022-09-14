@@ -117,7 +117,7 @@ exports.protectedGet = async function (args, res) {
   try {
     var data = await Utils.runDataQuery('RecentActivity',
       args.swagger.params.auth_payload.client_roles, // Public role.
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.idirUserGuid,
       query, // Search query.
       theFields, // Fields
       null, // sort warmup

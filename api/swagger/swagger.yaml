@@ -3744,25 +3744,29 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-  /user/{userId}/{queryBy}:
+  /user/{userId}:
     x-swagger-router-controller: user
     options:
       tags:
         - user
       summary: "Pre-flight request"
       operationId: protectedOptions
-      description: "Options on User GET Route"
+      description: "Options on User OPTIONS Route"
       parameters:
         - name: userId
           in: path
           description: "ID of user to get"
           required: true
           type: string
-        - name: queryBy
-          in: path
-          description: "Specify DB field to search by(_id, sub, email, etc.)"
-          required: true
-          type: string
+        - in: query
+          name: fields
+          description: "User fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *userFields
       responses:
         "200":
           description: "Success"
@@ -3787,11 +3791,6 @@ paths:
         - name: userId
           in: path
           description: "ID of user to get"
-          required: true
-          type: string
-        - name: queryBy
-          in: path
-          description: "Specify DB field to search by(_id, sub, email, etc.)"
           required: true
           type: string
         - in: query
@@ -3828,16 +3827,69 @@ paths:
           description: "ID of user to update"
           required: true
           type: string
-        - name: queryBy
-          in: path
-          description: "Specify DB field to search by(_id, sub, email, etc.)"
-          required: true
-          type: string
         - name: user
           in: body
           required: true
           schema:
             $ref: "#/definitions/UserObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /user/email/{userEmail}:
+    x-swagger-router-controller: user
+    options:
+      tags:
+        - user
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on User OPTIONS Route"
+      parameters:
+        - name: userEmail
+          in: path
+          description: "Email of user to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - user
+      summary: "Get a user"
+      operationId: protectedGetByEmail
+      description: "Private access to retreiving a user."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: userEmail
+          in: path
+          description: "Email of user to get"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "User fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *userFields
       responses:
         "200":
           description: "Success"
