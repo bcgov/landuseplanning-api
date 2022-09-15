@@ -198,7 +198,7 @@ exports.protectedHead = function (args, res) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idirUserGuid,
+    args.swagger.params.auth_payload.idir_user_guid,
     query,
     ['_id',
       'read'], // Fields
@@ -241,7 +241,7 @@ exports.protectedGet = async function (args, res, next) {
   try {
     var data = await Utils.runDataQuery('Document',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.idirUserGuid,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null, // sort warmup
@@ -340,7 +340,7 @@ exports.protectedDownload = function (args, res) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idirUserGuid,
+    args.swagger.params.auth_payload.idir_user_guid,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -400,7 +400,7 @@ exports.protectedOpen = function (args, res, next) {
 
   Utils.runDataQuery('Document',
     args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idirUserGuid,
+    args.swagger.params.auth_payload.idir_user_guid,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup

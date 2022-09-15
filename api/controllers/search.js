@@ -393,8 +393,8 @@ var executeQuery = async function (args, res, next) {
   var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.client_roles : ['public'];
 
   // Get user project permissions array.
-  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.idirUserGuid) {
-    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.idirUserGuid)
+  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.idir_user_guid) {
+    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.idir_user_guid)
       .then(permissions => (permissions));
   }
 

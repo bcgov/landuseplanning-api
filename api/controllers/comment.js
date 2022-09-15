@@ -207,7 +207,7 @@ exports.protectedHead = async function (args, res) {
 
   var data = await Utils.runDataQuery('Comment',
     args.swagger.operation['x-security-scopes'],
-    args.swagger.params.auth_payload.idirUserGuid,
+    args.swagger.params.auth_payload.idir_user_guid,
     query,
     ['_id', 'tags'], // Fields
     null, // sort warmup
@@ -286,7 +286,7 @@ exports.protectedGet = async function (args, res) {
   try {
     var data = await Utils.runDataQuery('Comment',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.idirUserGuid,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       sanitizedFields, // Fields
       null,
@@ -308,7 +308,7 @@ exports.protectedGet = async function (args, res) {
 
       var nextComment = await Utils.runDataQuery('Comment',
         args.swagger.params.auth_payload.client_roles,
-        args.swagger.params.auth_payload.idirUserGuid,
+        args.swagger.params.auth_payload.idir_user_guid,
         queryForNextComment,
         [], // Fields
         null,

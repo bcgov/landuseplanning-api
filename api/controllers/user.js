@@ -9,6 +9,7 @@ const getSanitizedFields = (fields) => {
   return _.remove(fields, (f) => {
     return (_.indexOf([
       'sub',
+      'idirUserGuid',
       'firstName',
       'lastName',
       'displayName',
@@ -23,13 +24,13 @@ exports.protectedOptions = function (args, res) {
 }
 
 exports.protectedGet = async function (args, res) {
-  defaultLog.info('USER PROTECTED GET');
+  defaultLog.info('USER PROTECTED GET', args.swagger.params);
 
   let query = {}, sort = {}, skip = null, limit = null, count = false;
 
-  // Build match query if on userId route. Query by user sub so as to only get real users(not Contacts).
+  // Build match query if on userId route. Query by user idirUserGuid so as to only get real users(not Contacts).
   if (args.swagger.params.userId && args.swagger.params.userId.value) {
-    _.assignIn(query, { sub: args.swagger.params.userId.value });
+    _.assignIn(query, { idirUserGuid: args.swagger.params.userId.value });
   }
 
   // Set query type
@@ -129,30 +130,6 @@ exports.protectedPut = async function (args, res) {
 
   var User = require('mongoose').model('User');
 
-  var user = {
-    idir_user_guid: obj.idir_user_guid ? obj.idir_user_guid : '',
-    firstName: obj.firstName ? obj.firstName : '',
-    middleName: obj.middleName ? obj.middleName : '',
-    lastName: obj.lastName ? obj.lastName : '',
-    displayName: obj.displayName ? obj.displayName : '',
-    email: obj.email ? obj.email : '',
-    org: obj.org ? obj.org : '',
-    orgName: obj.orgName ? obj.orgName : '',
-    title: obj.title ? obj.title : '',
-    phoneNumber: obj.phoneNumber ? obj.phoneNumber : '',
-    salutation: obj.salutation ? obj.salutation : '',
-    department: obj.department ? obj.department : '',
-    faxNumber: obj.faxNumber ? obj.faxNumber : '',
-    cellPhoneNumber: obj.cellPhoneNumber ? obj.cellPhoneNumber : '',
-    address1: obj.address1 ? obj.address1 : '',
-    address2: obj.address2 ? obj.address2 : '',
-    city: obj.city ? obj.city : '',
-    province: obj.province ? obj.province : '',
-    country: obj.country ? obj.country : '',
-    postalCode: obj.postalCode ? obj.postalCode : '',
-    notes: obj.notes ? obj.notes : ''
-  }
-
   try {
     var u = await User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
     Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, objId);
@@ -165,7 +142,7 @@ exports.protectedPut = async function (args, res) {
 }
 
 const addProjectPermission = async (user, projId) => {
-  defaultLog.info('add project permission', user, projId)
+  defaultLog.info(`Attempting to add user ${user} to project ${projId}'`);
   return new Promise((resolve, reject) => {
     if (!user.projectPermissions.includes(projId)) {
       user.projectPermissions.push(projId);
@@ -178,6 +155,7 @@ const addProjectPermission = async (user, projId) => {
 }
 
 const removeProjectPermission = async (user, projId) => {
+  defaultLog.info(`Attempting to remove user ${user} from project ${projId}'`);
   return new Promise((resolve, reject) => {
     if (user.projectPermissions.includes(projId)) {
       user.projectPermissions.pull(projId);
@@ -193,12 +171,10 @@ exports.protectedAddPermission = (args, res) => {
   defaultLog.info('USER PROTECTED ADD PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
-  defaultLog.info("Add project permission to user:", userId);
-
   const User = require('mongoose').model('User');
 
-  // Find all users that have the sub field(real users as opposed to Contacts).
-  User.find({_schemaName: 'User', sub: {$exists: true}}, (err, users) => {
+  // Find all users that have the idirUserGuid field(real users as opposed to Contacts).
+  User.find({_schemaName: 'User', idirUserGuid: {$exists: true}}, (err, users) => {
     if (users) {
       users.forEach(user => {
         if (user._id.equals(userId)) {
@@ -226,12 +202,10 @@ exports.protectedRemovePermission = function (args, res) {
   defaultLog.info('USER PROTECTED REMOVE PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
-  defaultLog.info("Remove project permission from user:", userId);
-
   const User = require('mongoose').model('User');
 
-  // Find all users that have the sub field(real users as opposed to Contacts).
-  User.find({_schemaName: 'User', sub: {$exists: true}}, (err, users) => {
+  // Find all users that have the idirUserGuid field(real users as opposed to Contacts).
+  User.find({_schemaName: 'User', idirUserGuid: {$exists: true}}, (err, users) => {
     if (users) {
       users.forEach(user => {
         if (user._id.equals(userId)) {

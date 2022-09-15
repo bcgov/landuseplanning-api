@@ -1,4 +1,4 @@
-### 1.5.2 Sep 13, 2022
+### 1.6.0 Sep 13, 2022
 * Move from keycloak to Common Online SSO [DESENG-179](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-179)
 
 ### 1.5.1 May 25, 2022

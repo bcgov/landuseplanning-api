@@ -597,7 +597,7 @@ definitions:
       - displayName
       - firstName
       - lastName
-      - sub
+      - idirUserGuid
       - projectPermissions
       - roles
 

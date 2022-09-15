@@ -287,7 +287,7 @@ exports.protectedGet = async (args, res) => {
   try {
     var data = await Utils.runDataQuery('Project',
       args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.idirUserGuid,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       fields, // Fields
       null, // sort warmup

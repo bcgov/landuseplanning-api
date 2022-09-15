@@ -12,7 +12,7 @@ var defaultLog = require('winston').loggers.get('defaultLog');
 const getUserProjectPermissions = async function (userGuid) {
   let projectPermissions = [];
   const User = mongoose.model('User');
-  const user = await User.findOne({ idir_user_guid: userGuid }).exec();
+  const user = await User.findOne({ idirUserGuid: userGuid }).exec();
 
   if (user && "projectPermissions" in user) {
     projectPermissions = user.projectPermissions;
