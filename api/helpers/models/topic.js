@@ -5,5 +5,5 @@ module.exports = require('../models')('Topic', {
     parent: { type: 'ObjectId', ref: 'Topic', default: null, index: true },
 
     // TODO: Decide who should be able to access.
-    read: [{ type: String, trim: true, default: '["project-system-admin"]' }],
+    read: [{ type: String, trim: true, default: '["sysadmin"]' }],
 }, 'lup');

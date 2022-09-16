@@ -9,10 +9,16 @@ var MAX_LIMIT = 1000;
 var DEFAULT_PAGESIZE = 100;
 var defaultLog = require('winston').loggers.get('defaultLog');
 
-const getUserProjectPermissions = async function (userSub) {
+const getUserProjectPermissions = async function (userGuid) {
+  let projectPermissions = [];
   const User = mongoose.model('User');
-  const user = await User.findOne({ sub: userSub }).exec();
-  return user.projectPermissions;
+  const user = await User.findOne({ idirUserGuid: userGuid }).exec();
+
+  if (user && "projectPermissions" in user) {
+    projectPermissions = user.projectPermissions;
+  }
+
+  return projectPermissions;
 }
 
 exports.getUserProjectPermissions = getUserProjectPermissions;
@@ -98,7 +104,7 @@ exports.recordAction = async function (action, meta, payload, objId = null) {
   return await audit.save();
 }
 
-exports.runDataQuery = async function (modelType, role, userSub, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
+exports.runDataQuery = async function (modelType, role, userGuid, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
   return new Promise(async function (resolve, reject) {
     let projection = {};
     let projectPermissions = [];
@@ -112,8 +118,10 @@ exports.runDataQuery = async function (modelType, role, userSub, query, fields, 
       projectKey = query.project;
     }
 
-    if (userSub) {
-      projectPermissions = await getUserProjectPermissions(userSub)
+    if (userGuid) {
+  defaultLog.info('getUserProjectPermissions call 2', userGuid)
+
+      projectPermissions = await getUserProjectPermissions(userGuid)
       .then(permissions => permissions)
       .catch(error => error);
     }

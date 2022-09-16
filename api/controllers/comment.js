@@ -207,7 +207,7 @@ exports.protectedHead = async function (args, res) {
 
   var data = await Utils.runDataQuery('Comment',
     args.swagger.operation['x-security-scopes'],
-    args.swagger.params.auth_payload.sub,
+    args.swagger.params.auth_payload.idir_user_guid,
     query,
     ['_id', 'tags'], // Fields
     null, // sort warmup
@@ -285,8 +285,8 @@ exports.protectedGet = async function (args, res) {
 
   try {
     var data = await Utils.runDataQuery('Comment',
-      args.swagger.params.auth_payload.realm_access.roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.client_roles,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       sanitizedFields, // Fields
       null,
@@ -307,8 +307,8 @@ exports.protectedGet = async function (args, res) {
       _.assignIn(queryForNextComment, { eaoStatus: 'Pending' });
 
       var nextComment = await Utils.runDataQuery('Comment',
-        args.swagger.params.auth_payload.realm_access.roles,
-        args.swagger.params.auth_payload.sub,
+        args.swagger.params.auth_payload.client_roles,
+        args.swagger.params.auth_payload.idir_user_guid,
         queryForNextComment,
         [], // Fields
         null,
@@ -500,7 +500,7 @@ exports.protectedStatus = async function (args, res) {
 exports.protectedExport = async function (args, res) {
   defaultLog.info('COMMENT PROTECTED EXPORT');
   var period = args.swagger.params.periodId.value;
-  var roles = args.swagger.params.auth_payload.realm_access.roles;
+  var roles = args.swagger.params.auth_payload.client_roles;
 
   var match = {
     _schemaName: 'Comment',

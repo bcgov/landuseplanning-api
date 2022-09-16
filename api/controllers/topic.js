@@ -31,7 +31,7 @@ exports.protectedPost = async function (args, res, next) {
     var Topic = mongoose.model('Topic');
     var topic = new Topic(obj);
     topic._schemaName = 'Topic';
-    topic.read = ['project-system-admin']
+    topic.read = ['sysadmin']
 
     // Change this to use guid instead of idir/user
     topic._addedBy = args.swagger.params.auth_payload.preferred_username;
@@ -63,7 +63,7 @@ exports.protectedGet = async function (args, res, next) {
     _.assignIn(query, { "_schemaName": "Topic" });
 
     var data = await Utils.runDataQuery('Topic',
-        args.swagger.params.auth_payload.realm_access.roles,
+        args.swagger.params.auth_payload.client_roles,
         query,
         getSanitizedFields(args.swagger.params.fields.value), // Fields
         null, // sort warmup

@@ -43,9 +43,9 @@ const definition = {
   pinsHistory: [{ type: Mixed, default: {} }],
   groups: [{ type: 'ObjectId', ref: 'Group', default: null, index: true }],
   // Permissions.
-  read: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-  write: [{ type: String, trim: true, default: '["project-system-admin"]' }],
-  delete: [{ type: String, trim: true, default: '["project-system-admin"]' }],
+  read: [{ type: String, trim: true, default: '["sysadmin"]' }],
+  write: [{ type: String, trim: true, default: '["sysadmin"]' }],
+  delete: [{ type: String, trim: true, default: '["sysadmin"]' }],
 };
 
 module.exports = require('../models')('Project', definition, 'lup');

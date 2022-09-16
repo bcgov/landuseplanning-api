@@ -28,7 +28,7 @@ var getSanitizedFields = function (fields) {
 }
 
 exports.protectedOptions = function (args, res) {
-  defaultLog('EMAIL SUBSCRIBE PROTECTED OPTIONS');
+  defaultLog.info('EMAIL SUBSCRIBE PROTECTED OPTIONS');
   res.status(200).send();
 }
 
@@ -54,7 +54,7 @@ exports.publicHead = async function (args, res) {
     true); // count
   Utils.recordAction('Head', 'EmailSubscribe', 'public');
   res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
-  defaultLog('Got email subscribe headers:', data);
+  defaultLog.info('Got email subscribe headers:', data);
   return Actions.sendResponse(res, 200, data);
 };
 
@@ -333,8 +333,8 @@ exports.protectedGet = async function (args, res, next) {
 
   try {
     var data = await Utils.runDataQuery('EmailSubscribe',
-      args.swagger.params.auth_payload.realm_access.roles,
-      args.swagger.params.auth_payload.sub,
+      args.swagger.params.auth_payload.client_roles,
+      args.swagger.params.auth_payload.idir_user_guid,
       query,
       getSanitizedFields(args.swagger.params.fields.value), // Fields
       null,
