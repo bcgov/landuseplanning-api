@@ -3074,8 +3074,6 @@ paths:
       summary: "Download a document"
       operationId: protectedOpen
       description: "Authenticated access to retreiving a document binary."
-      security:
-        - Bearer: []
       parameters:
         - name: docId
           in: path
