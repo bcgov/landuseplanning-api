@@ -383,12 +383,12 @@ exports.protectedDownload = function (args, res) {
 };
 
 exports.protectedOpen = function (args, res, next) {
-  var self = this;
-  self.scopes = args.swagger.params.auth_payload.client_roles;
+  // var self = this;
+  // self.scopes = args.swagger.params.auth_payload.client_roles;
 
   var Document = mongoose.model('Document');
 
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
+  // defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
 
   // Build match query if on docId route
   var query = {};
@@ -399,8 +399,8 @@ exports.protectedOpen = function (args, res, next) {
   assignIn(query, { "_schemaName": "Document" });
 
   Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idir_user_guid,
+    ['public'],
+    false,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
