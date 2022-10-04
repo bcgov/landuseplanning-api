@@ -303,7 +303,7 @@ exports.publicDownload = function (args, res) {
           })
           .then(function (docURL) {
             Utils.recordAction('Download', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            // stream file from Minio to client
+            // stream file from Minio to clients
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
@@ -382,13 +382,8 @@ exports.protectedDownload = function (args, res) {
     });
 };
 
-exports.protectedOpen = function (args, res, next) {
-  // var self = this;
-  // self.scopes = args.swagger.params.auth_payload.client_roles;
-
-  var Document = mongoose.model('Document');
-
-  // defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
+exports.protectedOpen = function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED OPEN');
 
   // Build match query if on docId route
   var query = {};
@@ -427,10 +422,13 @@ exports.protectedOpen = function (args, res, next) {
 
         var fileMeta;
 
+        defaultLog.info('Searching minio for file');
+        defaultLog.info('minio controller', MinioController);
         // check if the file exists in Minio
         return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
           .then(function (objectMeta) {
             fileMeta = objectMeta;
+            defaultLog.info('file meta', fileMeta);
             // get the download URL
             return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
           }, function () {
@@ -438,13 +436,15 @@ exports.protectedOpen = function (args, res, next) {
           })
           .then(function (docURL) {
             Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
+            defaultLog.info('streaming URL', docURL);
+
             // stream file from Minio to client
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           })
-          .catch(error => error);
+          .catch(error => Actions.sendResponse(error, 500, {}));
       } else {
         return Actions.sendResponse(res, 404, {});
       }
