@@ -407,8 +407,6 @@ exports.protectedOpen = function (args, res) {
       if (data && data.length === 1) {
         var blob = data[0];
 
-        defaultLog.info('the doc', data)
-
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;
         if (fileName.slice(- fileType.length) !== fileType) {
@@ -423,12 +421,11 @@ exports.protectedOpen = function (args, res) {
         var fileMeta;
 
         defaultLog.info('Searching minio for file');
-        defaultLog.info('minio controller', MinioController);
         // check if the file exists in Minio
         return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
           .then(function (objectMeta) {
             fileMeta = objectMeta;
-            defaultLog.info('file meta', fileMeta);
+            defaultLog.info('file found:', fileMeta);
             // get the download URL
             return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
           }, function () {
@@ -436,8 +433,6 @@ exports.protectedOpen = function (args, res) {
           })
           .then(function (docURL) {
             Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            defaultLog.info('streaming URL', docURL);
-
             // stream file from Minio to client
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
