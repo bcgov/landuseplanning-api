@@ -1,3 +1,6 @@
+### 1.6.1 Oct 3, 2022
+* Fix documents not loading [DESENG-197](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-197)
+
 ### 1.6.0 Sep 13, 2022
 * Move from keycloak to Common Online SSO [DESENG-179](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-179)
 

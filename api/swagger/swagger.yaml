@@ -3076,6 +3076,9 @@ paths:
       description: "Authenticated access to retreiving a document binary."
       security:
         - Bearer: []
+      x-security-scopes:
+        - public
+        - sysadmin
       parameters:
         - name: docId
           in: path

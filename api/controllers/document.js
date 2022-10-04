@@ -303,7 +303,7 @@ exports.publicDownload = function (args, res) {
           })
           .then(function (docURL) {
             Utils.recordAction('Download', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            // stream file from Minio to client
+            // stream file from Minio to clients
             res.setHeader('Content-Length', fileMeta.size);
             res.setHeader('Content-Type', fileMeta.metaData['content-type']);
             res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
@@ -382,13 +382,8 @@ exports.protectedDownload = function (args, res) {
     });
 };
 
-exports.protectedOpen = function (args, res, next) {
-  var self = this;
-  self.scopes = args.swagger.params.auth_payload.client_roles;
-
-  var Document = mongoose.model('Document');
-
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
+exports.protectedOpen = function (args, res) {
+  defaultLog.info('DOCUMENT PROTECTED OPEN');
 
   // Build match query if on docId route
   var query = {};
@@ -399,8 +394,8 @@ exports.protectedOpen = function (args, res, next) {
   assignIn(query, { "_schemaName": "Document" });
 
   Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idir_user_guid,
+    ['public'],
+    false,
     query,
     ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
     null, // sort warmup
@@ -411,8 +406,6 @@ exports.protectedOpen = function (args, res, next) {
     .then(function (data) {
       if (data && data.length === 1) {
         var blob = data[0];
-
-        defaultLog.info('the doc', data)
 
         var fileName = blob.documentFileName;
         var fileType = blob.internalExt;
@@ -427,10 +420,12 @@ exports.protectedOpen = function (args, res, next) {
 
         var fileMeta;
 
+        defaultLog.info('Searching minio for file');
         // check if the file exists in Minio
         return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
           .then(function (objectMeta) {
             fileMeta = objectMeta;
+            defaultLog.info('file found:', fileMeta);
             // get the download URL
             return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
           }, function () {
@@ -444,7 +439,7 @@ exports.protectedOpen = function (args, res, next) {
             res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           })
-          .catch(error => error);
+          .catch(error => Actions.sendResponse(error, 500, {}));
       } else {
         return Actions.sendResponse(res, 404, {});
       }
