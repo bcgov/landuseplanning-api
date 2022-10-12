@@ -120,6 +120,7 @@ definitions:
       - engagementStatus
       - logos
       - backgroundInfo
+      - backgroundImage
       - engagementLabel
       - engagementInfo
       - documentInfo

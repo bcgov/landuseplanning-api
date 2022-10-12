@@ -12,6 +12,7 @@ const tagList = [
   'engagementStatus',
   'logos',
   'backgroundInfo',
+  'backgroundImage',
   'engagementLabel',
   'engagementInfo',
   'documentInfo',
@@ -281,8 +282,6 @@ exports.protectedGet = async (args, res) => {
   defaultLog.info("*****************************************");
 
   defaultLog.info("PIPELINE", commentPeriodPipeline);
-
-  defaultLog.info("the auth", args.swagger.params)
 
   try {
     var data = await Utils.runDataQuery('Project',
@@ -853,6 +852,7 @@ exports.protectedPut = async (args, res) => {
   obj.engagementStatus = projectObj.engagementStatus;
   obj.logos = projectObj.logos;
   obj.backgroundInfo = projectObj.backgroundInfo;
+  obj.backgroundImage = projectObj.backgroundImage;
   obj.engagementLabel = projectObj.engagementLabel;
   obj.engagementInfo = projectObj.engagementInfo;
   obj.documentInfo = projectObj.documentInfo;
