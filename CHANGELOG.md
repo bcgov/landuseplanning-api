@@ -1,3 +1,7 @@
+### 1.6.2 Oct 12, 2022
+* Banner image not loading on frontend [DESENG-181](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-181)
+* Banner image not deleting [DESENG-182](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-182)
+
 ### 1.6.1 Oct 3, 2022
 * Fix documents not loading [DESENG-197](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-197)
 
