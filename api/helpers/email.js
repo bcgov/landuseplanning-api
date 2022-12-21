@@ -7,23 +7,37 @@ const defaultLog = winston.loggers.get('defaultLog');
 require('dotenv').config();
 
 const _publicServiceEndpoint = process.env.API_HOSTNAME !== undefined ? ('https://' + process.env.API_HOSTNAME + '/') : 'http://localhost:4300/';
-const _GETOK_endpoint = process.env.GETOK_ENDPOINT || 'https://dev.oidc.gov.bc.ca/auth/realms/jbd6rnxw/protocol/openid-connect/token';
-const _GETOK_CLIENTID = process.env._GETOK_CLIENTID || null;
-const _GETOK_CLIENT_SECRET = process.env._GETOK_CLIENT_SECRET || null;
-const _commonHostingEmailServiceEndpoint = process.env.CHES_ENDPOINT || 'https://ches-dev.apps.silver.devops.gov.bc.ca/';
-
+const _CHES_AUTH_ENDPOINT = process.env.CHES_AUTH_ENDPOINT || 'https://dev.loginproxy.gov.bc.ca/auth/realms/comsvcauth/protocol/openid-connect/token';
+const _EMAIL_CLIENTID = process.env._EMAIL_CLIENTID || null;
+const _EMAIL_CLIENT_SECRET = process.env._EMAIL_CLIENT_SECRET || null;
+const _commonHostingEmailServiceEndpoint = process.env.CHES_ENDPOINT || 'https://ches-dev.api.gov.bc.ca/';
 const _CHES_emailMergeAPI = 'api/v1/emailMerge';
 
 // Runtime output
-if (_GETOK_CLIENTID === null) {
+if (_EMAIL_CLIENTID === null) {
     defaultLog.error('*******************************************************************');
-    defaultLog.error('_GETOK_CLIENTID NOT SET');
+    defaultLog.error('_EMAIL_CLIENTID NOT SET');
     defaultLog.error('*******************************************************************');
 }
-if (_GETOK_CLIENT_SECRET === null) {
+if (_EMAIL_CLIENT_SECRET === null) {
     defaultLog.error('*******************************************************************');
-    defaultLog.error('_GETOK_CLIENT_SECRET NOT SET');
+    defaultLog.error('_EMAIL_CLIENT_SECRET NOT SET');
     defaultLog.error('*******************************************************************');
+}
+
+const getEmailToken = async function() {
+    return await axios.post(_CHES_AUTH_ENDPOINT,
+        qs.stringify({
+            'client_id': _EMAIL_CLIENTID,
+            'client_secret': _EMAIL_CLIENT_SECRET,
+            'grant_type': 'client_credentials',
+        }),
+        {
+            headers: {
+                'content-type': 'application/x-www-form-urlencoded'
+            }
+        }
+    );
 }
 
 exports.sendConfirmEmail = async function ( projectName, email, confirmKey) {
@@ -50,33 +64,23 @@ exports.sendConfirmEmail = async function ( projectName, email, confirmKey) {
 
     // Send the emails to the CHES (Common Hosted Email Service)
     try {
-        const getOKRes = await axios.post(_GETOK_endpoint,
-            qs.stringify({
-                'client_id': _GETOK_CLIENTID,
-                'client_secret': _GETOK_CLIENT_SECRET,
-                'grant_type': 'client_credentials',
-            }),
-            {
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                }
-            }
-        );
-        if (getOKRes && getOKRes.data && getOKRes.data.access_token) {
+        const emailToken = await getEmailToken();
+
+        if (emailToken && emailToken.data && emailToken.data.access_token) {
             // Send the confirm email
             await axios.post(
                 _commonHostingEmailServiceEndpoint + _CHES_emailMergeAPI,
                 emailTemplate,
                 {
                     headers: {
-                        "Authorization": 'Bearer ' + getOKRes.data.access_token,
+                        "Authorization": 'Bearer ' + emailToken.data.access_token,
                         "Content-Type": 'application/json'
                     }
                 }
             );
             defaultLog.info("Email Sent");
         } else {
-            defaultLog.error("Couldn't get a proper token", getOKRes);
+            defaultLog.error("Couldn't get a proper token", emailToken);
         }
     } catch (err) {
         defaultLog.error("Error:", err);
@@ -109,33 +113,23 @@ exports.sendWelcomeEmail = async function (projectName, email) {
 
     // Send the emails to the CHES (Common Hosted Email Service)
     try {
-        const getOKRes = await axios.post(_GETOK_endpoint,
-            qs.stringify({
-                'client_id': _GETOK_CLIENTID,
-                'client_secret': _GETOK_CLIENT_SECRET,
-                'grant_type': 'client_credentials',
-            }),
-            {
-                headers: {
-                    'content-type': 'application/x-www-form-urlencoded'
-                }
-            }
-        );
-        if (getOKRes && getOKRes.data && getOKRes.data.access_token) {
+        const emailToken = await getEmailToken();
+
+        if (emailToken && emailToken.data && emailToken.data.access_token) {
             // Send the welcome email
             await axios.post(
                 _commonHostingEmailServiceEndpoint + _CHES_emailMergeAPI,
                 emailTemplate,
                 {
                     headers: {
-                        "Authorization": 'Bearer ' + getOKRes.data.access_token,
+                        "Authorization": 'Bearer ' + emailToken.data.access_token,
                         "Content-Type": 'application/json'
                     }
                 }
             );
             defaultLog.info("Email Sent");
         } else {
-            defaultLog.error("Couldn't get a proper token", getOKRes);
+            defaultLog.error("Couldn't get a proper token", emailToken);
         }
     } catch (err) {
         defaultLog.error("Error:", err);
