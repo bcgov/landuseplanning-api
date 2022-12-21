@@ -1,3 +1,6 @@
+### 1.6.3 Dec 21, 2022
+* Update CHES auth and API endpoints [DESENG-237](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-237)
+
 ### 1.6.2 Oct 12, 2022
 * Banner image not loading on frontend [DESENG-181](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-181)
 * Banner image not deleting [DESENG-182](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-182)
