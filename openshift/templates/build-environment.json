@@ -176,16 +176,16 @@
                     "value": "${MINIO_SECRET_KEY}"
                   },
                   {
-                    "name": "GETOK_ENDPOINT",
-                    "value": "${GETOK_ENDPOINT}"
+                    "name": "CHES_AUTH_ENDPOINT",
+                    "value": "${CHES_AUTH_ENDPOINT}"
                   },
                   {
-                    "name": "_GETOK_CLIENTID",
-                    "value": "${_GETOK_CLIENTID}"
+                    "name": "_EMAIL_CLIENTID",
+                    "value": "${_EMAIL_CLIENTID}"
                   },
                   {
-                    "name": "_GETOK_CLIENT_SECRET",
-                    "value": "${_GETOK_CLIENT_SECRET}"
+                    "name": "_EMAIL_CLIENT_SECRET",
+                    "value": "${_EMAIL_CLIENT_SECRET}"
                   },
                   {
                     "name": "CHES_ENDPOINT",
@@ -507,21 +507,21 @@
       "value": ""
     },
     {
-      "name": "GETOK_ENDPOINT",
-      "displayName": "Getok Endpoint",
-      "description": "the URL for the Getok endpoint",
+      "name": "CHES_AUTH_ENDPOINT",
+      "displayName": "Email auth Endpoint",
+      "description": "the URL for the email auth endpoint",
       "value": ""
     },
     {
-      "name": "_GETOK_CLIENTID",
-      "displayName": "Getok ClientID",
-      "description": "The client ID for the getok service",
+      "name": "_EMAIL_CLIENTID",
+      "displayName": "Email ClientID",
+      "description": "The client ID for the email service",
       "value": ""
     },
     {
-      "name": "_GETOK_CLIENT_SECRET",
-      "displayName": "Getok Client Secret",
-      "description": "The client secret for the getok service",
+      "name": "_EMAIL_CLIENT_SECRET",
+      "displayName": "Email Client Secret",
+      "description": "The client secret for the email service",
       "value": ""
     },
     {
