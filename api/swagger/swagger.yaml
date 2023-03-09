@@ -133,6 +133,7 @@ definitions:
       - projectDirector
       - type
       - read
+      - activitiesAndUpdatesEnabled
   TopicSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
@@ -2014,6 +2015,11 @@ paths:
           description: "The read permissions of the project"
           type: string
         - in: query
+          name: activitiesAndUpdatesEnabled
+          required: false
+          description: "The option that enables or disables the Activities and Updates area"
+          type: boolean
+        - in: query
           name: cpStart
           type: string
           format: date-time
@@ -2150,6 +2156,11 @@ paths:
           required: false
           description: "The read permissions of the project"
           type: string
+        - in: query
+          name: activitiesAndUpdatesEnabled
+          required: false
+          description: "The option that enables or disables the Activities and Updates area"
+          type: boolean
         - in: query
           name: pageNum
           type: number

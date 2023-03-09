@@ -46,6 +46,8 @@ const definition = {
   read: [{ type: String, trim: true, default: '["sysadmin"]' }],
   write: [{ type: String, trim: true, default: '["sysadmin"]' }],
   delete: [{ type: String, trim: true, default: '["sysadmin"]' }],
+  // Options
+  activitiesAndUpdatesEnabled: { type: Boolean, default: false },
 };
 
 module.exports = require('../models')('Project', definition, 'lup');
