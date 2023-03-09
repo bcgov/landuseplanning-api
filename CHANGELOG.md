@@ -1,3 +1,7 @@
+### 1.7.0 Mar 9, 2023
+* Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://apps.itsm.gov.bc.
+ca/jira/browse/DESENG-283)
+
 ### 1.6.3 Dec 21, 2022
 * Update CHES auth and API endpoints [DESENG-237](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-237)
 

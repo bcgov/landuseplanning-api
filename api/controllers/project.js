@@ -50,7 +50,8 @@ const tagList = [
   'projectDirector',
   'read',
   'write',
-  'delete'
+  'delete',
+  'activitiesAndUpdatesEnabled'
 ];
 
 /**
@@ -857,6 +858,7 @@ exports.protectedPut = async (args, res) => {
   obj.engagementInfo = projectObj.engagementInfo;
   obj.documentInfo = projectObj.documentInfo;
   obj.partner = projectObj.partner;
+  obj.activitiesAndUpdatesEnabled = projectObj.activitiesAndUpdatesEnabled;
 
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
 
