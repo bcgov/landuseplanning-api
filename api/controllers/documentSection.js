@@ -14,16 +14,24 @@ const getSanitizedFields = (fields) => {
   });
 };
 
+/**
+ * Get the document sections options.
+ * 
+ * @param {object} args The arguments used to get the route options.
+ * @param {HTTPResponse} res The response used for the HTTP route.
+ * @returns {object}
+ */
 exports.protectedOptions = (args, res) => {
     defaultLog.info('DOCUMENT SECTION PROTECTED OPTIONS');
     res.status(200).send();
 };
 
 /**
+ * Get the document sections for a given project.
  * 
- * @param {*} args 
- * @param {*} res 
- * @returns 
+ * @param {object} args The arguments used to save the section.
+ * @param {HTTPResponse} res The response used for the HTTP route.
+ * @returns {object}
  */
 exports.protectedGet = async function (args, res) {
   defaultLog.info('DOCUMENT SECTION PROTECTED GET');
@@ -67,10 +75,11 @@ exports.protectedGet = async function (args, res) {
 
 
 /**
+ * Save a new document section.
  * 
- * @param {*} args 
- * @param {*} res 
- * @returns 
+ * @param {object} args The arguments used to save the section.
+ * @param {HTTPResponse} res The response used for the HTTP route.
+ * @returns {object}
  */
 exports.protectedPost = async function (args, res) {
     defaultLog.info('DOCUMENT SECTION PROTECTED POST');
