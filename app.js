@@ -121,6 +121,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
       require('./api/helpers/models/surveyQuestionAnswer');
       require('./api/helpers/models/surveyResponse');
       require('./api/helpers/models/document');
+      require('./api/helpers/models/documentSection');
       require('./api/helpers/models/comment');
       require('./api/helpers/models/commentperiod');
       require('./api/helpers/models/topic');
