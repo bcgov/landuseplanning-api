@@ -39,7 +39,7 @@ Start the server by running `npm run start-watch`
 
 | Technology | Version | Website                                     | Description                               |
 |------------|---------|---------------------------------------------|-------------------------------------------|
-| node       | 8.x.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
+| node       | 12.x.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
 | npm        | 6.x.x   | https://www.npmjs.com/                      | Node Package Manager                      |
 | yarn       | latest  | https://yarnpkg.com/en/                     | Package Manager (more efficient than npm) |
 | mongodb    | 3.6     | https://docs.mongodb.com/v3.6/installation/ | NoSQL database                            |
@@ -134,6 +134,15 @@ Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) a
 ### Code Reuse Strategy
 
 See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/code_reuse_strategy.md)
+
+### Note on Ecmascript feature availability
+
+This app is designed to be run on Node 12.22.12 in Openshift. As a result, almost all modern ECMAScript features are available except for:
+
+- The nullish coalescing operator
+- Optional object chaining
+
+See here for more details on ES feature availability: [https://node.green/](https://node.green/)
 
 ### Testing
 

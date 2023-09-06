@@ -208,6 +208,30 @@ definitions:
       - internalMime
       - internalSize
 
+### Document Section Definitions
+  DocumentSectionId:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool document section"
+  DocumentSectionObject:
+    type: object
+    properties:
+      project:
+        type: string
+  DocumentSectionFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|project|order
+    enum: &documentSectionFields
+      - name
+      - project
+      - order
+      - read
+      - write
+      - delete
+
 ### Comment Definitions
   CommentId:
     type: object
@@ -3310,6 +3334,114 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+
+## Documents Section  
+  /documentSection:
+    x-swagger-router-controller: documentSection
+    options:
+      tags:
+        - documentSection
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Document Section Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - documentSection
+      summary: "Create a new document section"
+      operationId: protectedPost
+      description: "Create a new document section object."
+      summary: "Create a new document section object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: documentSection
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DocumentSectionId"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    
+  /documentSection/{project}:
+    x-swagger-router-controller: documentSection
+    options:
+      tags:
+        - documentSection
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Document Section Route"
+      parameters:
+        - name: project
+          in: path
+          description: "ID of project to get sections for"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - document
+      summary: "Get a list of document sections"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving a document section."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - staff
+      parameters:
+        - name: project
+          in: path
+          description: "ID of project to get sections for"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "Document section fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentSectionFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
 ### Organizations
   /organization:
     x-swagger-router-controller: organization
