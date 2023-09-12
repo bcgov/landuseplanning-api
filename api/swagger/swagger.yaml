@@ -220,6 +220,13 @@ definitions:
     properties:
       project:
         type: string
+  DocumentSectionsArray:
+    type: array
+    items:
+      $ref: '#/definitions/DocumentSectionObject'
+    properties:
+      project:
+        type: string
   DocumentSectionFields:
     type: string
     description: "Optional fields to return."
@@ -3437,6 +3444,40 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - documentSection
+      summary: "Reorder document sections"
+      operationId: protectedReorder
+      description: "Reorder document sections within a project."
+      summary: "Reorder document sections within a project."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: project
+          in: path
+          description: "ID of project to reorder sections in"
+          required: true
+          type: string      
+        - name: documentSections
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/DocumentSectionsArray"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionsArray"
         "403":
           description: "Access Denied"
           schema:
