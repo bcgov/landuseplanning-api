@@ -4,12 +4,22 @@ const mongoose = require('mongoose');
 const Actions = require('../helpers/actions');
 const Utils = require('../helpers/utils');
 
+/**
+ * Ensure that no unwanted fields are being passed with a request.
+ * 
+ * @param {array} fields The fields to strip.
+ * @returns {array}
+ */
 const getSanitizedFields = (fields) => {
   return remove(fields, (f) => {
     return (indexOf([
+        '_schemaName',
         'name',
         'order',
         'project',
+        'read',
+        'write',
+        'delete'
     ], f) !== -1);
   });
 };
@@ -33,7 +43,7 @@ exports.protectedOptions = (args, res) => {
  * @param {HTTPResponse} res The response used for the HTTP route.
  * @returns {object}
  */
-exports.protectedGet = async function (args, res) {
+exports.protectedGet = async (args, res) => {
   defaultLog.info('DOCUMENT SECTION PROTECTED GET');
   const query = {};
 
@@ -44,8 +54,6 @@ exports.protectedGet = async function (args, res) {
 
   // Set query type
   assignIn(query, { '_schemaName': 'DocumentSection' });
-
-  defaultLog.info(query, getSanitizedFields(args.swagger.params.fields.value))
 
   try {
     const data = await Utils.runDataQuery('DocumentSection',
@@ -73,7 +81,6 @@ exports.protectedGet = async function (args, res) {
   }
 };
 
-
 /**
  * Save a new document section.
  * 
@@ -81,37 +88,78 @@ exports.protectedGet = async function (args, res) {
  * @param {HTTPResponse} res The response used for the HTTP route.
  * @returns {object}
  */
-exports.protectedPost = async function (args, res) {
-    defaultLog.info('DOCUMENT SECTION PROTECTED POST');
-    const obj = args.swagger.params.documentSection.value;
-  
-    defaultLog.info('Incoming new document section:', obj);
-  
-    const DocumentSection = mongoose.model('DocumentSection');
-  
-    const documentSection = new DocumentSection({
-      _schemaName: 'DocumentSection',
-      name: obj.name,
-      project: obj.project,
-      order: obj.order,
-  
-      read: ['staff', 'sysadmin'],
-      write: ['staff', 'sysadmin'],
-      delete: ['staff', 'sysadmin']
-    });
-  
-    try {
-      const docSectionResult = await documentSection.save();
-      Utils.recordAction(
-        'Post',
-        'DocumentSection',
-        args.swagger.params.auth_payload.preferred_username,
-        docSectionResult._id
-        );
-      defaultLog.info('Saved new document section object:', docSectionResult._id);
-      return Actions.sendResponse(res, 200, docSectionResult);
-    } catch (e) {
-      defaultLog.error(e);
-      return Actions.sendResponse(res, 400, e);
+exports.protectedPost = async (args, res) => {
+  defaultLog.info('DOCUMENT SECTION PROTECTED POST');
+  const obj = args.swagger.params.documentSection.value;
+
+  defaultLog.info('Incoming new document section:', obj);
+
+  const DocumentSection = mongoose.model('DocumentSection');
+
+  const documentSection = new DocumentSection({
+    _schemaName: 'DocumentSection',
+    name: obj.name,
+    project: obj.project,
+    order: obj.order,
+
+    read: ['staff', 'sysadmin'],
+    write: ['staff', 'sysadmin'],
+    delete: ['staff', 'sysadmin']
+  });
+
+  try {
+    const docSectionResult = await documentSection.save();
+    Utils.recordAction(
+      'Post',
+      'DocumentSection',
+      args.swagger.params.auth_payload.preferred_username,
+      docSectionResult._id
+      );
+    defaultLog.info('Saved new document section object:', docSectionResult._id);
+    return Actions.sendResponse(res, 200, docSectionResult);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+};
+
+/**
+ * Reorder the array of all document sections by updating the "order"
+ * properties of each.
+ * 
+ * @param {object} args The arguments used to save the section.
+ * @param {HTTPResponse} res The response used for the HTTP route.
+ * @returns {object}
+ */
+exports.protectedReorder = async (args, res) => {
+  defaultLog.info('DOCUMENT SECTION PROTECTED REORDER');
+  const docSections = args.swagger.params.documentSections.value;
+
+  defaultLog.info('Incoming new document sections:', docSections);
+
+  const DocumentSection = mongoose.model('DocumentSection');
+  const updatedSections = [];
+  try {
+    for (const section of docSections) {
+      const updatedDocSection = await DocumentSection.findByIdAndUpdate(
+        section._id,
+        { order: section.order },
+        { new: true, returnDocument: "after" }
+      );
+      updatedSections.push(updatedDocSection);
     }
-  };
+
+    Utils.recordAction(
+      'Reorder',
+      'DocumentSection',
+      args.swagger.params.auth_payload.preferred_username,
+      null
+    );
+    defaultLog.info('Reordered document sections:', updatedSections);
+    return Actions.sendResponse(res, 200, updatedSections);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+    
+}
