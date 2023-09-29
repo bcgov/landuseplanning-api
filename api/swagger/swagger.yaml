@@ -2561,6 +2561,10 @@ paths:
           description: "The type to bind this document to."
           required: false
           type: string
+        - name: section
+          in: formData
+          required: false
+          type: string
         - name: documentSource
           in: formData
           description: "The documentSource of this document."
@@ -2788,6 +2792,11 @@ paths:
         - name: type
           in: formData
           description: "The type to bind this document to."
+          required: false
+          type: string
+        - name: section
+          in: formData
+          description: "The section to organize the document under."
           required: false
           type: string
         - name: documentSource
