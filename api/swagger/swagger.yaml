@@ -3491,6 +3491,59 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /public/documentSection/{project}:
+    x-swagger-router-controller: documentSection
+    options:
+      tags:
+        - documentSection
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on Document Section Route"
+      parameters:
+        - name: project
+          in: path
+          description: "ID of project to get sections for"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - document
+      summary: "Get a list of document sections"
+      operationId: publicGet
+      description: "Public access to retreiving document sections."
+      parameters:
+        - name: project
+          in: path
+          description: "ID of project to get sections for"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "Document section fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *documentSectionFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/DocumentSectionObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
 
 ### Organizations
   /organization:
