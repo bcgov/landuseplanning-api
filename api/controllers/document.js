@@ -15,13 +15,14 @@ var rp = require('request-promise-native');
 
 var getSanitizedFields = function (fields) {
   return remove(fields, function (f) {
-    return (indexOf(['displayName',
+    return (indexOf([
       '_addedBy',
       'documentFileName',
       'alt',
       'internalExt',
       'internalOriginalName',
       'displayName',
+      'section',
       'labels',
       'datePosted',
       'dateUploaded',
@@ -503,9 +504,7 @@ exports.protectedPost = async function (args, res, next) {
               doc.internalMime = upfile.mimetype;
 
               doc.documentSource = args.swagger.params.documentSource.value;
-
-              // TODO Not Yet
-              // doc.labels = JSON.parse(args.swagger.params.labels.value);
+              doc.section = args.swagger.params.section.value === "null" ? null : args.swagger.params.section.value;
 
               doc.displayName = args.swagger.params.displayName.value;
               if (args.swagger.params.eaoStatus && args.swagger.params.eaoStatus.value) {
@@ -602,6 +601,7 @@ exports.protectedPut = async function (args, res) {
   obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
 
   obj.displayName = args.swagger.params.displayName.value;
+  obj.section = args.swagger.params.section.value;
   obj.alt = args.swagger.params.alt.value;
 
   obj.projectPhase = args.swagger.params.projectPhase.value;
@@ -610,6 +610,7 @@ exports.protectedPut = async function (args, res) {
   obj.datePosted = args.swagger.params.datePosted.value;
   obj.description = args.swagger.params.description.value;
   obj.keywords = args.swagger.params.keywords.value;
+  obj.section = args.swagger.params.section.value === "null" ? null : args.swagger.params.section.value;
 
   obj.eaoStatus = args.swagger.params.eaoStatus.value;
   if (args.swagger.params.eaoStatus.value === 'Published') {
