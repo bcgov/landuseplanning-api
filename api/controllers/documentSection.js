@@ -1,5 +1,5 @@
 const { remove, indexOf, assignIn } = require('lodash');
-const defaultLog = require('winston').loggers.get('devLog');
+const defaultLog = require('winston').loggers.get('defaultLog');
 const mongoose = require('mongoose');
 const Actions = require('../helpers/actions');
 const Utils = require('../helpers/utils');
@@ -82,6 +82,47 @@ exports.protectedGet = async (args, res) => {
 };
 
 /**
+ * Get the document sections for a given project.
+ * 
+ * @param {object} args The arguments used to save the section.
+ * @param {HTTPResponse} res The response used for the HTTP route.
+ * @returns {object}
+ */
+exports.publicGet = async(args, res) => {
+  defaultLog.info('DOCUMENT SECTION PUBLIC GET');
+  const query = {};
+
+  // Build match query if on project's id
+  if (args.swagger.params.project && args.swagger.params.project.value) {
+    assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+  }
+
+  // Set query type
+  assignIn(query, { '_schemaName': 'DocumentSection' });
+
+  try {
+    const data = await Utils.runDataQuery('DocumentSection',
+      ['public'],
+      null,
+      query,
+      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      null,   // sort warmup
+      null,   // sort
+      null,   // skip
+      null,  // limit
+      null); // count
+
+    Utils.recordAction('Get', 'DocumentSection', 'public', args.swagger.params.project && args.swagger.params.project.value ? args.swagger.params.project.value : null);
+
+    defaultLog.info('Got document section(s):', data);
+    return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
+
+/**
  * Save a new document section.
  * 
  * @param {object} args The arguments used to save the section.
@@ -101,8 +142,7 @@ exports.protectedPost = async (args, res) => {
     name: obj.name,
     project: obj.project,
     order: obj.order,
-
-    read: ['staff', 'sysadmin'],
+    read: ['public', 'staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
     delete: ['staff', 'sysadmin']
   });
