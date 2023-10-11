@@ -26,6 +26,9 @@ module.exports = require('../models')('Document', {
     internalSize: { type: String, default: '' },
     passedAVCheck: { type: Boolean, default: false },
     internalMime: { type: String, default: '' },
+
+    // Section
+    section: { type: 'ObjectId', ref: 'DocumentSection', default: null },
     
     // META
     documentSource: { type: String, default: '' },  // PROJECT/COMMENT/COMMENT_PERIOD/etc
