@@ -48,6 +48,8 @@ const definition = {
   delete: [{ type: String, trim: true, default: '["sysadmin"]' }],
   // Options
   activitiesAndUpdatesEnabled: { type: Boolean, default: false },
+  contactFormEnabled: { type: Boolean, default: false },
+  contactFormEmails: { type: Array, default: []}
 };
 
 module.exports = require('../models')('Project', definition, 'lup');
