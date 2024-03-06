@@ -722,6 +722,22 @@ definitions:
       - +dateSubscribed
       - -dateSubscribed
 
+### Contact Form Definitions
+  ContactFormObject:
+    type: object
+    properties:
+      name:
+        type: object
+        properties:
+          name:
+            type: string 
+          emailAddress:
+            type: string
+          message:
+            type: string
+          project:
+            type: string
+
 ### Resource Definitions
   Coordinates:
     type: object
@@ -7040,6 +7056,45 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /public/emailSubscribe/sendContactFormResponse:
+    x-swagger-router-controller: emailSubscribe
+    options:
+      tags:
+        - emailSubscribe
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on emailSubscribe Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/EmailSubscribeObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - emailSubscribe
+      summary: "Forward the contact form response to the recipient emails"
+      operationId: handleContactFormResponse
+      description: "Send a new contact form response."
+      summary: "Send a new contact form response."
+      parameters:
+        - name: contactForm
+          in: body
+          required: true
+          schema:
+            $ref: "#/definitions/ContactFormObject"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ContactFormObject"
         "403":
           description: "Access Denied"
           schema:

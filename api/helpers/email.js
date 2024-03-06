@@ -138,3 +138,92 @@ exports.sendWelcomeEmail = async function (projectName, email) {
 
     return;
 };
+
+/**
+ * Contact the CHES API service to get a valid token, then send an email.
+ * 
+ * @param {object} emailTemplate The email template used by the CHES API.
+ * @returns {void}
+ */
+const sendEmail = async (emailTemplate) => {
+    const emailToken = await getEmailToken();
+    console.log('email token done')
+
+    if (emailToken && emailToken.data && emailToken.data.access_token) {
+        // Send confirmation email to user.
+        console.log('about to post')
+        await axios.post(
+            _commonHostingEmailServiceEndpoint + _CHES_emailMergeAPI,
+            emailTemplate,
+            {
+                headers: {
+                    "Authorization": 'Bearer ' + emailToken.data.access_token,
+                    "Content-Type": 'application/json'
+                }
+            }
+        );
+        defaultLog.info("Email Sent");
+
+    } else {
+        defaultLog.error("Couldn't get a proper token", emailToken);
+    }
+}
+
+/**
+ * Build the email template used by the CHES API.
+ * 
+ * @param {string} subject The email subject line.
+ * @param {string} body The body of the email.
+ * @param {array} toAddresses An array of email addresses to send to.
+ * @param {string} fromAddress The email address to mark as "from".
+ * @returns {object}
+ */
+const buildEmailTemplate = (subject, body, toAddresses, fromAddress) => {
+    return {
+        "bodyType": "text",
+        "body": body,
+        "contexts": [
+            {
+                "to": toAddresses,
+                "context": {
+                    "projectName": projectName,
+                    "unsubcribeHost": _publicServiceEndpoint,
+                    "email": toAddresses
+                }
+            }
+        ],
+        "encoding": "utf-8",
+        "from": fromAddress,
+        "priority": "normal",
+        "subject": subject
+    };
+}
+
+exports.handleContactFormResponse = async (projectName, contactFormResponse, recipients) => {
+    if (!Array.isArray(recipients) || (Array.isArray(recipients) && recipients.length === 0)) {
+        throw Error('Invalid recipients. Could not send email.');
+    }
+    // Build the email template to send to the user as confirmation.
+    const confirmationToAddresses = [contactFormResponse.email];
+    const confirmationSubject = `Contact us message received for ${projectName}`;
+    const confirmationBody = `Thank you for contacting the ${projectName} project team! We'll respond to your request shortly.`
+    const confirmationFromAddress = recipients[0];
+    const confirmationEmailTemplate = buildEmailTemplate(confirmationSubject, confirmationBody, confirmationToAddresses, confirmationFromAddress);
+
+    // Build the email template to send to the project leads.
+    const formSubmissionToAddresses = recipients;
+    const formSubmissionSubject = `New message received for the ${projectName} project`;
+    const formSubmissionBody = `${contactFormResponse.name} has sent the following message: ${contactFormResponse.message}`;
+    const formSubmissionFromAddress = contactFormResponse.email;
+    const formSubmissionTemplate = buildEmailTemplate(formSubmissionSubject, formSubmissionBody, formSubmissionToAddresses, formSubmissionFromAddress);
+
+    // Send the emails to the CHES (Common Hosted Email Service).
+    try {
+        sendEmail(confirmationEmailTemplate);
+        sendEmail(formSubmissionTemplate)
+    } catch (e) {
+        defaultLog.error("Error:", e);
+    }
+
+    return;
+};
