@@ -147,11 +147,9 @@ exports.sendWelcomeEmail = async function (projectName, email) {
  */
 const sendEmail = async (emailTemplate) => {
     const emailToken = await getEmailToken();
-    console.log('email token done')
 
     if (emailToken && emailToken.data && emailToken.data.access_token) {
         // Send confirmation email to user.
-        console.log('about to post')
         await axios.post(
             _commonHostingEmailServiceEndpoint + _CHES_emailMergeAPI,
             emailTemplate,
@@ -161,9 +159,10 @@ const sendEmail = async (emailTemplate) => {
                     "Content-Type": 'application/json'
                 }
             }
-        );
-        defaultLog.info("Email Sent");
-
+        
+        )
+        .then((response) => defaultLog.info("Email Sent:", response.data))
+        .catch((error) => defaultLog.info('Email not sent: ', error.response.data))
     } else {
         defaultLog.error("Couldn't get a proper token", emailToken);
     }
@@ -179,24 +178,22 @@ const sendEmail = async (emailTemplate) => {
  * @returns {object}
  */
 const buildEmailTemplate = (subject, body, toAddresses, fromAddress) => {
-    return {
+    const test = {
         "bodyType": "text",
         "body": body,
         "contexts": [
             {
                 "to": toAddresses,
-                "context": {
-                    "projectName": projectName,
-                    "unsubcribeHost": _publicServiceEndpoint,
-                    "email": toAddresses
-                }
+                "context": {}
             }
         ],
         "encoding": "utf-8",
         "from": fromAddress,
         "priority": "normal",
         "subject": subject
-    };
+    }
+
+    return test;
 }
 
 exports.handleContactFormResponse = async (projectName, contactFormResponse, recipients) => {
@@ -213,7 +210,7 @@ exports.handleContactFormResponse = async (projectName, contactFormResponse, rec
     // Build the email template to send to the project leads.
     const formSubmissionToAddresses = recipients;
     const formSubmissionSubject = `New message received for the ${projectName} project`;
-    const formSubmissionBody = `${contactFormResponse.name} has sent the following message: ${contactFormResponse.message}`;
+    const formSubmissionBody = `You've received the following message from ${contactFormResponse.name}: ${contactFormResponse.message}`;
     const formSubmissionFromAddress = contactFormResponse.email;
     const formSubmissionTemplate = buildEmailTemplate(formSubmissionSubject, formSubmissionBody, formSubmissionToAddresses, formSubmissionFromAddress);
 
