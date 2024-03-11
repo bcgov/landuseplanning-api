@@ -1,5 +1,5 @@
 var { remove, indexOf, assignIn } = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
+var defaultLog = require('winston').loggers.get('devLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
@@ -460,4 +460,30 @@ exports.protectedExport = async function (args, res) {
     }))
     .pipe(csv.stringify({ header: true }))
     .pipe(res);
+}
+
+exports.handleContactFormResponse = async (args, res) => {
+  defaultLog.info('HANDLE CONTACT FORM RESPONSE');
+  const contactForm = args.swagger.params.contactForm.value;
+  defaultLog.info('Incoming new object:', contactForm);
+
+  // Set a default values in case the project & recipients can't be found.
+  let projectName = 'Land Use Planning';
+  let recipients = [];
+  
+  // Attempt to get the project name and recipients for the contact form submission.
+  const Project = mongoose.model('Project');
+  await Project.findOne({ _id: contactForm.project }, null, (err, entity) => {
+    if (entity) {
+      projectName = entity.name;
+      recipients = entity.contactFormEmails
+    }
+  });
+
+  try {
+    await Email.handleContactFormResponse(projectName, contactForm, recipients);
+    return Actions.sendResponse(res, 200, true);
+  } catch (e) {
+    return Actions.sendResponse(res, 400, false);
+  }
 }
