@@ -1,3 +1,6 @@
+### 1.9.0 Mar 11, 2024
+* Add option for contact form on projects [DESENG-373](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-373)
+
 ### 1.8.0 Oct 11, 2023
 * Add file sections [DESENG-372](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-372)
 
