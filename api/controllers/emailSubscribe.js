@@ -1,5 +1,5 @@
 var { remove, indexOf, assignIn } = require('lodash');
-var defaultLog = require('winston').loggers.get('devLog');
+var defaultLog = require('winston').loggers.get('defaultLog');
 var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
