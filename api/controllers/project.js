@@ -51,7 +51,9 @@ const tagList = [
   'read',
   'write',
   'delete',
-  'activitiesAndUpdatesEnabled'
+  'activitiesAndUpdatesEnabled',
+  'contactFormEnabled',
+  'contactFormEmails'
 ];
 
 /**
@@ -859,6 +861,8 @@ exports.protectedPut = async (args, res) => {
   obj.documentInfo = projectObj.documentInfo;
   obj.partner = projectObj.partner;
   obj.activitiesAndUpdatesEnabled = projectObj.activitiesAndUpdatesEnabled;
+  obj.contactFormEnabled = projectObj.contactFormEnabled;
+  obj.contactFormEmails = projectObj.contactFormEmails;
 
   var doc = await Project.findOneAndUpdate({ _id: mongoose.Types.ObjectId(objId) }, obj, { upsert: false, new: true });
 
