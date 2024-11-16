@@ -17,6 +17,7 @@ const definition = {
   name: { type: String, trim: true },
   partner: { type: String, trim: true },
   region: { type: String, default: '' },
+  shapeFileColour: { type: String, default: '' },
   agreements: { type: Array, default: [] },
   addedBy: { type: String, default: '' },
   code: { type: String, default: '' },

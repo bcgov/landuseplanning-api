@@ -130,6 +130,7 @@ definitions:
       - partner
       - agreements
       - region
+      - shapeFileColour
       - projectDirector
       - type
       - read
@@ -2049,6 +2050,11 @@ paths:
           description: "Region of the project"
           type: string
         - in: query
+          name: shapeFileColour
+          required: false
+          description: "Colour used for the map shape file"
+          type: string
+        - in: query
           name: projectDirector
           required: false
           description: "Name of the PD"
@@ -2199,6 +2205,11 @@ paths:
           name: region
           required: false
           description: "Region of the project"
+          type: string
+        - in: query
+          name: shapeFileColour
+          required: false
+          description: "Colour of the map shape file"
           type: string
         - in: query
           name: projectDirector

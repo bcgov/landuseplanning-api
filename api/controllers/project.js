@@ -20,6 +20,7 @@ const tagList = [
   'name',
   'partner',
   'region',
+  'shapeFileColour',
   'projectDirector',
   'agreements',
   'addedBy',
@@ -845,6 +846,7 @@ exports.protectedPut = async (args, res) => {
   obj.details = projectObj.details;
   obj.overlappingRegionalDistricts = projectObj.overlappingRegionalDistricts;
   obj.region = projectObj.region;
+  obj.shapeFileColour = projectObj.shapeFileColour;
   obj.projectPhase = projectObj.projectPhase;
   obj.name = projectObj.name;
   obj.centroid = projectObj.centroid;
