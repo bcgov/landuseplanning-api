@@ -10,6 +10,7 @@
         projectLead             : '{{firstName()}} {{surname()}}',
         proponent               : '{{objectId()}}',
         region                  : '{{lorem(2, "words")}}',
+        shapeFileColour         : '{{lorem(1, "words")}}',
         projectDirector          : '{{firstName()}} {{surname()}}',
         agreements                    : '{{lorem(1, "words")}}',
         addedBy                 : '{{lorem(1, "words")}}',
