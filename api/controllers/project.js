@@ -45,6 +45,7 @@ const tagList = [
   'provElecDist',
   'shortName',
   'projectPhase',
+	'projectTypes',
   'substitution',
   'updatedBy',
   'projectLead',
@@ -848,6 +849,7 @@ exports.protectedPut = async (args, res) => {
   obj.region = projectObj.region;
   obj.shapeFileColour = projectObj.shapeFileColour;
   obj.projectPhase = projectObj.projectPhase;
+  obj.projectTypes = projectObj.projectTypes;
   obj.name = projectObj.name;
   obj.centroid = projectObj.centroid;
   obj.projectLead = projectObj.projectLead;

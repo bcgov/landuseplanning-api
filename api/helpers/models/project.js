@@ -37,6 +37,7 @@ const definition = {
   provElecDist: { type: String, default: '' },
   shortName: { type: String, default: '', index: true },
   projectPhase: { type: String, default: '' },
+	projectTypes: { type: Array, default: [] },
   substitution: { type: Boolean, default: false },
   projectLead: { type: 'ObjectId', ref: 'User', default: null, index: true },
   projectDirector: { type: 'ObjectId', ref: 'User', default: null, index: true },

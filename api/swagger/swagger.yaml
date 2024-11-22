@@ -901,6 +901,12 @@ paths:
           required: false
           description: "Get a Project that relates to this Project Phase."
         - in: query
+          collectionFormat: multi
+          name: projectTypes
+          type: array
+          required: false
+          description: "Get a Project that relates to these project types."
+        - in: query
           name: agreements
           type: string
           required: false
@@ -1016,6 +1022,12 @@ paths:
           type: string
           required: false
           description: "Get a Project that relates to this Project Phase."
+        - in: query
+          collectionFormat: multi
+          name: projectTypes
+          type: array
+          required: false
+          description: "Get a Project that relates to these project types."
         - in: query
           name: agreements
           type: string
@@ -2629,6 +2641,11 @@ paths:
           description: "The project phase of the file."
           required: false
           type: string
+        - name: projectTypes
+          in: formData
+          description: "The project types of the file."
+          required: false
+          type: array
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
@@ -2863,6 +2880,11 @@ paths:
           description: "The project phase of the file."
           required: false
           type: string
+        - name: projectTypes
+          in: formData
+          description: "The project types of the file."
+          required: false
+          type: array
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
