@@ -45,7 +45,7 @@ const tagList = [
   'provElecDist',
   'shortName',
   'projectPhase',
-	'projectTypes',
+  'projectTypes',
   'substitution',
   'updatedBy',
   'projectLead',
