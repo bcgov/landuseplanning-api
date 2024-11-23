@@ -115,6 +115,7 @@ definitions:
       - currentPhase
       - currentPhaseCode
       - currentPhaseName
+      - projectTypes
       - description
       - details
       - engagementStatus
@@ -137,6 +138,9 @@ definitions:
       - activitiesAndUpdatesEnabled
       - contactFormEnabled
       - contactFormEmails
+    enum: &projectTypes
+      - name
+      - checked
   TopicSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
@@ -906,6 +910,9 @@ paths:
           type: array
           required: false
           description: "Get a Project that relates to these project types."
+          items:
+            type: string
+            enum: *projectTypes
         - in: query
           name: agreements
           type: string
@@ -1028,6 +1035,9 @@ paths:
           type: array
           required: false
           description: "Get a Project that relates to these project types."
+          items:
+            type: string
+            enum: *projectTypes
         - in: query
           name: agreements
           type: string
@@ -2646,6 +2656,9 @@ paths:
           description: "The project types of the file."
           required: false
           type: array
+          items:
+            type: string
+            enum: *projectTypes
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
@@ -2885,6 +2898,9 @@ paths:
           description: "The project types of the file."
           required: false
           type: array
+          items:
+            type: string
+            enum: *projectTypes
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
