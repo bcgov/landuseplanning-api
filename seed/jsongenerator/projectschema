@@ -32,7 +32,8 @@
         proMember               : '{{lorem(1, "words")}}',
         provElecDist            : '{{lorem(1, "words")}}',
         shortName               : '{{lorem(1, "words")}}',
-        projectPhase                  : '{{lorem(1, "words")}}',
+        projectPhase            : '{{lorem(1, "words")}}',
+        projectTypes            : '{{lorem(2, "words")}}',
         substitution            : 'false',
     }
   }

@@ -1,5 +1,6 @@
-### 1.10.0 Nov 15, 2024
+### 1.10.0 Nov 22, 2024
 * Modified project definition to accomodate shape file colours. [DESENG-743](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-743)
+* Modified project definition to accomodate project type multiselect. [DESENG-745](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-745)
 
 ### 1.9.0 Mar 11, 2024
 * Add option for contact form on projects [DESENG-373](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-373)
