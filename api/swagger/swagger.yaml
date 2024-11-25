@@ -2885,14 +2885,6 @@ paths:
           description: "The project phase of the file."
           required: false
           type: string
-        - name: projectTypes
-          in: formData
-          description: "The project types of the file."
-          required: false
-          type: array
-          items:
-            type: string
-            enum: *projectTypes
         - name: datePosted
           in: formData
           description: "The datePosted of the file."
