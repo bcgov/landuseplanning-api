@@ -138,6 +138,7 @@ definitions:
       - activitiesAndUpdatesEnabled
       - contactFormEnabled
       - contactFormEmails
+      - collectionNotice
     enum: &projectTypes
       - name
       - checked
@@ -2107,6 +2108,11 @@ paths:
           description: "Recipient emails when the contact form gets a submission"
           type: string
         - in: query
+          name: collectionNotice
+          required: false
+          description: "A custom collection notice that is displayed to users"
+          type: string
+        - in: query
           name: cpStart
           type: string
           format: date-time
@@ -2262,6 +2268,11 @@ paths:
           name: contactFormEmails
           required: false
           description: "Recipient emails when the contact form gets a submission"
+          type: string
+        - in: query
+          name: collectionNotice
+          required: false
+          description: "A custom collection notice that is shown to the user"
           type: string
         - in: query
           name: pageNum
