@@ -51,7 +51,8 @@ const definition = {
   // Options
   activitiesAndUpdatesEnabled: { type: Boolean, default: false },
   contactFormEnabled: { type: Boolean, default: false },
-  contactFormEmails: { type: Array, default: []}
+  contactFormEmails: { type: Array, default: []},
+  collectionNotice: { type: String, default: '' },
 };
 
 module.exports = require('../models')('Project', definition, 'lup');
