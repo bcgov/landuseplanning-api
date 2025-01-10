@@ -411,17 +411,14 @@ var executeQuery = async function (args, res, next) {
   });
 
   if (dataset !== 'Item') {
-    var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or)
-    if (dataset === 'Comment') {
-      // Filter
-      each(data[0].searchResults, function (item) {
-        if (item.isAnonymous === true) {
-          delete item.author;
-        }
-      });
-    }
+    var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or);
+		// Filter
+		each(data[0].searchResults, function (item) {
+			if (item.isAnonymous === true) {
+				delete item.author;
+			}
+		});
     return Actions.sendResponse(res, 200, data);
-
   } else if (dataset === 'Item') {
 
     var collectionObj = mongoose.model(args.swagger.params._schemaName.value);

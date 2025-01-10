@@ -1,3 +1,6 @@
+### 1.11.0 Jan 9, 2025
+* Added external link model, service, and swagger definitions. Modified search service. [DESENG-751](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-751)
+
 ### 1.10.0 Nov 26, 2024
 * Modified project definition to accomodate shape file colours. [DESENG-743](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-743)
 * Modified project definition to accomodate project type multiselect. [DESENG-745](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-745)
