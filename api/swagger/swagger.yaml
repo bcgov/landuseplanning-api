@@ -216,6 +216,32 @@ definitions:
       - internalMime
       - internalSize
 
+### External Link Definitions
+  ExLinkId:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool external link"
+  ExLinkObject:
+    type: object
+    properties:
+      displayName:
+        type: string
+        example: "A cool external link"
+  ExternalLinkFields:
+    type: string
+    description: "Optional fields to return."
+    example: name|type
+    enum: &externalLinkFields
+      - displayName
+      - externalLink
+      - dateAdded
+      - dateUpdated
+      - description
+      - section
+      - projectPhase
+
 ### Document Section Definitions
   DocumentSectionId:
     type: object
@@ -3428,6 +3454,524 @@ paths:
           description: "Success"
           schema:
             $ref: "#/definitions/DocObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+## External Links
+  /link:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on External Link Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    post:
+      tags:
+        - link
+      summary: "Create a new external link"
+      operationId: protectedPost
+      description: "Create a new external link object."
+      summary: "Create a new external link object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: project
+          in: formData
+          description: "The application to bind this file to."
+          required: false
+          type: string
+        - name: section
+          in: formData
+          required: false
+          type: string
+        - name: projectPhase
+          in: formData
+          description: "The project phase of the file."
+          required: false
+          type: string
+        - name: dateAdded
+          in: formData
+          description: "The dateAdded of the file."
+          required: false
+          type: string
+        - name: dateUpdated
+          in: formData
+          description: "The dateUpdated of the file."
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: "The description of the file."
+          required: false
+          type: string
+        - name: externalLink
+          in: formData
+          description: "The external link of the file."
+          required: false
+          type: string
+        - name: displayName
+          in: formData
+          description: "The displayName of the file."
+          required: false
+          type: string
+        - name: checkbox
+          in: formData
+          description: "The checkbox state of the file."
+          required: false
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - link
+      summary: "Get a list of external links"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving an external link."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+        - staff
+      parameters:
+        - in: query
+          name: exLinkIds
+          description: "Search using an array of external link ids."
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: project
+          description: "External Links relating to (a) particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: _comment
+          description: "External Links relating to a particular Comment(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "External Links fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *externalLinkFields
+        - in: query
+          name: isDeleted
+          type: boolean
+          required: false
+          description: "External Links that are deleted or not"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+  /link/{exLinkId}:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on External Link GET Route"
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - link
+      summary: "Get an external link"
+      operationId: protectedGet
+      description: "Authenticated access to retreiving an external link."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "External link fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *externalLinkFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - link
+      summary: "Update/Upload an external link"
+      operationId: protectedPut
+      description: "Update an external link object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      consumes:
+        - multipart/form-data
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to update"
+          required: true
+          type: string
+        - name: project
+          in: formData
+          description: "The application to bind this document to."
+          required: false
+          type: string
+        - name: section
+          in: formData
+          description: "The section to organize the document under."
+          required: false
+          type: string
+        - name: projectPhase
+          in: formData
+          description: "The project phase of the file."
+          required: false
+          type: string
+        - name: dateAdded
+          in: formData
+          description: "The date on which the file was added."
+          required: false
+          type: string
+        - name: dateUpdated
+          in: formData
+          description: "The date on which the file was updated last."
+          required: false
+          type: string
+        - name: description
+          in: formData
+          description: "The description of the file."
+          required: false
+          type: string
+        - name: displayName
+          in: formData
+          description: "The displayName of the file."
+          required: false
+          type: string
+        - name: externalLink
+          in: formData
+          description: "The external link of the file."
+          required: false
+          type: string
+        - name: checkbox
+          in: formData
+          description: "The checkbox state of the file."
+          required: false
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - link
+      summary: "Delete an external link"
+      operationId: protectedDelete
+      description: "Delete an external link object."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - sysadmin
+      consumes:
+        - application/json
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to delete"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /link/{exLinkId}/publish:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on External Link GET Route"
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - link
+      summary: "Publish an external link"
+      operationId: protectedPublish
+      description: "Adds the singular instance of the 'public' role to a external link."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+        # TODO: Define publish roles.
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to update"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /link/{exLinkId}/unpublish:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on ExternalLink GET Route"
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    put:
+      tags:
+        - link
+      summary: "UnPublish an external link"
+      operationId: protectedUnPublish
+      description: "Removes the singular instance of the 'public' role on an external link."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+        # TODO: Define unpublish roles.
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to update"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /public/link:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on External Link Route"
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - link
+      summary: "Get a list of external links"
+      operationId: publicGet
+      description: "Retreiving public external links."
+      parameters:
+        - in: query
+          name: exLinkIds
+          description: "Search using an array of external link ids."
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: project
+          description: "Documents relating to a particular Project(s)"
+          type: array
+          required: false
+          collectionFormat: pipes
+          items:
+            type: string
+        - in: query
+          name: fields
+          description: "Document fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *externalLinkFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+
+  /public/link/{exLinkId}:
+    x-swagger-router-controller: externalLink
+    options:
+      tags:
+        - link
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on ExternalLink GET Route"
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    get:
+      tags:
+        - link
+      summary: "Get an external link"
+      operationId: publicGet
+      description: "Public access to retreiving external links."
+      parameters:
+        - name: exLinkId
+          in: path
+          description: "ID of external link to get"
+          required: true
+          type: string
+        - in: query
+          name: fields
+          description: "External link fields to return."
+          required: false
+          type: array
+          collectionFormat: pipes
+          items:
+            type: string
+            enum: *externalLinkFields
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/ExLinkObject"
         "403":
           description: "Access Denied"
           schema:
