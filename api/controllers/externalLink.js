@@ -66,52 +66,6 @@ exports.publicGet = async (args, res) => {
   }
 };
 
-exports.unProtectedPost = async (args, res) => {
-  defaultLog.info('EXTERNAL LINK PUBLIC POST');
-  const _comment = args.swagger.params._comment.value;
-  const project = args.swagger.params.project.value;
-  try {
-    Promise.resolve()
-      .then(async function () {
-				defaultLog.info('Now saving external link in DB.');
-				const ExternalLink = mongoose.model('ExternalLink');
-				const extLink = new ExternalLink();
-				// Define security tag defaults
-				extLink.project = mongoose.Types.ObjectId(project);
-				extLink._comment = _comment;
-				extLink._addedBy = 'public';
-				extLink._createdDate = new Date();
-				extLink.read = ['sysadmin', 'staff'];
-				extLink.write = ['sysadmin', 'staff'];
-				extLink.delete = ['sysadmin', 'staff'];
-				extLink.displayName = args.body.displayName;
-				extLink.dateAdded = new Date();
-				extLink.dateUpdated = new Date();
-				extLink.externalLink = args.body.externalLink;
-				extLink.projectPhase = args.body.projectPhase;
-				extLink.checkbox = 'true' === args.body.checkbox ? true : false;
-				extLink.save()
-					.then(async function (link) {
-						defaultLog.info("Saved new external link object:", link._id);
-						const Comment = mongoose.model('Comment');
-						const c = await Comment.update({ _id: _comment }, { $addToSet: { documents: link._id } });
-						defaultLog.info('External link updated:', c);
-						Utils.recordAction('Post', 'ExternalLink', 'public', link._id);
-						return Actions.sendResponse(res, 200, link);
-					})
-					.catch(async function (error) {
-						defaultLog.error(error);
-						return Actions.sendResponse(res, 400, error);
-					});
-			});
-  } catch (e) {
-    defaultLog.error(e);
-    // Delete the path details before we return to the caller.
-    delete e['path'];
-    return Actions.sendResponse(res, 400, e);
-  }
-};
-
 exports.protectedHead = (args, res) => {
   defaultLog.info('EXTERNAL LINK PROTECTED HEAD');
   // Build match query if on exLinkId route
@@ -141,7 +95,6 @@ exports.protectedHead = (args, res) => {
     true) // count
     .then((data) => {
       Utils.recordAction('Head', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, args.swagger.params.exLinkId?.value || null);
-      // /api/commentperiod/ route, return 200 OK with 0 items if necessary
       if (!(args.swagger.params.exLinkId && args.swagger.params.exLinkId.value) || (data && data.length > 0)) {
         res.setHeader('x-total-count', data?.length > 0 ? data[0].total_items : 0);
         return Actions.sendResponse(res, 200, data);
@@ -191,7 +144,6 @@ exports.protectedPost = async (args, res, next) => {
   defaultLog.info('EXTERNAL LINK PROTECTED POST');
   try {
     const project = args.swagger.params.project?.value;
-    // const _comment = args.swagger.params._comment.value;
 		defaultLog.info('Section value:', args.swagger.params.section?.value);
     Promise.resolve()
       .then(async () => {
@@ -214,9 +166,6 @@ exports.protectedPost = async (args, res, next) => {
 				extLink.description = args.swagger.params.description.value;
 				extLink.projectPhase = args.swagger.params.projectPhase.value;
 				extLink.checkbox = 'true' === args.body.checkbox ? true : false;
-				// extLink._comment = _comment;
-				// extLink.alt = args.swagger.params.alt?.value || null;
-				// extLink.documentAuthor = args.swagger.params.documentAuthor?.value || null;
 				extLink.save()
 					.then((exl) => {
 						Utils.recordAction('Post', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, exl._id);

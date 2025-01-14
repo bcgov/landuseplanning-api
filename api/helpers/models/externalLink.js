@@ -19,7 +19,4 @@ module.exports = require('../models')('ExternalLink', {
     description: { type: String, default: '' },
     projectPhase: { type: String, default: '' },
 		checkbox: { type: Boolean, default: false },
-		
-		// alt: { type: String, default: '' },
-    // documentAuthor: { type: String, default: '' },
 }, 'lup');
