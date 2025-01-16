@@ -32,13 +32,13 @@ exports.publicGet = async (args, res) => {
   // Build match query if on exLinkId route
   let query = {};
 
-  if (args.swagger.params.exLinkId?.value) {
+  if (args.swagger?.params?.exLinkId?.value) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkId.value, query);
-  } else if (args.swagger.params.exLinkIds?.value?.length > 0) {
+  } else if (args.swagger?.params?.exLinkIds?.value?.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkIds.value, query);
   }
 
-  if (args.swagger.params.project?.value) {
+  if (args.swagger?.params?.project?.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
 
