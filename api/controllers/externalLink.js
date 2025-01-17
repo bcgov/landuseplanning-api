@@ -31,14 +31,14 @@ exports.publicGet = async (args, res) => {
   defaultLog.info('EXTERNAL LINK PUBLIC GET');
   // Build match query if on exLinkId route
   let query = {};
-
-  if (args.swagger?.params?.exLinkId?.value) {
+	
+  if (args.swagger.params.exLinkId && args.swagger.params.exLinkId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkId.value, query);
-  } else if (args.swagger?.params?.exLinkIds?.value?.length > 0) {
+  } else if (args.swagger.params.exLinkIds && args.swagger.params.exLinkIds.value && args.swagger.params.exLinkIds.value.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkIds.value, query);
   }
 
-  if (args.swagger?.params?.project?.value) {
+  if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
 
@@ -58,7 +58,7 @@ exports.publicGet = async (args, res) => {
       null, // limit
       false); // count
     defaultLog.info('Got external link file(s):', data);
-    Utils.recordAction('Get', 'ExternalLink', 'public', args.swagger.params.exLinkId?.value || null);
+    Utils.recordAction('Get', 'ExternalLink', 'public', args.swagger.params.exLinkId ? args.swagger.params.exLinkId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.error(e);
@@ -70,13 +70,13 @@ exports.protectedHead = (args, res) => {
   defaultLog.info('EXTERNAL LINK PROTECTED HEAD');
   // Build match query if on exLinkId route
   let query = {};
-  if (args.swagger.params.exLinkId?.value) {
+  if (args.swagger.params.exLinkId && args.swagger.params.exLinkId.value) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkId.value, query);
   }
-  if (args.swagger.params._application?.value) {
+  if (args.swagger.params._application && args.swagger.params._application.value) {
     query = Utils.buildQuery('_application', args.swagger.params._application.value, query);
   }
-  if (args.swagger.params._comment?.value) {
+  if (args.swagger.params._comment && args.swagger.params._comment.value) {
     query = Utils.buildQuery('_comment', args.swagger.params._comment.value, query);
   }
   // Set query type
@@ -94,9 +94,9 @@ exports.protectedHead = (args, res) => {
     null, // limit
     true) // count
     .then((data) => {
-      Utils.recordAction('Head', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, args.swagger.params.exLinkId?.value || null);
+      Utils.recordAction('Head', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, args.swagger.params.exLinkId ? args.swagger.params.exLinkId.value : null);
       if (!(args.swagger.params.exLinkId && args.swagger.params.exLinkId.value) || (data && data.length > 0)) {
-        res.setHeader('x-total-count', data?.length > 0 ? data[0].total_items : 0);
+        res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
         return Actions.sendResponse(res, 200, data);
       } else {
         return Actions.sendResponse(res, 404, data);
@@ -109,12 +109,12 @@ exports.protectedGet = async (args, res) => {
   let query = {}, sort = {}, skip = null, limit = null, count = false;
 
   // Build match query if on exLinkId route
-  if (args.swagger.params.exLinkId?.value) {
+  if (args.swagger.params.exLinkId && args.swagger.params.exLinkId.value) {
     assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.exLinkId.value) });
-  } else if (args.swagger.params.exLinkIds?.value?.length > 0) {
+  } else if (args.swagger.params.exLinkIds && args.swagger.params.exLinkIds.value && args.swagger.params.exLinkIds.value.length > 0) {
     query = Utils.buildQuery("_id", args.swagger.params.exLinkIds.value);
   }
-  if (args.swagger.params.project?.value) {
+  if (args.swagger.params.project && args.swagger.params.project.value) {
     query = Utils.buildQuery("project", args.swagger.params.project.value, query);
   }
   // Set query type
@@ -131,7 +131,7 @@ exports.protectedGet = async (args, res) => {
       skip, // skip
       limit, // limit
       count); // count
-    Utils.recordAction('Get', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, args.swagger.params.exLinkId?.value || null);
+    Utils.recordAction('Get', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, args.swagger.params.exLinkId ? args.swagger.params.exLinkId.value : null);
     defaultLog.info('Got external file(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
@@ -143,8 +143,8 @@ exports.protectedGet = async (args, res) => {
 exports.protectedPost = async (args, res, next) => {
   defaultLog.info('EXTERNAL LINK PROTECTED POST');
   try {
-    const project = args.swagger.params.project?.value;
-		defaultLog.info('Section value:', args.swagger.params.section?.value);
+    const project = args.swagger.params.project && args.swagger.params.project.value;
+		defaultLog.info('Section value:', args.swagger.params.section ? args.swagger.params.section.value : null);
     Promise.resolve()
       .then(async () => {
 				const ExternalLink = mongoose.model('ExternalLink');
@@ -160,7 +160,7 @@ exports.protectedPost = async (args, res, next) => {
 				extLink._createdDate = new Date();
 				extLink.displayName = args.swagger.params.displayName.value;
 				extLink.externalLink = args.swagger.params.externalLink.value;
-				extLink.section = args.swagger.params.section?.value;
+				extLink.section = args.swagger.params.section ? args.swagger.params.section.value : null;
 				extLink.dateAdded = args.swagger.params.dateAdded.value;
 				extLink.dateUpdated = args.swagger.params.dateUpdated.value;
 				extLink.description = args.swagger.params.description.value;
