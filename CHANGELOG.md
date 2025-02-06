@@ -1,3 +1,6 @@
+### 1.12.0 Feb 6, 2025
+* Resolve unique index issue in local development
+
 ### 1.11.0 Jan 9, 2025
 * Added external link model, service, and swagger definitions. Modified search service. [DESENG-751](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-751)
 
