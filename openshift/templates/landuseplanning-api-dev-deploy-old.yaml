@@ -1,0 +1,318 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: landuseplanning-api-dev
+  namespace: e8b9ad-dev
+  uid: 09a8ae93-93c1-459f-abe8-e9d15857731f
+  resourceVersion: '13267554291'
+  generation: 65
+  creationTimestamp: '2021-02-23T00:08:25Z'
+  labels:
+    app: landuseplanning-api-dev
+    app.kubernetes.io/component: landuseplanning-api-dev
+    app.kubernetes.io/instance: landuseplanning-api-dev
+    app.kubernetes.io/part-of: landuseplanning-api-dev
+  managedFields:
+    - manager: Mozilla
+      operation: Update
+      apiVersion: apps.openshift.io/v1
+      time: '2022-12-21T21:53:22Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:app': {}
+            'f:app.kubernetes.io/component': {}
+            'f:app.kubernetes.io/instance': {}
+            'f:app.kubernetes.io/part-of': {}
+        'f:spec':
+          'f:replicas': {}
+          'f:selector':
+            .: {}
+            'f:app': {}
+          'f:strategy':
+            'f:activeDeadlineSeconds': {}
+            'f:rollingParams':
+              .: {}
+              'f:intervalSeconds': {}
+              'f:maxSurge': {}
+              'f:maxUnavailable': {}
+              'f:timeoutSeconds': {}
+              'f:updatePeriodSeconds': {}
+            'f:type': {}
+          'f:template':
+            .: {}
+            'f:metadata':
+              .: {}
+              'f:creationTimestamp': {}
+              'f:labels':
+                .: {}
+                'f:app': {}
+            'f:spec':
+              .: {}
+              'f:containers':
+                .: {}
+                'k:{"name":"landuseplanning-api-dev"}':
+                  .: {}
+                  'f:env':
+                    'k:{"name":"MONGODB_SERVICE_HOST"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"CHES_AUTH_ENDPOINT"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"_EMAIL_CLIENT_SECRET"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"MONGODB_USERNAME"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                    'k:{"name":"MONGODB_DATABASE"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                    'k:{"name":"MONGODB_PASSWORD"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                    'k:{"name":"SSO_ISSUER"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    .: {}
+                    'k:{"name":"MINIO_ACCESS_KEY"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                    'k:{"name":"MINIO_HOST"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                    'k:{"name":"CHES_ENDPOINT"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"KEYCLOAK_ENABLED"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"SSO_JWKSURI"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"_EMAIL_CLIENTID"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"MINIO_SECRET_KEY"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef': {}
+                  'f:imagePullPolicy': {}
+                  'f:name': {}
+                  'f:ports':
+                    .: {}
+                    'k:{"containerPort":8080,"protocol":"TCP"}':
+                      .: {}
+                      'f:containerPort': {}
+                      'f:protocol': {}
+                  'f:resources': {}
+                  'f:terminationMessagePath': {}
+                  'f:terminationMessagePolicy': {}
+              'f:dnsPolicy': {}
+              'f:restartPolicy': {}
+              'f:schedulerName': {}
+              'f:securityContext': {}
+              'f:terminationGracePeriodSeconds': {}
+    - manager: openshift-controller-manager
+      operation: Update
+      apiVersion: apps.openshift.io/v1
+      time: '2025-02-06T23:48:58Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          'f:template':
+            'f:spec':
+              'f:containers':
+                'k:{"name":"landuseplanning-api-dev"}':
+                  'f:image': {}
+          'f:triggers': {}
+        'f:status':
+          'f:conditions':
+            .: {}
+            'k:{"type":"Available"}':
+              .: {}
+              'f:type': {}
+            'k:{"type":"Progressing"}':
+              .: {}
+              'f:type': {}
+          'f:details': {}
+    - manager: openshift-controller-manager
+      operation: Update
+      apiVersion: apps.openshift.io/v1
+      time: '2025-02-14T18:51:56Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:availableReplicas': {}
+          'f:conditions':
+            'k:{"type":"Available"}':
+              'f:lastTransitionTime': {}
+              'f:lastUpdateTime': {}
+              'f:message': {}
+              'f:status': {}
+            'k:{"type":"Progressing"}':
+              'f:lastTransitionTime': {}
+              'f:lastUpdateTime': {}
+              'f:message': {}
+              'f:reason': {}
+              'f:status': {}
+          'f:details':
+            'f:causes': {}
+            'f:message': {}
+          'f:latestVersion': {}
+          'f:observedGeneration': {}
+          'f:replicas': {}
+          'f:unavailableReplicas': {}
+          'f:updatedReplicas': {}
+      subresource: status
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - landuseplanning-api-dev
+        from:
+          kind: ImageStreamTag
+          namespace: e8b9ad-tools
+          name: 'landuseplanning-api:dev'
+        lastTriggeredImage: 'image-registry.openshift-image-registry.svc:5000/e8b9ad-tools/landuseplanning-api@sha256:c443c074c8ab0313a140d381f79c35e71bdd1f0d842b7b1dbe5f172cccf5bab4'
+    - type: ConfigChange
+  replicas: 0
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    app: landuseplanning-api-dev
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api-dev
+    spec:
+      containers:
+        - name: landuseplanning-api-dev
+          image: 'image-registry.openshift-image-registry.svc:5000/e8b9ad-tools/landuseplanning-api@sha256:c443c074c8ab0313a140d381f79c35e71bdd1f0d842b7b1dbe5f172cccf5bab4'
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KEYCLOAK_ENABLED
+              value: 'true'
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-name
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-password
+            - name: MONGODB_SERVICE_HOST
+              value: landuseplanning-api-mongodb-dev
+            - name: MINIO_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-dev
+                  key: minio-host
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-dev
+                  key: minio-access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-dev
+                  key: minio-secret-key
+            - name: CHES_AUTH_ENDPOINT
+              value: 'https://test.loginproxy.gov.bc.ca/auth/realms/comsvcauth/protocol/openid-connect/token'
+            - name: _EMAIL_CLIENTID
+              value: 09C5071A-D0607C5BCD0
+            - name: _EMAIL_CLIENT_SECRET
+              value: 771a3676-8220-4abe-badb-01bd3f65c13e
+            - name: CHES_ENDPOINT
+              value: 'https://ches-test.api.gov.bc.ca/'
+            - name: SSO_ISSUER
+              value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard'
+            - name: SSO_JWKSURI
+              value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/certs'
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+status:
+  latestVersion: 52
+  observedGeneration: 65
+  replicas: 0
+  updatedReplicas: 0
+  availableReplicas: 0
+  unavailableReplicas: 0
+  details:
+    message: image change
+    causes:
+      - type: ImageChange
+        imageTrigger:
+          from:
+            kind: DockerImage
+            name: 'image-registry.openshift-image-registry.svc:5000/e8b9ad-tools/landuseplanning-api@sha256:c443c074c8ab0313a140d381f79c35e71bdd1f0d842b7b1dbe5f172cccf5bab4'
+  conditions:
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2025-02-06T23:49:31Z'
+      lastTransitionTime: '2025-02-06T23:49:26Z'
+      reason: NewReplicationControllerAvailable
+      message: replication controller "landuseplanning-api-dev-52" successfully rolled out
+    - type: Available
+      status: 'False'
+      lastUpdateTime: '2025-02-14T18:51:56Z'
+      lastTransitionTime: '2025-02-14T18:51:56Z'
+      message: Deployment config does not have minimum availability.
