@@ -271,9 +271,15 @@ spec:
             - name: CHES_AUTH_ENDPOINT
               value: 'https://test.loginproxy.gov.bc.ca/auth/realms/comsvcauth/protocol/openid-connect/token'
             - name: _EMAIL_CLIENTID
-              value: 09C5071A-D0607C5BCD0
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-email-dev
+                  key: email-client-id
             - name: _EMAIL_CLIENT_SECRET
-              value: 771a3676-8220-4abe-badb-01bd3f65c13e
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-email-dev
+                  key: email-client-secret
             - name: CHES_ENDPOINT
               value: 'https://ches-test.api.gov.bc.ca/'
             - name: SSO_ISSUER
