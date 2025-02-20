@@ -200,7 +200,7 @@ spec:
           name: 'mongodb:latest'
         lastTriggeredImage: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb@sha256:8dc9932eabd30f2ee4d0b882500c65b48f3c2fbbd85bfd51d0d18410af404a39'
     - type: ConfigChange
-  replicas: 0
+  replicas: 1
   revisionHistoryLimit: 10
   test: false
   selector:
