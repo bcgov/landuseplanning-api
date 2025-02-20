@@ -1,5 +1,6 @@
 ### 1.12.1 Feb 14, 2025
 * Added old and new YAML files for dev deployment to openshift folder. [DESENG-759](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-759)
+* Added old and new YAML files for dev MongoDB deployment to openshift folder. [DESENG-760](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-760)
 
 ### 1.12.0 Feb 6, 2025
 * Resolve unique index issue in local development
