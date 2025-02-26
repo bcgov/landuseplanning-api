@@ -1,0 +1,89 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: backup-lup-mongodb
+  namespace: e8b9ad-test
+  labels:
+    app: backup-container
+    env: test
+    name: backup-lup-mongodb
+    role: backup-container
+spec:
+  strategy:
+    type: Recreate
+  replicas: 0
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      name: backup-lup-mongodb
+  template:
+    metadata:
+      name: backup-lup-mongodb
+      creationTimestamp: null
+      labels:
+        app: backup-container
+        env: test
+        name: backup-lup-mongodb
+        role: backup-container
+    spec:
+      volumes:
+        - name: backup-lup-mongodb
+          persistentVolumeClaim:
+            claimName: backup-lup-mongodb
+        - name: backup-lup-mongodb-verification
+          persistentVolumeClaim:
+            claimName: backup-lup-mongodb-verification
+        - name: backup-mongodb-config-volume
+          configMap:
+            name: backup-lup-conf
+            items:
+              - key: backup.conf
+                path: backup.conf
+            defaultMode: 420
+      containers:
+        - name: backup-lup-mongodb
+          image: 'artifacts.developer.gov.bc.ca/bcgov-docker-local/backup-container-mongo:latest'
+          env:
+            - name: BACKUP_STRATEGY
+              value: rolling
+            - name: BACKUP_DIR
+              value: /backups/
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-password
+            - name: ENVIRONMENT_FRIENDLY_NAME
+              value: landuseplanning-test
+            - name: ENVIRONMENT_NAME
+              value: e8b9ad-test
+          resources:
+            limits:
+              cpu: '500m'
+              memory: 1Gi
+            requests:
+              cpu: '250m'
+              memory: 1Gi
+          volumeMounts:
+            - name: backup-lup-mongodb
+              mountPath: /backups/
+            - name: backup-lup-mongodb-verification
+              mountPath: /var/lib/mongodb/data
+            - name: backup-mongodb-config-volume
+              mountPath: /backup.conf
+              subPath: backup.conf
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: artifactory-creds
+      schedulerName: default-scheduler

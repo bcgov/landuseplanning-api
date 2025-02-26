@@ -1,0 +1,295 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  name: backup-lup-mongodb
+  namespace: e8b9ad-test
+  uid: be4e928e-44c1-4809-b002-c397e4fc8074
+  resourceVersion: '2867130948'
+  generation: 38
+  creationTimestamp: '2022-02-23T00:00:48Z'
+  labels:
+    app: backup-container
+    env: test
+    name: backup-lup-mongodb
+    role: backup-container
+  managedFields:
+    - manager: Mozilla
+      operation: Update
+      apiVersion: apps.openshift.io/v1
+      time: '2022-02-23T23:52:44Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:metadata':
+          'f:labels':
+            .: {}
+            'f:app': {}
+            'f:env': {}
+            'f:name': {}
+            'f:role': {}
+        'f:spec':
+          'f:replicas': {}
+          'f:selector':
+            .: {}
+            'f:name': {}
+          'f:strategy':
+            'f:activeDeadlineSeconds': {}
+            'f:recreateParams':
+              .: {}
+              'f:timeoutSeconds': {}
+            'f:type': {}
+          'f:template':
+            .: {}
+            'f:metadata':
+              .: {}
+              'f:creationTimestamp': {}
+              'f:labels':
+                .: {}
+                'f:app': {}
+                'f:env': {}
+                'f:name': {}
+                'f:role': {}
+              'f:name': {}
+            'f:spec':
+              'f:volumes':
+                .: {}
+                'k:{"name":"backup-lup-mongodb"}':
+                  .: {}
+                  'f:name': {}
+                  'f:persistentVolumeClaim':
+                    .: {}
+                    'f:claimName': {}
+                'k:{"name":"backup-lup-mongodb-verification"}':
+                  .: {}
+                  'f:name': {}
+                  'f:persistentVolumeClaim':
+                    .: {}
+                    'f:claimName': {}
+                'k:{"name":"backup-mongodb-config-volume"}':
+                  .: {}
+                  'f:configMap':
+                    .: {}
+                    'f:defaultMode': {}
+                    'f:items': {}
+                    'f:name': {}
+                  'f:name': {}
+              'f:containers':
+                .: {}
+                'k:{"name":"backup-lup-mongodb"}':
+                  'f:image': {}
+                  'f:volumeMounts':
+                    .: {}
+                    'k:{"mountPath":"/backup.conf"}':
+                      .: {}
+                      'f:mountPath': {}
+                      'f:name': {}
+                      'f:subPath': {}
+                    'k:{"mountPath":"/backups/"}':
+                      .: {}
+                      'f:mountPath': {}
+                      'f:name': {}
+                    'k:{"mountPath":"/var/lib/mongodb/data"}':
+                      .: {}
+                      'f:mountPath': {}
+                      'f:name': {}
+                  'f:terminationMessagePolicy': {}
+                  .: {}
+                  'f:resources':
+                    .: {}
+                    'f:limits':
+                      .: {}
+                      'f:cpu': {}
+                      'f:memory': {}
+                    'f:requests':
+                      .: {}
+                      'f:cpu': {}
+                      'f:memory': {}
+                  'f:env':
+                    .: {}
+                    'k:{"name":"BACKUP_DIR"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"BACKUP_STRATEGY"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"DATABASE_PASSWORD"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef':
+                          .: {}
+                          'f:key': {}
+                          'f:name': {}
+                    'k:{"name":"DATABASE_USER"}':
+                      .: {}
+                      'f:name': {}
+                      'f:valueFrom':
+                        .: {}
+                        'f:secretKeyRef':
+                          .: {}
+                          'f:key': {}
+                          'f:name': {}
+                    'k:{"name":"ENVIRONMENT_FRIENDLY_NAME"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                    'k:{"name":"ENVIRONMENT_NAME"}':
+                      .: {}
+                      'f:name': {}
+                      'f:value': {}
+                  'f:terminationMessagePath': {}
+                  'f:imagePullPolicy': {}
+                  'f:name': {}
+              'f:dnsPolicy': {}
+              'f:restartPolicy': {}
+              .: {}
+              'f:schedulerName': {}
+              'f:terminationGracePeriodSeconds': {}
+              'f:imagePullSecrets':
+                .: {}
+                'k:{"name":"artifactory-creds"}':
+                  .: {}
+                  'f:name': {}
+              'f:securityContext': {}
+          'f:triggers': {}
+    - manager: openshift-controller-manager
+      operation: Update
+      apiVersion: apps.openshift.io/v1
+      time: '2022-02-24T02:15:45Z'
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:status':
+          'f:availableReplicas': {}
+          'f:conditions':
+            'k:{"type":"Available"}':
+              'f:lastTransitionTime': {}
+              'f:lastUpdateTime': {}
+              'f:message': {}
+              'f:status': {}
+            'k:{"type":"Progressing"}':
+              .: {}
+              'f:lastTransitionTime': {}
+              'f:lastUpdateTime': {}
+              'f:message': {}
+              'f:reason': {}
+              'f:status': {}
+              'f:type': {}
+          'f:details':
+            .: {}
+            'f:causes': {}
+            'f:message': {}
+          'f:latestVersion': {}
+          'f:observedGeneration': {}
+          'f:replicas': {}
+          'f:unavailableReplicas': {}
+          'f:updatedReplicas': {}
+spec:
+  strategy:
+    type: Recreate
+    recreateParams:
+      timeoutSeconds: 600
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ConfigChange
+  replicas: 0
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    name: backup-lup-mongodb
+  template:
+    metadata:
+      name: backup-lup-mongodb
+      creationTimestamp: null
+      labels:
+        app: backup-container
+        env: test
+        name: backup-lup-mongodb
+        role: backup-container
+    spec:
+      volumes:
+        - name: backup-lup-mongodb
+          persistentVolumeClaim:
+            claimName: backup-lup-mongodb
+        - name: backup-lup-mongodb-verification
+          persistentVolumeClaim:
+            claimName: backup-lup-mongodb-verification
+        - name: backup-mongodb-config-volume
+          configMap:
+            name: backup-lup-conf
+            items:
+              - key: backup.conf
+                path: backup.conf
+            defaultMode: 420
+      containers:
+        - name: backup-lup-mongodb
+          image: 'artifacts.developer.gov.bc.ca/bcgov-docker-local/backup-container-mongo:latest'
+          env:
+            - name: BACKUP_STRATEGY
+              value: rolling
+            - name: BACKUP_DIR
+              value: /backups/
+            - name: DATABASE_USER
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-user
+            - name: DATABASE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-password
+            - name: ENVIRONMENT_FRIENDLY_NAME
+              value: landuseplanning-test
+            - name: ENVIRONMENT_NAME
+              value: e8b9ad-test
+          resources:
+            limits:
+              cpu: '1'
+              memory: 2Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+          volumeMounts:
+            - name: backup-lup-mongodb
+              mountPath: /backups/
+            - name: backup-lup-mongodb-verification
+              mountPath: /var/lib/mongodb/data
+            - name: backup-mongodb-config-volume
+              mountPath: /backup.conf
+              subPath: backup.conf
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      imagePullSecrets:
+        - name: artifactory-creds
+      schedulerName: default-scheduler
+status:
+  latestVersion: 5
+  observedGeneration: 38
+  replicas: 0
+  updatedReplicas: 0
+  availableReplicas: 0
+  unavailableReplicas: 0
+  details:
+    message: config change
+    causes:
+      - type: ConfigChange
+  conditions:
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2022-02-23T23:56:32Z'
+      lastTransitionTime: '2022-02-23T23:56:32Z'
+      reason: NewReplicationControllerAvailable
+      message: replication controller "backup-lup-mongodb-5" successfully rolled out
+    - type: Available
+      status: 'False'
+      lastUpdateTime: '2022-02-24T02:15:45Z'
+      lastTransitionTime: '2022-02-24T02:15:45Z'
+      message: Deployment config does not have minimum availability.
