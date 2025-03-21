@@ -1,3 +1,6 @@
+### 1.12.3 Mar 21, 2025
+* Updated build and deploy to dev pipeline yaml. [DESENG-776](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-776)
+
 ### 1.12.2 Feb 26, 2025
 * Updated keycloak-js to version 25.0.6. [DESENG-772](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-772)
 
