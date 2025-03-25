@@ -1,0 +1,37 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerTemplate
+metadata:
+  creationTimestamp: '2025-03-21T22:07:48Z'
+  generation: 1
+  managedFields:
+    - apiVersion: triggers.tekton.dev/v1beta1
+      fieldsType: FieldsV1
+      fieldsV1:
+        'f:spec':
+          .: {}
+          'f:params': {}
+          'f:resourcetemplates': {}
+      manager: Mozilla
+      operation: Update
+      time: '2025-03-21T22:07:48Z'
+  name: lup-api-trigger-template
+  namespace: e8b9ad-tools
+  resourceVersion: '13746818329'
+  uid: 42423e40-1a4d-4e5e-b69d-900d0ef9c864
+spec:
+  params:
+    - name: git-repo-url
+    - name: git-revision
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        generateName: lup-api-pipeline-run-
+      spec:
+        params:
+          - name: git-url
+            value: $(params.git-repo-url)
+          - name: git-revision
+            value: $(params.git-revision)
+        pipelineRef:
+          name: lup-api-build-deploy-dev

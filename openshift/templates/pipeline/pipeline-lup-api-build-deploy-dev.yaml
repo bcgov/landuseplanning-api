@@ -2,7 +2,7 @@
 kind: Pipeline
 metadata:
   creationTimestamp: '2022-02-11T19:39:02Z'
-  generation: 15
+  generation: 17
   labels:
     app: landuseplanning
     env: dev
@@ -33,10 +33,10 @@ metadata:
           'f:tasks': {}
       manager: Mozilla
       operation: Update
-      time: '2025-03-21T20:10:27Z'
+      time: '2025-03-25T17:09:39Z'
   name: lup-api-build-deploy-dev
   namespace: e8b9ad-tools
-  resourceVersion: '13745680169'
+  resourceVersion: '13794431716'
   uid: 5b9acbbe-708b-4b3c-ac33-56abf3ebf0f2
 spec:
   finally:
@@ -64,7 +64,7 @@ spec:
                         "targets": [
                             {
                                 "os": "default",
-                                "uri": "https://console.apps.silver.devops.gov.bc.ca/k8s/ns/e8b9ad-tools/tekton.dev~v1beta1~Pipeline/lup-api-build-deploy-dev/Runs"
+                                "uri": "https://console.apps.silver.devops.gov.bc.ca/k8s/ns/e8b9ad-tools/tekton.dev~v1~Pipeline/lup-api-build-deploy-dev/Runs"
                             }
                         ]
                     }
@@ -75,15 +75,15 @@ spec:
         name: push-to-teams
       when:
         - input: $(tasks.status)
-          operator: notin
+          operator: in
           values:
-            - Failed
+            - Succeeded
     - name: push-to-teams-failure
       params:
         - name: webhook-url
           value: 'https://bcgov.webhook.office.com/webhookb2/85d42a52-f637-43bb-af02-817e93e8cb6f@6fdb5200-3d0d-4a8a-b036-d3685e359adc/IncomingWebhook/fb6c473cce1c4be49b6b54fc89d3e7c9/2c1af31d-c876-40e0-b2e6-ca14006d7319/V2qzaDPI4OCXq2xUDTmNdOacE3Qwdgo3SATHKcquR8K841'
         - name: webhook-payload
-          value: "{\n\t\"@type\": \"MessageCard\",\n\t\"@context\": \"https://schema.org/extensions\",\n\t\"summary\": \"Issue 176715375\",\n\t\"themeColor\": \"cc3333\",\n\t\"title\": \"[FAIL][LUP] Land Use Planning API dev pipeline failed\",\n\t\"sections\": [\n\t\t{\n\t\t\t\"text\": \"There was an issue with the latest **dev** pipeline run for Land Use Planning **API**.\"\n\t\t}\n\t],\n\t\"potentialAction\": [\n\t\t{\n\t\t\t\"@type\": \"OpenUri\",\n\t\t\t\"name\": \"View on OpenShift\",\n\t\t\t\"targets\": [\n\t\t\t\t{\n\t\t\t\t\t\"os\": \"default\",\n\t\t\t\t\t\"uri\": \"https://console.apps.silver.devops.gov.bc.ca/k8s/ns/e8b9ad-tools/tekton.dev~v1beta1~Pipeline/lup-api-build-deploy-dev/Runs\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}"
+          value: "{\n\t\"@type\": \"MessageCard\",\n\t\"@context\": \"https://schema.org/extensions\",\n\t\"summary\": \"Issue 176715375\",\n\t\"themeColor\": \"cc3333\",\n\t\"title\": \"[FAIL][LUP] Land Use Planning API dev pipeline failed\",\n\t\"sections\": [\n\t\t{\n\t\t\t\"text\": \"There was an issue with the latest **dev** pipeline run for Land Use Planning **API**.\"\n\t\t}\n\t],\n\t\"potentialAction\": [\n\t\t{\n\t\t\t\"@type\": \"OpenUri\",\n\t\t\t\"name\": \"View on OpenShift\",\n\t\t\t\"targets\": [\n\t\t\t\t{\n\t\t\t\t\t\"os\": \"default\",\n\t\t\t\t\t\"uri\": \"https://console.apps.silver.devops.gov.bc.ca/k8s/ns/e8b9ad-tools/tekton.dev~v1~Pipeline/lup-api-build-deploy-dev/Runs\"\n\t\t\t\t}\n\t\t\t]\n\t\t}\n\t]\n}"
       taskRef:
         kind: Task
         name: push-to-teams
