@@ -2,7 +2,7 @@ apiVersion: triggers.tekton.dev/v1beta1
 kind: EventListener
 metadata:
   creationTimestamp: '2025-03-21T22:24:23Z'
-  generation: 2
+  generation: 4
   managedFields:
     - apiVersion: triggers.tekton.dev/v1beta1
       fieldsType: FieldsV1
@@ -19,7 +19,7 @@ metadata:
       manager: openshift-pipelines-triggers-controller
       operation: Update
       subresource: status
-      time: '2025-03-21T22:24:27Z'
+      time: '2025-03-25T17:42:53Z'
     - apiVersion: triggers.tekton.dev/v1beta1
       fieldsType: FieldsV1
       fieldsV1:
@@ -29,10 +29,10 @@ metadata:
           'f:triggers': {}
       manager: Mozilla
       operation: Update
-      time: '2025-03-21T22:48:28Z'
+      time: '2025-03-26T18:20:44Z'
   name: github-listener
   namespace: e8b9ad-tools
-  resourceVersion: '13747205437'
+  resourceVersion: '13807214812'
   uid: a9503ae9-075d-4ef1-b4b5-043ff0d4e5be
 spec:
   namespaceSelector: {}
@@ -45,7 +45,8 @@ spec:
       interceptors:
         - params:
             - name: filter
-              value: body.repository.full_name == 'bcgov/landuseplanning-public && body.ref == 'refs/heads/dev''
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-public' && body.ref == 'refs/heads/dev'
           ref:
             kind: ClusterInterceptor
             name: cel
@@ -58,7 +59,8 @@ spec:
       interceptors:
         - params:
             - name: filter
-              value: body.repository.full_name == 'bcgov/landuseplanning-admin && body.ref == 'refs/heads/dev''
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-admin' && body.ref == 'refs/heads/dev'
           ref:
             kind: ClusterInterceptor
             name: cel
@@ -71,7 +73,8 @@ spec:
       interceptors:
         - params:
             - name: filter
-              value: body.repository.full_name == 'bcgov/landuseplanning-api && body.ref == 'refs/heads/dev''
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-api' && body.ref == 'refs/heads/dev'
           ref:
             kind: ClusterInterceptor
             name: cel
@@ -82,25 +85,25 @@ status:
   address:
     url: 'http://el-github-listener.e8b9ad-tools.svc.cluster.local:8080'
   conditions:
-    - lastTransitionTime: '2025-03-21T22:24:27Z'
+    - lastTransitionTime: '2025-03-25T17:42:53Z'
       message: Deployment has minimum availability.
       reason: MinimumReplicasAvailable
       status: 'True'
       type: Available
-    - lastTransitionTime: '2025-03-21T22:24:27Z'
+    - lastTransitionTime: '2025-03-25T17:42:53Z'
       message: Deployment exists
       status: 'True'
       type: Deployment
-    - lastTransitionTime: '2025-03-21T22:24:27Z'
-      message: ReplicaSet "el-github-listener-68b7c65fb9" has successfully progressed.
+    - lastTransitionTime: '2025-03-25T17:42:53Z'
+      message: ReplicaSet "el-github-listener-8585f9ccfd" has successfully progressed.
       reason: NewReplicaSetAvailable
       status: 'True'
       type: Progressing
-    - lastTransitionTime: '2025-03-21T22:24:27Z'
+    - lastTransitionTime: '2025-03-25T17:42:53Z'
       message: EventListener is ready
       status: 'True'
       type: Ready
-    - lastTransitionTime: '2025-03-21T22:24:27Z'
+    - lastTransitionTime: '2025-03-25T17:42:53Z'
       message: Service exists
       status: 'True'
       type: Service
