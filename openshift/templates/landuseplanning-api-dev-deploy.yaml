@@ -1,6 +1,8 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '28'
   name: landuseplanning-api-dev
   namespace: e8b9ad-dev
   labels:
@@ -18,29 +20,32 @@ spec:
       creationTimestamp: null
       labels:
         app: landuseplanning-api-dev
+      annotations:
+        last-restart: '2025-03-28 22:59:20'
     spec:
       containers:
-        - name: landuseplanning-api-dev
-          image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api
-          ports:
-          - name: http
-            containerPort: 8080
-            protocol: TCP
+        - resources: {}
           readinessProbe:
             httpGet:
-              path: /healthz
+              path: /api/healthz
               port: http
-            initialDelaySeconds: 5
+              scheme: HTTP
+            initialDelaySeconds: 10
+            timeoutSeconds: 3
             periodSeconds: 10
-            timeoutSeconds: 2
-            failureThreshold: 3
+            successThreshold: 1
+            failureThreshold: 5
+          terminationMessagePath: /dev/termination-log
+          name: landuseplanning-api-dev
           livenessProbe:
             httpGet:
-              path: /healthz
+              path: /api/healthz
               port: http
-            initialDelaySeconds: 15
+              scheme: HTTP
+            initialDelaySeconds: 20
+            timeoutSeconds: 3
             periodSeconds: 20
-            timeoutSeconds: 2
+            successThreshold: 1
             failureThreshold: 5
           env:
             - name: KEYCLOAK_ENABLED
@@ -95,12 +100,22 @@ spec:
               value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard'
             - name: SSO_JWKSURI
               value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/certs'
-          resources: {}
-          terminationMessagePath: /dev/termination-log
-          terminationMessagePolicy: File
+          ports:
+            - name: http
+              containerPort: 3000
+              protocol: TCP
           imagePullPolicy: Always
+          terminationMessagePolicy: File
+          image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst
       securityContext: {}
       schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
