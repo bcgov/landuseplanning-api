@@ -9,10 +9,7 @@ metadata:
     app.kubernetes.io/instance: landuseplanning-api-dev
     app.kubernetes.io/part-of: landuseplanning-api-dev
 spec:
-  strategy:
-    type: RollingUpdate
   replicas: 2
-  revisionHistoryLimit: 10
   selector:
     matchLabels:
       app: landuseplanning-api-dev
@@ -26,8 +23,25 @@ spec:
         - name: landuseplanning-api-dev
           image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api
           ports:
-            - containerPort: 8080
-              protocol: TCP
+          - name: http
+            containerPort: 8080
+            protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 2
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+            timeoutSeconds: 2
+            failureThreshold: 5
           env:
             - name: KEYCLOAK_ENABLED
               value: 'true'

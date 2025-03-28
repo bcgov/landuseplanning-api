@@ -789,6 +789,19 @@ definitions:
 
 ### Path Definitions
 paths:
+  /healthz:
+    get:
+      summary: Health check
+      description: Returns 200 if the API is healthy and ready
+      x-swagger-router-controller: healthCheck
+      operationId: healthCheck
+      tags:
+        - health
+      responses:
+        '200':
+          description: API is healthy
+        '500':
+          description: API is unhealthy
   /login/token:
     x-swagger-router-controller: login
     options:
