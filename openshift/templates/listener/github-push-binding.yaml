@@ -1,22 +1,8 @@
 apiVersion: triggers.tekton.dev/v1beta1
 kind: TriggerBinding
 metadata:
-  creationTimestamp: '2025-03-21T22:08:51Z'
-  generation: 2
-  managedFields:
-    - apiVersion: triggers.tekton.dev/v1beta1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:spec':
-          .: {}
-          'f:params': {}
-      manager: Mozilla
-      operation: Update
-      time: '2025-03-26T18:13:00Z'
   name: github-push-binding
   namespace: e8b9ad-tools
-  resourceVersion: '13807149331'
-  uid: e5394e1d-970d-42f2-bb16-f07b0451161c
 spec:
   params:
     - name: git-repo-url
