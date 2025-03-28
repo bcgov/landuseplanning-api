@@ -1,0 +1,52 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: github-listener
+  namespace: e8b9ad-tools
+spec:
+  namespaceSelector: {}
+  resources: {}
+  serviceAccountName: pipeline
+  triggers:
+    - bindings:
+        - kind: TriggerBinding
+          ref: github-push-binding
+      interceptors:
+        - params:
+            - name: filter
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-public' && body.ref == 'refs/heads/dev'
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: lup-public-trigger
+      template:
+        ref: lup-public-trigger-template
+    - bindings:
+        - kind: TriggerBinding
+          ref: github-push-binding
+      interceptors:
+        - params:
+            - name: filter
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-admin' && body.ref == 'refs/heads/dev'
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: lup-admin-trigger
+      template:
+        ref: lup-admin-trigger-template
+    - bindings:
+        - kind: TriggerBinding
+          ref: github-push-binding
+      interceptors:
+        - params:
+            - name: filter
+              value: |
+                body.repository.full_name == 'bcgov/landuseplanning-api' && body.ref == 'refs/heads/dev'
+          ref:
+            kind: ClusterInterceptor
+            name: cel
+      name: lup-api-trigger
+      template:
+        ref: lup-api-trigger-template

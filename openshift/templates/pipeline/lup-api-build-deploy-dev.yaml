@@ -1,43 +1,12 @@
-﻿apiVersion: tekton.dev/v1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: '2022-02-11T19:39:02Z'
-  generation: 17
   labels:
     app: landuseplanning
     env: dev
     name: lup-api
-  managedFields:
-    - apiVersion: tekton.dev/v1beta1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:metadata':
-          'f:labels':
-            .: {}
-            'f:app': {}
-            'f:env': {}
-            'f:name': {}
-        'f:spec':
-          .: {}
-          'f:params': {}
-          'f:resources': {}
-          'f:workspaces': {}
-      manager: Mozilla
-      operation: Update
-      time: '2022-02-11T19:39:23Z'
-    - apiVersion: tekton.dev/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:spec':
-          'f:finally': {}
-          'f:tasks': {}
-      manager: Mozilla
-      operation: Update
-      time: '2025-03-25T17:09:39Z'
   name: lup-api-build-deploy-dev
   namespace: e8b9ad-tools
-  resourceVersion: '13794431716'
-  uid: 5b9acbbe-708b-4b3c-ac33-56abf3ebf0f2
 spec:
   finally:
     - name: push-to-teams-success
@@ -74,7 +43,7 @@ spec:
         kind: Task
         name: push-to-teams
       when:
-        - input: $(tasks.status)
+        - input: $(tasks.check-rollout-status.status)
           operator: in
           values:
             - Succeeded
@@ -88,7 +57,7 @@ spec:
         kind: Task
         name: push-to-teams
       when:
-        - input: $(tasks.status)
+        - input: $(tasks.check-rollout-status.status)
           operator: in
           values:
             - Failed
@@ -122,3 +91,13 @@ spec:
       taskRef:
         kind: ClusterTask
         name: openshift-client
+    - name: check-rollout-status
+      runAfter:
+        - trigger-deployment
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            oc rollout status deployment/landuseplanning-api-dev -n e8b9ad-dev --timeout="120s"
