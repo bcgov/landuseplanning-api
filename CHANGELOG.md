@@ -1,3 +1,6 @@
+### 1.12.4 Mar 31, 2025
+* Modified search controller to accomodate custom project type sorting. [DESENG-786](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-786)
+
 ### 1.12.3 Mar 27, 2025
 * Added new and updated pipeline and listener YAMLs, and basic health check route. [DESENG-778](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-778)
 
