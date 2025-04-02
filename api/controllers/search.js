@@ -186,53 +186,53 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     strength: 2
   };
 
-  var aggregation = [
-		{ $match: match }
-	];
-	
-	// Only add this block when sorting by projectTypes
-	if (sortField === 'projectTypes') {
-		aggregation.push({
-			$addFields: {
-				projectTypesFiltered: {
-					$map: {
-						input: {
-							$filter: {
-								input: "$projectTypes",
-								as: "pt",
-								cond: { $eq: ["$$pt.checked", true] }
-							}
-						},
-						as: "filtered",
-						in: "$$filtered.name"
-					}
-				}
-			}
-		});
-	}
+  const aggregation = [
+    { $match: match }
+  ];
+  
+  // Only add this block when sorting by projectTypes
+  if (sortField === 'projectTypes') {
+    aggregation.push({
+      $addFields: {
+        projectTypesFiltered: {
+          $map: {
+            input: {
+              $filter: {
+                input: "$projectTypes",
+                as: "pt",
+                cond: { $eq: ["$$pt.checked", true] }
+              }
+            },
+            as: "filtered",
+            in: "$$filtered.name"
+          }
+        }
+      }
+    });
+  }
 
-	// Define sorting object for Mongo stage
-	let sortingValue = {};
-	if (sortField !== 'projectTypes') {
-		sortingValue[sortField] = sortDirection;
-	}
+  // Define sorting object for Mongo stage
+  let sortingValue = {};
+  if (sortField !== 'projectTypes') {
+    sortingValue[sortField] = sortDirection;
+  }
 
-	// Build aggregation steps for searchResults
-	let searchResultAggregation = [];
-	
-	if (sortField !== 'projectTypes') {
-		searchResultAggregation.push(
-			{ $sort: sortingValue },
-			{ $skip: pageNum * pageSize },
-			{ $limit: pageSize }
-		);
-	} else {
-		// skip/limit still done in MongoDB
-		searchResultAggregation.push(
-			{ $skip: pageNum * pageSize },
-			{ $limit: pageSize }
-		);
-	}
+  // Build aggregation steps for searchResults
+  let searchResultAggregation = [];
+  
+  if (sortField !== 'projectTypes') {
+    searchResultAggregation.push(
+      { $sort: sortingValue },
+      { $skip: pageNum * pageSize },
+      { $limit: pageSize }
+    );
+  } else {
+    // skip/limit still done in MongoDB
+    searchResultAggregation.push(
+      { $skip: pageNum * pageSize },
+      { $limit: pageSize }
+    );
+  }
 
   if (collection === 'Document') {
     // Allow documents to be sorted by status based on publish existence
@@ -353,18 +353,18 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     }
   });
 
-	if (sortField !== 'projectTypes') {
-		aggregation.push({
-			$facet: {
-				searchResults: searchResultAggregation,
-				meta: [
-					{
-						$count: "searchResultsTotal"
-					}
-				]
-			}
-		})
-	}
+  if (sortField !== 'projectTypes') {
+    aggregation.push({
+      $facet: {
+        searchResults: searchResultAggregation,
+        meta: [
+          {
+            $count: "searchResultsTotal"
+          }
+        ]
+      }
+    })
+  }
 
   return new Promise(function (resolve, reject) {
     var collectionObj = mongoose.model(collection);
@@ -372,40 +372,36 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
       .collation(collation)
       .exec()
       .then(function (data) {
-				let collectionData;
+        let collectionData;
 
-				// If the sort field is projectTypes, handle the sorting manually.
+        // If the sort field is projectTypes, handle the sorting manually.
         if ('projectTypes' === sortField) {
-					const rawResults = data || [];
+          const rawResults = data || [];
           rawResults.forEach(rr => {
             const list = Array.isArray(rr.projectTypesFiltered) ? rr.projectTypesFiltered : [];
             const sorted = list.slice().sort(); // alphabetically
-            rr._sortKey = sorted.join(', ');
+            rr._projectTypesString = sorted.join(', ');
           });
 
-          const sortedResults = rawResults.sort((a, b) => {
-						if (a._sortKey < b._sortKey) return sortDirection === 1 ? -1 : 1;
-						if (a._sortKey > b._sortKey) return sortDirection === 1 ? 1 : -1;
-						return 0;
-					});
+          const sortedResults = rawResults.sort((a, b) => a._projectTypesString.localeCompare(b._projectTypesString) * sortDirection);
 
-					const start = pageNum * pageSize;
-					const end = start + pageSize;
-					const pagedResults = sortedResults.slice(start, end);
+          const start = pageNum * pageSize;
+          const end = start + pageSize;
+          const pagedResults = sortedResults.slice(start, end);
 
-					pagedResults.forEach(pr => {
-						delete pr._sortKey;
-					});
+          pagedResults.forEach(pr => {
+            delete pr._projectTypesString;
+          });
 
-					collectionData = {
-						searchResults: pagedResults,
-						meta: [
-							{ searchResultsTotal: sortedResults.length }
-						]
-					};
+          collectionData = {
+            searchResults: pagedResults,
+            meta: [
+              { searchResultsTotal: sortedResults.length }
+            ]
+          };
         } else { // Otherwise we'll return the db-sorted data.
-					collectionData = data[0] || { searchResults: [], meta: [] };
-				}
+          collectionData = data[0] || { searchResults: [], meta: [] };
+        }
         resolve([collectionData]);
       }, reject);
   });
@@ -473,12 +469,12 @@ var executeQuery = async function (args, res, next) {
 
   if (dataset !== 'Item') {
     var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or);
-		// Filter
-		each(data[0].searchResults, function (item) {
-			if (item.isAnonymous === true) {
-				delete item.author;
-			}
-		});
+    // Filter
+    each(data[0].searchResults, function (item) {
+      if (item.isAnonymous === true) {
+        delete item.author;
+      }
+    });
     return Actions.sendResponse(res, 200, data);
   } else if (dataset === 'Item') {
 
