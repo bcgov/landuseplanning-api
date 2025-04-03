@@ -2,75 +2,25 @@
 
 [![Lifecycle:Stable](https://img.shields.io/badge/Lifecycle-Stable-97ca00)](https://github.com/bcgov/repomountie/blob/master/doc/lifecycle-badges.md)
 
-Minimal API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
+API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-public) and [Admin](https://github.com/bcgov/landuseplanning-admin) apps -->
 
-## How to run this
+## Installation
 
-Before running the api, you must set some environment variables:
-1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
-2) MINIO_ACCESS_KEY='xxxx'
-3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=true
-5) MONGODB_DATABASE='landuseplanning'
+1. Get the Mongo DB up and running. See the README in the `db` folder.
+2. Update your environment variables.
+- Those related to Minio and the email service can be found in Openshift in the "dev" environment.
+- Those related to Mongo correspond to the docker-compose file found in the `db` directory.
+- SILENCE_DEFAULT_LOG is used for local development only. See [Logging](#logging) below.
+3. Run `npm i` to install.
+4. Run `npm start` to start the development environment. 
 
-One way to do this is to edit your ~/.bash_profile file to contain:
-
-```
-export MONGODB_DATABASE="landuseplanning"
-export MINIO_HOST="foo.pathfinder.gov.bc.ca"
-export MINIO_ACCESS_KEY="xxxx"
-export MINIO_SECRET_KEY="xxxx"
-export KEYCLOAK_ENABLED=true
-```
-
-Please note that these values are case sensitive so don't use upper-case TRUE for example.
-
-Don't forget to reload your .bash_profile file so that your terminal environment is up to date with the correct values
-```
-source ~/.bash_profile
-env
-```
-
-The above `env` command will show you your environment variables and allow you to check that the correct values are present.
-
-Start the server by running `npm run start-watch`
-
-## Prerequisites
+## Technologies used
 
 | Technology | Version | Website                                     | Description                               |
 |------------|---------|---------------------------------------------|-------------------------------------------|
-| node       | 12.x.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
-| npm        | 6.x.x   | https://www.npmjs.com/                      | Node Package Manager                      |
-| yarn       | latest  | https://yarnpkg.com/en/                     | Package Manager (more efficient than npm) |
+| node       | 14.15.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
+| npm        | 6.14.x   | https://www.npmjs.com/                      | Node Package Manager                      |
 | mongodb    | 3.6     | https://docs.mongodb.com/v3.6/installation/ | NoSQL database                            |
-
-### Install [Node + NPM](https://nodejs.org/en/)
-
-_Note: Windows users can use [NVM Windows](https://github.com/coreybutler/nvm-windows) to install and manage multiple versions of Node+Npm._
-
-### Install [Yarn](https://yarnpkg.com/lang/en/docs/install/#alternatives-tab)
-
-```
-npm install -g yarn
-```
-
-### Install [MongoDB](https://docs.mongodb.com/v3.2/installation/)
-
-## Build and Run
-
-1. Download dependencies: `yarn install`
-2. Run the app: `npm start`
-3. Go to http://localhost:3000/api/docs to verify that the application is running.
-
-    _Note: To change the default port edit `swagger.yaml`._
-
-4. POST `http://localhost:3000/api/login/token` with the following body:
-```
-{
-"username": #{username},
-"password": #{password}
-}
-```
 
 ## API Specification
 
@@ -82,38 +32,10 @@ This project uses npm package `swagger-tools` via `./app.js` to automatically ge
 
 Recommend reviewing the [Open API Specification](https://swagger.io/docs/specification/about/) before making any changes to the `swagger.yaml` file.
 
-## Initial Setup
-
-### Node and NPM 
-
-We use a version manager so as to allow concurrent versions of node and other software.  [asdf](https://github.com/asdf-vm/asdf) is recommended.  Installation of *asdf* and required node packages is covered [here](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/node_npm_requirements.md)
-
-### Database 
-
-If possible, acquire a dump of the database from one of the live environments.  
-
-To make sure you don't have an existing old copy (careful, this is destructive):
-
-```
-mongo
-use epic
-db.dropDatabase()
-```
-
-#### Load database dump:
-
-1. Download and unzip archived dump file.
-2. Restore the dump into your local mongo:
-
-```
-mongo
-use landuseplanning
-db.dropDatabase()
-```
 
 #### Seed with generated data:
 
-Described in [seed README](seed/README.md)
+Described in [seed README](db/seed/README.md)
 
 #### Loading legacy data:
 To restore the database dump you have from the old epic system (ie ESM):
@@ -131,13 +53,10 @@ Then run the contents of [dataload](prod-load-db/esm_prod_april_1/dataload.sh) a
 3. [Configuring Environment Variables](#configuring-environment-variables)
 4. [Logging](#logging)
 
-### Code Reuse Strategy
-
-See [Code Reuse Strategy](https://github.com/bcgov/eagle-dev-guides/blob/master/dev_guides/code_reuse_strategy.md)
 
 ### Note on Ecmascript feature availability
 
-This app is designed to be run on Node 12.22.12 in Openshift. As a result, almost all modern ECMAScript features are available except for:
+This app runs on Node 12.22.12 in Openshift. As a result, almost all modern ECMAScript features are available except for:
 
 - The nullish coalescing operator
 - Optional object chaining
@@ -230,26 +149,6 @@ External http calls (such as GETs to BCGW) are mocked with a tool called [nock](
       });
   });
 ```
-
-### Configuring Environment Variables
-
-Recall the environment variables we need for local dev:
-1) MINIO_HOST='foo.pathfinder.gov.bc.ca'
-2) MINIO_ACCESS_KEY='xxxx'
-3) MINIO_SECRET_KEY='xxxx'
-4) KEYCLOAK_ENABLED=true
-5) MONGODB_DATABASE='epic'
-6) SILENCE_DEFAULT_LOG=false
-
-To get actual values for the above fields in the deployed environments, examine the openshift environment you wish to target:
-
-```
-oc project [projectname]
-oc get routes | grep 'minio'
-oc get secrets | grep 'minio'
-```
-
-**Note:** SILENCE_DEFAULT_LOG is used for local development only. See [Logging](#logging) below.
 
 You will not be able to see the above value of the secret if you try examine it.  You will only see the encrypted values.  Approach your team member with admin access in the openshift project in order to get the access key and secret key values for the secret name you got from the above command.  Make sure to ask for the correct environment (dev, test, prod) for the appropriate values.
 

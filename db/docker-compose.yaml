@@ -1,0 +1,14 @@
+services:
+  database:
+    image: mongo:3.6.3
+    restart: always
+    platform: "linux/amd64"
+    ports:
+      - 27017:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - data:/data/db
+volumes:
+  data:

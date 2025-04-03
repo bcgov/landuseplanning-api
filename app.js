@@ -1,4 +1,8 @@
 "use strict";
+
+// Allow local .env files to be read
+require('dotenv').config();
+
 /**
  * We need to set up the app loggers before we import modules
  * that also make use of it.
