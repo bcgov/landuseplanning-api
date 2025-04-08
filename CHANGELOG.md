@@ -1,3 +1,7 @@
+# 1.13.1 April 8, 2025
+* Updated redaction logic in utils.js to not remove users with no roles. This way,
+they show up in the list of users available to add to a project.
+
 ### 1.13.0 April 8, 2025
 * Improve installation instructions and move dotenv installation source
 
