@@ -111,7 +111,7 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
     let projectKey;
     const theModel = mongoose.model(modelType);
     const isUserQuery = modelType === 'User';
-    
+
     projectKey = modelType === 'Project' ? '$_id' : '$project';
 
     if (modelType === 'EmailSubscribe') {
@@ -119,11 +119,11 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
     }
 
     if (userGuid) {
-  defaultLog.info('getUserProjectPermissions call 2', userGuid)
+      defaultLog.info('getUserProjectPermissions call 2', userGuid)
 
       projectPermissions = await getUserProjectPermissions(userGuid)
-      .then(permissions => permissions)
-      .catch(error => error);
+        .then(permissions => permissions)
+        .catch(error => error);
     }
 
     // Fields we always return
@@ -207,8 +207,7 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
         $redact: {
           $cond: {
             if: {
-              // This way, if read isn't present, we assume public no roles array.
-              $and: [
+              $or: [
                 {
                   $and: [
                     { $cond: { if: "$read", then: true, else: false } },
@@ -223,19 +222,11 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
                     }
                   ]
                 },
-                // Check if user either has the create-projects role or has project permissions.
-                { $cond: 
-                  { if: { $in: [ "public", role ] }, then: true, else:
-                    { $cond: 
-                      { if: isUserQuery, then: true, else: 
-                        { $or: [
-                          { $in: [ "create-projects" , role ] },
-                          { $in: [ projectKey, projectPermissions ] }
-                          ]
-                        } 
-                      }
-                    }
-                  }
+                {
+                  $and: [
+                    { $eq: ["$read", null] },
+                    { $eq: [isUserQuery, true] }
+                  ]
                 }
               ]
             },
@@ -292,7 +283,7 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
     theModel.aggregate(aggregations)
       .collation(collation)
       .exec()
-      .then(function(data) {
+      .then(function (data) {
         resolve(data)
       }, reject);
   });
