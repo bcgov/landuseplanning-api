@@ -1,3 +1,6 @@
+### 1.13.0 April 8, 2025
+* Improve installation instructions and move dotenv installation source
+
 ### 1.12.4 Mar 31, 2025
 * Modified search controller to accomodate custom project type sorting. [DESENG-786](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-786)
 * Update installation instructions & process [DESENG-792](https://citz-gdx.atlassian.net/browse/DESENG-792)
