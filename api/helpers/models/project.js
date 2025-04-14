@@ -51,6 +51,7 @@ const definition = {
   // Options
   activitiesAndUpdatesEnabled: { type: Boolean, default: false },
   contactFormEnabled: { type: Boolean, default: false },
+  contactFormFilesEnabled: { type: Boolean, default: false },
   contactFormEmails: { type: Array, default: []},
   collectionNotice: { type: String, default: '' },
 };

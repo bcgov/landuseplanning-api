@@ -170,3 +170,7 @@ API Controllers begin with a log output that states:
 - The HTTP method
 
 So an example log for a controller would be "COMMENT PERIOD PROTECTED GET."
+
+### Virus Scanning
+
+This API has virus scanning functionality that can be enabled or disabled in your environment variables. If you wish to test virus scanning locally, you will need to install clamAV using a docker container or a global installation through a manager like Homebrew. For instructions on setting up a local instance of ClamAV, please reference the [ClamAV Documentation](https://docs.clamav.net/).

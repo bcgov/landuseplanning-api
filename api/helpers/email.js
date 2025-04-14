@@ -146,25 +146,34 @@ exports.sendWelcomeEmail = async function (projectName, email) {
  * @returns {void}
  */
 const sendEmail = async (emailTemplate) => {
-    const emailToken = await getEmailToken();
+    try {
+        // Retrieve and validate token
+        const emailToken = await getEmailToken();
+        const token = emailToken?.data?.access_token;
+        if (!token) {
+            defaultLog.error("Couldn't get a valid CHES token", emailToken);
+            return;
+        }
 
-    if (emailToken && emailToken.data && emailToken.data.access_token) {
         // Send confirmation email to user.
-        await axios.post(
+        const response = await axios.post(
             _commonHostingEmailServiceEndpoint + _CHES_emailMergeAPI,
             emailTemplate,
             {
                 headers: {
-                    "Authorization": 'Bearer ' + emailToken.data.access_token,
+                    "Authorization": `Bearer ${token}`,
                     "Content-Type": 'application/json'
                 }
             }
-        
-        )
-        .then((response) => defaultLog.info("Email Sent:", response.data))
-        .catch((error) => defaultLog.info('Email not sent: ', error.response.data))
-    } else {
-        defaultLog.error("Couldn't get a proper token", emailToken);
+        );
+
+        defaultLog.info('Email sent:', response.data);
+    } catch (error) {
+        if (error.response?.data) {
+            defaultLog.error('Ches rejected the email:', error.response.data);
+        } else {
+            defaultLog.error('Email not sent:', error.message || error);
+        }
     }
 }
 
@@ -175,10 +184,11 @@ const sendEmail = async (emailTemplate) => {
  * @param {string} body The body of the email.
  * @param {array} toAddresses An array of email addresses to send to.
  * @param {string} fromAddress The email address to mark as "from".
+ * @param {object[]} attachments The attachments to send with the email.
  * @returns {object}
  */
-const buildEmailTemplate = (subject, body, toAddresses, fromAddress) => {
-    const test = {
+const buildEmailTemplate = (subject, body, toAddresses, fromAddress, attachments = null) => {
+    const emailTemplate = {
         "bodyType": "text",
         "body": body,
         "contexts": [
@@ -190,10 +200,15 @@ const buildEmailTemplate = (subject, body, toAddresses, fromAddress) => {
         "encoding": "utf-8",
         "from": fromAddress,
         "priority": "normal",
-        "subject": subject
+        "subject": subject,
     }
 
-    return test;
+    // Add files if they are present
+    if (Array.isArray(attachments) && attachments?.length > 0) {
+        emailTemplate.attachments = attachments;
+    }
+
+    return emailTemplate;
 }
 
 exports.handleContactFormResponse = async (projectName, contactFormResponse, recipients) => {
@@ -212,14 +227,28 @@ exports.handleContactFormResponse = async (projectName, contactFormResponse, rec
     const formSubmissionSubject = `New message received for the ${projectName} project`;
     const formSubmissionBody = `You've received the following message from ${contactFormResponse.name}: ${contactFormResponse.message}`;
     const formSubmissionFromAddress = contactFormResponse.email;
-    const formSubmissionTemplate = buildEmailTemplate(formSubmissionSubject, formSubmissionBody, formSubmissionToAddresses, formSubmissionFromAddress);
+    const formSubmissionAttachments = contactFormResponse.files?.map(file => {
+        return {
+            filename: file.originalname,
+            content: file.buffer.toString('base64'),
+            encoding: 'base64',
+            contentType: file.mimetype
+        }
+    });
+    const formSubmissionTemplate = buildEmailTemplate(
+        formSubmissionSubject, 
+        formSubmissionBody, 
+        formSubmissionToAddresses, 
+        formSubmissionFromAddress,
+        formSubmissionAttachments || null
+    );
 
     // Send the emails to the CHES (Common Hosted Email Service).
     try {
         sendEmail(confirmationEmailTemplate);
-        sendEmail(formSubmissionTemplate)
+        sendEmail(formSubmissionTemplate);
     } catch (e) {
-        defaultLog.error("Error:", e);
+        defaultLog.error("Error sending emails:", e);
     }
 
     return;

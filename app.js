@@ -29,10 +29,11 @@ const dbConnection  = 'mongodb://'
 const dbUsername = process.env.MONGODB_USERNAME || '';
 const dbPassword = process.env.MONGODB_PASSWORD || '';
 const defaultLog = winston.loggers.get('defaultLog');
+const uploadMulter = require('./api/helpers/multer');
 
-// Increase postbody sizing
-app.use(bodyParser.json({limit: '10mb', extended: true}))
-app.use(bodyParser.urlencoded({limit: '10mb', extended: true}));
+app.use('/api/public/emailSubscribe/sendContactFormResponse', uploadMulter);
+app.use(bodyParser.json({ limit: '10mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
 
 // Enable CORS
 app.use(function (req, res, next) {

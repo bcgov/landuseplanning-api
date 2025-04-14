@@ -6,6 +6,7 @@ var Utils = require('../helpers/utils');
 var Email = require('../helpers/email');
 const csv = require('csv');
 const transform = require('stream-transform');
+const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
 
 /**
  * 
@@ -463,27 +464,50 @@ exports.protectedExport = async function (args, res) {
 }
 
 exports.handleContactFormResponse = async (args, res) => {
-  defaultLog.info('HANDLE CONTACT FORM RESPONSE');
-  const contactForm = args.swagger.params.contactForm.value;
-  defaultLog.info('Incoming new object:', contactForm);
+  // Swagger usually hides req/res, so let's define the request:
+  const req = args.request || args.req || res.req;
 
-  // Set a default values in case the project & recipients can't be found.
+  // Grab the form fields and files
+  const { name, email, message, project } = req.body;
+  const files = req.files;
+
+  // Check for viruses
+  defaultLog.info(`Virus scanning is ${ENABLE_VIRUS_SCANNING ? '' : 'not '} enabled.`);
+  if ('true' === ENABLE_VIRUS_SCANNING && Array.isArray(files) && files.length > 0) {
+    for (const file of files) {
+      const clean = await Utils.avScan(file.buffer);
+      if (!clean) {
+        defaultLog.warn(`File failed virus scan: ${file.originalname}`);
+        return Actions.sendResponse(res, 400, { message: 'One or more files failed virus check.' });
+      }
+      defaultLog.info(`File passed virus scan: ${file.originalname}`);
+    }
+  }
+
+  defaultLog.info('HANDLE CONTACT FORM RESPONSE');
+  defaultLog.info('Incoming fields:', { name, email, message, project });
+  defaultLog.info((Array.isArray(files) && 0 < files.length ? `${files.length} ` : 'No ') + 'files are attached to the form');
+
   let projectName = 'Land Use Planning';
   let recipients = [];
-  
-  // Attempt to get the project name and recipients for the contact form submission.
-  const Project = mongoose.model('Project');
-  await Project.findOne({ _id: contactForm.project }, null, (err, entity) => {
-    if (entity) {
-      projectName = entity.name;
-      recipients = entity.contactFormEmails
-    }
-  });
 
   try {
+    const Project = mongoose.model('Project');
+    const entity = await Project.findOne({ _id: project });
+    if (entity) {
+      projectName = entity.name;
+      recipients = entity.contactFormEmails;
+    }
+
+    const contactForm = { name, email, message, project };
+    if (Array.isArray(files) && files.length > 0) {
+      contactForm.files = files;
+    }
+
     await Email.handleContactFormResponse(projectName, contactForm, recipients);
     return Actions.sendResponse(res, 200, true);
   } catch (e) {
+    defaultLog.error('Error sending email:', e);
     return Actions.sendResponse(res, 400, false);
   }
-}
+};

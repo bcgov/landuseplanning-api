@@ -1,80 +1,83 @@
-### 1.12.4 Mar 31, 2025
+### Apr 14, 2025
+* Added file attachment functionality to contact form email submission, and the ability for admins to enable/disable it. [DESENG-789](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-789)
+
+### Mar 31, 2025
 * Modified search controller to accomodate custom project type sorting. [DESENG-786](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-786)
 * Update installation instructions & process [DESENG-792](https://citz-gdx.atlassian.net/browse/DESENG-792)
 
-### 1.12.3 Mar 27, 2025
+### Mar 27, 2025
 * Added new and updated pipeline and listener YAMLs, and basic health check route. [DESENG-778](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-778)
 
-### 1.12.2 Feb 26, 2025
+### Feb 26, 2025
 * Updated keycloak-js to version 25.0.6. [DESENG-772](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-772)
 
-### 1.12.1 Feb 25, 2025
+### Feb 25, 2025
 * Added old and new YAML files for dev deployment to openshift folder. [DESENG-759](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-759)
 * Added old and new YAML files for dev MongoDB deployment to openshift folder. [DESENG-760](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-760)
 * Added old and new YAML files for test api deployment and test MongoDB deployment to openshift folder. [DESENG-766](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-766)
 
-### 1.12.0 Feb 6, 2025
+### Feb 6, 2025
 * Resolve unique index issue in local development
 
-### 1.11.0 Jan 9, 2025
+### Jan 9, 2025
 * Added external link model, service, and swagger definitions. Modified search service. [DESENG-751](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-751)
 
-### 1.10.0 Nov 26, 2024
+### Nov 26, 2024
 * Modified project definition to accomodate shape file colours. [DESENG-743](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-743)
 * Modified project definition to accomodate project type multiselect. [DESENG-745](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-745)
 * Modified project definition to accomodate custom collection notice. [DESENG-747](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-747)
 
-### 1.9.0 Mar 11, 2024
+### Mar 11, 2024
 * Add option for contact form on projects [DESENG-373](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-373)
 
-### 1.8.0 Oct 11, 2023
+### Oct 11, 2023
 * Add file sections [DESENG-372](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-372)
 
-### 1.7.0 Mar 9, 2023
+### Mar 9, 2023
 * Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://apps.itsm.gov.bc.
 ca/jira/browse/DESENG-283)
 
-### 1.6.3 Dec 21, 2022
+### Dec 21, 2022
 * Update CHES auth and API endpoints [DESENG-237](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-237)
 
-### 1.6.2 Oct 12, 2022
+### Oct 12, 2022
 * Banner image not loading on frontend [DESENG-181](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-181)
 * Banner image not deleting [DESENG-182](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-182)
 
-### 1.6.1 Oct 3, 2022
+### Oct 3, 2022
 * Fix documents not loading [DESENG-197](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-197)
 
-### 1.6.0 Sep 13, 2022
+### Sep 13, 2022
 * Move from keycloak to Common Online SSO [DESENG-179](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-179)
 
-### 1.5.1 May 25, 2022
+### May 25, 2022
 * Remove unused nconf package [DESENG-135](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-135)
 
-### 1.5.0 May 24, 2022
+### May 24, 2022
 * Add ability to retrieve documents by documentSource [DESENG-4](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-4)
 
-### 1.4.0 April 11, 2022
+### April 11, 2022
 * Improve logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
 
-### 1.3.0 March 23, 2022
+### March 23, 2022
 * Fix email subscribe confirmation bug [DESENG-96](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-96)
 * Add selective logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
 * Tree-shake lodash dependencies
 * Update "var" -> "const" in app.js
 * Remove unused code
 
-### 1.2.3 March 17, 2022
+### March 17, 2022
 * Fix document text search bug [DESENG-90](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-90)
 
-### 1.2.2 March 4, 2022
+### March 4, 2022
 * Resolve "useFindAndModify" deprecation warning [DESENG-65](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-65)
 
-### 1.2.1 February 11, 2022
+### February 11, 2022
 * Added OpenShift templates for the API pipeline
 * Added github workflow for linting and tests
 * added nightly backup scripts (DESENG-68)
 
-### 1.1.0 January 26, 2022
+### January 26, 2022
 * Tree shaking lodash dependencies
 * Remove unnecessary console.log calls
 * Graceful error handling for some methods
@@ -90,7 +93,7 @@ ca/jira/browse/DESENG-283)
 * Add support for project logos
 * Add support for document alt tags
 
-### 1.0.1: November 16, 2021
+### November 16, 2021
 * Updating version in package.json
 * security update Force validator 13.7.0 via resolution (LUP-251)
 * adding nodeman for server restart when files change. npm run start-watch (LUP-249)
