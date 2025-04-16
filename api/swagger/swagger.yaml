@@ -137,6 +137,7 @@ definitions:
       - read
       - activitiesAndUpdatesEnabled
       - contactFormEnabled
+      - contactFormFilesEnabled
       - contactFormEmails
       - collectionNotice
     enum: &projectTypes
@@ -2142,6 +2143,11 @@ paths:
           description: "The option that enables or disables the contact form on projects"
           type: boolean
         - in: query
+          name: contactFormFilesEnabled
+          required: false
+          description: "The option that enables or disables the contact form file upload on projects"
+          type: boolean
+        - in: query
           name: contactFormEmails
           required: false
           description: "Recipient emails when the contact form gets a submission"
@@ -2302,6 +2308,11 @@ paths:
           name: contactFormEnabled
           required: false
           description: "The option that enables or disables the contact form on projects"
+          type: boolean
+        - in: query
+          name: contactFormFilesEnabled
+          required: false
+          description: "The option that enables or disables the contact form file upload on projects"
           type: boolean
         - in: query
           name: contactFormEmails
@@ -7684,13 +7695,32 @@ paths:
       summary: "Forward the contact form response to the recipient emails"
       operationId: handleContactFormResponse
       description: "Send a new contact form response."
-      summary: "Send a new contact form response."
+      consumes:
+        - multipart/form-data
+      # Based on: #/definitions/ContactFormObject
       parameters:
-        - name: contactForm
-          in: body
+        - name: name
+          in: formData
+          type: string
           required: true
-          schema:
-            $ref: "#/definitions/ContactFormObject"
+        - name: email
+          in: formData
+          type: string
+          required: true
+        - name: message
+          in: formData
+          type: string
+          required: true
+        - name: project
+          in: formData
+          type: string
+          required: true
+        - name: attachments
+          in: formData
+          type: file
+          required: false
+          description: One or more files attached
+          collectionFormat: multi
       responses:
         "200":
           description: "Success"

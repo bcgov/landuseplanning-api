@@ -55,6 +55,7 @@ const tagList = [
   'delete',
   'activitiesAndUpdatesEnabled',
   'contactFormEnabled',
+  'contactFormFilesEnabled',
   'contactFormEmails',
   'collectionNotice',
 ];
@@ -867,6 +868,7 @@ exports.protectedPut = async (args, res) => {
   obj.partner = projectObj.partner;
   obj.activitiesAndUpdatesEnabled = projectObj.activitiesAndUpdatesEnabled;
   obj.contactFormEnabled = projectObj.contactFormEnabled;
+  obj.contactFormFilesEnabled = projectObj.contactFormFilesEnabled;
   obj.contactFormEmails = projectObj.contactFormEmails;
   obj.collectionNotice = projectObj.collectionNotice;
 
