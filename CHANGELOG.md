@@ -1,3 +1,7 @@
+### Apr 16, 2025
+* Removed optional chaining due to Node target version.
+* Revised virus scanning logic for optimization.
+
 ### Apr 14, 2025
 * Added file attachment functionality to contact form email submission, and the ability for admins to enable/disable it. [DESENG-789](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-789)
 

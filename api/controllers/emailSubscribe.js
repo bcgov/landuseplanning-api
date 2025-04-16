@@ -474,13 +474,25 @@ exports.handleContactFormResponse = async (args, res) => {
   // Check for viruses
   defaultLog.info(`Virus scanning is ${ENABLE_VIRUS_SCANNING ? '' : 'not '} enabled.`);
   if ('true' === ENABLE_VIRUS_SCANNING && Array.isArray(files) && files.length > 0) {
-    for (const file of files) {
-      const clean = await Utils.avScan(file.buffer);
-      if (!clean) {
-        defaultLog.warn(`File failed virus scan: ${file.originalname}`);
+    try {
+      const results = await Promise.all(
+        files.map(file => Utils.avScan(file.buffer).then(clean => ({ file, clean })))
+      );
+
+      const failed = results.filter((result) => !result.clean);
+
+      if (failed.length > 0) {
+        failed.forEach((result) => {
+          defaultLog.warn('File failed virus scan:', result.file.originalname);
+        });
         return Actions.sendResponse(res, 400, { message: 'One or more files failed virus check.' });
       }
-      defaultLog.info(`File passed virus scan: ${file.originalname}`);
+
+      results.forEach((result) => {defaultLog.info('File passed virus scan:', result.file.originalname);});
+      
+    } catch (err) {
+      defaultLog.error('Error during virus scanning:', err);
+      return Actions.sendResponse(res, 500, { message: 'Virus scan failed unexpectedly.' });
     }
   }
 
