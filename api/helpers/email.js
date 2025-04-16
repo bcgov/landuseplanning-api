@@ -149,7 +149,10 @@ const sendEmail = async (emailTemplate) => {
     try {
         // Retrieve and validate token
         const emailToken = await getEmailToken();
-        const token = emailToken?.data?.access_token;
+        let token;
+        if (emailToken && emailToken.data && emailToken.data.access_token) {
+            token = emailToken.data.access_token;
+        }
         if (!token) {
             defaultLog.error("Couldn't get a valid CHES token", emailToken);
             return;
@@ -169,11 +172,7 @@ const sendEmail = async (emailTemplate) => {
 
         defaultLog.info('Email sent:', response.data);
     } catch (error) {
-        if (error.response?.data) {
-            defaultLog.error('Ches rejected the email:', error.response.data);
-        } else {
-            defaultLog.error('Email not sent:', error.message || error);
-        }
+        defaultLog.error('Ches rejected the email:', error);
     }
 }
 
@@ -204,7 +203,7 @@ const buildEmailTemplate = (subject, body, toAddresses, fromAddress, attachments
     }
 
     // Add files if they are present
-    if (Array.isArray(attachments) && attachments?.length > 0) {
+    if (Array.isArray(attachments) && attachments.length > 0) {
         emailTemplate.attachments = attachments;
     }
 
@@ -227,14 +226,14 @@ exports.handleContactFormResponse = async (projectName, contactFormResponse, rec
     const formSubmissionSubject = `New message received for the ${projectName} project`;
     const formSubmissionBody = `You've received the following message from ${contactFormResponse.name}: ${contactFormResponse.message}`;
     const formSubmissionFromAddress = contactFormResponse.email;
-    const formSubmissionAttachments = contactFormResponse.files?.map(file => {
+    const formSubmissionAttachments = contactFormResponse.files ? contactFormResponse.files.map(file => {
         return {
             filename: file.originalname,
             content: file.buffer.toString('base64'),
             encoding: 'base64',
             contentType: file.mimetype
         }
-    });
+    }) : null;
     const formSubmissionTemplate = buildEmailTemplate(
         formSubmissionSubject, 
         formSubmissionBody, 
