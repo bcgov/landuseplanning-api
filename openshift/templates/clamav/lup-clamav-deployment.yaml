@@ -1,0 +1,97 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: lup-clamav
+  namespace: e8b9ad-tools
+  annotations:
+    deployment.kubernetes.io/revision: '7'
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lup-clamav
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: lup-clamav
+    spec:
+      volumes:
+        - name: tmp
+          emptyDir: {}
+        - name: clamav-lib
+          emptyDir: {}
+        - name: clamav-log
+          emptyDir: {}
+        - name: runclamav
+          emptyDir: {}
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: clamd
+          command:
+            - /bin/sh
+          env:
+            - name: CLAMD_CONFIG_FILE
+              value: /etc/clamav/clamd.conf
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: 3310
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: clamav-lib
+              mountPath: /var/lib/clamav
+            - name: clamav-log
+              mountPath: /var/log/clamav
+            - name: tmp
+              mountPath: /tmp
+            - name: runclamav
+              mountPath: /run/clamav
+          terminationMessagePolicy: File
+          image: 'clamav/clamav:latest'
+          args:
+            - '-c'
+            - /init-unprivileged
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: freshclam
+          command:
+            - /bin/sh
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            allowPrivilegeEscalation: false
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: clamav-lib
+              mountPath: /var/lib/clamav
+            - name: clamav-log
+              mountPath: /var/log/clamav
+            - name: tmp
+              mountPath: /tmp
+          terminationMessagePolicy: File
+          image: 'clamav/clamav:latest'
+          args:
+            - '-c'
+            - while true; do freshclam; sleep 86400; done
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  paused: true
+  progressDeadlineSeconds: 600
