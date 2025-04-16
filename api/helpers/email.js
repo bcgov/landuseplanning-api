@@ -172,11 +172,7 @@ const sendEmail = async (emailTemplate) => {
 
         defaultLog.info('Email sent:', response.data);
     } catch (error) {
-        if (error) {
-            defaultLog.error('Ches rejected the email:', error);
-        } else {
-            defaultLog.error('Email not sent:', error);
-        }
+        defaultLog.error('Ches rejected the email:', error);
     }
 }
 
@@ -207,7 +203,7 @@ const buildEmailTemplate = (subject, body, toAddresses, fromAddress, attachments
     }
 
     // Add files if they are present
-    if (Array.isArray(attachments) && attachments && attachments.length > 0) {
+    if (Array.isArray(attachments) && attachments.length > 0) {
         emailTemplate.attachments = attachments;
     }
 
