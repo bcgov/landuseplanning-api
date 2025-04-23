@@ -53,7 +53,7 @@ spec:
             - name: runclamav
               mountPath: /run/clamav
           terminationMessagePolicy: File
-          image: 'clamav/clamav:latest'
+          image: 'clamav/clamav:1.4.2'
           args:
             - '-c'
             - /init-unprivileged
@@ -76,7 +76,7 @@ spec:
             - name: tmp
               mountPath: /tmp
           terminationMessagePolicy: File
-          image: 'clamav/clamav:latest'
+          image: 'clamav/clamav:1.4.2'
           args:
             - '-c'
             - while true; do freshclam; sleep 86400; done
