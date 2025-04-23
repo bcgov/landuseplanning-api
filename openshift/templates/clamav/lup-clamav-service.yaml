@@ -1,0 +1,22 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: lup-clamav
+  namespace: e8b9ad-tools
+spec:
+  clusterIP: 10.98.103.24
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: clamd
+      protocol: TCP
+      port: 3310
+      targetPort: 3310
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - 10.98.103.24
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: lup-clamav

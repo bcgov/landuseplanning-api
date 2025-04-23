@@ -100,6 +100,12 @@ spec:
               value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard'
             - name: SSO_JWKSURI
               value: 'https://test.loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/certs'
+            - name: CLAMAV_SERVICE_HOST
+              value: lup-clamav.e8b9ad-tools.svc.cluster.local
+            - name: CLAMAV_SERVICE_PORT
+              value: '3310'
+            - name: ENABLE_VIRUS_SCANNING
+              value: 'true'
           ports:
             - name: http
               containerPort: 3000
