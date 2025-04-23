@@ -11,6 +11,7 @@ const tagList = [
   'details',
   'engagementStatus',
   'logos',
+  'shapefiles',
   'backgroundInfo',
   'backgroundImage',
   'engagementLabel',
@@ -860,6 +861,7 @@ exports.protectedPut = async (args, res) => {
   obj.existingLandUsePlanURLs = projectObj.existingLandUsePlanURLs;
   obj.engagementStatus = projectObj.engagementStatus;
   obj.logos = projectObj.logos;
+  obj.shapefiles = projectObj.shapefiles;
   obj.backgroundInfo = projectObj.backgroundInfo;
   obj.backgroundImage = projectObj.backgroundImage;
   obj.engagementLabel = projectObj.engagementLabel;

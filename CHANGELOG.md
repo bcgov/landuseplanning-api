@@ -1,3 +1,6 @@
+### Apr 23, 2025
+* Add "shapefiles" property to projects [DESENG-769](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-769)
+
 ### Apr 16, 2025
 * Removed optional chaining due to Node target version. [DESENG-789](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-789)
 * Revised virus scanning logic for optimization.

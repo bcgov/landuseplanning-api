@@ -7,6 +7,7 @@ const definition = {
   description: { type: String, default: '' },
   details: { type: String, default: '' },
   logos: { type: Array, default: [] },
+  shapefiles: { type: Array, default: [] },
   engagementStatus: { type: String, default: '' },
   backgroundInfo: { type: String, default:  '' },
   backgroundImage: { type: 'ObjectId', default: null },
