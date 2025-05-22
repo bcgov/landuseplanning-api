@@ -1,90 +1,89 @@
 ### May 22, 2025
-* Backed up old and new yamls for production deployment [DESENG-767](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-767)
+* Backed up old and new yamls for production deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
 
 ### Apr 23, 2025
-* Add "shapefiles" property to projects [DESENG-769](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-769)
+* Add "shapefiles" property to projects [DESENG-769](https://citz-gdx.atlassian.net/browse/DESENG-769)
 
 ### Apr 16, 2025
-* Removed optional chaining due to Node target version. [DESENG-789](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-789)
+* Removed optional chaining due to Node target version. [DESENG-789](https://citz-gdx.atlassian.net/browse/DESENG-789)
 * Revised virus scanning logic for optimization.
 * Added YAML templates for ClamAV service.
 
 ### Apr 14, 2025
-* Added file attachment functionality to contact form email submission, and the ability for admins to enable/disable it. [DESENG-789](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-789)
+* Added file attachment functionality to contact form email submission, and the ability for admins to enable/disable it. [DESENG-789](https://citz-gdx.atlassian.net/browse/DESENG-789)
 
 ### April 8, 2025
 * Improve installation instructions and move dotenv installation source
 
 ### Mar 31, 2025
-* Modified search controller to accomodate custom project type sorting. [DESENG-786](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-786)
+* Modified search controller to accomodate custom project type sorting. [DESENG-786](https://citz-gdx.atlassian.net/browse/DESENG-786)
 * Update installation instructions & process [DESENG-792](https://citz-gdx.atlassian.net/browse/DESENG-792)
 
 ### Mar 27, 2025
-* Added new and updated pipeline and listener YAMLs, and basic health check route. [DESENG-778](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-778)
+* Added new and updated pipeline and listener YAMLs, and basic health check route. [DESENG-778](https://citz-gdx.atlassian.net/browse/DESENG-778)
 
 ### Feb 26, 2025
-* Updated keycloak-js to version 25.0.6. [DESENG-772](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-772)
+* Updated keycloak-js to version 25.0.6. [DESENG-772](https://citz-gdx.atlassian.net/browse/DESENG-772)
 
 ### Feb 25, 2025
-* Added old and new YAML files for dev deployment to openshift folder. [DESENG-759](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-759)
-* Added old and new YAML files for dev MongoDB deployment to openshift folder. [DESENG-760](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-760)
-* Added old and new YAML files for test api deployment and test MongoDB deployment to openshift folder. [DESENG-766](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-766)
+* Added old and new YAML files for dev deployment to openshift folder. [DESENG-759](https://citz-gdx.atlassian.net/browse/DESENG-759)
+* Added old and new YAML files for dev MongoDB deployment to openshift folder. [DESENG-760](https://citz-gdx.atlassian.net/browse/DESENG-760)
+* Added old and new YAML files for test api deployment and test MongoDB deployment to openshift folder. [DESENG-766](https://citz-gdx.atlassian.net/browse/DESENG-766)
 
 ### Feb 6, 2025
 * Resolve unique index issue in local development
 
 ### Jan 9, 2025
-* Added external link model, service, and swagger definitions. Modified search service. [DESENG-751](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-751)
+* Added external link model, service, and swagger definitions. Modified search service. [DESENG-751](https://citz-gdx.atlassian.net/browse/DESENG-751)
 
 ### Nov 26, 2024
-* Modified project definition to accomodate shape file colours. [DESENG-743](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-743)
-* Modified project definition to accomodate project type multiselect. [DESENG-745](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-745)
-* Modified project definition to accomodate custom collection notice. [DESENG-747](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-747)
+* Modified project definition to accomodate shape file colours. [DESENG-743](https://citz-gdx.atlassian.net/browse/DESENG-743)
+* Modified project definition to accomodate project type multiselect. [DESENG-745](https://citz-gdx.atlassian.net/browse/DESENG-745)
+* Modified project definition to accomodate custom collection notice. [DESENG-747](https://citz-gdx.atlassian.net/browse/DESENG-747)
 
 ### Mar 11, 2024
-* Add option for contact form on projects [DESENG-373](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-373)
+* Add option for contact form on projects [DESENG-373](https://citz-gdx.atlassian.net/browse/DESENG-373)
 
 ### Oct 11, 2023
-* Add file sections [DESENG-372](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-372)
+* Add file sections [DESENG-372](https://citz-gdx.atlassian.net/browse/DESENG-372)
 
 ### Mar 9, 2023
-* Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://apps.itsm.gov.bc.
-ca/jira/browse/DESENG-283)
+* Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://citz-gdx.atlassian.net/browse/DESENG-283)
 
 ### Dec 21, 2022
-* Update CHES auth and API endpoints [DESENG-237](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-237)
+* Update CHES auth and API endpoints [DESENG-237](https://citz-gdx.atlassian.net/browse/DESENG-237)
 
 ### Oct 12, 2022
-* Banner image not loading on frontend [DESENG-181](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-181)
-* Banner image not deleting [DESENG-182](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-182)
+* Banner image not loading on frontend [DESENG-181](https://citz-gdx.atlassian.net/browse/DESENG-181)
+* Banner image not deleting [DESENG-182](https://citz-gdx.atlassian.net/browse/DESENG-182)
 
 ### Oct 3, 2022
-* Fix documents not loading [DESENG-197](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-197)
+* Fix documents not loading [DESENG-197](https://citz-gdx.atlassian.net/browse/DESENG-197)
 
 ### Sep 13, 2022
-* Move from keycloak to Common Online SSO [DESENG-179](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-179)
+* Move from keycloak to Common Online SSO [DESENG-179](https://citz-gdx.atlassian.net/browse/DESENG-179)
 
 ### May 25, 2022
-* Remove unused nconf package [DESENG-135](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-135)
+* Remove unused nconf package [DESENG-135](https://citz-gdx.atlassian.net/browse/DESENG-135)
 
 ### May 24, 2022
-* Add ability to retrieve documents by documentSource [DESENG-4](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-4)
+* Add ability to retrieve documents by documentSource [DESENG-4](https://citz-gdx.atlassian.net/browse/DESENG-4)
 
 ### April 11, 2022
-* Improve logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
+* Improve logging [DESENG-64](https://citz-gdx.atlassian.net/browse/DESENG-64)
 
 ### March 23, 2022
-* Fix email subscribe confirmation bug [DESENG-96](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-96)
-* Add selective logging [DESENG-64](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-64)
+* Fix email subscribe confirmation bug [DESENG-96](https://citz-gdx.atlassian.net/browse/DESENG-96)
+* Add selective logging [DESENG-64](https://citz-gdx.atlassian.net/browse/DESENG-64)
 * Tree-shake lodash dependencies
 * Update "var" -> "const" in app.js
 * Remove unused code
 
 ### March 17, 2022
-* Fix document text search bug [DESENG-90](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-90)
+* Fix document text search bug [DESENG-90](https://citz-gdx.atlassian.net/browse/DESENG-90)
 
 ### March 4, 2022
-* Resolve "useFindAndModify" deprecation warning [DESENG-65](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-65)
+* Resolve "useFindAndModify" deprecation warning [DESENG-65](https://citz-gdx.atlassian.net/browse/DESENG-65)
 
 ### February 11, 2022
 * Added OpenShift templates for the API pipeline
