@@ -87,12 +87,12 @@ spec:
             - name: _EMAIL_CLIENTID
               valueFrom:
                 secretKeyRef:
-                  name: landuseplanning-api-email-dev
+                  name: landuseplanning-api-email-prod
                   key: email-client-id
             - name: _EMAIL_CLIENT_SECRET
               valueFrom:
                 secretKeyRef:
-                  name: landuseplanning-api-email-dev
+                  name: landuseplanning-api-email-prod
                   key: email-client-secret
             - name: CHES_ENDPOINT
               value: 'https://ches.api.gov.bc.ca/'
