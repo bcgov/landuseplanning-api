@@ -1,0 +1,100 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: landuseplanning-api-prod
+  namespace: e8b9ad-prod
+  labels:
+    app: landuseplanning-api-prod
+    app.kubernetes.io/component: landuseplanning-api-prod
+    app.kubernetes.io/instance: landuseplanning-api-prod
+    app.kubernetes.io/part-of: landuseplanning-api-prod
+spec:
+  strategy:
+    type: RollingUpdate
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: landuseplanning-api-prod
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api-prod
+    spec:
+      containers:
+        - name: landuseplanning-api-prod
+          image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: KEYCLOAK_ENABLED
+              value: 'true'
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-name
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-password
+            - name: MONGODB_SERVICE_HOST
+              value: landuseplanning-api-mongodb-prod
+            - name: MINIO_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-prod
+                  key: minio-host
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-prod
+                  key: minio-access-key
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-minio-prod
+                  key: minio-secret-key
+            - name: CHES_AUTH_ENDPOINT
+              value: 'https://loginproxy.gov.bc.ca/auth/realms/comsvcauth/protocol/openid-connect/token'
+            - name: _EMAIL_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-email-prod
+                  key: email-client-id
+            - name: _EMAIL_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-email-prod
+                  key: email-client-secret
+            - name: CHES_ENDPOINT
+              value: 'https://ches.api.gov.bc.ca/'
+            - name: API_HOSTNAME
+              value: www.planninginpartnership.ca
+            - name: SSO_ISSUER
+              value: 'https://loginproxy.gov.bc.ca/auth/realms/standard'
+            - name: SSO_JWKSURI
+              value: 'https://loginproxy.gov.bc.ca/auth/realms/standard/protocol/openid-connect/certs'
+            - name: CLAMAV_SERVICE_HOST
+              value: lup-clamav.e8b9ad-tools.svc.cluster.local
+            - name: CLAMAV_SERVICE_PORT
+              value: '3310'
+            - name: ENABLE_VIRUS_SCANNING
+              value: 'true'
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: Always
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler

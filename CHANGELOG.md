@@ -1,3 +1,6 @@
+### May 22, 2025
+* Backed up old and new yamls for production deployment [DESENG-767](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-767)
+
 ### Apr 23, 2025
 * Add "shapefiles" property to projects [DESENG-769](https://apps.itsm.gov.bc.ca/jira/browse/DESENG-769)
 
