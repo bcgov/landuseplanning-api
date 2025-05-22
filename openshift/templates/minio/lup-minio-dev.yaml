@@ -1,0 +1,64 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: lup-minio-dev
+  namespace: e8b9ad-tools
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: lup-minio-dev
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: lup-minio-dev
+        deployment: lup-minio-dev
+    spec:
+      volumes:
+        - name: lup-minio-dev
+          persistentVolumeClaim:
+            claimName: lup-minio-dev
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: lup-minio-dev
+          command:
+            - /bin/sh
+            - '-c'
+          env:
+            - name: MINIO_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lup-minio-secrets-dev
+                  key: MINIO_ACCESS_KEY
+            - name: MINIO_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lup-minio-secrets-dev
+                  key: MINIO_SECRET_KEY
+            - name: MINIO_DATA_DIR
+              value: /opt/minio/s3/data
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: lup-minio-dev
+              mountPath: /opt/minio/s3/data
+          terminationMessagePolicy: File
+          image: 'image-registry.openshift-image-registry.svc:5000/e8b9ad-tools/lup-minio:latest'
+          args:
+            - /minio-entrypoint.sh server /opt/minio/s3/data
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
