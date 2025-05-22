@@ -1,4 +1,6 @@
 ### May 22, 2025
+* Convert Minio DCs to Deployments [DESENG-782](https://citz-gdx.atlassian.net/browse/DESENG-782)
+* Convert MongoDB DC to Deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
 * Backed up old and new yamls for production deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
 
 ### Apr 23, 2025
