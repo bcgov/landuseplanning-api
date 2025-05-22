@@ -1,0 +1,81 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: landuseplanning-api-mongodb-prod
+  namespace: e8b9ad-prod
+  labels:
+    app: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/component: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/instance: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/part-of: landuseplanning-api-prod
+    app.openshift.io/runtime-namespace: openshift
+    app.openshift.io/runtime-version: latest
+spec:
+  strategy:
+    type: RollingUpdate
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ConfigChange
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    matchLabels:
+        app: landuseplanning-api-mongodb-prod
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api-mongodb-prod
+        deploymentconfig: landuseplanning-api-mongodb-prod
+    spec:
+      volumes:
+        - name: landuseplanning-api-mongodb-prod
+          persistentVolumeClaim:
+            claimName: landuseplanning-api-mongodb-prod
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: landuseplanning-api-mongodb-prod
+          env:
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-name
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-password
+            - name: MONGODB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-admin-password
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: landuseplanning-api-mongodb-prod
+              mountPath: /var/lib/mongodb/data
+          terminationMessagePolicy: File
+          image: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
