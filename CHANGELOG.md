@@ -1,3 +1,6 @@
+### May 23, 2025
+* Remove crypto package, unneeded utilities [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
+
 ### May 22, 2025
 * Convert Minio DCs to Deployments [DESENG-782](https://citz-gdx.atlassian.net/browse/DESENG-782)
 * Convert MongoDB DC to Deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
