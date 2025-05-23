@@ -1,6 +1,7 @@
 ### May 22, 2025
 * Convert Minio DCs to Deployments [DESENG-782](https://citz-gdx.atlassian.net/browse/DESENG-782)
 * Convert MongoDB DC to Deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
+* Backed up old and new yamls for production deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
 * Replaced outdated crypto package with native Node crypto functionality. [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
 
 ### Apr 23, 2025
@@ -50,8 +51,7 @@
 * Add file sections [DESENG-372](https://citz-gdx.atlassian.net/browse/DESENG-372)
 
 ### Mar 9, 2023
-* Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://apps.itsm.gov.bc.
-ca/jira/browse/DESENG-283)
+* Added option to add/remove Activities and Updates section from project description page. [DESENG-283](https://citz-gdx.atlassian.net/browse/DESENG-283)
 
 ### Dec 21, 2022
 * Update CHES auth and API endpoints [DESENG-237](https://citz-gdx.atlassian.net/browse/DESENG-237)
