@@ -106,7 +106,7 @@ exports.issueToken = function (user,
   defaultLog.info("user:", user);
   defaultLog.info("deviceId:", deviceId);
   defaultLog.info("scopes:", scopes);
-  var crypto = require('crypto');
+  const crypto = require('node:crypto');
   var randomString = crypto.randomBytes(32).toString('hex');
   var jti = crypto.createHash('sha256').update(user.username + deviceId + randomString).digest('hex');
   defaultLog.info("JTI:", jti);
@@ -133,8 +133,8 @@ exports.issueToken = function (user,
 
 var hashPassword = function(user, password) {
   if (user.salt && password) {
-    var crypto = require('crypto');
-    return crypto.pbkdf2Sync(password, new Buffer(user.salt, 'base64'), 10000, 64, 'sha1').toString('base64');
+    const crypto = require('node:crypto');
+    return crypto.pbkdf2Sync(password, new Buffer.from(user.salt, 'base64'), 10000, 64, 'sha1').toString('base64');
   } else {
     return password;
   }

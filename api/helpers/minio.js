@@ -1,6 +1,6 @@
 'use strict';
 
-var crypto = require('crypto');
+const crypto = require('node:crypto');
 var minio = require('minio');
 var path = require('path');
 
