@@ -2,6 +2,7 @@
 * Convert Minio DCs to Deployments [DESENG-782](https://citz-gdx.atlassian.net/browse/DESENG-782)
 * Convert MongoDB DC to Deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
 * Backed up old and new yamls for production deployment [DESENG-767](https://citz-gdx.atlassian.net/browse/DESENG-767)
+* Replaced outdated crypto package with native Node crypto functionality. [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
 
 ### Apr 23, 2025
 * Add "shapefiles" property to projects [DESENG-769](https://citz-gdx.atlassian.net/browse/DESENG-769)
