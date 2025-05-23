@@ -1,6 +1,5 @@
 'use strict';
 
-const crypto = require('node:crypto');
 var minio = require('minio');
 var path = require('path');
 
@@ -38,12 +37,12 @@ var isValidBucket = function (bucket) {
 }
 
 /**
- * Returns a 16-bit pseudo-random string to be used as file name for the storage.
+ * Returns a 32 character, 16-bit pseudo-random string to be used as file name for the storage.
  * @returns a 16-bit pseudo-random string
- * @see https://github.com/expressjs/multer/blob/ee5188d7499dd19c8596fe011e6f6e53ea4778d6/storage/disk.js#L7-L11
+ * @see https://stackoverflow.com/a/58326357
  */
 var getRandomizedFileName = function () {
-  return crypto.randomBytes(16).toString('hex');
+  return [...Array(32)].map(() => Math.floor(Math.random() * 16).toString(16)).join('');
 }
 
 /**

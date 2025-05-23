@@ -1,8 +1,13 @@
 'use strict';
 
-//
-// Example: node seed.js MONGO_USER MONGO_PASSWORD mongodb eagle-prod
-//
+/**
+ * @deprecated This file isn't actively used.
+ * 
+ * We should re-work this file so that we can use it or remove the seeding
+ * functionality entirely.
+ * 
+ * Example use: node seed.js MONGO_USER MONGO_PASSWORD mongodb eagle-prod
+ */
 
 var Promise = require('es6-promise').Promise;
 var _ = require('lodash');

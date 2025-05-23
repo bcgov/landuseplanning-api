@@ -100,46 +100,6 @@ function _verifySecret(currentScopes, tokenString, secret, req, callback, sendEr
   });
 }
 
-exports.issueToken = function (user,
-  deviceId,
-  scopes) {
-  defaultLog.info("user:", user);
-  defaultLog.info("deviceId:", deviceId);
-  defaultLog.info("scopes:", scopes);
-  const crypto = require('node:crypto');
-  var randomString = crypto.randomBytes(32).toString('hex');
-  var jti = crypto.createHash('sha256').update(user.username + deviceId + randomString).digest('hex');
-  defaultLog.info("JTI:", jti);
-
-  var payload = {
-    name: user.username,
-    preferred_username: user.username,
-    userID: user._id,
-    deviceId: deviceId,
-    jti: jti,
-    iss: ISSUER,
-    realm_access: {
-      roles: scopes
-    }
-  };
-
-  var token = jwt.sign(payload,
-    SECRET,
-    { expiresIn: JWT_SIGN_EXPIRY + 'm' });
-  defaultLog.info("ISSUING NEW TOKEN:expiresIn:", JWT_SIGN_EXPIRY + 'm');
-
-  return token;
-};
-
-var hashPassword = function(user, password) {
-  if (user.salt && password) {
-    const crypto = require('node:crypto');
-    return crypto.pbkdf2Sync(password, new Buffer.from(user.salt, 'base64'), 10000, 64, 'sha1').toString('base64');
-  } else {
-    return password;
-  }
-};
-
 exports.setPassword = function(user) {
   var bcrypt = require('bcrypt-nodejs');
   user.salt = bcrypt.genSaltSync(16);
