@@ -1,3 +1,6 @@
+### May 26, 2025
+* Update Node to version 16 for `crypto` package compatibility [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
+
 ### May 23, 2025
 * Remove crypto package, unneeded utilities [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
 
