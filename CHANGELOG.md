@@ -1,3 +1,6 @@
+### May 27, 2025
+* Remove `npx` command to get around npm_config_prefix issue [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
+
 ### May 26, 2025
 * Update Node to version 16 for `crypto` package compatibility [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
 * Update to Node 18 to solve other dependency issues (`jwt-decode`) [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
