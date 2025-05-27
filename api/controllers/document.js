@@ -318,7 +318,7 @@ exports.publicDownload = function (args, res) {
     })
     .catch((error) => {
       defaultLog.error(error);
-      Actions.sendResponse(error, 500, {})
+      Actions.sendResponse(res, 500, {})
     });
 };
 
@@ -440,7 +440,7 @@ exports.protectedOpen = function (args, res) {
             res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
             return rp(docURL).pipe(res);
           })
-          .catch(error => Actions.sendResponse(error, 500, {}));
+          .catch(error => Actions.sendResponse(res, 500, {}));
       } else {
         return Actions.sendResponse(res, 404, {});
       }
