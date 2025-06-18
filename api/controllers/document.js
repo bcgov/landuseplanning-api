@@ -401,12 +401,12 @@ exports.protectedOpen = async function (args, res) {
       ['public'],
       false,
       query,
-      ["internalURL", "documentFileName", "internalMime", 'internalExt'],
-      null,
-      null,
-      null,
-      null,
-      false
+      ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false // count
     );
 
     if (!data || data.length !== 1) {
