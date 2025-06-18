@@ -383,68 +383,69 @@ exports.protectedDownload = function (args, res) {
     });
 };
 
-exports.protectedOpen = function (args, res) {
+exports.protectedOpen = async function (args, res) {
   defaultLog.info('DOCUMENT PROTECTED OPEN');
 
-  // Build match query if on docId route
-  var query = {};
-  if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
-  }
-  // Set query type
-  assignIn(query, { "_schemaName": "Document" });
+  // Use try/catch around everything to catch errors at every stage of the file request
+  // This allows us to fail gracefully when a file isn't found on the Minio server
+  try {
+    // Build match query if on docId route
+    let query = {};
+    if (args.swagger.params.docId?.value) {
+      query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    }
+    assignIn(query, { "_schemaName": "Document" });
 
-  Utils.runDataQuery('Document',
-    ['public'],
-    false,
-    query,
-    ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    false) // count
-    .then(function (data) {
-      if (data && data.length === 1) {
-        var blob = data[0];
+    const data = await Utils.runDataQuery(
+      'Document',
+      ['public'],
+      false,
+      query,
+      ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false // count
+    );
 
-        var fileName = blob.documentFileName;
-        var fileType = blob.internalExt;
-        if (fileName.slice(- fileType.length) !== fileType) {
-          fileName = fileName + '.' + fileType;
-        }
+    if (!data || data.length !== 1) {
+      return Actions.sendResponse(res, 404, {});
+    }
 
-        // Allow override
-        if (args.swagger.params.filename) {
-          fileName = args.swagger.params.filename.value;
-        }
+    const blob = data[0];
+    let fileName = args.swagger.params.filename?.value || blob.documentFileName;
+    const fileType = blob.internalExt;
+    if (!fileName.endsWith(fileType)) {
+      fileName = fileName + '.' + fileType;
+    }
 
-        var fileMeta;
+    defaultLog.info('Searching minio for file');
 
-        defaultLog.info('Searching minio for file');
-        // check if the file exists in Minio
-        return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
-          .then(function (objectMeta) {
-            fileMeta = objectMeta;
-            defaultLog.info('file found:', fileMeta);
-            // get the download URL
-            return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
-          }, function () {
-            return Actions.sendResponse(res, 404, {});
-          })
-          .then(function (docURL) {
-            Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            // stream file from Minio to client
-            res.setHeader('Content-Length', fileMeta.size);
-            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
-            res.setHeader('Content-Disposition', 'inline;filename="' + fileName + '"');
-            return rp(docURL).pipe(res);
-          })
-          .catch(error => Actions.sendResponse(res, 500, {}));
-      } else {
-        return Actions.sendResponse(res, 404, {});
+    const fileMeta = await MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
+    defaultLog.info('file found:', fileMeta);
+
+    const docURL = await MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
+
+    Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload?.preferred_username, args.swagger.params.docId?.value || null);
+    // stream file from Minio to client
+    res.setHeader('Content-Length', fileMeta.size);
+    res.setHeader('Content-Type', fileMeta.metaData['content-type']);
+    res.setHeader('Content-Disposition', `inline;filename="${fileName}"`);
+
+    return rp(docURL).pipe(res);
+
+  } catch (error) {
+    defaultLog.error('Error in protectedOpen:', error);
+    if (!res.headersSent) {
+      if (error.code === 'NoSuchKey' || error.message?.includes('not found')) {
+        return Actions.sendResponse(res, 404, { message: 'File not found' });
       }
-    });
+      return Actions.sendResponse(res, 500, { message: 'Internal server error' });
+    }
+    // If headers already sent, don't try to send again
+    res.end();
+  }
 };
 
 //  Create a new document
