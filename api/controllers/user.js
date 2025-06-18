@@ -107,9 +107,6 @@ exports.protectedPost = async function (args, res) {
     delete: ['staff', 'sysadmin']
   });
 
-  // Make the user's password salted and store that instead of the actual password.
-  user = auth.setPassword(user);
-
   try {
     var u = await user.save();
     Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, u._id);

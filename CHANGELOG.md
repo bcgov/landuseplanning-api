@@ -1,3 +1,6 @@
+### Jun 17, 2025
+* Resolve issue with missing authentication functions [DESENG-825](https://citz-gdx.atlassian.net/browse/DESENG-825)
+
 ### May 27, 2025
 * Remove `npx` command to get around npm_config_prefix issue [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
 * Correct incorrectly-called `sendResponse` call [DESENG-827](https://citz-gdx.atlassian.net/browse/DESENG-827)
