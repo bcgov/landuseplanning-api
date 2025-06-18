@@ -1,3 +1,6 @@
+### Jun 18, 2025
+* Created graceful fallback for failure of Minio file open. [DESENG-831](https://citz-gdx.atlassian.net/browse/DESENG-831)
+
 ### Jun 17, 2025
 * Resolve issue with missing authentication functions [DESENG-825](https://citz-gdx.atlassian.net/browse/DESENG-825)
 
