@@ -24,7 +24,7 @@ spec:
     spec:
       containers:
         - name: landuseplanning-api-test
-          image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api
+          image: image-registry.apps.silver.devops.gov.bc.ca/e8b9ad-tools/landuseplanning-api:test
           ports:
             - containerPort: 8080
               protocol: TCP
