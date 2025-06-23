@@ -1,3 +1,6 @@
+### Jun 23, 2025
+* Add missing API_HOSTNAME env var to enable easy confirmation of email subscriptions. [DESENG-833](https://citz-gdx.atlassian.net/browse/DESENG-833)
+
 ### Jun 19, 2025
 * Document the use of image tags in openshift Deployments. [DESENG-841](https://citz-gdx.atlassian.net/browse/DESENG-841)
 

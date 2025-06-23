@@ -87,6 +87,8 @@ spec:
               value: '3310'
             - name: ENABLE_VIRUS_SCANNING
               value: 'true'
+            - name: API_HOSTNAME
+              value: landuseplanning-test.apps.silver.devops.gov.bc.ca
           resources: {}
           terminationMessagePath: /dev/termination-log
           terminationMessagePolicy: File

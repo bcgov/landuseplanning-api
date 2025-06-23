@@ -106,6 +106,8 @@ spec:
               value: '3310'
             - name: ENABLE_VIRUS_SCANNING
               value: 'true'
+            - name: API_HOSTNAME
+              value: landuseplanning-dev.apps.silver.devops.gov.bc.ca
           ports:
             - name: http
               containerPort: 3000
