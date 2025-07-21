@@ -119,8 +119,6 @@ exports.runDataQuery = async function (modelType, role, userGuid, query, fields,
     }
 
     if (userGuid) {
-  defaultLog.info('getUserProjectPermissions call 2', userGuid)
-
       projectPermissions = await getUserProjectPermissions(userGuid)
       .then(permissions => permissions)
       .catch(error => error);

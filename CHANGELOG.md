@@ -1,3 +1,8 @@
+### Jul 21, 2025
+* Refactor email subscribe methods to prevent execution order bugs. [DESENG-873](https://citz-gdx.atlassian.net/browse/DESENG-873)
+* Correct some spelling mistakes
+* Remove unused log and give log more context
+
 ### Jun 23, 2025
 * Add missing API_HOSTNAME env var to enable easy confirmation of email subscriptions. [DESENG-833](https://citz-gdx.atlassian.net/browse/DESENG-833)
 

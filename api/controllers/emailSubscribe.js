@@ -61,7 +61,7 @@ exports.publicHead = async function (args, res) {
 
 // subscribe a new email address
 exports.unProtectedPost = async function (args, res) {
-  defaultLog.info('EMAIL SUBCRIBE PUBLIC POST');
+  defaultLog.info('EMAIL SUBSCRIBE PUBLIC POST');
   var obj = args.swagger.params.emailSubscribe.value;
   defaultLog.info('Incoming new object:', obj);
   var existingEmailId, projectName, alreadyConfirmed, confirmKey;
@@ -91,7 +91,7 @@ exports.unProtectedPost = async function (args, res) {
   });
 
   // check if already exists
-  // if so either update with the new project or exit graacefully
+  // if so either update with the new project or exit gracefully
   await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailSubscribe.email }, null, async function (err, entity) {
     if (entity) {
       existingEmailId = entity._id;
@@ -103,42 +103,43 @@ exports.unProtectedPost = async function (args, res) {
         isDuplicate = true;
       }
     }
-  });
 
-  if (existingEmailId && isDuplicate ) {
-    // Project and email already exists so exit gracefully
-    defaultLog.info('User has already signed up for the project', existingEmailId);
-    return Actions.sendResponse(res, 200, '200');
-  } else if (existingEmailId) {
-    // New project for an existing email
-    existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
-    var es = await EmailSubscribe.update({ _id: existingEmailId }, { $set: { project: existingProjectArray } });
-    Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
-    defaultLog.info('New project added to email subscribe:', es._id);
-    // have they already confirmed their email?
-    // if so, send the welcome for the new project
-    if (alreadyConfirmed) {
-      defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
-      await Email.sendWelcomeEmail(projectName, emailSubscribe.email);
+    if (existingEmailId && isDuplicate ) {
+      // Project and email already exists so exit gracefully
+      defaultLog.info('User has already signed up for the project', existingEmailId);
+      return Actions.sendResponse(res, 200, '200');
+    } else if (existingEmailId) {
+      // New project for an existing email
+      existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
+      var es = await EmailSubscribe.updateOne({ _id: existingEmailId }, { $set: { project: existingProjectArray } });
+      Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
+      defaultLog.info('New project added to email subscribe:', es._id);
+      // have they already confirmed their email?
+      // if so, send the welcome for the new project
+      if (alreadyConfirmed) {
+        defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
+        await Email.sendWelcomeEmail(projectName, emailSubscribe.email);
+      }
+      // if not, resend the confirmation email for the new project
+      else {
+        defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
+        await Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey);
+      }
+      return Actions.sendResponse(res, 200, es);
     }
-    // if not, resend the confirmation email for the new project
-    else {
-      defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
-      await Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey);
+  
+    try {
+      var c = await emailSubscribe.save();
+      Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
+      defaultLog.info('Saved new EmailSubscribe object:', c._id);
+      await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey).then(() => {
+        return Actions.sendResponse(res, 200, c);
+      })
+    } catch (e) {
+      defaultLog.error('Error adding new email subscriber:', e);
+      return Actions.sendResponse(res, 400, e);
     }
-    return Actions.sendResponse(res, 200, es);
-  }
- 
-  try {
-    var c = await emailSubscribe.save();
-    Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
-    defaultLog.info('Saved new EmailSubscribe object:', c._id);
-    await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey);
-    return Actions.sendResponse(res, 200, c);
-  } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
-  }
+  });
 };
 
 // confirm a new email address
