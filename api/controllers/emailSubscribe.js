@@ -61,16 +61,17 @@ exports.publicHead = async function (args, res) {
 
 // subscribe a new email address
 exports.unProtectedPost = async function (args, res) {
-  defaultLog.info('EMAIL SUBCRIBE PUBLIC POST');
-  var obj = args.swagger.params.emailSubscribe.value;
+  defaultLog.info('EMAIL SUBSCRIBE PUBLIC POST');
+  let obj = args.swagger.params.emailSubscribe.value;
   defaultLog.info('Incoming new object:', obj);
-  var existingEmailId, projectName, alreadyConfirmed, confirmKey;
-  var isDuplicate = false;
+  let existingEmailId, alreadyConfirmed, confirmKey;
+  let projectName = 'Planning in Partnership';
+  let isDuplicate = false;
 
-  var EmailSubscribe = mongoose.model('EmailSubscribe');
-  var Project = mongoose.model('Project');
+  let EmailSubscribe = mongoose.model('EmailSubscribe');
+  let Project = mongoose.model('Project');
 
-  var emailSubscribe = new EmailSubscribe(obj);
+  let emailSubscribe = new EmailSubscribe(obj);
   emailSubscribe._schemaName = 'EmailSubscribe';
   emailSubscribe.email = obj.email;
   emailSubscribe.project = [mongoose.Types.ObjectId(obj.project)];
@@ -85,13 +86,11 @@ exports.unProtectedPost = async function (args, res) {
   await Project.findOne({ _id: obj.project }, null, async function (err, entity) {
     if (entity) {
       projectName = entity.name;
-    } else {
-      projectName = 'Land Use Planning';
     }
   });
 
   // check if already exists
-  // if so either update with the new project or exit graacefully
+  // if so either update with the new project or exit gracefully
   await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailSubscribe.email }, null, async function (err, entity) {
     if (entity) {
       existingEmailId = entity._id;
@@ -103,42 +102,57 @@ exports.unProtectedPost = async function (args, res) {
         isDuplicate = true;
       }
     }
-  });
 
-  if (existingEmailId && isDuplicate ) {
-    // Project and email already exists so exit gracefully
-    defaultLog.info('User has already signed up for the project', existingEmailId);
-    return Actions.sendResponse(res, 200, '200');
-  } else if (existingEmailId) {
-    // New project for an existing email
-    existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
-    var es = await EmailSubscribe.update({ _id: existingEmailId }, { $set: { project: existingProjectArray } });
-    Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
-    defaultLog.info('New project added to email subscribe:', es._id);
-    // have they already confirmed their email?
-    // if so, send the welcome for the new project
-    if (alreadyConfirmed) {
-      defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
-      await Email.sendWelcomeEmail(projectName, emailSubscribe.email);
+    if (existingEmailId && isDuplicate ) {
+      // Project and email already exists so exit gracefully
+      defaultLog.info('User has already signed up for the project', existingEmailId);
+      return Actions.sendResponse(res, 200, '200');
+    } else if (existingEmailId) {
+      // New project for an existing email
+      existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
+      await EmailSubscribe.updateOne({ _id: existingEmailId }, { $set: { project: existingProjectArray } }, async function (err, entity) {
+        if (err) throw new Error(err);
+        if (entity) {
+          Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
+          defaultLog.info('New project added to email subscribe:', entity._id);
+        }
+      });
+      // have they already confirmed their email?
+      // if so, send the welcome for the new project
+      if (alreadyConfirmed) {
+        defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
+        await Email.sendWelcomeEmail(projectName, emailSubscribe.email)
+          .then(() => undefined)
+          .catch((e) => {
+            defaultLog.error('Error sending welcome email:', e);
+            return Actions.sendResponse(res, 500, e);
+          });
+      }
+      // if not, resend the confirmation email for the new project
+      else {
+        defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
+        Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey)
+          .then(() => undefined)
+          .catch((e) => {
+            defaultLog.error('Error sending confirmation email:', e);
+            return Actions.sendResponse(res, 500, e);
+          });
+      }
+      return Actions.sendResponse(res, 200, entity);
     }
-    // if not, resend the confirmation email for the new project
-    else {
-      defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
-      await Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey);
+  
+    try {
+      var c = await emailSubscribe.save();
+      Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
+      defaultLog.info('Saved new EmailSubscribe object:', c._id);
+      Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey)
+        .then(() => Actions.sendResponse(res, 200, c))
+        .catch((e) => {throw new Error('Error sending confirmation email after save:', e)});
+    } catch (e) {
+      defaultLog.error('Error adding new email subscriber:', e);
+      return Actions.sendResponse(res, 500, e);
     }
-    return Actions.sendResponse(res, 200, es);
-  }
- 
-  try {
-    var c = await emailSubscribe.save();
-    Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
-    defaultLog.info('Saved new EmailSubscribe object:', c._id);
-    await Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey);
-    return Actions.sendResponse(res, 200, c);
-  } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
-  }
+  });
 };
 
 // confirm a new email address
@@ -150,73 +164,71 @@ exports.unProtectedPut = async function (args, res) {
     return Actions.sendResponse(res, 403, 'Access denied');
   }
   
-  var emailAddress = args.swagger.params.email.value;
-  var confirmKey = args.swagger.params.confirmKey.value;
-  var emailId, correctConfirmKey, confirmDate, previousConfirmed, projectId, projectName;
+  let emailAddress = args.swagger.params.email.value;
+  let confirmKey = args.swagger.params.confirmKey.value;
+  let emailId, correctConfirmKey, confirmDate, previousConfirmed, projectId;
+  let projectName = 'Planning in Partnership';
   defaultLog.info('Put email subscribe:', emailAddress);
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
   var Project = mongoose.model('Project');
 
   // find the object ID based on the email address
-  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, function (err, entity) {
-    defaultLog.error('Err', err);
-    defaultLog.info('Entity', entity);
-    try {
+  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, async function (err, entity) {
+    if (err) {
+      defaultLog.error('Error finding unconfirmed email subscription', e);
+      return Actions.sendResponse(res, 404, e);
+    }
+
+    if (entity) {
       emailId = entity._id;
       correctConfirmKey = entity.confirmKey;
       confirmDate = new Date();
       previousConfirmed = entity.confirmed;
       projectId = entity.project;
-    } catch(e) {
+    }
+
+    // check if the auth key is valid, else respond with a 403
+    if (correctConfirmKey !== confirmKey) {
+      defaultLog.info('Confirm key mismatch', confirmKey, correctConfirmKey);
+      defaultLog.info('HTTP request made with: ', confirmKey);
+      defaultLog.info('Retrieved confirmation key from the DB:', correctConfirmKey);
+      return Actions.sendResponse(res, 403, 'Access denied');
+    }
+
+    // check if it has already been confirmed. If so, gracefully exit with a 200
+    if (previousConfirmed) {
+      defaultLog.info('Email has already been confirmed:', emailAddress);
+      return Actions.sendResponse(res, 200, {});
+    }
+
+    let emailSubscribe = {
+      confirmed: true,
+      dateConfirmed: confirmDate,
+    };
+
+    // get the project name
+    await Project.findOne({ _id: projectId }, null, async function (err, entity) {
+      if (err) defaultLog.error('Error getting project name. Will still attempt to send welcome email', err);
+      if (entity) {
+        projectName = entity.name;
+      }
+    });
+
+    defaultLog.info('Incoming updated object:', emailSubscribe);
+
+    try {
+      let es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: emailSubscribe });
+      Utils.recordAction('Put', 'EmailSubscribe', 'public', emailId);
+      defaultLog.info('Email confirmed:', emailId);
+      await Email.sendWelcomeEmail(projectName, emailAddress);
+      return Actions.sendResponse(res, 200, es);
+    } catch (e) {
       defaultLog.error(e);
-      return Actions.sendResponse(res, 404, e);
+      return Actions.sendResponse(res, 400, e);
     }
+
   });
-
-  defaultLog.info('PROJECT ID', projectId);
-
-  // check if the auth key is valid, else respond with a 403
-  if ( correctConfirmKey !== confirmKey) {
-    defaultLog.info('Confirm key mismatch', confirmKey, correctConfirmKey);
-    defaultLog.info('Submitted confirm key: ', confirmKey);
-    defaultLog.info('Correct confirm key:', correctConfirmKey);
-    return Actions.sendResponse(res, 403, 'Access denied');
-  }
-
-  // check if it has already been confirmed. If so, gracefully exit with a 200
-  if (previousConfirmed) {
-    defaultLog.info('Email has already been confirmed:', emailAddress);
-    return Actions.sendResponse(res, 200, {});
-  }
-
-  var emailSubscribe = {
-    confirmed: true,
-    dateConfirmed: confirmDate,
-  };
-
-  // get the project name
-  await Project.findOne({ _id: projectId }, null, async function (err, entity) {
-    if (entity) {
-      projectName = entity.name;
-    } else {
-      projectName = 'Land Use Planning';
-    }
-  });
-
-  defaultLog.info('Incoming updated object:', emailSubscribe);
-
-  try {
-    
-    var es = await EmailSubscribe.update({ _id: emailId }, { $set: emailSubscribe });
-    Utils.recordAction('Put', 'EmailSubscribe', 'public', emailId);
-    defaultLog.info('Email confirmed:', emailId);
-    await Email.sendWelcomeEmail(projectName, emailAddress);
-    return Actions.sendResponse(res, 200, es);
-  } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
-  }
 }
 
 // unsubscribe from updates
@@ -500,7 +512,7 @@ exports.handleContactFormResponse = async (args, res) => {
   defaultLog.info('Incoming fields:', { name, email, message, project });
   defaultLog.info((Array.isArray(files) && 0 < files.length ? `${files.length} ` : 'No ') + 'files are attached to the form');
 
-  let projectName = 'Land Use Planning';
+  let projectName = 'Planning in Partnership';
   let recipients = [];
 
   try {
