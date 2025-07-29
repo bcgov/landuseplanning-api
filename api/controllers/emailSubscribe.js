@@ -195,7 +195,7 @@ exports.unProtectedPut = async function (args, res) {
       defaultLog.info('Retrieved confirmation key from the DB:', correctConfirmKey);
       return Actions.sendResponse(res, 403, 'Access denied');
     }
-
+c
     // check if it has already been confirmed. If so, gracefully exit with a 200
     if (previousConfirmed) {
       defaultLog.info('Email has already been confirmed:', emailAddress);
@@ -374,56 +374,61 @@ exports.protectedDelete = async function (args, res, next) {
     return Actions.sendResponse(res, 404, 'Not found');
   }
 
-  var emailAddress = args.swagger.params.email.value;
-  var projectId = args.swagger.params.projectId.value;
-  var emailId, projectList;
+  let emailAddress = args.swagger.params.email.value;
+  let projectId = args.swagger.params.projectId.value;
+  let emailId;
+  let projectList = [];
   defaultLog.info('Delete email subscribe:', emailAddress);
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
 
   // find the object ID based on the email address
-  await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
-    try {
+  await EmailSubscribe.findOne({ email: emailAddress }, null, async function (err, entity) {
+    if (err) {
+      defaultLog.error('Error finding email subscribe object from email', err);
+      return Actions.sendResponse(res, 404, err);
+    }
+    
+    if (entity) {
       emailId = entity._id;
       projectList = entity.project;
-    } catch (e) {
-      defaultLog.error(e);
-      return Actions.sendResponse(res, 404, e);
+
+      // check if project id is in project list
+      const index = projectList.indexOf(projectId);
+      if ( index > -1) {
+        projectList.splice(index, 1);
+        if (projectList.length > 0 ) {
+          // update existing email object with new project list
+          try {
+            var es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: { project: projectList }});
+            Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+            defaultLog.info('Email deleted from one project:', es);
+            return Actions.sendResponse(res, 200, es);
+          } catch (e) {
+            defaultLog.error(e);
+            return Actions.sendResponse(res, 400, e);
+          }
+        } else {
+          // delete email object
+          try {
+            var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
+            Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+            defaultLog.info('Email deleted from system:', emailId);
+            return Actions.sendResponse(res, 200, es);
+          } catch (e) {
+            defaultLog.error(e);
+            return Actions.sendResponse(res, 400, e);
+          }
+        }
+      } else {
+        // if not return 404
+        defaultLog.info('Project ID not found: ', projectId);
+        return Actions.sendResponse(res, 404, 'Project ID not found');
+      }
+      
     }
   });
 
-  // check if project id is in project list
-  const index = projectList.indexOf(projectId);
-  if ( index > -1) {
-    projectList.splice(index, 1);
-    if (projectList.length > 0 ) {
-      // update existing email object with new project list
-      try {
-        var es = await EmailSubscribe.update({ _id: emailId }, { $set: { project: projectList }});
-        Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
-        defaultLog.info('Email deleted from one project:', es);
-        return Actions.sendResponse(res, 200, es);
-      } catch (e) {
-        defaultLog.error(e);
-        return Actions.sendResponse(res, 400, e);
-      }
-    } else {
-      // delete email object
-      try {
-        var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-        Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
-        defaultLog.info('Email deleted from system:', emailId);
-        return Actions.sendResponse(res, 200, es);
-      } catch (e) {
-        defaultLog.error(e);
-        return Actions.sendResponse(res, 400, e);
-      }
-    }
-  } else {
-    // if not return 404
-    defaultLog.info('Project ID not found: ', projectId);
-    return Actions.sendResponse(res, 404, 'Project ID not found');
-  }
 }
 
 

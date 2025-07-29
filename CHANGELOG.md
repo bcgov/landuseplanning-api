@@ -1,3 +1,6 @@
+### Jul 29, 2025
+* Fix faulty async code leading to inconsistent email subscribe deletions. [DESENG-887](https://citz-gdx.atlassian.net/browse/DESENG-887)
+
 ### Jul 21, 2025
 * Refactor email subscribe methods to prevent execution order bugs. [DESENG-873](https://citz-gdx.atlassian.net/browse/DESENG-873)
 * Correct some spelling mistakes
