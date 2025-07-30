@@ -388,7 +388,7 @@ exports.protectedDelete = async function (args, res, next) {
       defaultLog.error('Error finding email subscribe object from email', err);
       return Actions.sendResponse(res, 404, err);
     }
-    
+
     if (entity) {
       emailId = entity._id;
       projectList = entity.project;
@@ -405,8 +405,8 @@ exports.protectedDelete = async function (args, res, next) {
             defaultLog.info('Email deleted from one project:', es);
             return Actions.sendResponse(res, 200, es);
           } catch (e) {
-            defaultLog.error(e);
-            return Actions.sendResponse(res, 400, e);
+            defaultLog.error('Error removing user subscription from project', e);
+            return Actions.sendResponse(res, 500, e);
           }
         } else {
           // delete email object
@@ -416,8 +416,8 @@ exports.protectedDelete = async function (args, res, next) {
             defaultLog.info('Email deleted from system:', emailId);
             return Actions.sendResponse(res, 200, es);
           } catch (e) {
-            defaultLog.error(e);
-            return Actions.sendResponse(res, 400, e);
+            defaultLog.error('Error deleting email subscription entry', e);
+            return Actions.sendResponse(res, 500, e);
           }
         }
       } else {
