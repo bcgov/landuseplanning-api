@@ -326,7 +326,13 @@ exports.protectedGet = async function (args, res) {
   }
 };
 
-//  Create a new Comment
+
+/**
+ * A not oft used handler for adding comments from the backend. This may be removed
+ * at some point. Unsure if it still works since it's used so little.
+ * 
+ * @todo Remove or fix this handler.
+ */
 exports.protectedPost = async function (args, res) {
   defaultLog.info('COMMENT PROTECTED POST');
   var obj = args.swagger.params.comment.value;
@@ -438,11 +444,6 @@ exports.protectedPut = async function (args, res) {
 
   var Comment = mongoose.model('Comment');
 
-  var vcs = [];
-  obj.valuedComponents.forEach(function (vc) {
-    vcs.push(mongoose.Types.ObjectId(vc));
-  });
-
   var comment = {
     isAnonymous: obj.isAnonymous,
     datePosted: obj.datePosted,
@@ -454,20 +455,19 @@ exports.protectedPut = async function (args, res) {
     publishedNotes: obj.publishedNotes,
     rejectedNotes: obj.rejectedNotes,
     rejectedReason: obj.rejectedReason,
-    valuedComponents: vcs,
   };
   comment = setPermissionsFromEaoStatus(obj.eaoStatus, comment);
 
   defaultLog.info('Incoming updated object:', comment);
 
   try {
-    var c = await Comment.update({ _id: objId }, { $set: comment });
+    var c = await Comment.updateOne({ _id: objId }, { $set: comment });
     Utils.recordAction('Put', 'Comment', args.swagger.params.auth_payload.preferred_username, objId);
     defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error:', e);
-    return Actions.sendResponse(res, 400, e);
+    defaultLog.info('Error approving/rejecting/modifying comment(s):', e);
+    return Actions.sendResponse(res, 500, e);
   }
 };
 

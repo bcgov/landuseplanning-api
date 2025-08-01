@@ -1,3 +1,6 @@
+### Aug 1, 2025
+* Remove unused comment properties that were causing a crash when approving rejecting comments [DESENG-888](https://citz-gdx.atlassian.net/browse/DESENG-888)
+
 ### Jul 30, 2025
 * Fix faulty async code leading to inconsistent email subscribe deletions. [DESENG-887](https://citz-gdx.atlassian.net/browse/DESENG-887)
 
