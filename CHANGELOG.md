@@ -1,3 +1,6 @@
+### Aug 26, 2025
+* Fixed API state hang that prevents container restarts when a fatal error occurs. [DESENG-889](https://citz-gdx.atlassian.net/browse/DESENG-889)
+
 ### Aug 1, 2025
 * Remove unused comment properties that were causing a crash when approving rejecting comments [DESENG-888](https://citz-gdx.atlassian.net/browse/DESENG-888)
 
