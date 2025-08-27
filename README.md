@@ -12,7 +12,7 @@ API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-
 - Those related to Mongo correspond to the docker-compose file found in the `db` directory.
 - SILENCE_DEFAULT_LOG is used for local development only. See [Logging](#logging) below.
 3. Run `npm i` to install.
-4. Run `npm start` to start the development environment. 
+4. Run `npm run dev` to start the development environment. 
 
 ## Technologies used
 
