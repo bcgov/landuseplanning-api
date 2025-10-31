@@ -4879,6 +4879,56 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
+  /user/remove/{userId}:
+    x-swagger-router-controller: user
+    options:
+      tags:
+        - user
+      summary: "Pre-flight request"
+      operationId: protectedOptions
+      description: "Options on User GET Route"
+      parameters:
+        - name: userId
+          in: path
+          description: "ID of user"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
+    delete:
+      tags:
+        - user
+      summary: "Delete a user"
+      operationId: protectedRemove
+      description: "Private access to removing a user."
+      security:
+        - Bearer: []
+      x-security-scopes:
+        - staff
+        - sysadmin
+        - create-projects
+      parameters:
+        - name: userId
+          in: path
+          description: "ID of user to delete"
+          required: true
+          type: string
+      responses:
+        "200":
+          description: "Success"
+          schema:
+            $ref: "#/definitions/UserObject"
+        "403":
+          description: "Access Denied"
+          schema:
+            $ref: "#/definitions/Error"
 
 ## Comments
   /comment:
