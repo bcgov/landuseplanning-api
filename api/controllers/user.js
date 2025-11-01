@@ -170,7 +170,7 @@ const removeUser = async (user) => {
   if (user._id && user.displayName) {
     defaultLog.info(`Attempting to remove user ${user.displayName}`);
     try {
-      const result = await UserModel.findOneAndRemove({ _id: user._id });
+      const result = await UserModel.findOneAndDelete({ _id: user._id}, { useFindAndModify: false });
       // Also remove projectLead and projectDirector values from any applicable projects
       await ProjectModel.updateMany({ projectLead: user._id }, { $set: { projectLead: null } });
       await ProjectModel.updateMany({ projectDirector: user._id }, { $set: { projectDirector: null } });
