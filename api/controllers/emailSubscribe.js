@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var Email = require('../helpers/email');
+const randToken = require('rand-token');
 const csv = require('csv');
 const transform = require('stream-transform');
 const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
@@ -86,6 +87,7 @@ const fetchProjectNames = async (ProjectModel, projectIds, fallbackName) => {
   // Map IDs to names while maintaining order
   const names = orderedIds
     .map(id => projectMap.get(id))
+    // throw out any undefined project names (in case of missing projects)
     .filter(Boolean);
 
   if (names.length === 0 && fallbackName) {
@@ -99,15 +101,15 @@ const fetchProjectNames = async (ProjectModel, projectIds, fallbackName) => {
 exports.unProtectedPost = async function (args, res) {
   defaultLog.info('EMAIL SUBSCRIBE PUBLIC POST');
 
-  const obj = args.swagger.params.emailSubscribe.value;
-  const requestedEmail = obj.email;
+  const subscriptionRequest = args.swagger.params.emailSubscribe.value;
+  const requestedEmail = subscriptionRequest.email;
   const sendGenericSuccess = () => Actions.sendResponse(res, 200, { message: 'Subscription request processed' });
 
   let requestedProjectId;
   try {
-    requestedProjectId = mongoose.Types.ObjectId(obj.project);
+    requestedProjectId = mongoose.Types.ObjectId(subscriptionRequest.project);
   } catch (err) {
-    defaultLog.warn('Invalid project identifier supplied for subscription', { email: requestedEmail, project: obj.project });
+    defaultLog.warn('Invalid project identifier supplied for subscription', { email: requestedEmail, project: subscriptionRequest.project });
     return sendGenericSuccess();
   }
 
@@ -125,6 +127,8 @@ exports.unProtectedPost = async function (args, res) {
       _schemaName: 'EmailSubscribe',
       email: requestedEmail
     });
+
+    let subscriptionChanged = false;
 
     // Case 1: No existing subscription - create new record and send confirmation email
     if (!subscription) {
@@ -155,8 +159,6 @@ exports.unProtectedPost = async function (args, res) {
       projId => projId && projId.toString() === requestedProjectId.toString()
     );
 
-    let subscriptionChanged = false;
-
     if (!alreadySubscribedToProject) {
       subscription.project.push(requestedProjectId);
       subscriptionChanged = true;
@@ -164,6 +166,14 @@ exports.unProtectedPost = async function (args, res) {
 
     // Handle unconfirmed subscriptions
     if (!subscription.confirmed) {
+      if (!subscription.confirmKey) {
+        subscription.confirmKey = randToken.generate(64);
+        subscriptionChanged = true;
+        defaultLog.info('Generated missing confirmation key for existing subscription', {
+          subscriptionId: subscription._id
+        });
+      }
+
       const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
       const twentyFourHoursAgo = new Date(now.getTime() - TWENTY_FOUR_HOURS_MS);
       const shouldSendConfirmEmail = !subscription.dateSubscribed || subscription.dateSubscribed <= twentyFourHoursAgo;
@@ -258,7 +268,7 @@ exports.unProtectedPut = async function (args, res) {
 
     if (subscription.confirmed) {
       defaultLog.info('Email already confirmed', { email: emailAddress, subscriptionId: subscription._id });
-      return Actions.sendResponse(res, 200, { message: 'Email already confirmed' });
+      return sendGenericSuccess(); // Prevent account enumeration
     }
 
     // Confirm the subscription
