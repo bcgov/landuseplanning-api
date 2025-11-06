@@ -1,3 +1,11 @@
+### Nov 5, 2025
+* Update email subscribe confirmation ([DESENG-921](https://citz-gdx.atlassian.net/browse/DESENG-921))
+    * Fix an issue where subscribing to multiple projects would create invalid confirmation links
+    * Finish implementation of adding projects to existing confirmed subscriptions
+    * Send "project added" email when a confirmed subscriber adds a new project
+    * Update email templates to clarify what action the user is taking
+    * Clean up existing code, comments, and logging in email.js and emailSubscribe.js
+
 ### Aug 26, 2025
 * Fixed API state hang that prevents container restarts when a fatal error occurs. [DESENG-889](https://citz-gdx.atlassian.net/browse/DESENG-889)
 
