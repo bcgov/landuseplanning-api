@@ -103,7 +103,12 @@ exports.sendConfirmEmail = async function (projectNames, email, confirmKey) {
     const { projectList } = buildProjectEmailContext(projectNames);
     const emailTemplate = {
         "bodyType": "text",
-        "body": "Please confirm your email address to receive updates from Planning In Partnership.\r\n\r\nYou are set to receive messages about:\r\n{{ projectList }}\r\n\r\nConfirm your subscription:\r\n{{ confirmHost }}confirm-email/{{ email }}/{{ confirmKey }}\r\n\r\nThis is an automatically generated email, please do not reply.\r\n\r\n",
+        "body": "Please confirm your email address to receive updates from Planning In Partnership.\r\n\r\n" +
+            "You are set to receive messages about:\r\n" +
+            "{{ projectList }}\r\n\r\n" +
+            "Confirm your subscription:\r\n" +
+            "{{ confirmHost }}confirm-email/{{ email }}/{{ confirmKey }}\r\n\r\n" +
+            "This is an automatically generated email, please do not reply.\r\n\r\n",
         "contexts": [
             {
                 "to": [email],
@@ -140,7 +145,12 @@ exports.sendWelcomeEmail = async function (projectNames, email) {
     const { projectList } = buildProjectEmailContext(projectNames);
     const emailTemplate = {
         "bodyType": "text",
-        "body": "Thank you for confirming your email address. You are now subscribed to updates for:\r\n{{ projectList }}\r\n\r\nYou will receive project updates directly to your inbox.\r\n\r\nIf at any time you want to unsubscribe, click the link below:\r\n{{ unsubcribeHost }}unsubscribe\r\n\r\nThis is an automatically generated email, please do not reply.\r\n\r\n",
+        "body": "Thank you for confirming your email address. You are now subscribed to updates for:\r\n" +
+            "{{ projectList }}\r\n\r\n" +
+            "You will receive project updates directly to your inbox.\r\n\r\n" +
+            "If at any time you want to unsubscribe, click the link below:\r\n" +
+            "{{ unsubcribeHost }}unsubscribe\r\n\r\n" +
+            "This is an automatically generated email, please do not reply.\r\n\r\n",
         "contexts": [
             {
                 "to": [email],
@@ -176,7 +186,12 @@ exports.sendProjectAddedEmail = async function (projectNames, email) {
     const { projectList } = buildProjectEmailContext(projectNames);
     const emailTemplate = {
         "bodyType": "text",
-        "body": "You have been added to updates for:\r\n{{ projectList }}\r\n\r\nYou will receive project updates directly to your inbox.\r\n\r\nIf at any time you want to unsubscribe, click the link below:\r\n{{ unsubcribeHost }}unsubscribe\r\n\r\nThis is an automatically generated email, please do not reply.\r\n\r\n",
+        "body": "You have been added to updates for:\r\n" +
+            "{{ projectList }}\r\n\r\n" +
+            "You will receive project updates directly to your inbox.\r\n\r\n" +
+            "If at any time you want to unsubscribe, click the link below:\r\n" +
+            "{{ unsubcribeHost }}unsubscribe\r\n\r\n" +
+            "This is an automatically generated email, please do not reply.\r\n\r\n",
         "contexts": [
             {
                 "to": [email],
