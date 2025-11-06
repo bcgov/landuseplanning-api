@@ -164,6 +164,27 @@ const removeProjectPermission = async (user, projId) => {
   });
 }
 
+const removeUser = async (user) => {
+  const UserModel = mongoose.model('User');
+  const ProjectModel = mongoose.model('Project');
+  if (user._id && user.displayName) {
+    defaultLog.info(`Attempting to remove user ${user.displayName}`);
+    try {
+      const result = await UserModel.findOneAndDelete({ _id: user._id}, { useFindAndModify: false });
+      // Also remove projectLead and projectDirector values from any applicable projects
+      await ProjectModel.updateMany({ projectLead: user._id }, { $set: { projectLead: null } });
+      await ProjectModel.updateMany({ projectDirector: user._id }, { $set: { projectDirector: null } });
+      defaultLog.info('User deleted: ', user._id);
+      return result;
+    } catch (e) {
+      defaultLog.error('Error while removing user:', e);
+      throw e;
+    }
+  } else {
+    throw new Error('The request to delete a user is malformed.');
+  }
+};
+
 exports.protectedAddPermission = (args, res) => {
   defaultLog.info('USER PROTECTED ADD PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
@@ -225,3 +246,26 @@ exports.protectedRemovePermission = function (args, res) {
     }
   })
 };
+
+exports.protectedRemove = async function (args, res) {
+  defaultLog.info('USER PROTECTED REMOVE');
+  const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
+  const User = mongoose.model('User');
+  try {
+    const users = await User.find({ _schemaName: 'User', idirUserGuid: { $exists: true } });
+    const targetUser = users.find(user => user._id.equals(userId));
+    if (!targetUser) {
+      defaultLog.info("Couldn't find user!");
+      return Actions.sendResponse(res, 404, {});
+    }
+    await removeUser(targetUser);
+    Utils.recordAction('Remove User', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+    defaultLog.info('User removed', userId);
+    const updatedUsers = await User.find({ _schemaName: 'User', idirUserGuid: { $exists: true } });
+    return Actions.sendResponse(res, 200, updatedUsers);
+  } catch (err) {
+    defaultLog.error('Error in protectedRemove:', err);
+    return Actions.sendResponse(res, 500, err.message || err);
+  }
+};
+

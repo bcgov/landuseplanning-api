@@ -6,6 +6,9 @@
     * Update email templates to clarify what action the user is taking
     * Clean up existing code, comments, and logging in email.js and emailSubscribe.js
 
+### Oct 31, 2025
+* Added the ability to remove a user from the permissions list. [DESENG-881](https://citz-gdx.atlassian.net/browse/DESENG-881)
+
 ### Aug 26, 2025
 * Fixed API state hang that prevents container restarts when a fatal error occurs. [DESENG-889](https://citz-gdx.atlassian.net/browse/DESENG-889)
 
