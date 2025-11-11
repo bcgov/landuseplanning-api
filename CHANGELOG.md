@@ -1,3 +1,11 @@
+### Nov 5, 2025
+* Update email subscribe confirmation ([DESENG-921](https://citz-gdx.atlassian.net/browse/DESENG-921))
+    * Fix an issue where subscribing to multiple projects would create invalid confirmation links
+    * Finish implementation of adding projects to existing confirmed subscriptions
+    * Send "project added" email when a confirmed subscriber adds a new project
+    * Update email templates to clarify what action the user is taking
+    * Clean up existing code, comments, and logging in email.js and emailSubscribe.js
+
 ### Oct 31, 2025
 * Added the ability to remove a user from the permissions list. [DESENG-881](https://citz-gdx.atlassian.net/browse/DESENG-881)
 
