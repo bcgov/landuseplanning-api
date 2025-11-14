@@ -794,6 +794,24 @@ paths:
         '500':
           description: API is unhealthy
 
+  /sitemap_dynamic.xml:
+    get:
+      summary: Dynamic sitemap for non-static pages
+      description: Returns an XML sitemap containing all publicly accessible projects
+      x-swagger-router-controller: sitemap
+      operationId: getDynamicSitemap
+      tags:
+        - sitemap
+      produces:
+        - application/xml
+      responses:
+        '200':
+          description: Successfully generated sitemap
+          schema:
+            type: string
+        '500':
+          description: Error generating sitemap
+
 ### Project Routes
   /project:
     x-swagger-router-controller: project

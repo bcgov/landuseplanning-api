@@ -32,6 +32,19 @@ This project uses npm package `swagger-tools` via `./app.js` to automatically ge
 
 Recommend reviewing the [Open API Specification](https://swagger.io/docs/specification/about/) before making any changes to the `swagger.yaml` file.
 
+### Dynamic Sitemap
+
+The API provides a dynamic sitemap at `/api/sitemap_dynamic.xml` that includes:
+- All publicly accessible projects
+- All published comment periods
+
+The sitemap is automatically generated from the database and includes:
+- URLs for project detail pages
+- URLs for comment period pages
+- Last modification dates
+- Change frequency hints
+- Priority indicators for SEO
+
 
 #### Seed with generated data:
 
