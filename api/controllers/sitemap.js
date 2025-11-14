@@ -36,13 +36,32 @@ exports.getDynamicSitemap = async function (req, res) {
         projects.forEach(project => {
             const lastModDate = project.dateUpdated || project.dateAdded || new Date();
             const formattedDate = new Date(lastModDate).toISOString().split('T')[0];
+            const baseUrl = `https://planninginpartnership.ca/p/${project._id}`;
 
+            // Main project details page
             sitemap += `  <url>\n`;
-            sitemap += `    <loc>https://planninginpartnership.ca/p/${project._id}/project-details</loc>\n`;
+            sitemap += `    <loc>${baseUrl}/project-details</loc>\n`;
             sitemap += `    <lastmod>${formattedDate}</lastmod>\n`;
             sitemap += `    <changefreq>weekly</changefreq>\n`;
             sitemap += `    <priority>0.8</priority>\n`;
             sitemap += `  </url>\n`;
+
+            // Project tab pages
+            const projectTabs = [
+                { path: 'background-info', priority: '0.7' },
+                { path: 'commenting', priority: '0.75' },
+                { path: 'documents', priority: '0.75' },
+                { path: 'project-phase', priority: '0.7' }
+            ];
+
+            projectTabs.forEach(tab => {
+                sitemap += `  <url>\n`;
+                sitemap += `    <loc>${baseUrl}/${tab.path}</loc>\n`;
+                sitemap += `    <lastmod>${formattedDate}</lastmod>\n`;
+                sitemap += `    <changefreq>weekly</changefreq>\n`;
+                sitemap += `    <priority>${tab.priority}</priority>\n`;
+                sitemap += `  </url>\n`;
+            });
         });
 
         // Add comment periods to the sitemap

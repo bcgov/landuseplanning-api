@@ -1,6 +1,6 @@
 ### Nov 13, 2025
 * Add dynamic sitemap generation for projects and comment periods [DESENG-917](https://citz-gdx.atlassian.net/browse/DESENG-917)
-    * New endpoint at `/api/sitemap_dynamic.xml` (static pages remain at `/sitemap.xml`)
+    * New endpoint at `/api/sitemap_dynamic.xml` (linked by reference from `/sitemap.xml` on the webapp side)
     * Includes all publicly accessible projects and published comment periods
     * Automatically generated from the database with relevant SEO metadata
 
