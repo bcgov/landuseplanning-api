@@ -4,6 +4,7 @@ var mongoose = require('mongoose');
 var Actions = require('../helpers/actions');
 var Utils = require('../helpers/utils');
 var Email = require('../helpers/email');
+const randToken = require('rand-token');
 const csv = require('csv');
 const transform = require('stream-transform');
 const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
@@ -26,7 +27,7 @@ var getSanitizedFields = function (fields) {
       'delete'
     ], f) !== -1);
   });
-}
+};
 
 exports.protectedOptions = function (args, res) {
   defaultLog.info('EMAIL SUBSCRIBE PROTECTED OPTIONS');
@@ -59,177 +60,240 @@ exports.publicHead = async function (args, res) {
   return Actions.sendResponse(res, 200, data);
 };
 
+/**
+ * Fetch project names from the database, maintaining the order of provided IDs.
+ * 
+ * @param {Model} ProjectModel Mongoose Project model
+ * @param {ObjectId[]} projectIds Array of project ObjectIds
+ * @param {string} fallbackName Optional fallback name if no projects found
+ * @returns {Promise<string[]>} Array of project names in the same order as input IDs
+ */
+const fetchProjectNames = async (ProjectModel, projectIds, fallbackName) => {
+  if (!Array.isArray(projectIds) || projectIds.length === 0) {
+    return fallbackName ? [fallbackName] : [];
+  }
+
+  const orderedIds = projectIds.map(id => id && id.toString()).filter(Boolean);
+  if (orderedIds.length === 0) {
+    return fallbackName ? [fallbackName] : [];
+  }
+
+  const uniqueIds = [...new Set(orderedIds)];
+  const projects = await ProjectModel.find({ _id: { $in: uniqueIds } }, { name: 1 }).lean();
+
+  // Create a map for O(1) lookup
+  const projectMap = new Map(projects.map(p => [p._id.toString(), p.name]));
+
+  // Map IDs to names while maintaining order
+  const names = orderedIds
+    .map(id => projectMap.get(id))
+    // throw out any undefined project names (in case of missing projects)
+    .filter(Boolean);
+
+  if (names.length === 0 && fallbackName) {
+    return [fallbackName];
+  }
+
+  return names;
+};
+
 // subscribe a new email address
 exports.unProtectedPost = async function (args, res) {
   defaultLog.info('EMAIL SUBSCRIBE PUBLIC POST');
-  let obj = args.swagger.params.emailSubscribe.value;
-  defaultLog.info('Incoming new object:', obj);
-  let existingEmailId, alreadyConfirmed, confirmKey;
-  let projectName = 'Planning in Partnership';
-  let isDuplicate = false;
 
-  let EmailSubscribe = mongoose.model('EmailSubscribe');
-  let Project = mongoose.model('Project');
+  const subscriptionRequest = args.swagger.params.emailSubscribe.value;
+  const requestedEmail = subscriptionRequest.email;
+  const sendGenericSuccess = () => Actions.sendResponse(res, 200, { message: 'Subscription request processed' });
 
-  let emailSubscribe = new EmailSubscribe(obj);
-  emailSubscribe._schemaName = 'EmailSubscribe';
-  emailSubscribe.email = obj.email;
-  emailSubscribe.project = [mongoose.Types.ObjectId(obj.project)];
-  emailSubscribe.confirmed = false;
-  emailSubscribe.dateSubscribed = new Date();
-  emailSubscribe.dateConfirmed = null;
-  emailSubscribe.read = ['staff', 'sysadmin'];
-  emailSubscribe.write = ['staff', 'sysadmin'];
-  emailSubscribe.delete = ['staff', 'sysadmin'];
-
-  // get the project name
-  await Project.findOne({ _id: obj.project }, null, async function (err, entity) {
-    if (entity) {
-      projectName = entity.name;
-    }
-  });
-
-  // check if already exists
-  // if so either update with the new project or exit gracefully
-  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailSubscribe.email }, null, async function (err, entity) {
-    if (entity) {
-      existingEmailId = entity._id;
-      existingProjectArray = entity.project;
-      alreadyConfirmed = entity.confirmed;
-      confirmKey = entity.confirmKey;
-      // check if pushed project is in array
-      if (existingProjectArray.includes(mongoose.Types.ObjectId(obj.project)) ) {
-        isDuplicate = true;
-      }
-    }
-
-    if (existingEmailId && isDuplicate ) {
-      // Project and email already exists so exit gracefully
-      defaultLog.info('User has already signed up for the project', existingEmailId);
-      return Actions.sendResponse(res, 200, '200');
-    } else if (existingEmailId) {
-      // New project for an existing email
-      existingProjectArray.push(mongoose.Types.ObjectId(obj.project));
-      await EmailSubscribe.updateOne({ _id: existingEmailId }, { $set: { project: existingProjectArray } }, async function (err, entity) {
-        if (err) throw new Error(err);
-        if (entity) {
-          Utils.recordAction('Put', 'EmailSubscribe', 'public', existingEmailId);
-          defaultLog.info('New project added to email subscribe:', entity._id);
-        }
-      });
-      // have they already confirmed their email?
-      // if so, send the welcome for the new project
-      if (alreadyConfirmed) {
-        defaultLog.info('Email was already confirmed - sending welcome email for project/email', projectName, emailSubscribe.email);
-        await Email.sendWelcomeEmail(projectName, emailSubscribe.email)
-          .then(() => undefined)
-          .catch((e) => {
-            defaultLog.error('Error sending welcome email:', e);
-            return Actions.sendResponse(res, 500, e);
-          });
-      }
-      // if not, resend the confirmation email for the new project
-      else {
-        defaultLog.info('Email NOT confirmed - sending confirm email for project/email', projectName, emailSubscribe.email);
-        Email.sendConfirmEmail(projectName, emailSubscribe.email, confirmKey)
-          .then(() => undefined)
-          .catch((e) => {
-            defaultLog.error('Error sending confirmation email:', e);
-            return Actions.sendResponse(res, 500, e);
-          });
-      }
-      return Actions.sendResponse(res, 200, entity);
-    }
-  
-    try {
-      var c = await emailSubscribe.save();
-      Utils.recordAction('Post', 'EmailSubscribe', 'public', c._id);
-      defaultLog.info('Saved new EmailSubscribe object:', c._id);
-      Email.sendConfirmEmail(projectName, emailSubscribe.email, c.confirmKey)
-        .then(() => Actions.sendResponse(res, 200, c))
-        .catch((e) => {throw new Error('Error sending confirmation email after save:', e)});
-    } catch (e) {
-      defaultLog.error('Error adding new email subscriber:', e);
-      return Actions.sendResponse(res, 500, e);
-    }
-  });
-};
-
-// confirm a new email address
-exports.unProtectedPut = async function (args, res) {
-  defaultLog.info('EMAIL SUBSCRIBE PUT');
-
-  // verify that the email and key have been set in the request
-  if (!(args.swagger.params.email && args.swagger.params.email.value) || !(args.swagger.params.confirmKey && args.swagger.params.confirmKey.value)) {
-    return Actions.sendResponse(res, 403, 'Access denied');
+  let requestedProjectId;
+  try {
+    requestedProjectId = mongoose.Types.ObjectId(subscriptionRequest.project);
+  } catch (err) {
+    defaultLog.warn('Invalid project identifier supplied for subscription', { email: requestedEmail, project: subscriptionRequest.project });
+    return sendGenericSuccess();
   }
-  
-  let emailAddress = args.swagger.params.email.value;
-  let confirmKey = args.swagger.params.confirmKey.value;
-  let emailId, correctConfirmKey, confirmDate, previousConfirmed, projectId;
-  let projectName = 'Planning in Partnership';
-  defaultLog.info('Put email subscribe:', emailAddress);
 
-  var EmailSubscribe = mongoose.model('EmailSubscribe');
-  var Project = mongoose.model('Project');
+  defaultLog.info('Incoming subscription request:', { email: requestedEmail, project: requestedProjectId });
 
-  // find the object ID based on the email address
-  await EmailSubscribe.findOne({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, async function (err, entity) {
-    if (err) {
-      defaultLog.error('Error finding unconfirmed email subscription', e);
-      return Actions.sendResponse(res, 404, e);
-    }
+  const EmailSubscribe = mongoose.model('EmailSubscribe');
+  const Project = mongoose.model('Project');
 
-    if (entity) {
-      emailId = entity._id;
-      correctConfirmKey = entity.confirmKey;
-      confirmDate = new Date();
-      previousConfirmed = entity.confirmed;
-      projectId = entity.project;
-    }
+  try {
+    const now = new Date();
+    const requestedProject = await Project.findById(requestedProjectId).lean();
+    const requestedProjectName = requestedProject ? requestedProject.name : 'Planning in Partnership';
 
-    // check if the auth key is valid, else respond with a 403
-    if (correctConfirmKey !== confirmKey) {
-      defaultLog.info('Confirm key mismatch', confirmKey, correctConfirmKey);
-      defaultLog.info('HTTP request made with: ', confirmKey);
-      defaultLog.info('Retrieved confirmation key from the DB:', correctConfirmKey);
-      return Actions.sendResponse(res, 403, 'Access denied');
-    }
-c
-    // check if it has already been confirmed. If so, gracefully exit with a 200
-    if (previousConfirmed) {
-      defaultLog.info('Email has already been confirmed:', emailAddress);
-      return Actions.sendResponse(res, 200, {});
-    }
-
-    let emailSubscribe = {
-      confirmed: true,
-      dateConfirmed: confirmDate,
-    };
-
-    // get the project name
-    await Project.findOne({ _id: projectId }, null, async function (err, entity) {
-      if (err) defaultLog.error('Error getting project name. Will still attempt to send welcome email', err);
-      if (entity) {
-        projectName = entity.name;
-      }
+    let subscription = await EmailSubscribe.findOne({
+      _schemaName: 'EmailSubscribe',
+      email: requestedEmail
     });
 
-    defaultLog.info('Incoming updated object:', emailSubscribe);
+    let subscriptionChanged = false;
 
-    try {
-      let es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: emailSubscribe });
-      Utils.recordAction('Put', 'EmailSubscribe', 'public', emailId);
-      defaultLog.info('Email confirmed:', emailId);
-      await Email.sendWelcomeEmail(projectName, emailAddress);
-      return Actions.sendResponse(res, 200, es);
-    } catch (e) {
-      defaultLog.error(e);
-      return Actions.sendResponse(res, 400, e);
+    // Case 1: No existing subscription - create new record and send confirmation email
+    if (!subscription) {
+      subscription = new EmailSubscribe({
+        _schemaName: 'EmailSubscribe',
+        email: requestedEmail,
+        project: [requestedProjectId],
+        confirmed: false,
+        dateSubscribed: now,
+        dateConfirmed: null,
+        read: ['staff', 'sysadmin'],
+        write: ['staff', 'sysadmin'],
+        delete: ['staff', 'sysadmin']
+      });
+
+      const savedSubscription = await subscription.save();
+      Utils.recordAction('Post', 'EmailSubscribe', 'public', savedSubscription._id);
+      defaultLog.info('Created new email subscription:', savedSubscription._id);
+
+      const projectNames = await fetchProjectNames(Project, savedSubscription.project, requestedProjectName);
+      await Email.sendConfirmEmail(projectNames, requestedEmail, savedSubscription.confirmKey);
+      defaultLog.info('Sent confirmation email for new subscription', { email: requestedEmail, projects: projectNames });
+
+      return sendGenericSuccess();
     }
 
-  });
-}
+    const alreadySubscribedToProject = subscription.project.some(
+      projId => projId && projId.toString() === requestedProjectId.toString()
+    );
+
+    if (!alreadySubscribedToProject) {
+      subscription.project.push(requestedProjectId);
+      subscriptionChanged = true;
+    }
+
+    // Handle unconfirmed subscriptions
+    if (!subscription.confirmed) {
+      if (!subscription.confirmKey) {
+        subscription.confirmKey = randToken.generate(64);
+        subscriptionChanged = true;
+        defaultLog.info('Generated missing confirmation key for existing subscription', {
+          subscriptionId: subscription._id
+        });
+      }
+
+      const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
+      const twentyFourHoursAgo = new Date(now.getTime() - TWENTY_FOUR_HOURS_MS);
+      const shouldSendConfirmEmail = !subscription.dateSubscribed || subscription.dateSubscribed <= twentyFourHoursAgo;
+
+      if (shouldSendConfirmEmail) {
+        const projectNames = await fetchProjectNames(Project, subscription.project, requestedProjectName);
+        await Email.sendConfirmEmail(projectNames, requestedEmail, subscription.confirmKey);
+        subscription.dateSubscribed = now;
+        subscriptionChanged = true;
+        defaultLog.info('Sent confirmation email for pending subscription', {
+          email: requestedEmail,
+          projectCount: projectNames.length,
+          subscriptionId: subscription._id
+        });
+      } else {
+        defaultLog.info('Confirmation email recently sent; skipping resend', {
+          subscriptionId: subscription._id,
+          lastSent: subscription.dateSubscribed
+        });
+      }
+
+      if (subscriptionChanged) {
+        await subscription.save();
+        Utils.recordAction('Put', 'EmailSubscribe', 'public', subscription._id);
+      }
+
+      return sendGenericSuccess();
+    }
+
+    // Handle confirmed subscriptions - send project added email for new project
+    if (!alreadySubscribedToProject) {
+      await subscription.save();
+      Utils.recordAction('Put', 'EmailSubscribe', 'public', subscription._id);
+      await Email.sendProjectAddedEmail([requestedProjectName], requestedEmail);
+      defaultLog.info('Sent project added email for confirmed subscriber joining new project', {
+        subscriptionId: subscription._id,
+        project: requestedProjectName
+      });
+    } else {
+      defaultLog.info('Confirmed subscriber attempted to re-subscribe to existing project', {
+        subscriptionId: subscription._id,
+        project: requestedProjectName
+      });
+    }
+
+    return sendGenericSuccess();
+
+  } catch (e) {
+    defaultLog.error('Error processing email subscription:', e);
+    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
+  }
+};
+
+// Confirm a new email address
+exports.unProtectedPut = async function (args, res) {
+  defaultLog.info('EMAIL SUBSCRIBE PUT - Confirmation request');
+
+  // Validate required parameters
+  if (!(args.swagger.params.email && args.swagger.params.email.value) ||
+    !(args.swagger.params.confirmKey && args.swagger.params.confirmKey.value)) {
+    defaultLog.warn('Missing email or confirmation key in request');
+    return Actions.sendResponse(res, 403, 'Access denied');
+  }
+
+  const emailAddress = args.swagger.params.email.value;
+  const confirmKey = args.swagger.params.confirmKey.value;
+  const now = new Date();
+
+  defaultLog.info('Processing email confirmation', { email: emailAddress });
+
+  const EmailSubscribe = mongoose.model('EmailSubscribe');
+  const Project = mongoose.model('Project');
+
+  try {
+    const subscription = await EmailSubscribe.findOne({
+      _schemaName: 'EmailSubscribe',
+      email: emailAddress
+    });
+
+    if (!subscription) {
+      defaultLog.warn('No pending subscription found for confirmation attempt', { email: emailAddress });
+      return Actions.sendResponse(res, 404, 'Subscription not found');
+    }
+
+    if (subscription.confirmKey !== confirmKey) {
+      defaultLog.warn('Confirm key mismatch', {
+        email: emailAddress,
+        subscriptionId: subscription._id
+      });
+      return Actions.sendResponse(res, 403, 'Invalid confirmation key');
+    }
+
+    if (subscription.confirmed) {
+      defaultLog.info('Email already confirmed', { email: emailAddress, subscriptionId: subscription._id });
+      return sendGenericSuccess(); // Prevent account enumeration
+    }
+
+    // Confirm the subscription
+    subscription.confirmed = true;
+    subscription.dateConfirmed = now;
+    await subscription.save();
+
+    Utils.recordAction('Put', 'EmailSubscribe', 'public', subscription._id);
+
+    // Fetch project names and send welcome email
+    const projectNames = await fetchProjectNames(Project, subscription.project, 'Planning in Partnership');
+    await Email.sendWelcomeEmail(projectNames, emailAddress);
+
+    defaultLog.info('Email subscription confirmed successfully', {
+      subscriptionId: subscription._id,
+      projectCount: projectNames.length
+    });
+
+    return Actions.sendResponse(res, 200, { message: 'Subscription confirmed' });
+
+  } catch (e) {
+    defaultLog.error('Error confirming email subscription:', e);
+    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
+  }
+};
 
 // unsubscribe from updates
 exports.unProtectedDelete = async function (args, res, next) {
@@ -241,26 +305,29 @@ exports.unProtectedDelete = async function (args, res, next) {
   }
 
   var emailAddress = args.swagger.params.email.value;
-  var emailId;
+  var emailIds;
   defaultLog.info('Delete email subscribe:', emailAddress);
 
   var EmailSubscribe = mongoose.model('EmailSubscribe');
 
-  // find the object ID based on the email address
-  await EmailSubscribe.findOne({ email: emailAddress }, null, function (err, entity) {
-    try {
-      emailId = entity._id;
-    } catch (e) {
-      defaultLog.error(e);
-      return Actions.sendResponse(res, 404, e);
+  // find the object ID(s) based on the email address
+  await EmailSubscribe.find({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, function (err, entities) {
+    if (err) {
+      defaultLog.error('Error finding email subscribe object from email', err);
+      return Actions.sendResponse(res, 404, err);
+    }
+
+    if (entities) {
+      emailIds = entities.map(entity => entity._id);
     }
   });
 
   try {
-
-    var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-    Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailId);
-    defaultLog.info('Email unsubscribed:', es);
+    for (const emailId of emailIds) {
+      var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
+      Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailId);
+      defaultLog.info('Email unsubscribed:', es);
+    }
     return Actions.sendResponse(res, 200, es);
   } catch (e) {
     defaultLog.error(e);
@@ -395,12 +462,12 @@ exports.protectedDelete = async function (args, res, next) {
 
       // check if project id is in project list
       const index = projectList.indexOf(projectId);
-      if ( index > -1) {
+      if (index > -1) {
         projectList.splice(index, 1);
-        if (projectList.length > 0 ) {
+        if (projectList.length > 0) {
           // update existing email object with new project list
           try {
-            var es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: { project: projectList }});
+            var es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: { project: projectList } });
             Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
             defaultLog.info('Email deleted from one project:', es);
             return Actions.sendResponse(res, 200, es);
@@ -425,7 +492,7 @@ exports.protectedDelete = async function (args, res, next) {
         defaultLog.info('Project ID not found: ', projectId);
         return Actions.sendResponse(res, 404, 'Project ID not found');
       }
-      
+
     }
   });
 
@@ -505,8 +572,8 @@ exports.handleContactFormResponse = async (args, res) => {
         return Actions.sendResponse(res, 400, { message: 'One or more files failed virus check.' });
       }
 
-      results.forEach((result) => {defaultLog.info('File passed virus scan:', result.file.originalname);});
-      
+      results.forEach((result) => { defaultLog.info('File passed virus scan:', result.file.originalname); });
+
     } catch (err) {
       defaultLog.error('Error during virus scanning:', err);
       return Actions.sendResponse(res, 500, { message: 'Virus scan failed unexpectedly.' });
