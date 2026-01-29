@@ -118,7 +118,10 @@ exports.publicGet = async (_unused, res) => {
       return Actions.sendResponse(res, 200, data);
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Recent activity public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -165,7 +168,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got recent activities', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Recent activity protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -198,7 +204,7 @@ exports.protectedDelete = async (args, res) => {
         'Delete',
         'RecentActivity',
         args.swagger.params.auth_payload.preferred_username,
-        data._id
+        data._id,
       );
       defaultLog.info('Deleted recent activity: ', data._id);
       return Actions.sendResponse(res, 200, data);
@@ -206,9 +212,12 @@ exports.protectedDelete = async (args, res) => {
       defaultLog.error('Could not delete recent activity');
       return Actions.sendResponse(res, 400, {});
     }
-  } catch (err) {
-    defaultLog.error('Could not delete recent activity', err);
-    return Actions.sendResponse(res, 400, err);
+  } catch (e) {
+    defaultLog.error('Recent activity protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
+    return Actions.sendResponse(res, 400, e);
   }
 };
 
@@ -242,7 +251,10 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Recent activity protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -276,7 +288,10 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Recent activity protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

@@ -41,7 +41,10 @@ exports.protectedPost = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, theTopic);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Topic protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -98,7 +101,10 @@ exports.protectedGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Topic protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -128,7 +134,10 @@ exports.protectedPut = async (args, res) => {
     Utils.recordAction('Put', 'Topic', updatedBy, objId);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Topic protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -149,7 +158,10 @@ exports.protectedDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Topic protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

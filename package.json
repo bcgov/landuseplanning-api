@@ -71,11 +71,16 @@
     "factory-girl": "^5.0.2",
     "glob": "^10.5.0",
     "jest": "^29.7.0",
-    "mongodb-memory-server": "^10.4.3",
+    "mongodb-memory-server": "^9.2.0",
     "nock": "^10.0.1",
     "nodemon": "^2.0.15",
     "shelljs": "^0.8.3",
     "supertest": "^6.3.4"
+  },
+  "config": {
+    "mongodbMemoryServer": {
+      "version": "6.0.13"
+    }
   },
   "resolutions": {
     "validator": "13.7.0"

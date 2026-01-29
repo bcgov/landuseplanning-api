@@ -83,7 +83,10 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     }
   } catch (e) {
     // Fall through - uploads will continue to fail until this is resolved locally.
-    defaultLog.info('Couldn\'t create upload folder:', e);
+    defaultLog.info("Couldn't create upload folder.", {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
   }
   // Load up DB
   mongoose.set('strictQuery', false);

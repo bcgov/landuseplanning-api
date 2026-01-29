@@ -114,8 +114,16 @@ exports.unProtectedPost = async (args, res) => {
   let requestedProjectId;
   try {
     requestedProjectId = mongoose.Types.ObjectId(subscriptionRequest.project);
-  } catch (err) {
-    defaultLog.warn('Invalid project identifier supplied for subscription', { email: requestedEmail, project: subscriptionRequest.project });
+  } catch (e) {
+    defaultLog.error(
+      'Invalid project identifier supplied for subscription, email subscribe unprotected post failed.',
+      {
+        email: requestedEmail,
+        project: subscriptionRequest.project,
+        message: e && e.message,
+        stack: e && e.stack,
+      },
+    );
     return sendGenericSuccess();
   }
 
@@ -227,7 +235,10 @@ exports.unProtectedPost = async (args, res) => {
     return sendGenericSuccess();
 
   } catch (e) {
-    defaultLog.error('Error processing email subscription:', e);
+    defaultLog.error('Email subscribe unprotected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 500, { error: 'Internal server error' });
   }
 };
@@ -298,7 +309,13 @@ exports.unProtectedPut = async (args, res) => {
     return Actions.sendResponse(res, 200, { message: 'Subscription confirmed' });
 
   } catch (e) {
-    defaultLog.error('Error confirming email subscription:', e);
+    defaultLog.error(
+      'Error confirming email subscription, email subscribe unprotected put failed.',
+      {
+        message: e && e.message,
+        stack: e && e.stack,
+      },
+    );
     return Actions.sendResponse(res, 500, { error: 'Internal server error' });
   }
 };
@@ -333,7 +350,10 @@ exports.unProtectedDelete = async (args, res /*, next */) => {
     }
     return Actions.sendResponse(res, 200, es || {});
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Email subscribe unprotected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -436,7 +456,10 @@ exports.protectedGet = async (args, res /*, next */) => {
     defaultLog.info('Got email subscribers:', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Email subscribe protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -472,40 +495,76 @@ exports.protectedDelete = async (args, res) => {
     projectList = Array.isArray(entity.project) ? [...entity.project] : [];
 
     // check if project id is in project list
-    const index = projectList.findIndex(p => p && p.toString() === String(projectId));
+    const index = projectList.findIndex(
+      (p) => p && p.toString() === String(projectId),
+    );
     if (index > -1) {
       projectList.splice(index, 1);
       if (projectList.length > 0) {
         // update existing email object with new project list
         try {
-          const es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: { project: projectList } });
-          Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+          const es = await EmailSubscribe.updateOne(
+            { _id: emailId },
+            { $set: { project: projectList } },
+          );
+          Utils.recordAction(
+            'Delete',
+            'EmailSubscribe',
+            args.swagger.params.auth_payload.preferred_username,
+            emailId,
+          );
           defaultLog.info('Email deleted from one project:', es);
           return Actions.sendResponse(res, 200, es);
         } catch (e) {
-          defaultLog.error('Error removing user subscription from project', e);
+          defaultLog.error(
+            'Error removing user subscription from project, email subscribe protected delete failed.',
+            {
+              message: e && e.message,
+              stack: e && e.stack,
+            },
+          );
           return Actions.sendResponse(res, 500, e);
         }
       } else {
         // delete email object
         try {
           const es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-          Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
+          Utils.recordAction(
+            'Delete',
+            'EmailSubscribe',
+            args.swagger.params.auth_payload.preferred_username,
+            emailId,
+          );
           defaultLog.info('Email deleted from system:', emailId);
           return Actions.sendResponse(res, 200, es);
         } catch (e) {
-          defaultLog.error('Error deleting email subscription entry', e);
+          defaultLog.error(
+            'Error deleting email subscription entry, email subscribe protected delete failed.',
+            {
+              message: e && e.message,
+              stack: e && e.stack,
+            },
+          );
           return Actions.sendResponse(res, 500, e);
         }
       }
     } else {
       // if not return 404
-      defaultLog.info('Project ID not found: ', projectId);
+      defaultLog.warn(
+        'Project ID not found during email subscribe protected delete. ',
+        projectId,
+      );
       return Actions.sendResponse(res, 404, 'Project ID not found');
     }
-  } catch (err) {
-    defaultLog.error('Error finding email subscribe object from email', err);
-    return Actions.sendResponse(res, 404, err);
+  } catch (e) {
+    defaultLog.error(
+      'Error finding email subscribe object in email subscribe protected delete.',
+      {
+        message: e && e.message,
+        stack: e && e.stack,
+      },
+    );
+    return Actions.sendResponse(res, 404, e);
   }
 }
 
@@ -575,7 +634,9 @@ exports.handleContactFormResponse = async (args, res) => {
   if ('true' === ENABLE_VIRUS_SCANNING && Array.isArray(files) && files.length > 0) {
     try {
       const results = await Promise.all(
-        files.map(file => Utils.avScan(file.buffer).then(clean => ({ file, clean })))
+        files.map((file) =>
+          Utils.avScan(file.buffer).then((clean) => ({ file, clean })),
+        ),
       );
 
       const failed = results.filter((result) => !result.clean);
@@ -584,14 +645,25 @@ exports.handleContactFormResponse = async (args, res) => {
         failed.forEach((result) => {
           defaultLog.warn('File failed virus scan:', result.file.originalname);
         });
-        return Actions.sendResponse(res, 400, { message: 'One or more files failed virus check.' });
+        return Actions.sendResponse(res, 400, {
+          message: 'One or more files failed virus check.',
+        });
       }
 
-      results.forEach((result) => { defaultLog.info('File passed virus scan:', result.file.originalname); });
-
-    } catch (err) {
-      defaultLog.error('Error during virus scanning:', err);
-      return Actions.sendResponse(res, 500, { message: 'Virus scan failed unexpectedly.' });
+      results.forEach((result) => {
+        defaultLog.info('File passed virus scan:', result.file.originalname);
+      });
+    } catch (e) {
+      defaultLog.error(
+        'Error during virus scanning in email subscribe handle contact form response.',
+        {
+          message: e && e.message,
+          stack: e && e.stack,
+        },
+      );
+      return Actions.sendResponse(res, 500, {
+        message: 'Virus scan failed unexpectedly.',
+      });
     }
   }
 
@@ -618,7 +690,13 @@ exports.handleContactFormResponse = async (args, res) => {
     await Email.handleContactFormResponse(projectName, contactForm, recipients);
     return Actions.sendResponse(res, 200, true);
   } catch (e) {
-    defaultLog.error('Error sending email:', e);
+    defaultLog.error(
+      'Error sending email in email subscribe handle contact form response.',
+      {
+        message: e && e.message,
+        stack: e && e.stack,
+      },
+    );
     return Actions.sendResponse(res, 400, false);
   }
 };

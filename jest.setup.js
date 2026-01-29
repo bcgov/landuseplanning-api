@@ -42,7 +42,11 @@ beforeAll(async () => {
         try {
             require(file);
         } catch (e) {
-            console.error('[jest.setup] Failed to require model file:', file, e && e.message);
+            defaultLog.error(
+              'Failed to import model file in Jest setup:',
+              file,
+              e && e.message,
+            );
             throw e;
         }
     }

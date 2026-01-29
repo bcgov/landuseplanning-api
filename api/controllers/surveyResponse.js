@@ -74,7 +74,10 @@ exports.unProtectedPost = async (args, res) => {
     defaultLog.info('Saved new surveyResponse:', sr._id);
     return Actions.sendResponse(res, 200, sr);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey response unprotected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -158,7 +161,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got survey response(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey response protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

@@ -80,7 +80,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got document section(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document section protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -135,7 +138,10 @@ exports.publicGet = async (args, res) => {
     defaultLog.info('Got document section(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document section public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -176,7 +182,10 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new document section object:', docSectionResult._id);
     return Actions.sendResponse(res, 200, docSectionResult);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document section protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -218,7 +227,10 @@ exports.protectedReorder = async (args, res) => {
     defaultLog.info('Reordered document sections:', updatedSections);
     return Actions.sendResponse(res, 200, updatedSections);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document section protected reorder failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

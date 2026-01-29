@@ -85,7 +85,7 @@ const sendEmailViaCHES = async (emailTemplate) => {
             Authorization: 'Bearer ' + emailToken.data.access_token,
             'Content-Type': 'application/json',
           },
-        }
+        },
       );
       defaultLog.info('Email sent successfully via CHES', {
         to:
@@ -99,8 +99,11 @@ const sendEmailViaCHES = async (emailTemplate) => {
       defaultLog.error("Couldn't get a valid CHES token", emailToken);
       throw new Error('Failed to obtain CHES authentication token');
     }
-  } catch (err) {
-    defaultLog.error('Error sending email via CHES:', err);
+  } catch (e) {
+    defaultLog.error('Email send via CHES failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     throw err;
   }
 };
@@ -143,10 +146,11 @@ exports.sendConfirmEmail = async (projectNames, email, confirmKey) => {
 
   try {
     await sendEmailViaCHES(emailTemplate);
-  } catch (err) {
+  } catch (e) {
     defaultLog.error('Failed to send confirmation email:', {
       email: email,
-      error: err && err.message ? err.message : String(err),
+      message: e && e.message,
+      stack: e && e.stack,
     });
     // Don't throw - allow the subscription process to continue even if email fails
   }
@@ -188,10 +192,11 @@ exports.sendWelcomeEmail = async (projectNames, email) => {
 
   try {
     await sendEmailViaCHES(emailTemplate);
-  } catch (err) {
-    defaultLog.error('Failed to send welcome email:', {
+  } catch (e) {
+    defaultLog.error('Email send via CHES failed', {
       email: email,
-      error: err && err.message ? err.message : String(err),
+      message: e && e.message,
+      stack: e && e.stack,
     });
     // Don't throw - allow the confirmation process to complete even if email fails
   }
@@ -233,10 +238,11 @@ exports.sendProjectAddedEmail = async (projectNames, email) => {
 
   try {
     await sendEmailViaCHES(emailTemplate);
-  } catch (err) {
-    defaultLog.error('Failed to send project added email:', {
+  } catch (e) {
+    defaultLog.error('Failed to send project added email', {
       email: email,
-      error: err && err.message ? err.message : String(err),
+      message: e && e.message,
+      stack: e && e.stack,
     });
     // Don't throw - allow the subscription process to complete even if email fails
   }
@@ -251,8 +257,11 @@ exports.sendProjectAddedEmail = async (projectNames, email) => {
 const sendEmail = async (emailTemplate) => {
   try {
     await sendEmailViaCHES(emailTemplate);
-  } catch (error) {
-    defaultLog.error('Failed to send email:', error);
+  } catch (e) {
+    defaultLog.error('Failed to send email in email controller send email', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     // Don't throw - log the error but allow execution to continue
   }
 };
@@ -354,7 +363,10 @@ exports.handleContactFormResponse = async (
       sendEmail(formSubmissionTemplate),
     ]);
   } catch (e) {
-    defaultLog.error('Error sending contact form emails:', e);
+    defaultLog.error('Email handle contact form failed.', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     throw e;
   }
 };

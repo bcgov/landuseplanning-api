@@ -16,15 +16,15 @@ module.exports.generateTextIndex = async () => {
 
   try {
     await Project.collection.dropIndex('text_index');
-  } catch (err) {
+  } catch (e) {
     // Ignore the expected "index not found" cases; log others.
-    if (err && (err.code === 27 || err.codeName === 'IndexNotFound')) {
+    if (e && (e.code === 27 || e.codeName === 'IndexNotFound')) {
       defaultLog.info('Attempted to remove index: "text_index" not found.');
     } else {
-      defaultLog.warn(
-        'Unexpected error dropping index "text_index":',
-        err && err.message ? err.message : err
-      );
+      defaultLog.error('Database generate text index failed', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
     }
   }
 

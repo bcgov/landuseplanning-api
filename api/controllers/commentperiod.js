@@ -133,7 +133,10 @@ exports.publicGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.info('Comment period public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -212,7 +215,10 @@ exports.protectedHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.info('Comment period protected head failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -296,7 +302,10 @@ exports.protectedSummary = async (args, res) => {
     defaultLog.info('Summary:', summary);
     return Actions.sendResponse(res, 200, summary);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected summary failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -384,7 +393,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got comment period(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -441,7 +453,10 @@ exports.protectedPost = async (args, res) => {
 
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -496,7 +511,10 @@ exports.protectedPut = async (args, res) => {
 
     return Actions.sendResponse(res, 200, cp);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -520,7 +538,10 @@ exports.protectedDelete = async (args, res) => {
     await updateVisibleSurveys(deleted);
     return Actions.sendResponse(res, 200, deleted || {});
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -556,7 +577,10 @@ exports.protectedPublish = async (args, res) => {
 
     return Actions.sendResponse(res, 200, publishedCP);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected publish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -591,7 +615,10 @@ exports.protectedUnPublish = async (args, res) => {
 
     return Actions.sendResponse(res, 200, unpublished);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment period protected unpublish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -678,9 +705,9 @@ const updateVisibleSurveys = async (commentPeriod) => {
       unpublished: surveyActions.unpublish.join(', '),
     });
   } catch (e) {
-    defaultLog.error('Failed to update visible surveys.', {
-      message: e.message,
-      code: e.code,
+    defaultLog.error('Failed to update visible surveys', {
+      message: e && e.message,
+      code: e && e.code,
     });
   }
 };

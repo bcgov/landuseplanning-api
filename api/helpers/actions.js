@@ -54,7 +54,9 @@ exports.delete = async (o) => {
     if (!Array.isArray(o.tags)) {
       o.tags = [];
     } else {
-      remove(o.tags, (item) => isEqual(Array.isArray(item) ? item : [item], ['public']));
+      remove(o.tags, (item) =>
+        isEqual(Array.isArray(item) ? item : [item], ['public']),
+      );
       remove(o.tags, (item) => item === 'public');
       if (typeof o.markModified === 'function') o.markModified('tags');
     }
@@ -62,15 +64,63 @@ exports.delete = async (o) => {
     o.isDeleted = true;
     if (typeof o.markModified === 'function') o.markModified('isDeleted');
     return await (o.save ? o.save() : o);
-  } catch (err) {
+  } catch (e) {
     throw {
       code: 400,
-      message: err && err.message ? err.message : String(err),
+      message: e && e.message ? ermessage : String(e),
     };
   }
 };
 
-exports.sendResponse = (res, code, object) => {
-  res.writeHead(code, { 'Content-Type': 'application/json' });
-  return res.end(JSON.stringify(object));
+// Check if there is an error or stack
+function isErrorLike(value) {
+  if (!value || typeof value !== 'object') return false;
+  return (value instanceof Error) || ('stack' in value && 'message' in value);
+}
+
+// Sanitize errors for client
+function toSafeClientError(code, err) {
+  if (Number(code) >= 500) {
+    // 5XX: Do not leak details
+    return { code, message: 'Internal server error' };
+  }
+  // 4XX: Safe for users
+  const message =
+    (err && typeof err.message === 'string' && err.message.trim()) ||
+    'Request failed';
+  return { code, message };
+}
+
+// Send a response to the client
+exports.sendResponse = function (res, code, obj) {
+  try {
+    if (isErrorLike(obj)) {
+      try {
+        if (typeof defaultLog?.error === 'function') {
+          defaultLog.error('Error sent to client (sanitized)', {
+            status: code,
+            message: obj.message,
+            stack: obj.stack,
+            name: obj.name,
+            code: obj.code,
+          });
+        }
+      } catch (_) { /* Avoid breaking response */ }
+      const safe = toSafeClientError(code, obj);
+      return res.status(code).json(safe);
+    }
+
+    // Non-error payloads pass through
+    return res.status(code).json(obj);
+  } catch (sendErr) {
+      try {
+        defaultLog.error('sendResponse failed', {
+          message: sendErr?.message,
+          stack: sendErr?.stack,
+          original: obj,
+        });
+      } catch (_) { /* Avoid breaking response */ }
+    return res.status(500).json({ code: 500, message: 'Internal server error' });
+  }
 };
+

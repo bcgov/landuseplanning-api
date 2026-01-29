@@ -112,7 +112,10 @@ exports.publicGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -153,7 +156,10 @@ exports.unProtectedPost = async (args, res) => {
     try {
       fs.unlinkSync(tempFilePath);
     } catch (e) {
-      defaultLog.warn('Could not clean temp file:', e);
+      defaultLog.warn('Could not clean temp file', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
     }
 
     // Define security tag defaults
@@ -198,7 +204,10 @@ exports.unProtectedPost = async (args, res) => {
     Utils.recordAction('Post', 'Document', 'public', d._id);
     return Actions.sendResponse(res, 200, d);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document unprotected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     // Delete the path details before we return to the caller.
     delete e.path;
     return Actions.sendResponse(res, 400, e);
@@ -258,7 +267,10 @@ exports.protectedHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected head failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -311,7 +323,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got document(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -379,11 +394,14 @@ exports.publicDownload = async (args, res) => {
       defaultLog.info('Downloading file: ', args.swagger.params.docId.value);
       return rp(docURL).pipe(res);
     } else {
-      defaultLog.error('Error downloading file.');
+      defaultLog.error('Error downloading file in document public download.');
       return Actions.sendResponse(res, 404, {});
     }
-  } catch (error) {
-    defaultLog.error(error);
+  } catch (e) {
+    defaultLog.error('Document public download failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 500, {});
   }
 }
@@ -454,8 +472,11 @@ exports.protectedDownload = async (args, res) => {
     } else {
       return Actions.sendResponse(res, 404, {});
     }
-  } catch (error) {
-    defaultLog.error(error);
+  } catch (e) {
+    defaultLog.error('Document protected download failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 500, {});
   }
 }
@@ -528,12 +549,15 @@ exports.protectedOpen = async (args, res) => {
     res.setHeader('Content-Disposition', `inline;filename="${fileName}"`);
 
     return rp(docURL).pipe(res);
-  } catch (error) {
-    defaultLog.error('Error in protectedOpen:', error);
+  } catch (e) {
+    defaultLog.error('Document protected open failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     if (!res.headersSent) {
       if (
-        error.code === 'NoSuchKey' ||
-        (error.message && error.message.includes('not found'))
+        e.code === 'NoSuchKey' ||
+        (e.message && e.message.includes('not found'))
       ) {
         return Actions.sendResponse(res, 404, { message: 'File not found' });
       }
@@ -583,7 +607,10 @@ exports.protectedPost = async (args, res) => {
     try {
       fs.unlinkSync(tempFilePath);
     } catch (e) {
-      defaultLog.warn('Could not clean temp file:', e);
+      defaultLog.warn('Could not clean temp file', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
     }
 
     const Document = mongoose.model('Document');
@@ -630,7 +657,10 @@ exports.protectedPost = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, d);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     // Delete the path details before we return to the caller.
     delete e.path;
     return Actions.sendResponse(res, 500, e);
@@ -661,7 +691,10 @@ exports.protectedPublish = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, published);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected publish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -688,7 +721,10 @@ exports.protectedUnPublish = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, unPublished);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected unpublish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -739,7 +775,10 @@ exports.protectedPut = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Document protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -769,7 +808,10 @@ exports.protectedDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error('Document protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

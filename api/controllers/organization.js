@@ -65,7 +65,10 @@ exports.publicGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.info('Organization public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e)
   }
 };
@@ -113,7 +116,10 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new organization object:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.info('Organization protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -154,7 +160,10 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Organization updated:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
-    defaultLog.info('Error:', e);
+    defaultLog.info('Organization protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 }
@@ -168,17 +177,26 @@ exports.protectedPublish = async (args, res) => {
   try {
     const o = await Organization.findOne({ _id: objId }).exec();
     if (o) {
-      Utils.recordAction('Publish', 'Organization', args.swagger.params.auth_payload.preferred_username, objId);
+      Utils.recordAction(
+        'Publish',
+        'Organization',
+        args.swagger.params.auth_payload.preferred_username,
+        objId,
+      );
       defaultLog.info('o:', o);
       // Add public to the tag of this obj.
       const published = await Actions.publish(o);
       return Actions.sendResponse(res, 200, published);
     } else {
-      defaultLog.info('Couldn\'t find that object!');
+      defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  } catch (err) {
-    return Actions.sendResponse(res, err.code || 500, err);
+  } catch (e) {
+    defaultLog.error('Organization protected publish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
+    return Actions.sendResponse(res, 500, e);
   }
 };
 
@@ -194,15 +212,24 @@ exports.protectedUnPublish = async (args, res) => {
 
       // Remove public to the tag of this obj.
       const unpublished = await Actions.unPublish(o);
-      Utils.recordAction('Unpublish', 'Organization', args.swagger.params.auth_payload.preferred_username, objId);
+      Utils.recordAction(
+        'Unpublish',
+        'Organization',
+        args.swagger.params.auth_payload.preferred_username,
+        objId,
+      );
       // UnPublished successfully
       return Actions.sendResponse(res, 200, unpublished);
     } else {
-      defaultLog.info('Couldn\'t find that object!');
+      defaultLog.info("Couldn't find that object!");
       return Actions.sendResponse(res, 404, {});
     }
-  } catch (err) {
-    return Actions.sendResponse(res, err.code || 500, err);
+  } catch (e) {
+    defaultLog.error('Organization protected unpublish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
+    return Actions.sendResponse(res, 500, e);
   }
 };
 

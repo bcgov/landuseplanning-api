@@ -89,14 +89,17 @@ exports.getDynamicSitemap = async (_, res) => {
     res.status(200).send(sitemap);
 
     defaultLog.info(
-      `Generated dynamic sitemap with ${projects.length} projects and ${commentPeriods.length} comment periods`
+      `Generated dynamic sitemap with ${projects.length} projects and ${commentPeriods.length} comment periods`,
     );
-  } catch (error) {
-    defaultLog.error('Error generating dynamic sitemap:', error);
+  } catch (e) {
+    defaultLog.error('Error generating dynamic sitemap', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     res
       .status(500)
       .send(
-        '<?xml version="1.0" encoding="UTF-8"?>\n<error>Failed to generate sitemap</error>'
+        '<?xml version="1.0" encoding="UTF-8"?>\n<error>Failed to generate sitemap</error>',
       );
   }
 };

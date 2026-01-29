@@ -66,7 +66,10 @@ exports.publicGet = async (args, res) => {
     Utils.recordAction('Get', 'ExternalLink', 'public', params.exLinkId ? params.exLinkId.value : null);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -111,7 +114,10 @@ exports.protectedHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link protected head failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -150,7 +156,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got external file(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -182,7 +191,10 @@ exports.protectedPost = async (args, res) => {
     return Actions.sendResponse(res, 200, exl);
 
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     // Delete the path details before we return to the caller.
     delete e.path;
     return Actions.sendResponse(res, 500, e);
@@ -207,6 +219,10 @@ exports.protectedPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, { message: 'External link not found' });
     }
   } catch (e) {
+    defaultLog.error('External link protected publish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -228,7 +244,10 @@ exports.protectedUnPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, { message: 'External link not found' });
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link protected unpublish failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -265,7 +284,10 @@ exports.protectedPut = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('External link protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -281,7 +303,10 @@ exports.protectedDelete = async (args, res) => {
     Utils.recordAction('Delete', 'ExternalLink', args.swagger.params.auth_payload.preferred_username, objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error('Error:', e);
+    defaultLog.error('External link protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

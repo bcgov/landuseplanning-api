@@ -15,6 +15,8 @@
     * Tested and fixed any broken API logic after upgrade
     * Updated DB folder with new docker-compose.yaml and left Mongo 3.6 docker-compose for backup purposes
         * Updated README.md file with local db upgrade instructions
+    * Updated server responses to filter out error data for security
+    * Updated several catch blocks with bespoke error messages
 
 ### Nov 13, 2025
 * Add dynamic sitemap generation for projects and comment periods [DESENG-917](https://citz-gdx.atlassian.net/browse/DESENG-917)

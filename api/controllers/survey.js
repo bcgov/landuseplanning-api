@@ -53,13 +53,16 @@ exports.publicGet = async (args, res) => {
   if (params && params.commentPeriod && params.commentPeriod.value) {
     try {
       const cp = await CommentPeriod.findById(
-        params.commentPeriod.value
+        params.commentPeriod.value,
       ).exec();
       if (cp && cp.surveySelected) {
         query = Utils.buildQuery('_id', cp.surveySelected, query);
       }
-    } catch (err) {
-      defaultLog.error(err);
+    } catch (e) {
+      defaultLog.error('Survey public get failed', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
     }
   }
 
@@ -91,7 +94,10 @@ exports.publicGet = async (args, res) => {
     defaultLog.info('Got survey(s): ', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey public get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -123,13 +129,16 @@ exports.protectedGet = async (args, res) => {
     const CommentPeriod = mongoose.model('CommentPeriod');
     try {
       const cp = await CommentPeriod.findById(
-        params.commentPeriod.value
+        params.commentPeriod.value,
       ).exec();
       if (cp && cp.surveySelected) {
         query = Utils.buildQuery('_id', cp.surveySelected, query);
       }
-    } catch (err) {
-      defaultLog.error(err);
+    } catch (e) {
+      defaultLog.error('Survey protected get failed', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
     }
   }
 
@@ -184,7 +193,10 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got survey(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -222,7 +234,10 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new survey object:', sq._id);
     return Actions.sendResponse(res, 200, sq);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -254,7 +269,10 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Survey updated:', objId);
     return Actions.sendResponse(res, 200, s);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -281,7 +299,10 @@ exports.protectedDelete = async (args, res) => {
     defaultLog.info('Survey deleted: ', objId);
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Survey protected delete failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

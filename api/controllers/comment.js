@@ -416,7 +416,10 @@ exports.protectedGet = async (args, res) => {
     }
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment protected get failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -486,7 +489,10 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment protected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -538,7 +544,10 @@ exports.unProtectedPost = async (args, res) => {
     defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment unprotected post failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };
@@ -583,7 +592,10 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Error approving/rejecting/modifying comment(s):', e);
+    defaultLog.info('Comment protected put failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 500, e);
   }
 };
@@ -617,7 +629,10 @@ exports.protectedStatus = async (args, res) => {
     defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error(e);
+    defaultLog.error('Comment protected status failed', {
+      message: e && e.message,
+      stack: e && e.stack,
+    });
     return Actions.sendResponse(res, 400, e);
   }
 };

@@ -147,7 +147,11 @@ const statObject = async (bucketName, objectName) => {
   try {
     const stat = await minioClient.statObject(bucketName, objectName);
     return stat;
-  } catch (err) {
+  } catch (e) {
+    defaultLog.error('Unable to get metadata for the specified file from minio client', {
+      message: e && e.message,
+      stack: e && e.stack,
+    })
     return undefined;
   }
 };
@@ -166,11 +170,15 @@ const asHttpRequest = {
       const result = await deleteDocument(
         BUCKETS.DOCUMENTS_BUCKET,
         req.params.projectCode,
-        req.params.fileName
+        req.params.fileName,
       );
       return res.json(result);
-    } catch (error) {
-      return res.status(400).send({ message: error });
+    } catch (e) {
+      defaultLog.error('Minio delete document failed', {
+        message: e && e.message,
+        stack: e && e.stack,
+      });
+      return Actions.sendResponse(res, 400, e);
     }
   },
 };
