@@ -1,50 +1,51 @@
-var { map, each } = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
-var mongoose = require('mongoose');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
-var qs = require('qs');
+const { map, each } = require('lodash');
+const defaultLog = require('winston').loggers.get('defaultLog');
+const mongoose = require('mongoose');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
+const qs = require('qs');
 
-function isEmpty(obj) {
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key))
-      return false;
+const isEmpty = (obj) => {
+  for (const key in obj) {
+    if (Object.prototype.hasOwnProperty.call(obj, key)) return false;
   }
   return true;
-}
+};
 
-var generateExpArray = async function (field, roles) {
-  var expArray = [];
-  if (field && field != undefined) {
-    var queryString = qs.parse(field);
-    await Promise.all(Object.keys(queryString).map(async item => {
-      if (item === 'pcp') {
-        await handlePCPItem(roles, expArray, queryString[item]);
-      } else if (item === 'decisionDateStart' || item === 'decisionDateEnd') {
-        handleDateItem(expArray, item, queryString[item]);
-      } else if (Array.isArray(queryString[item])) {
-        // Arrays are a list of options so will always be ors
-        var orArray = [];
-        queryString[item].map(entry => {
-          orArray.push(getConvertedValue(item, entry));
-        });
-        expArray.push({ $or: orArray });
-      } else {
-        expArray.push(getConvertedValue(item, queryString[item]));
-      }
-    }));
+const generateExpArray = async (field, roles) => {
+  const expArray = [];
+  if (field !== null) {
+    const queryString = qs.parse(field);
+    await Promise.all(
+      Object.keys(queryString).map(async (item) => {
+        if (item === 'pcp') {
+          await handlePCPItem(roles, expArray, queryString[item]);
+        } else if (item === 'decisionDateStart' || item === 'decisionDateEnd') {
+          handleDateItem(expArray, item, queryString[item]);
+        } else if (Array.isArray(queryString[item])) {
+          // Arrays are a list of options so will always be ors
+          const orArray = [];
+          queryString[item].map((entry) => {
+            orArray.push(getConvertedValue(item, entry));
+          });
+          expArray.push({ $or: orArray });
+        } else {
+          expArray.push(getConvertedValue(item, queryString[item]));
+        }
+      })
+    );
   }
   return expArray;
-}
+};
 
-var getConvertedValue = function (item, entry) {
+const getConvertedValue = (item, entry) => {
   if (isNaN(entry)) {
     if (mongoose.Types.ObjectId.isValid(entry)) {
       // ObjectID
       return { [item]: mongoose.Types.ObjectId(entry) };
     } else if (entry === 'true') {
       // Bool
-      var tempObj = {}
+      const tempObj = {};
       tempObj[item] = true;
       tempObj.active = true;
       return tempObj;
@@ -55,55 +56,55 @@ var getConvertedValue = function (item, entry) {
       return { [item]: entry };
     }
   } else {
-    return { [item]: parseInt(entry) };
+    return { [item]: parseInt(entry, 10) };
   }
-}
+};
 
-var handlePCPItem = async function (roles, expArray, value) {
+const handlePCPItem = async (roles, expArray, value) => {
   if (Array.isArray(value)) {
     // Arrays are a list of options so will always be ors
-    var orArray = [];
-    await Promise.all(value.map(async entry => {
-      orArray.push(await getPCPValue(roles, entry));
-    }));
+    const orArray = [];
+    await Promise.all(
+      value.map(async (entry) => {
+        orArray.push(await getPCPValue(roles, entry));
+      })
+    );
     expArray.push({ $or: orArray });
   } else {
     expArray.push(await getPCPValue(roles, value));
   }
-}
+};
 
-var getPCPValue = async function (roles, entry) {
-  var query = null;
-  var now = new Date();
+const getPCPValue = async (roles, entry) => {
+  let query = null;
+  const now = new Date();
 
   switch (entry) {
-    case 'pending':
-      var in7days = new Date();
+    case 'pending': {
+      const in7days = new Date();
       in7days.setDate(now.getDate() + 7);
 
       query = {
         _schemaName: 'CommentPeriod',
         $and: [
           { dateStarted: { $gt: now } },
-          { dateStarted: { $lte: in7days } }
-        ]
+          { dateStarted: { $lte: in7days } },
+        ],
       };
       break;
+    }
 
     case 'open':
       query = {
         _schemaName: 'CommentPeriod',
-        $and: [
-          { dateStarted: { $lte: now } },
-          { dateCompleted: { $gt: now } }
-        ]
+        $and: [{ dateStarted: { $lte: now } }, { dateCompleted: { $gt: now } }],
       };
       break;
 
     case 'closed':
       query = {
         _schemaName: 'CommentPeriod',
-        dateCompleted: { $lt: now }
+        dateCompleted: { $lt: now },
       };
       break;
 
@@ -111,58 +112,94 @@ var getPCPValue = async function (roles, entry) {
       defaultLog.info('Unknown PCP entry');
   }
 
-  var pcp = {};
+  let pcp = {};
 
   if (query) {
-    var data = await Utils.runDataQuery('CommentPeriod', roles, query, ['project'], null, null, null, null, false, null);
-    var ids = map(data, 'project');
+    const data = await Utils.runDataQuery(
+      'CommentPeriod',
+      roles,
+      query,
+      ['project'],
+      null,
+      null,
+      null,
+      null,
+      false,
+      null
+    );
+    const ids = map(data, 'project');
     pcp = { _id: { $in: ids } };
   }
 
   defaultLog.info('pcp', pcp);
   return pcp;
-}
+};
 
-var handleDateItem = function (expArray, item, entry) {
-  var date = new Date(entry);
+const handleDateItem = (expArray, item, entry) => {
+  const date = new Date(entry);
 
   // Validate: valid date?
   if (!isNaN(date)) {
     if (item === 'decisionDateStart') {
-      var start = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
+      const start = new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate()
+      );
       expArray.push({ decisionDate: { $gte: start } });
     } else if (item === 'decisionDateEnd') {
-      var end = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate() + 1);
+      const end = new Date(
+        date.getUTCFullYear(),
+        date.getUTCMonth(),
+        date.getUTCDate() + 1
+      );
       expArray.push({ decisionDate: { $lt: end } });
     }
   }
-}
+};
 
-var searchCollection = async function (roles, projectPermissions, keywords, collection, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate = false, and, or) {
-  var properties = undefined;
+const searchCollection = async (
+  roles,
+  projectPermissions,
+  keywords,
+  collection,
+  pageNum,
+  pageSize,
+  project,
+  sortField,
+  sortDirection,
+  caseSensitive,
+  populate = false,
+  and,
+  or
+) => {
+  let properties = undefined;
   let projectKey;
+
   if (project) {
     properties = { project: mongoose.Types.ObjectId(project) };
-    projectKey = "$project";
+    projectKey = '$project';
   }
 
   if (collection && collection === 'Project') {
-    projectKey = "$_id";
+    projectKey = '$_id';
   }
 
   // optional search keys
-  var searchProperties = undefined;
+  let searchProperties = undefined;
   if (keywords) {
-    searchProperties = { $text: { $search: keywords, $caseSensitive: caseSensitive } };
+    searchProperties = {
+      $text: { $search: keywords, $caseSensitive: caseSensitive },
+    };
   }
 
   // query modifiers
-  var andExpArray = await generateExpArray(and, roles);
+  const andExpArray = await generateExpArray(and, roles);
 
   // filters
-  var orExpArray = await generateExpArray(or, roles);
+  const orExpArray = await generateExpArray(or, roles);
 
-  var modifier = {};
+  let modifier = {};
   if (andExpArray.length > 0 && orExpArray.length > 0) {
     modifier = { $and: [{ $and: andExpArray }, { $and: orExpArray }] };
   } else if (andExpArray.length === 0 && orExpArray.length > 0) {
@@ -171,25 +208,21 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     modifier = { $and: andExpArray };
   }
 
-  var match = {
+  const match = {
     _schemaName: collection,
     ...(isEmpty(modifier) ? undefined : modifier),
     ...(searchProperties ? searchProperties : undefined),
     ...(properties ? properties : undefined),
-    $or: [
-      { isDeleted: { $exists: false } },
-      { isDeleted: false },
-    ]
-  };
-  let collation = {
-    locale: 'en',
-    strength: 2
+    $or: [{ isDeleted: { $exists: false } }, { isDeleted: false }],
   };
 
-  const aggregation = [
-    { $match: match }
-  ];
-  
+  const collation = {
+    locale: 'en',
+    strength: 2,
+  };
+
+  const aggregation = [{ $match: match }];
+
   // Only add this block when sorting by projectTypes
   if (sortField === 'projectTypes') {
     aggregation.push({
@@ -198,31 +231,29 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
           $map: {
             input: {
               $filter: {
-                input: "$projectTypes",
-                as: "pt",
-                cond: { $eq: ["$$pt.checked", true] }
-              }
+                input: '$projectTypes',
+                as: 'pt',
+                cond: { $eq: ['$$pt.checked', true] },
+              },
             },
-            as: "filtered",
-            in: "$$filtered.name"
-          }
-        }
-      }
+            as: 'filtered',
+            in: '$$filtered.name',
+          },
+        },
+      },
     });
   }
 
-  // Define sorting object for Mongo stage
-  let sortingValue = {};
-  if (sortField !== 'projectTypes') {
-    sortingValue[sortField] = sortDirection;
-  }
-
-  // Build aggregation steps for searchResults
+  // Define sorting object/stage for Mongo stage
   let searchResultAggregation = [];
-  
   if (sortField !== 'projectTypes') {
+    const sortStage =
+      sortField === 'score' && keywords
+        ? { $sort: { score: { $meta: 'textScore' } } }
+        : { $sort: { [sortField]: sortDirection } };
+
     searchResultAggregation.push(
-      { $sort: sortingValue },
+      sortStage,
       { $skip: pageNum * pageSize },
       { $limit: pageSize }
     );
@@ -236,51 +267,46 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
 
   if (collection === 'Document') {
     // Allow documents to be sorted by status based on publish existence
-    aggregation.push(
-      {
-        $addFields: {
-          "status": {
-            $cond: {
-              if: {
-                // This way, if read isn't present, we assume public no roles array.
-                $and: [
-                  { $cond: { if: "$read", then: true, else: false } },
-                  {
-                    $anyElementTrue: {
-                      $map: {
-                        input: "$read",
-                        as: "fieldTag",
-                        in: { $setIsSubset: [["$$fieldTag"], ['public']] }
-                      }
-                    }
-                  }
-                ]
-              },
-              then: 'published',
-              else: 'unpublished'
-            }
-          }
-        }
-      }
-    );
+    aggregation.push({
+      $addFields: {
+        status: {
+          $cond: {
+            if: {
+              // This way, if read isn't present, we assume public no roles array.
+              $and: [
+                { $cond: { if: '$read', then: true, else: false } },
+                {
+                  $anyElementTrue: {
+                    $map: {
+                      input: '$read',
+                      as: 'fieldTag',
+                      in: { $setIsSubset: [['$$fieldTag'], ['public']] },
+                    },
+                  },
+                },
+              ],
+            },
+            then: 'published',
+            else: 'unpublished',
+          },
+        },
+      },
+    });
   }
 
   if (collection === 'Group') {
     // pop project and user if exists.
-    aggregation.push(
-      {
-        '$lookup': {
-          "from": "lup",
-          "localField": "project",
-          "foreignField": "_id",
-          "as": "project"
-        }
-      });
-    aggregation.push(
-      {
-        "$unwind": "$project"
+    aggregation.push({
+      $lookup: {
+        from: 'lup',
+        localField: 'project',
+        foreignField: '_id',
+        as: 'project',
       },
-    );
+    });
+    aggregation.push({
+      $unwind: '$project',
+    });
   }
 
   // Redact results based on user permissions.
@@ -292,36 +318,39 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
           $and: [
             {
               $and: [
-                { $cond: { if: "$read", then: true, else: false } },
+                { $cond: { if: '$read', then: true, else: false } },
                 {
                   $anyElementTrue: {
                     $map: {
-                      input: "$read",
-                      as: "fieldTag",
-                      in: { $setIsSubset: [["$$fieldTag"], roles] }
-                    }
-                  }
-                }
-              ]
+                      input: '$read',
+                      as: 'fieldTag',
+                      in: { $setIsSubset: [['$$fieldTag'], roles] },
+                    },
+                  },
+                },
+              ],
             },
             // Check if user either has the create-projects role or has project permissions.
-            { $cond: 
-              { if: { $in: ["public", roles] }, then: true, else:
-                { $or: [
-                  { $in: [ "create-projects" , roles] },
-                  { $in: [ projectKey, projectPermissions ] }
-                  ]
-                } 
-              }
-            }
-          ]
+            {
+              $cond: {
+                if: { $in: ['public', roles] },
+                then: true,
+                else: {
+                  $or: [
+                    { $in: ['create-projects', roles] },
+                    { $in: [projectKey, projectPermissions] },
+                  ],
+                },
+              },
+            },
+          ],
         },
-        then: "$$KEEP",
+        then: '$$KEEP',
         else: {
-          $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-        }
-      }
-    }
+          $cond: { if: '$read', then: '$$PRUNE', else: '$$DESCEND' },
+        },
+      },
+    },
   });
 
   if (populate === true && collection !== 'Project') {
@@ -346,12 +375,15 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
     });
   }
 
-  // Redact results based on user permissions.
-  aggregation.push({
-    $addFields: {
-      score: { $meta: "textScore" }
-    }
-  });
+  if (typeof keywords === 'string' && keywords.trim().length > 0) {
+    // Redact results based on user permissions.
+    aggregation.push({
+      $addFields: {
+        score: { $meta: "textScore" }
+      }
+    });
+  }
+  
 
   if (sortField !== 'projectTypes') {
     aggregation.push({
@@ -359,129 +391,160 @@ var searchCollection = async function (roles, projectPermissions, keywords, coll
         searchResults: searchResultAggregation,
         meta: [
           {
-            $count: "searchResultsTotal"
-          }
-        ]
-      }
-    })
+            $count: 'searchResultsTotal',
+          },
+        ],
+      },
+    });
   }
 
-  return new Promise(function (resolve, reject) {
-    var collectionObj = mongoose.model(collection);
-    collectionObj.aggregate(aggregation)
-      .collation(collation)
-      .exec()
-      .then(function (data) {
-        let collectionData;
+  const collectionObj = mongoose.model(collection);
+  const data = await collectionObj
+    .aggregate(aggregation)
+    .collation(collation)
+    .exec();
 
-        // If the sort field is projectTypes, handle the sorting manually.
-        if ('projectTypes' === sortField) {
-          const rawResults = data || [];
-          rawResults.forEach(rr => {
-            const list = Array.isArray(rr.projectTypesFiltered) ? rr.projectTypesFiltered : [];
-            const sorted = list.slice().sort(); // alphabetically
-            rr._projectTypesString = sorted.join(', ');
-          });
+  let collectionData;
 
-          const sortedResults = rawResults.sort((a, b) => a._projectTypesString.localeCompare(b._projectTypesString) * sortDirection);
+  // If the sort field is projectTypes, handle the sorting manually.
+  if (sortField === 'projectTypes') {
+    const rawResults = data || [];
+    rawResults.forEach((rr) => {
+      const list = Array.isArray(rr.projectTypesFiltered)
+        ? rr.projectTypesFiltered
+        : [];
+      const sorted = list.slice().sort(); // alphabetically
+      rr._projectTypesString = sorted.join(', ');
+    });
 
-          const start = pageNum * pageSize;
-          const end = start + pageSize;
-          const pagedResults = sortedResults.slice(start, end);
+    const sortedResults = rawResults.sort(
+      (a, b) =>
+        a._projectTypesString.localeCompare(b._projectTypesString) *
+        sortDirection
+    );
 
-          pagedResults.forEach(pr => {
-            delete pr._projectTypesString;
-          });
+    const start = pageNum * pageSize;
+    const end = start + pageSize;
+    const pagedResults = sortedResults.slice(start, end);
 
-          collectionData = {
-            searchResults: pagedResults,
-            meta: [
-              { searchResultsTotal: sortedResults.length }
-            ]
-          };
-        } else { // Otherwise we'll return the db-sorted data.
-          collectionData = data[0] || { searchResults: [], meta: [] };
-        }
-        resolve([collectionData]);
-      }, reject);
-  });
-}
+    pagedResults.forEach((pr) => {
+      delete pr._projectTypesString;
+    });
 
-exports.publicGet = async function (args, res, next) {
+    collectionData = {
+      searchResults: pagedResults,
+      meta: [{ searchResultsTotal: sortedResults.length }],
+    };
+  } else {
+    // Otherwise we'll return the db-sorted data.
+    collectionData = data[0] || { searchResults: [], meta: [] };
+  }
+
+  return [collectionData];
+};
+
+exports.publicGet = async (args, res) => {
   defaultLog.info('PUBLIC SEARCH COLLECTION');
-  executeQuery(args, res, next);
+  await executeQuery(args, res);
 };
 
-exports.protectedGet = function (args, res, next) {
+exports.protectedGet = async (args, res) => {
   defaultLog.info('PROTECTED SEARCH COLLECTION');
-  executeQuery(args, res, next);
+  await executeQuery(args, res);
 };
 
-var executeQuery = async function (args, res, next) {
-  var _id = args.swagger.params._id ? args.swagger.params._id.value : null;
-  var keywords = args.swagger.params.keywords.value;
-  var dataset = args.swagger.params.dataset.value;
-  var project = args.swagger.params.project.value;
-  var populate = args.swagger.params.populate ? args.swagger.params.populate.value : false;
-  var pageNum = args.swagger.params.pageNum.value || 0;
-  var pageSize = args.swagger.params.pageSize.value || 25;
-  var sortBy = args.swagger.params.sortBy.value || ['-score'];
-  var caseSensitive = args.swagger.params.caseSensitive ? args.swagger.params.caseSensitive.value : false;
-  var and = args.swagger.params.and ? args.swagger.params.and.value : '';
-  var or = args.swagger.params.or ? args.swagger.params.or.value : '';
+const executeQuery = async (args, res) => {
+  const _id = args.swagger.params._id ? args.swagger.params._id.value : null;
+  const keywords = args.swagger.params.keywords.value;
+  const dataset = args.swagger.params.dataset.value;
+  const project = args.swagger.params.project.value;
+  const populate = args.swagger.params.populate
+    ? args.swagger.params.populate.value
+    : false;
+  const pageNum = args.swagger.params.pageNum.value || 0;
+  const pageSize = args.swagger.params.pageSize.value || 25;
+  const sortBy = args.swagger.params.sortBy.value || ['-score'];
+  const caseSensitive = args.swagger.params.caseSensitive
+    ? args.swagger.params.caseSensitive.value
+    : false;
+  const and = args.swagger.params.and ? args.swagger.params.and.value : '';
+  const or = args.swagger.params.or ? args.swagger.params.or.value : '';
   let userProjectPermissions = [];
   let projectKey = '$project';
-  defaultLog.info("Searching keywords:", keywords);
-  defaultLog.info("Searching datasets:", dataset);
-  defaultLog.info("Searching project:", project);
-  defaultLog.info("pageNum:", pageNum);
-  defaultLog.info("pageSize:", pageSize);
-  defaultLog.info("sortBy:", sortBy);
-  defaultLog.info("caseSensitive:", caseSensitive);
-  defaultLog.info("and:", and);
-  defaultLog.info("or:", or);
-  defaultLog.info("_id:", _id);
-  defaultLog.info("populate:", populate);
+  defaultLog.info('Searching keywords:', keywords);
+  defaultLog.info('Searching datasets:', dataset);
+  defaultLog.info('Searching project:', project);
+  defaultLog.info('pageNum:', pageNum);
+  defaultLog.info('pageSize:', pageSize);
+  defaultLog.info('sortBy:', sortBy);
+  defaultLog.info('caseSensitive:', caseSensitive);
+  defaultLog.info('and:', and);
+  defaultLog.info('or:', or);
+  defaultLog.info('_id:', _id);
+  defaultLog.info('populate:', populate);
 
   if (project) {
     projectKey = '$_id';
   }
 
-  var roles = args.swagger.params.auth_payload ? args.swagger.params.auth_payload.client_roles : ['public'];
+  const roles = args.swagger.params.auth_payload
+    ? args.swagger.params.auth_payload.client_roles
+    : ['public'];
 
   // Get user project permissions array.
-  if (args.swagger.params.auth_payload && args.swagger.params.auth_payload.idir_user_guid) {
-    userProjectPermissions = await Utils.getUserProjectPermissions(args.swagger.params.auth_payload.idir_user_guid)
-      .then(permissions => (permissions));
+  if (
+    args.swagger.params.auth_payload &&
+    args.swagger.params.auth_payload.idir_user_guid
+  ) {
+    userProjectPermissions = await Utils.getUserProjectPermissions(
+      args.swagger.params.auth_payload.idir_user_guid
+    );
   }
 
-  Utils.recordAction('Search', keywords, args.swagger.params.auth_payload ? args.swagger.params.auth_payload.preferred_username : 'public')
+  Utils.recordAction(
+    'Search',
+    keywords,
+    args.swagger.params.auth_payload
+      ? args.swagger.params.auth_payload.preferred_username
+      : 'public'
+  );
 
-  var sortDirection = undefined;
-  var sortField = undefined;
+  let sortDirection = undefined;
+  let sortField = undefined;
 
-  var sortingValue = {};
   sortBy.forEach((value) => {
     sortDirection = value.charAt(0) == '-' ? -1 : 1;
     sortField = value.slice(1);
-    sortingValue[sortField] = sortDirection;
   });
 
   if (dataset !== 'Item') {
-    var data = await searchCollection(roles, userProjectPermissions, keywords, dataset, pageNum, pageSize, project, sortField, sortDirection, caseSensitive, populate, and, or);
+    const data = await searchCollection(
+      roles,
+      userProjectPermissions,
+      keywords,
+      dataset,
+      pageNum,
+      pageSize,
+      project,
+      sortField,
+      sortDirection,
+      caseSensitive,
+      populate,
+      and,
+      or
+    );
     // Filter
-    each(data[0].searchResults, function (item) {
+    each(data[0].searchResults, (item) => {
       if (item.isAnonymous === true) {
         delete item.author;
       }
     });
     return Actions.sendResponse(res, 200, data);
   } else if (dataset === 'Item') {
-
-    var collectionObj = mongoose.model(args.swagger.params._schemaName.value);
-    var data = await collectionObj.aggregate([
+    const collectionObj = mongoose.model(args.swagger.params._schemaName.value);
+    const data = await collectionObj.aggregate([
       {
-        "$match": { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) }
+        $match: { _id: mongoose.Types.ObjectId(args.swagger.params._id.value) },
       },
       {
         $redact: {
@@ -489,39 +552,43 @@ var executeQuery = async function (args, res, next) {
             if: {
               // This way, if read isn't present, we assume public no roles array.
               $and: [
-                { $cond: { if: "$read", then: true, else: false } },
+                { $cond: { if: '$read', then: true, else: false } },
                 {
                   $anyElementTrue: {
                     $map: {
-                      input: "$read",
-                      as: "fieldTag",
-                      in: { $setIsSubset: [["$$fieldTag"], roles] }
-                    }
-                  }
+                      input: '$read',
+                      as: 'fieldTag',
+                      in: { $setIsSubset: [['$$fieldTag'], roles] },
+                    },
+                  },
                 },
                 // Check if user either has the create-projects role or has project permissions.
-                { $cond: 
-                  { if: { $in: ["public", roles] }, then: true, else:
-                    { $or: [
-                      { $in: [ "create-projects" , roles] },
-                      { $in: [ projectKey, userProjectPermissions ] } 
-                      ]
-                    } 
-                  }
-                }
-              ]
+                {
+                  $cond: {
+                    if: { $in: ['public', roles] },
+                    then: true,
+                    else: {
+                      $or: [
+                        { $in: ['create-projects', roles] },
+                        { $in: [projectKey, userProjectPermissions] },
+                      ],
+                    },
+                  },
+                },
+              ],
             },
-            then: "$$KEEP",
+            then: '$$KEEP',
             else: {
-              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-            }
-          }
-        }
-      }
+              $cond: { if: '$read', then: '$$PRUNE', else: '$$DESCEND' },
+            },
+          },
+        },
+      },
     ]);
+
     if (args.swagger.params._schemaName.value === 'Comment') {
       // Filter
-      each(data, function (item) {
+      each(data, (item) => {
         if (item.isAnonymous === true) {
           delete item.author;
         }
@@ -534,7 +601,7 @@ var executeQuery = async function (args, res, next) {
   }
 };
 
-exports.protectedOptions = function (args, res) {
+exports.protectedOptions = (_, res) => {
   defaultLog.info('SEARCH PROTECTED OPTIONS');
   res.status(200).send();
 };

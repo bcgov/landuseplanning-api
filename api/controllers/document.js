@@ -1,75 +1,96 @@
 const { remove, indexOf, assignIn } = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
-var mongoose = require('mongoose');
-var mime = require('mime-types');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
-var FlakeIdGen = require('flake-idgen'),
-  intformat = require('biguint-format'),
-  generator = new FlakeIdGen;
-var fs = require('fs');
-var uploadDir = process.env.UPLOAD_DIRECTORY || "./uploads/";
-var ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
-var MinioController = require('../helpers/minio');
-var rp = require('request-promise-native');
+const defaultLog = require('winston').loggers.get('defaultLog');
+const mongoose = require('mongoose');
+const mime = require('mime-types');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
+const FlakeIdGen = require('flake-idgen');
+const intformat = require('biguint-format');
+const generator = new FlakeIdGen();
+const fs = require('fs');
+const uploadDir = process.env.UPLOAD_DIRECTORY || './uploads/';
+const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
+const MinioController = require('../helpers/minio');
+const rp = require('request-promise-native');
 
-var getSanitizedFields = function (fields) {
-  return remove(fields, function (f) {
-    return (indexOf([
-      '_addedBy',
-      'documentFileName',
-      'alt',
-      'internalExt',
-      'internalOriginalName',
-      'displayName',
-      'section',
-      'labels',
-      'datePosted',
-      'dateUploaded',
-      'dateReceived',
-      'documentFileSize',
-      'documentSource',
-      'eaoStatus',
-      'internalURL',
-      'internalMime',
-      'internalSize',
-      'checkbox',
-      'project',
-      'documentAuthor',
-      'projectPhase',
-      'description',
-      'keywords',
-      'isPublished',
-      'internalMime'], f) !== -1);
+const getSanitizedFields = (fields = []) => {
+  return remove(fields, (f) => {
+    return (
+      indexOf(
+        [
+          '_addedBy',
+          'documentFileName',
+          'alt',
+          'internalExt',
+          'internalOriginalName',
+          'displayName',
+          'section',
+          'labels',
+          'datePosted',
+          'dateUploaded',
+          'dateReceived',
+          'documentFileSize',
+          'documentSource',
+          'eaoStatus',
+          'internalURL',
+          'internalSize',
+          'checkbox',
+          'project',
+          'documentAuthor',
+          'projectPhase',
+          'description',
+          'keywords',
+          'isPublished',
+          'internalMime',
+        ],
+        f,
+      ) !== -1
+    );
   });
 };
 
-exports.protectedOptions = function(args, res) {
+exports.protectedOptions = (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED OPTIONS');
   res.status(200).send();
 };
 
-exports.publicGet = async function (args, res) {
+exports.publicGet = async (args, res) => {
   defaultLog.info('DOCUMENT PUBLIC GET');
-  // Build match query if on docId route
-  var query = {};
+  // Build match query
+  let query = {};
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
-  } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
-    query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
+    query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
+  } else if (
+    args.swagger.params.docIds &&
+    args.swagger.params.docIds.value &&
+    args.swagger.params.docIds.value.length > 0
+  ) {
+    query = Utils.buildQuery('_id', args.swagger.params.docIds.value);
   }
 
   if (args.swagger.params.project && args.swagger.params.project.value) {
-    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
+    query = Utils.buildQuery(
+      'project',
+      args.swagger.params.project.value,
+      query,
+    );
   }
 
-  assignIn(query, { "documentSource": args.swagger.params.documentSource.value });
+  if (
+    args.swagger.params.documentSource &&
+    args.swagger.params.documentSource.value
+  ) {
+    assignIn(query, {
+      documentSource: args.swagger.params.documentSource.value,
+    });
+  }
 
   // Set query type
-  assignIn(query, { "_schemaName": "Document" });
+  assignIn(query, { _schemaName: 'Document' });
 
   try {
-    var data = await Utils.runDataQuery('Document',
+    const data = await Utils.runDataQuery(
+      'Document',
       ['public'],
       null,
       query,
@@ -78,9 +99,17 @@ exports.publicGet = async function (args, res) {
       null, // sort
       null, // skip
       null, // limit
-      false); // count
+      false, // count
+    );
     defaultLog.info('Got document(s):', data);
-    Utils.recordAction('Get', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
+    Utils.recordAction(
+      'Get',
+      'Document',
+      'public',
+      args.swagger.params.docId && args.swagger.params.docId.value
+        ? args.swagger.params.docId.value
+        : null,
+    );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.error(e);
@@ -88,159 +117,181 @@ exports.publicGet = async function (args, res) {
   }
 };
 
-exports.unProtectedPost = async function (args, res, next) {
+exports.unProtectedPost = async (args, res) => {
   defaultLog.info('DOCUMENT PUBLIC POST');
-  var _comment = args.swagger.params._comment.value;
-  var project = args.swagger.params.project.value;
-  var upfile = args.swagger.params.upfile.value;
-  var guid = intformat(generator.next(), 'dec');
-  var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
-  var tempFilePath = uploadDir + guid + "." + ext;
+  const _comment = args.swagger.params._comment.value;
+  const project = args.swagger.params.project.value;
+  const upfile = args.swagger.params.upfile.value;
+  const guid = intformat(generator.next(), 'dec');
+  const ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+  const tempFilePath = `${uploadDir}${guid}.${ext}`;
+
   try {
-    Promise.resolve()
+    // Virus scan (optional)
+    const valid =
+      ENABLE_VIRUS_SCANNING === 'true'
+        ? await Utils.avScan(args.swagger.params.upfile.value.buffer)
+        : true;
 
-      .then(async function () {
-        if (ENABLE_VIRUS_SCANNING == 'true') {
-          return Utils.avScan(args.swagger.params.upfile.value.buffer);
-        } else {
-          return true;
-        }
-      })
-      .then(async function (valid) {
-        if (!valid) {
-          defaultLog.warn("File failed virus check.");
-          return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
-        } else {
-          fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
-          defaultLog.info('wrote file successfully.');
-          MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
-            project,
-            upfile.originalname,
-            tempFilePath)
-            .then(async function (minioFile) {
-              // remove file from temp folder
-              fs.unlinkSync(tempFilePath);
-
-              defaultLog.info('File saved in minio. Now saving document in DB.');
-              var Document = mongoose.model('Document');
-              var doc = new Document();
-              // Define security tag defaults
-              doc.project = mongoose.Types.ObjectId(project);
-              doc._comment = _comment;
-              doc._addedBy = 'public';
-              doc._createdDate = new Date();
-              doc.read = ['sysadmin', 'staff'];
-              doc.write = ['sysadmin', 'staff'];
-              doc.delete = ['sysadmin', 'staff'];
-
-              doc.internalOriginalName = upfile.originalname;
-              doc.internalURL = minioFile.path;
-              doc.internalExt = minioFile.extension;
-              doc.internalSize = upfile.size;
-              doc.passedAVCheck = true;
-              doc.internalMime = upfile.mimetype;
-
-              doc.documentSource = "COMMENT";
-
-              doc.displayName = upfile.originalname;
-              doc.documentFileName = upfile.originalname;
-              doc.dateUploaded = new Date();
-              doc.datePosted = new Date();
-              doc.documentAuthor = args.body.documentAuthor;
-
-              doc.save()
-                .then(async function (d) {
-                  defaultLog.info("Saved new document object:", d._id);
-
-                  var Comment = mongoose.model('Comment');
-                  var c = await Comment.update({ _id: _comment }, { $addToSet: { documents: d._id } });
-                  defaultLog.info('Comment updated:', c);
-                  Utils.recordAction('Post', 'Document', 'public', d._id);
-                  return Actions.sendResponse(res, 200, d);
-                })
-                .catch(async function (error) {
-                  defaultLog.error(error);
-                  // the model failed to be created - delete the document from minio so the database and minio remain in sync.
-                  MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
-                  return Actions.sendResponse(res, 400, error);
-                });
-            });
-        }
+    if (!valid) {
+      defaultLog.warn('File failed virus check.');
+      return Actions.sendResponse(res, 400, {
+        message: 'File failed virus check.',
       });
+    }
+
+    fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
+    defaultLog.info('wrote file successfully.');
+    const minioFile = await MinioController.putDocument(
+      MinioController.BUCKETS.DOCUMENTS_BUCKET,
+      project,
+      upfile.originalname,
+      tempFilePath,
+    );
+
+    // Remove temp file
+    try {
+      fs.unlinkSync(tempFilePath);
+    } catch (e) {
+      defaultLog.warn('Could not clean temp file:', e);
+    }
+
+    // Define security tag defaults
+    const Document = mongoose.model('Document');
+    const doc = new Document({
+      project: mongoose.Types.ObjectId(project),
+      _comment: _comment,
+      _addedBy: 'public',
+      _createdDate: new Date(),
+      read: ['sysadmin', 'staff'],
+      write: ['sysadmin', 'staff'],
+      delete: ['sysadmin', 'staff'],
+
+      internalOriginalName: upfile.originalname,
+      internalURL: minioFile.path,
+      internalExt: minioFile.extension,
+      internalSize: upfile.size,
+      passedAVCheck: true,
+      internalMime: upfile.mimetype,
+
+      documentSource: 'COMMENT',
+      displayName: upfile.originalname,
+      documentFileName: upfile.originalname,
+      dateUploaded: new Date(),
+      datePosted: new Date(),
+      documentAuthor: args.body.documentAuthor,
+    });
+
+    const d = await doc.save();
+    defaultLog.info('Saved new document object:', d._id);
+
+    const Comment = mongoose.model('Comment');
+    const result = await Comment.updateOne(
+      { _id: _comment },
+      { $addToSet: { documents: d._id } },
+    );
+    defaultLog.info('Comment update result:', {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+    });
+
+    Utils.recordAction('Post', 'Document', 'public', d._id);
+    return Actions.sendResponse(res, 200, d);
   } catch (e) {
     defaultLog.error(e);
     // Delete the path details before we return to the caller.
-    delete e['path'];
+    delete e.path;
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-exports.protectedHead = function (args, res) {
+exports.protectedHead = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED HEAD');
-  // Build match query if on docId route
-  var query = {};
-  if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+  // Build match query
+  let query = {};
+  const { docId, _application, _comment, isDeleted, auth_payload } =
+    args.swagger.params;
+  if (docId && docId.value) {
+    query = Utils.buildQuery('_id', docId.value, query);
   }
-  if (args.swagger.params._application && args.swagger.params._application.value) {
-    query = Utils.buildQuery('_application', args.swagger.params._application.value, query);
+  if (_application && _application.value) {
+    query = Utils.buildQuery('_application', _application.value, query);
   }
-  if (args.swagger.params._comment && args.swagger.params._comment.value) {
-    query = Utils.buildQuery('_comment', args.swagger.params._comment.value, query);
+  if (_comment && _comment.value) {
+    query = Utils.buildQuery('_comment', _comment.value, query);
   }
   // Unless they specifically ask for it, hide deleted results.
-  if (args.swagger.params.isDeleted && args.swagger.params.isDeleted.value != undefined) {
-    assignIn(query, { isDeleted: args.swagger.params.isDeleted.value });
-  } else {
-
+  if (isDeleted && isDeleted.value !== undefined) {
+    assignIn(query, { isDeleted: isDeleted.value });
   }
   // Set query type
-  assignIn(query, { "_schemaName": "Document" });
-
-  Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idir_user_guid,
-    query,
-    ['_id',
-      'read'], // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    true) // count
-    .then(function (data) {
-      Utils.recordAction('Head', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-      // /api/commentperiod/ route, return 200 OK with 0 items if necessary
-      if (!(args.swagger.params.docId && args.swagger.params.docId.value) || (data && data.length > 0)) {
-        res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
-        return Actions.sendResponse(res, 200, data);
-      } else {
-        return Actions.sendResponse(res, 404, data);
-      }
-    });
-}
-
-exports.protectedGet = async function (args, res, next) {
-  defaultLog.info('DOCUMENT PROTECTED GET');
-
-  var query = {}, sort = {}, skip = null, limit = null, count = false;
-
-  // Build match query if on docId route
-  if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    assignIn(query, { _id: mongoose.Types.ObjectId(args.swagger.params.docId.value) });
-  } else if (args.swagger.params.docIds && args.swagger.params.docIds.value && args.swagger.params.docIds.value.length > 0) {
-    query = Utils.buildQuery("_id", args.swagger.params.docIds.value);
-  }
-
-  if (args.swagger.params.project && args.swagger.params.project.value) {
-    query = Utils.buildQuery("project", args.swagger.params.project.value, query);
-  }
-
-  // Set query type
-  assignIn(query, { "_schemaName": "Document" });
+  assignIn(query, { _schemaName: 'Document' });
 
   try {
-    var data = await Utils.runDataQuery('Document',
+    const data = await Utils.runDataQuery(
+      'Document',
+      auth_payload.client_roles,
+      auth_payload.idir_user_guid,
+      query,
+      ['_id', 'read'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      true, // count
+    );
+
+    Utils.recordAction(
+      'Head',
+      'Document',
+      auth_payload.preferred_username,
+      docId && docId.value ? docId.value : null,
+    );
+
+    if (!(docId && docId.value) || (data && data.length > 0)) {
+      res.setHeader(
+        'x-total-count',
+        data && data.length > 0 ? data[0].total_items : 0,
+      );
+      return Actions.sendResponse(res, 200, data);
+    } else {
+      return Actions.sendResponse(res, 404, data);
+    }
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+}
+
+exports.protectedGet = async (args, res) => {
+  defaultLog.info('DOCUMENT PROTECTED GET');
+  let query = {},
+    sort = {},
+    skip = null,
+    limit = null,
+    count = false;
+
+  // Build match query
+  const docId = args.swagger.params.docId || null;
+  const docIds = args.swagger.params.docIds || null;
+  if (docId && docId.value) {
+    assignIn(query, { _id: mongoose.Types.ObjectId(docId.value) });
+  } else if (docIds && docIds.value && docIds.value.length > 0) {
+    const objIds = docIds.value.map((id) => mongoose.Types.ObjectId(id));
+    query = Utils.buildQuery('_id', objIds);
+  }
+
+  const project = args.swagger.params.project || null;
+  if (project && project.value) {
+    query = Utils.buildQuery('project', project.value, query);
+  }
+
+  // Set query type
+  assignIn(query, { _schemaName: 'Document' });
+
+  try {
+    const data = await Utils.runDataQuery(
+      'Document',
       args.swagger.params.auth_payload.client_roles,
       args.swagger.params.auth_payload.idir_user_guid,
       query,
@@ -249,164 +300,188 @@ exports.protectedGet = async function (args, res, next) {
       sort, // sort
       skip, // skip
       limit, // limit
-      count); // count
-    Utils.recordAction('Get', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
+      count, // count
+    );
+    Utils.recordAction(
+      'Get',
+      'Document',
+      args.swagger.params.auth_payload.preferred_username,
+      docId && docId.value ? docId.value : null,
+    );
     defaultLog.info('Got document(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
     defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
-};
+}
 
-exports.publicDownload = function (args, res) {
+exports.publicDownload = async (args, res) => {
   defaultLog.info('DOCUMENT PUBLIC DOWNLOAD');
 
-  // Build match query if on docId route
-  var query = {};
+  // Build match query
+  let query = {};
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
   } else {
     return Actions.sendResponse(res, 404, {});
   }
   // Set query type
-  assignIn(query, { "_schemaName": "Document" });
+  assignIn(query, { _schemaName: 'Document' });
 
-  Utils.runDataQuery('Document',
-    ['public'],
-    null,
-    query,
-    ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    false) // count
-    .then(function (data) {
-      if (data && data.length === 1) {
-        var blob = data[0];
+  try {
+    const data = await Utils.runDataQuery(
+      'Document',
+      ['public'],
+      null,
+      query,
+      ['internalURL', 'documentFileName', 'internalMime', 'internalExt'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false, // count
+    );
 
-        var fileName = blob.documentFileName;
-        var fileType = blob.internalExt;
-        if (fileName.slice(- fileType.length) !== fileType) {
-          fileName = fileName + '.' + fileType;
-        }
-        var fileMeta;
+    if (data && data.length === 1) {
+      const blob = data[0];
 
-        // check if the file exists in Minio
-        return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
-          .then(function (objectMeta) {
-            fileMeta = objectMeta;
-            // get the download URL
-            return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
-          }, function () {
-            return Actions.sendResponse(res, 404, {});
-          })
-          .then(function (docURL) {
-            Utils.recordAction('Download', 'Document', 'public', args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            // stream file from Minio to clients
-            res.setHeader('Content-Length', fileMeta.size);
-            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
-            res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
-            defaultLog.info('Downloading file: ', args.swagger.params.docId.value)
-            return rp(docURL).pipe(res);
-          });
-      } else {
-        defaultLog.error('Error downloading file.');
-        return Actions.sendResponse(res, 404, {});
+      let fileName = blob.documentFileName;
+      const fileType = blob.internalExt;
+      if (!fileName.endsWith(fileType)) {
+        fileName = `${fileName}.${fileType}`;
       }
-    })
-    .catch((error) => {
-      defaultLog.error(error);
-      Actions.sendResponse(res, 500, {})
-    });
-};
 
-exports.protectedDownload = function (args, res) {
+      // check if the file exists in Minio
+      const fileMeta = await MinioController.statObject(
+        MinioController.BUCKETS.DOCUMENTS_BUCKET,
+        blob.internalURL,
+      );
+      // get the download URL
+      const docURL = await MinioController.getPresignedGETUrl(
+        MinioController.BUCKETS.DOCUMENTS_BUCKET,
+        blob.internalURL,
+      );
+
+      Utils.recordAction(
+        'Download',
+        'Document',
+        'public',
+        args.swagger.params.docId && args.swagger.params.docId.value
+          ? args.swagger.params.docId.value
+          : null,
+      );
+
+      // stream file from Minio to clients
+      res.setHeader('Content-Length', fileMeta.size);
+      res.setHeader('Content-Type', fileMeta.metaData['content-type']);
+      res.setHeader('Content-Disposition', `attachment;filename="${fileName}"`);
+      defaultLog.info('Downloading file: ', args.swagger.params.docId.value);
+      return rp(docURL).pipe(res);
+    } else {
+      defaultLog.error('Error downloading file.');
+      return Actions.sendResponse(res, 404, {});
+    }
+  } catch (error) {
+    defaultLog.error(error);
+    return Actions.sendResponse(res, 500, {});
+  }
+}
+
+exports.protectedDownload = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED DOWNLOAD');
-  var self = this;
-  self.scopes = args.swagger.params.auth_payload.client_roles;
+  defaultLog.info(
+    'args.swagger.params:',
+    args.swagger.params.auth_payload.client_roles,
+  );
 
-  var Document = mongoose.model('Document');
-
-  defaultLog.info("args.swagger.params:", args.swagger.params.auth_payload.client_roles);
-
-  // Build match query if on docId route
-  var query = {};
+  // Build match query
+  let query = {};
   if (args.swagger.params.docId && args.swagger.params.docId.value) {
-    query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
   }
   // Set query type
-  assignIn(query, { "_schemaName": "Document" });
+  assignIn(query, { _schemaName: 'Document' });
 
-  Utils.runDataQuery('Document',
-    args.swagger.params.auth_payload.client_roles,
-    args.swagger.params.auth_payload.idir_user_guid,
-    query,
-    ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
-    null, // sort warmup
-    null, // sort
-    null, // skip
-    null, // limit
-    false) // count
-    .then(function (data) {
-      if (data && data.length === 1) {
-        var blob = data[0];
+  try {
+    const data = await Utils.runDataQuery(
+      'Document',
+      args.swagger.params.auth_payload.client_roles,
+      args.swagger.params.auth_payload.idir_user_guid,
+      query,
+      ['internalURL', 'documentFileName', 'internalMime', 'internalExt'], // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      false, // count
+    );
 
-        var fileName = blob.documentFileName;
-        var fileType = blob.internalExt;
-        if (fileName.slice(- fileType.length) !== fileType) {
-          fileName = fileName + '.' + fileType;
-        }
-        var fileMeta;
+    if (data && data.length === 1) {
+      const blob = data[0];
 
-        // check if the file exists in Minio
-        return MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL)
-          .then(function (objectMeta) {
-            fileMeta = objectMeta;
-            // get the download URL
-            return MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
-          }, function () {
-            return Actions.sendResponse(res, 404, {});
-          })
-          .then(function (docURL) {
-            Utils.recordAction('Download', 'Document', args.swagger.params.auth_payload.preferred_username, args.swagger.params.docId && args.swagger.params.docId.value ? args.swagger.params.docId.value : null);
-            // stream file from Minio to client
-            res.setHeader('Content-Length', fileMeta.size);
-            res.setHeader('Content-Type', fileMeta.metaData['content-type']);
-            res.setHeader('Content-Disposition', 'attachment;filename="' + fileName + '"');
-            return rp(docURL).pipe(res);
-          });
-      } else {
-        return Actions.sendResponse(res, 404, {});
+      let fileName = blob.documentFileName;
+      const fileType = blob.internalExt;
+      if (!fileName.endsWith(fileType)) {
+        fileName = `${fileName}.${fileType}`;
       }
-    });
-};
 
-exports.protectedOpen = async function (args, res) {
+      // check if the file exists in Minio
+      const fileMeta = await MinioController.statObject(
+        MinioController.BUCKETS.DOCUMENTS_BUCKET,
+        blob.internalURL,
+      );
+      // get the download URL
+      const docURL = await MinioController.getPresignedGETUrl(
+        MinioController.BUCKETS.DOCUMENTS_BUCKET,
+        blob.internalURL,
+      );
+
+      Utils.recordAction(
+        'Download',
+        'Document',
+        args.swagger.params.auth_payload.preferred_username,
+        args.swagger.params.docId && args.swagger.params.docId.value
+          ? args.swagger.params.docId.value
+          : null,
+      );
+
+      // stream file from Minio to client
+      res.setHeader('Content-Length', fileMeta.size);
+      res.setHeader('Content-Type', fileMeta.metaData['content-type']);
+      res.setHeader('Content-Disposition', `attachment;filename="${fileName}"`);
+      return rp(docURL).pipe(res);
+    } else {
+      return Actions.sendResponse(res, 404, {});
+    }
+  } catch (error) {
+    defaultLog.error(error);
+    return Actions.sendResponse(res, 500, {});
+  }
+}
+
+exports.protectedOpen = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED OPEN');
 
-  // Use try/catch around everything to catch errors at every stage of the file request
-  // This allows us to fail gracefully when a file isn't found on the Minio server
   try {
-    // Build match query if on docId route
+    // Build match query
     let query = {};
-    if (args.swagger.params.docId?.value) {
-      query = Utils.buildQuery("_id", args.swagger.params.docId.value, query);
+    if (args.swagger.params.docId && args.swagger.params.docId.value) {
+      query = Utils.buildQuery('_id', args.swagger.params.docId.value, query);
     }
-    assignIn(query, { "_schemaName": "Document" });
+    assignIn(query, { _schemaName: 'Document' });
 
     const data = await Utils.runDataQuery(
       'Document',
       ['public'],
       false,
       query,
-      ["internalURL", "documentFileName", "internalMime", 'internalExt'], // Fields
+      ['internalURL', 'documentFileName', 'internalMime', 'internalExt'], // Fields
       null, // sort warmup
       null, // sort
       null, // skip
       null, // limit
-      false // count
+      false, // count
     );
 
     if (!data || data.length !== 1) {
@@ -414,178 +489,204 @@ exports.protectedOpen = async function (args, res) {
     }
 
     const blob = data[0];
-    let fileName = args.swagger.params.filename?.value || blob.documentFileName;
+
+    const requestedFilename =
+      args.swagger.params.filename && args.swagger.params.filename.value
+        ? args.swagger.params.filename.value
+        : null;
+
+    let fileName = requestedFilename || blob.documentFileName;
     const fileType = blob.internalExt;
     if (!fileName.endsWith(fileType)) {
-      fileName = fileName + '.' + fileType;
+      fileName = `${fileName}.${fileType}`;
     }
 
     defaultLog.info('Searching minio for file');
 
-    const fileMeta = await MinioController.statObject(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
+    const fileMeta = await MinioController.statObject(
+      MinioController.BUCKETS.DOCUMENTS_BUCKET,
+      blob.internalURL,
+    );
     defaultLog.info('file found:', fileMeta);
 
-    const docURL = await MinioController.getPresignedGETUrl(MinioController.BUCKETS.DOCUMENTS_BUCKET, blob.internalURL);
+    const docURL = await MinioController.getPresignedGETUrl(
+      MinioController.BUCKETS.DOCUMENTS_BUCKET,
+      blob.internalURL,
+    );
 
-    Utils.recordAction('Open', 'Document', args.swagger.params.auth_payload?.preferred_username, args.swagger.params.docId?.value || null);
+    Utils.recordAction(
+      'Open',
+      'Document',
+      args.swagger.params.auth_payload &&
+        args.swagger.params.auth_payload.preferred_username,
+      (args.swagger.params.docId && args.swagger.params.docId.value) || null,
+    );
+
     // stream file from Minio to client
     res.setHeader('Content-Length', fileMeta.size);
     res.setHeader('Content-Type', fileMeta.metaData['content-type']);
     res.setHeader('Content-Disposition', `inline;filename="${fileName}"`);
 
     return rp(docURL).pipe(res);
-
   } catch (error) {
     defaultLog.error('Error in protectedOpen:', error);
     if (!res.headersSent) {
-      if (error.code === 'NoSuchKey' || error.message?.includes('not found')) {
+      if (
+        error.code === 'NoSuchKey' ||
+        (error.message && error.message.includes('not found'))
+      ) {
         return Actions.sendResponse(res, 404, { message: 'File not found' });
       }
-      return Actions.sendResponse(res, 500, { message: 'Internal server error' });
+      return Actions.sendResponse(res, 500, {
+        message: 'Internal server error',
+      });
     }
-    // If headers already sent, don't try to send again
     res.end();
   }
 };
 
 //  Create a new document
-exports.protectedPost = async function (args, res, next) {
+exports.protectedPost = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED POST');
   try {
-    var project = args.swagger.params.project.value;
-    var _comment = args.swagger.params._comment.value;
-    var upfile = args.swagger.params.upfile.value;
-    var guid = intformat(generator.next(), 'dec');
-    var ext = mime.extension(args.swagger.params.upfile.value.mimetype);
-    var tempFilePath = uploadDir + guid + "." + ext;
-    Promise.resolve()
-      .then(function () {
-        if (ENABLE_VIRUS_SCANNING == 'true') {
-          return Utils.avScan(args.swagger.params.upfile.value.buffer);
-        } else {
-          return true;
-        }
-      })
-      .then(function (valid) {
-        if (!valid) {
-          defaultLog.warn("File failed virus check.");
-          return Actions.sendResponse(res, 400, { "message": "File failed virus check." });
-        } else {
-          fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
-          defaultLog.info('wrote file successfully.');
+    const project = args.swagger.params.project.value;
+    const _comment = args.swagger.params._comment.value;
+    const upfile = args.swagger.params.upfile.value;
+    const guid = intformat(generator.next(), 'dec');
+    const ext = mime.extension(args.swagger.params.upfile.value.mimetype);
+    const tempFilePath = `${uploadDir}${guid}.${ext}`;
 
-          MinioController.putDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET,
-            project,
-            args.swagger.params.documentFileName.value,
-            tempFilePath)
-            .then(async function (minioFile) {
-              defaultLog.info('File saved in minio. Now saving document in DB.');
+    const valid =
+      ENABLE_VIRUS_SCANNING === 'true'
+        ? await Utils.avScan(args.swagger.params.upfile.value.buffer)
+        : true;
 
-              // remove file from temp folder
-              fs.unlinkSync(tempFilePath);
+    if (!valid) {
+      defaultLog.warn('File failed virus check.');
+      return Actions.sendResponse(res, 400, {
+        message: 'File failed virus check.',
+      });
+    }
 
-              var Document = mongoose.model('Document');
-              var doc = new Document();
-              // Define security tag defaults
-              doc.project = mongoose.Types.ObjectId(project);
-              doc._comment = _comment;
-              doc._addedBy = args.swagger.params.auth_payload.preferred_username;
-              doc._createdDate = new Date();
-              doc.read = ['sysadmin', 'staff'];
-              doc.write = ['sysadmin', 'staff'];
-              doc.delete = ['sysadmin', 'staff'];
+    fs.writeFileSync(tempFilePath, args.swagger.params.upfile.value.buffer);
+    defaultLog.info('wrote file successfully.');
 
-              doc.documentFileName = args.swagger.params.documentFileName.value;
-              doc.alt = args.swagger.params.alt.value;
-              doc.internalOriginalName = args.swagger.params.internalOriginalName.value;
-              doc.internalURL = minioFile.path;
-              doc.internalExt = minioFile.extension;
-              doc.internalSize = upfile.size;
-              doc.passedAVCheck = true;
-              doc.internalMime = upfile.mimetype;
+    const minioFile = await MinioController.putDocument(
+      MinioController.BUCKETS.DOCUMENTS_BUCKET,
+      project,
+      args.swagger.params.documentFileName.value,
+      tempFilePath,
+    );
+    defaultLog.info('File saved in minio. Now saving document in DB.');
 
-              doc.documentSource = args.swagger.params.documentSource.value;
-              doc.section = args.swagger.params.section.value === "null" ? null : args.swagger.params.section.value;
+    // remove file from temp folder
+    try {
+      fs.unlinkSync(tempFilePath);
+    } catch (e) {
+      defaultLog.warn('Could not clean temp file:', e);
+    }
 
-              doc.displayName = args.swagger.params.displayName.value;
-              if (args.swagger.params.eaoStatus && args.swagger.params.eaoStatus.value) {
-                doc.eaoStatus = args.swagger.params.eaoStatus.value;
-                if (args.swagger.params.eaoStatus.value == 'Published') {
-                  doc.read.push('public');
-                }
-              }
-              doc.documentAuthor = args.swagger.params.documentAuthor.value;
+    const Document = mongoose.model('Document');
+    const params = args.swagger.params;
+    const doc = new Document({
+      project: mongoose.Types.ObjectId(project),
+      _comment: _comment,
+      _addedBy: params.auth_payload.preferred_username,
+      _createdDate: new Date(),
+      read: ['sysadmin', 'staff'],
+      write: ['sysadmin', 'staff'],
+      delete: ['sysadmin', 'staff'],
+      documentFileName: params.documentFileName.value,
+      alt: params.alt.value,
+      internalOriginalName: params.internalOriginalName.value,
+      internalURL: minioFile.path,
+      internalExt: minioFile.extension,
+      internalSize: upfile.size,
+      passedAVCheck: true,
+      internalMime: upfile.mimetype,
+      documentSource: params.documentSource.value,
+      section: params.section.value === 'null' ? null : params.section.value,
+      displayName: params.displayName.value,
+      eaoStatus: (params.eaoStatus && params.eaoStatus.value) || null,
+      documentAuthor: params.documentAuthor.value,
+      dateUploaded: params.dateUploaded.value,
+      datePosted: params.datePosted.value,
+      description: params.description.value,
+      projectPhase: params.projectPhase.value,
+    });
+    defaultLog.info('Mapped values to document');
 
-              doc.dateUploaded = args.swagger.params.dateUploaded.value;
-              doc.datePosted = args.swagger.params.datePosted.value;
-              doc.description = args.swagger.params.description.value;
-              doc.projectPhase = args.swagger.params.projectPhase.value;
+    if (params.eaoStatus && params.eaoStatus.value === 'Published') {
+      doc.read.push('public');
+    }
 
-              doc.save()
-                .then(function (d) {
-                  defaultLog.info("Saved new document object:", d._id);
-                  Utils.recordAction('Post', 'Document', args.swagger.params.auth_payload.preferred_username, d._id);
-                  return Actions.sendResponse(res, 200, d);
-                })
-                .catch(function (error) {
-                  defaultLog.error(error);
-                  // the model failed to be created - delete the document from minio so the database and minio remain in sync.
-                  MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
-                  return Actions.sendResponse(res, 400, error);
-                });
-            })
-        }
-      })
-      .catch(error => defaultLog.error(error));
+    const d = await doc.save();
+    defaultLog.info('Saved new document object:', d._id);
+    Utils.recordAction(
+      'Post',
+      'Document',
+      args.swagger.params.auth_payload.preferred_username,
+      d._id,
+    );
+    return Actions.sendResponse(res, 200, d);
   } catch (e) {
     defaultLog.error(e);
     // Delete the path details before we return to the caller.
-    delete e['path'];
+    delete e.path;
     return Actions.sendResponse(res, 500, e);
   }
 };
 
-exports.protectedPublish = async function (args, res) {
+exports.protectedPublish = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED PUBLISH');
-  var objId = args.swagger.params.docId.value;
-  defaultLog.info("Publish Document:", objId);
+  const objId = args.swagger.params.docId.value;
+  defaultLog.info('Publish Document:', objId);
 
-  var Document = require('mongoose').model('Document');
+  const Document = mongoose.model('Document');
   try {
-    var document = await Document.findOne({ _id: objId });
-    if (document) {
-      defaultLog.info("Document:", document);
-      document.eaoStatus = "Published";
-      var published = await Actions.publish(await document.save());
-      Utils.recordAction('Publish', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
-      return Actions.sendResponse(res, 200, published);
-    } else {
-      defaultLog.info("Couldn't find that document!");
-      return Actions.sendResponse(res, 404, e);
+    const document = await Document.findById(objId);
+    if (!document) {
+      defaultLog.info('Couldn’t find that document!');
+      return Actions.sendResponse(res, 404, { message: 'Document not found' });
     }
+    document.eaoStatus = 'Published';
+    document.section = document.section === '' ? undefined : document.section;
+    const saved = await document.save();
+    const published = await Actions.publish(saved);
+    Utils.recordAction(
+      'Publish',
+      'Document',
+      args.swagger.params.auth_payload.preferred_username,
+      objId,
+    );
+    return Actions.sendResponse(res, 200, published);
   } catch (e) {
+    defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
 };
 
-exports.protectedUnPublish = async function (args, res) {
+exports.protectedUnPublish = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED UNPUBLISH');
-  var objId = args.swagger.params.docId.value;
-  defaultLog.info("UnPublish Document:", objId);
-
-  var Document = require('mongoose').model('Document');
+  const objId = args.swagger.params.docId.value;
+  defaultLog.info('UnPublish Document:', objId);
+  const Document = mongoose.model('Document');
   try {
-    var document = await Document.findOne({ _id: objId });
-    if (document) {
-      document.eaoStatus = "Rejected";
-      var unPublished = await Actions.unPublish(await document.save());
-      Utils.recordAction('Unpublish', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
-      defaultLog.info("Published document:", objId);
-      return Actions.sendResponse(res, 200, unPublished);
-    } else {
-      defaultLog.info("Couldn't find that document!");
-      return Actions.sendResponse(res, 404, e);
+    const document = await Document.findById(objId);
+    if (!document) {
+      return Actions.sendResponse(res, 404, { message: 'Document not found' });
     }
+    document.eaoStatus = 'Rejected';
+    document.section = document.section === '' ? undefined : document.section;
+    const saved = await document.save();
+    const unPublished = await Actions.unPublish(saved);
+    Utils.recordAction(
+      'Unpublish',
+      'Document',
+      args.swagger.params.auth_payload.preferred_username,
+      objId,
+    );
+    return Actions.sendResponse(res, 200, unPublished);
   } catch (e) {
     defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
@@ -593,38 +694,44 @@ exports.protectedUnPublish = async function (args, res) {
 };
 
 // Update an existing document
-exports.protectedPut = async function (args, res) {
+exports.protectedPut = async (args, res) => {
+  const params = args.swagger.params;
   defaultLog.info('DOCUMENT PROTECTED PUT');
-  var objId = args.swagger.params.docId.value;
-  var obj = {};
+  const objId = params.docId.value;
   defaultLog.info('Put document:', objId);
 
-  obj._updatedBy = args.swagger.params.auth_payload.preferred_username;
+  const patch = {
+    _updatedBy: params.auth_payload.preferred_username,
+    displayName: params.displayName.value,
+    section: params.section.value === 'null' ? null : params.section.value,
+    alt: params.alt.value,
+    projectPhase: params.projectPhase.value,
+    dateUploaded: params.dateUploaded.value,
+    datePosted: params.datePosted.value,
+    description: params.description.value,
+    keywords: params.keywords.value,
+    eaoStatus: params.eaoStatus.value,
+    read: [
+      'staff',
+      'sysadmin',
+      params.eaoStatus.value === 'Published' ? 'public' : undefined,
+    ],
+  };
 
-  obj.displayName = args.swagger.params.displayName.value;
-  obj.section = args.swagger.params.section.value;
-  obj.alt = args.swagger.params.alt.value;
-
-  obj.projectPhase = args.swagger.params.projectPhase.value;
-
-  obj.dateUploaded = args.swagger.params.dateUploaded.value;
-  obj.datePosted = args.swagger.params.datePosted.value;
-  obj.description = args.swagger.params.description.value;
-  obj.keywords = args.swagger.params.keywords.value;
-  obj.section = args.swagger.params.section.value === "null" ? null : args.swagger.params.section.value;
-
-  obj.eaoStatus = args.swagger.params.eaoStatus.value;
-  if (args.swagger.params.eaoStatus.value === 'Published') {
-    obj.read = ['public', 'staff', 'sysadmin'];
-  } else if (args.swagger.params.eaoStatus.value === 'Rejected') {
-    obj.read = ['staff', 'sysadmin'];
-  }
-  var Document = mongoose.model('Document');
+  const Document = mongoose.model('Document');
 
   try {
-    var doc = await Document.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true });
+    const doc = await Document.findByIdAndUpdate(objId, patch, {
+      upsert: false,
+      new: true,
+    });
     if (doc) {
-      Utils.recordAction('put', 'document', args.swagger.params.auth_payload.preferred_username, objId);
+      Utils.recordAction(
+        'put',
+        'document',
+        args.swagger.params.auth_payload.preferred_username,
+        objId,
+      );
       defaultLog.info('Document updated:', objId);
       return Actions.sendResponse(res, 200, doc);
     } else {
@@ -635,22 +742,34 @@ exports.protectedPut = async function (args, res) {
     defaultLog.error(e);
     return Actions.sendResponse(res, 400, e);
   }
-}
+};
 
 //  Delete a Document
-exports.protectedDelete = async function (args, res) {
+exports.protectedDelete = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED DELETE');
-  var objId = args.swagger.params.docId.value;
-  defaultLog.info("Delete Document:", objId);
+  const objId = args.swagger.params.docId.value;
+  defaultLog.info('Delete Document:', objId);
 
-  var Document = require('mongoose').model('Document');
+  const Document = mongoose.model('Document');
   try {
-    var doc = await Document.findOneAndRemove({ _id: objId });
-    await MinioController.deleteDocument(MinioController.BUCKETS.DOCUMENTS_BUCKET, doc.project, doc.internalURL);
-    Utils.recordAction('Delete', 'Document', args.swagger.params.auth_payload.preferred_username, objId);
+    const doc = await Document.findByIdAndDelete(objId);
+    if (!doc) {
+      return Actions.sendResponse(res, 404, { message: 'Document not found' });
+    }
+    await MinioController.deleteDocument(
+      MinioController.BUCKETS.DOCUMENTS_BUCKET,
+      doc.project,
+      doc.internalURL,
+    );
+    Utils.recordAction(
+      'Delete',
+      'Document',
+      args.swagger.params.auth_payload.preferred_username,
+      objId,
+    );
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error("Error:", e);
+    defaultLog.error('Error:', e);
     return Actions.sendResponse(res, 400, e);
   }
 };

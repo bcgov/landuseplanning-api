@@ -1,106 +1,95 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const DatabaseCleaner = require('database-cleaner');
-const dbCleaner = new DatabaseCleaner('mongodb');
-const mongoose = require('mongoose');
-const mongooseOpts = require('../../config/mongoose_options').mongooseOptions;
-const mongoDbMemoryServer = require('mongodb-memory-server');
 const _ = require('lodash');
 
 const app = express();
-let mongoServer;
-mongoose.Promise = global.Promise;
-setupAppServer();
 
-jest.setTimeout(10000);
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 
-beforeAll(async () => {
-  mongoServer = new mongoDbMemoryServer.default({
-    instance: {},
-    binary: {
-      version: '3.2.21' // Mongo Version
-    }
-  });
-  const mongoUri = await mongoServer.getConnectionString();
-  await mongoose.connect(mongoUri, mongooseOpts, err => {
-    if (err) {
-      throw Error(err);
-    }
-  });
-});
+const DEFAULT_SEARCH_PARAMS = {
+  currentPage: { value: 1 },
+  pageSize: { value: 1000 },
+  // filtering toggles
+  isDeleted: { value: false },
+  // publish flags
+  isPublished: { value: undefined },
+  // tag-related
+  tags: { value: undefined },
+  // domain-specific filters
+  _commentPeriod: { value: undefined },
+  CommentId: { value: undefined },
+  // field selection
+  fields: undefined,
+  // text search
+  keyword: { value: undefined },
+};
 
-afterEach(done => {
-  if (mongoose.connection && mongoose.connection.db) {
-    dbCleaner.clean(mongoose.connection.db, () => {
-      done();
-    });
-  } else {
-    done();
-  }
-});
-
-afterAll(async () => {
-  await mongoose.disconnect();
-  await mongoServer.stop();
-});
-
-function setupAppServer() {
-  app.use(
-    bodyParser.urlencoded({
-      extended: true
-    })
-  );
-  app.use(bodyParser.json());
+function defaultProtectedParams(fieldNames, username = null) {
+  return {
+    auth_payload: {
+      scopes: ['sysadmin', 'public'],
+      preferred_username: username || 'idir\\test_user',
+    },
+    fields: { value: _.cloneDeep(fieldNames) },
+  };
 }
 
-function createSwaggerParams(fieldNames, additionalValues = {}, username = null) {
-  let defaultParams = defaultProtectedParams(fieldNames, username);
-  let swaggerObject = {
-    swagger: {
-      params: _.merge(defaultParams, additionalValues),
-      operation: {
-        'x-security-scopes': ['sysadmin', 'public']
-      }
-    }
+function defaultPublicParams(fieldNames) {
+  return {
+    fields: { value: _.cloneDeep(fieldNames) },
   };
-  return swaggerObject;
+}
+
+function mergeSwaggerParams(baseParams, additionalValues = {}) {
+  const normalizedAdditional = {};
+  _.forEach(additionalValues, (v, k) => {
+    normalizedAdditional[k] = _.has(v, 'value') ? v : { value: v };
+  });
+
+  return _.merge({}, DEFAULT_SEARCH_PARAMS, baseParams, normalizedAdditional);
+}
+
+function createSwaggerParams(
+  fieldNames,
+  additionalValues = {},
+  username = null,
+) {
+  const params = mergeSwaggerParams(
+    defaultProtectedParams(fieldNames, username),
+    additionalValues,
+  );
+  return {
+    swagger: {
+      params: params,
+      operation: {
+        'x-security-scopes': ['sysadmin', 'public'],
+      },
+    },
+  };
 }
 
 function createPublicSwaggerParams(fieldNames, additionalValues = {}) {
   let defaultParams = defaultPublicParams(fieldNames);
   let swaggerObject = {
     swagger: {
-      params: _.merge(defaultParams, additionalValues)
-    }
+      params: _.merge(defaultParams, additionalValues),
+    },
   };
   return swaggerObject;
 }
 
-function defaultProtectedParams(fieldNames, username = null) {
-  return {
-    auth_payload: {
-      scopes: ['sysadmin', 'public'],
-      // This value in the real world is pulled from the keycloak user. It will look something like
-      // idir/arwhilla
-      preferred_username: username
-    },
-    fields: {
-      value: _.cloneDeep(fieldNames)
-    }
-  };
-}
 function defaultPublicParams(fieldNames) {
   return {
     fields: {
-      value: _.cloneDeep(fieldNames)
-    }
+      value: _.cloneDeep(fieldNames),
+    },
   };
 }
 
 function buildParams(nameValueMapping) {
-  let paramObj = {};
-  _.mapKeys(nameValueMapping, function(value, key) {
-    paramObj[key] = { value: value };
+  const paramObj = {};
+  _.mapKeys(nameValueMapping, (value, key) => {
+    paramObj[key] = { value };
   });
   return paramObj;
 }

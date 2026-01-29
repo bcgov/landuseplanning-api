@@ -1,7 +1,8 @@
-const Schema = require('mongoose').Schema;
 const surveyLikert = require('./surveyLikert').schema;
 
-module.exports = require('../models')('SurveyQuestion', {
+module.exports = require('../models')(
+  'SurveyQuestion',
+  {
     type: { type: String, required: true },
     answerRequired: { type: Boolean, default: false },
     maxChars: { type: Number },
@@ -12,6 +13,8 @@ module.exports = require('../models')('SurveyQuestion', {
     questionText: { type: String },
     infoText: { type: String },
     docPickerText: { type: String },
-    emailText: { type: String},
-    phoneNumberText: { type: String }
-}, 'lup');
+    emailText: { type: String },
+    phoneNumberText: { type: String },
+  },
+  'lup',
+);

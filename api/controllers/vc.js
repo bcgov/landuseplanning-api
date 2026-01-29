@@ -1,109 +1,170 @@
-var auth = require("../helpers/auth");
-var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
-var mongoose = require('mongoose');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
-var tagList = [
-    'code',
-    'description',
-    'name',
-    'parent',
-    'pillar',
-    'project',
-    'stage',
-    'title',
-    'type'
+const _ = require('lodash');
+const defaultLog = require('winston').loggers.get('defaultLog');
+const mongoose = require('mongoose');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
+
+const tagList = [
+  'code',
+  'description',
+  'name',
+  'parent',
+  'pillar',
+  'project',
+  'stage',
+  'title',
+  'type',
 ];
 
-var getSanitizedFields = function (fields) {
-    return _.remove(fields, function (f) {
-        return (_.indexOf(tagList, f) !== -1);
-    });
-}
+const getSanitizedFields = (fields) => {
+  return _.remove(fields, (f) => {
+    return _.indexOf(tagList, f) !== -1;
+  });
+};
 
-exports.protectedOptions = function (args, res, rest) {
-    res.status(200).send();
+exports.protectedOptions = (args, res) => {
+  res.status(200).send();
 };
 
 //  Create a new vc
-exports.protectedPost = async function (args, res, next) {
-    var obj = args.swagger.params.vc.value;
+exports.protectedPost = async (args, res) => {
+  const obj = args.swagger.params.vc.value;
 
-    defaultLog.info("Incoming new object:", obj);
+  defaultLog.info('Incoming new object:', obj);
 
-    var Vc = mongoose.model('Vc');
-    var vc = new Vc(obj);
-    vc._schemaName = 'Vc';
-    vc.read = ['public', 'sysadmin', 'staff'];
-    vc.write = ['sysadmin', 'staff'];
-    vc.delete = ['sysadmin', 'staff'];
+  const Vc = mongoose.model('Vc');
+  const vc = new Vc({
+    ...obj,
+    _schemaName: 'Vc',
+    read: ['public', 'sysadmin', 'staff'],
+    write: ['sysadmin', 'staff'],
+    delete: ['sysadmin', 'staff'],
+  });
 
+  try {
     // Define security tag defaults
-    var theVc = await vc.save()
-    Utils.recordAction('Post', 'Vc', args.swagger.params.auth_payload.preferred_username, theVc._id);
+    const theVc = await vc.save();
+    Utils.recordAction(
+      'Post',
+      'Vc',
+      args.swagger.params.auth_payload.preferred_username,
+      theVc._id
+    );
     return Actions.sendResponse(res, 200, theVc);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
-exports.protectedGet = async function (args, res, next) {
-    var skip = null, limit = null, sort = {};
-    var query = {};
+exports.protectedGet = async (args, res) => {
+  let skip = null,
+    limit = null,
+    sort = {},
+    query = {};
+  const params = args.swagger.params;
 
-    if (args.swagger.params.vcId && args.swagger.params.vcId.value) {
-        query = Utils.buildQuery("_id", args.swagger.params.vcId.value, query);
-    }
-    if (args.swagger.params.projectId && args.swagger.params.projectId.value) {
-        _.assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.projectId.value) });
-    }
-    if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-        args.swagger.params.sortBy.value.forEach(function (value) {
-            var order_by = value.charAt(0) == '-' ? -1 : 1;
-            var sort_by = value.slice(1);
-            sort[sort_by] = order_by;
-        }, this);
-    }
-    var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
-    skip = processedParameters.skip;
-    limit = processedParameters.limit;
+  if (params.vcId && params.vcId.value) {
+    query = Utils.buildQuery('_id', params.vcId.value, query);
+  }
+  if (params.projectId && params.projectId.value) {
+    _.assignIn(query, {
+      project: mongoose.Types.ObjectId(params.projectId.value),
+    });
+  }
+  if (params.sortBy && params.sortBy.value) {
+    params.sortBy.value.forEach((value) => {
+      const order_by = value.charAt(0) == '-' ? -1 : 1;
+      const sort_by = value.slice(1);
+      sort[sort_by] = order_by;
+    });
+  }
 
-    // Set query type
-    _.assignIn(query, { "_schemaName": "Vc" });
+  const processedParameters = Utils.getSkipLimitParameters(
+    params.pageSize,
+    params.pageNum
+  );
+  skip = processedParameters.skip;
+  limit = processedParameters.limit;
 
-    var data = await Utils.runDataQuery('Vc',
-        args.swagger.params.auth_payload.client_roles,
-        query,
-        getSanitizedFields(args.swagger.params.fields.value), // Fields
-        null, // sort warmup
-        sort, // sort
-        skip, // skip
-        limit, // limit
-        true) // count
-    Utils.recordAction('Get', 'Vc', args.swagger.params.auth_payload.preferred_username, args.swagger.params.vcId && args.swagger.params.vcId.value ? args.swagger.params.vcId.value : null);
+  // Set query type
+  _.assignIn(query, { _schemaName: 'Vc' });
+
+  try {
+    const data = await Utils.runDataQuery(
+      'Vc',
+      params.auth_payload.client_roles,
+      params.auth_payload.idir_user_guid,
+      query,
+      getSanitizedFields(params.fields.value), // Fields
+      null, // sort warmup
+      sort, // sort
+      skip, // skip
+      limit, // limit
+      true // count
+    );
+    Utils.recordAction(
+      'Get',
+      'Vc',
+      params.auth_payload.preferred_username,
+      params.vcId && params.vcId.value
+        ? params.vcId.value
+        : null
+    );
     return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
 
-exports.protectedPut = async function (args, res, next) {
-    var objId = args.swagger.params.vcId.value;
-    defaultLog.info("ObjectID:", args.swagger.params.vcId.value);
-    var obj = args.swagger.params.cp.value;
+exports.protectedPut = async (args, res) => {
+  const objId = args.swagger.params.vcId.value;
+  defaultLog.info('ObjectID:', objId);
+  const obj = args.swagger.params.vc.value;
 
-    // Strip security tags - these will not be updated on this route.
-    delete obj.tags;
+  // Strip security tags - these will not be updated on this route.
+  delete obj.tags;
 
-    defaultLog.info("Incoming updated object:", obj);
+  defaultLog.info('Incoming updated object:', obj);
 
-    var valuedComponent = require('mongoose').model('Vc');
-    var data = await valuedComponent.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
-    Utils.recordAction('Put', 'Vc', args.swagger.params.auth_payload.preferred_username, objId);
+  const ValuedComponent = mongoose.model('Vc');
+
+  try {
+    const data = await ValuedComponent.findOneAndUpdate({ _id: objId }, obj, {
+      upsert: false,
+      new: true,
+    }).exec();
+    Utils.recordAction(
+      'Put',
+      'Vc',
+      args.swagger.params.auth_payload.preferred_username,
+      objId
+    );
     return Actions.sendResponse(res, 200, data);
-}
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
+};
 
-exports.protectedDelete = async function (args, res, next) {
-    var objId = args.swagger.params.vcId.value;
-    defaultLog.info("Delete Vc:", objId);
+exports.protectedDelete = async (args, res) => {
+  const objId = args.swagger.params.vcId.value;
+  defaultLog.info('Delete Vc:', objId);
 
-    var commentperiod = require('mongoose').model('Vc');
-    var data = await commentperiod.remove({ _id: objId }).exec();
-    Utils.recordAction('Delete', 'Vc', args.swagger.params.auth_payload.preferred_username, objId);
+  const Vc = mongoose.model('Vc');
+
+  try {
+    const data = await Vc.deleteOne({ _id: objId }).exec();
+    Utils.recordAction(
+      'Delete',
+      'Vc',
+      args.swagger.params.auth_payload.preferred_username,
+      objId
+    );
     return Actions.sendResponse(res, 200, data);
+  } catch (e) {
+    defaultLog.error(e);
+    return Actions.sendResponse(res, 400, e);
+  }
 };
