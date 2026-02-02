@@ -68,11 +68,7 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('User protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected get failed');
   }
 };
 
@@ -116,11 +112,12 @@ exports.protectedGetByEmail = async (args, res) => {
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('User protected get by email failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'User protected get by email failed',
+    );
   }
 };
 
@@ -153,11 +150,7 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new user:', u._id);
     return Actions.sendResponse(res, 200, u._id);
   } catch (e) {
-    defaultLog.error('User protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected post failed');
   }
 };
 
@@ -185,11 +178,7 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('User updated:', u && u._id ? u._id : objId);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {
-    defaultLog.error('User protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected put failed');
   }
 };
 
@@ -238,9 +227,9 @@ const removeUser = async (user) => {
       defaultLog.info('User deleted: ', user._id);
       return result;
     } catch (e) {
-      defaultLog.error('User remove failed', {
-        message: e && e.message,
-        stack: e && e.stack,
+      defaultLog.error('User remove failed',{
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
       });
       throw e;
     }
@@ -285,11 +274,12 @@ exports.protectedAddPermission = async (args, res) => {
     // Return all users to be able to update list of users in Permissions tab.
     return Actions.sendResponse(res, 200, users);
   } catch (e) {
-    defaultLog.error('User protected add permission failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'User protected add permission failed',
+    );
   }
 };
 
@@ -338,11 +328,12 @@ exports.protectedRemovePermission = async (args, res) => {
 
     return Actions.sendResponse(res, 200, users);
   } catch (e) {
-    defaultLog.error('User protected remove permission failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'User protected remove permission failed',
+    );
   }
 };
 
@@ -374,10 +365,6 @@ exports.protectedRemove = async (args, res) => {
     });
     return Actions.sendResponse(res, 200, updatedUsers);
   } catch (e) {
-    defaultLog.error('User protected remove failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(res, 500, e, 'User protected remove failed');
   }
 };

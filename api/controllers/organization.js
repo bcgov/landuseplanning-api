@@ -65,11 +65,7 @@ exports.publicGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Organization public get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e)
+    return Actions.sendResponse(res, 400, e, 'Organization public get failed');
   }
 };
 
@@ -116,11 +112,12 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new organization object:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
-    defaultLog.info('Organization protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Organization protected post failed',
+    );
   }
 };
 
@@ -160,11 +157,12 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Organization updated:', org);
     return Actions.sendResponse(res, 200, org);
   } catch (e) {
-    defaultLog.info('Organization protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Organization protected put failed',
+    );
   }
 }
 
@@ -192,11 +190,12 @@ exports.protectedPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Organization protected publish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Organization protected publish failed',
+    );
   }
 };
 
@@ -225,11 +224,12 @@ exports.protectedUnPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Organization protected unpublish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Organization protected unpublish failed',
+    );
   }
 };
 

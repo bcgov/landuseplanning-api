@@ -416,11 +416,7 @@ exports.protectedGet = async (args, res) => {
     }
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Comment protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Comment protected get failed.');
   }
 };
 
@@ -489,11 +485,7 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error('Comment protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Comment protected post failed');
   }
 };
 
@@ -544,11 +536,7 @@ exports.unProtectedPost = async (args, res) => {
     defaultLog.info('Saved new comment object:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error('Comment unprotected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Comment unprotected post failed');
   }
 };
 
@@ -592,11 +580,7 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.info('Comment protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(res, 500, e, 'Comment protected put failed');
   }
 };
 
@@ -629,11 +613,7 @@ exports.protectedStatus = async (args, res) => {
     defaultLog.info('Comment updated:', c._id);
     return Actions.sendResponse(res, 200, c);
   } catch (e) {
-    defaultLog.error('Comment protected status failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Comment protected status failed');
   }
 };
 

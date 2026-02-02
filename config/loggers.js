@@ -3,12 +3,13 @@ const util = require('util');
 const winston = require('winston');
 
 const { format, transports } = winston;
-const { combine, label, colorize, printf, splat, errors } = format;
+const { combine, printf, splat, errors, colorize, label: labelFmt } = format;
 
-/**
- * Per-record Vancouver timestamp formatter.
- * We use a small transform to compute the timestamp for each log line.
- */
+// Boolean flag parser
+const boolFromEnv = (v, def = false) =>
+  v == null ? def : /^(true|1|yes)$/i.test(String(v).trim());
+
+// Per-record Vancouver timestamp formatter
 const tzTimestamp = format((info) => {
   info.timestamp = new Date().toLocaleString('en-CA', {
     timeZone: 'America/Vancouver',
@@ -18,7 +19,7 @@ const tzTimestamp = format((info) => {
     hour12: false,
     hour: '2-digit',
     minute: '2-digit',
-    second: '2-digit',
+    second: '2-digit'
   });
   return info;
 });
@@ -49,26 +50,16 @@ const logFormat = printf(
         : '';
 
     const prefix = label ? `${label}` : '';
-    return `${prefix}[${timestamp}] ${level}: ${formattedMsg}${extra}`;
+    return `${prefix}[${timestamp}] [${level}] ${formattedMsg}${extra}`;
   }
 );
 
-/**
- * Parses boolean env flags more flexibly.
- */
-const boolFromEnv = (v, def = false) =>
-  v == null ? def : /^(true|1|yes)$/i.test(String(v).trim());
-
-/**
- * Modifies winston global config to add two loggers.
- *
- * @returns {void}
- */
+// Configure logger
 module.exports.configureAppLogging = () => {
+  // Default logger with no colour
   const silenceDefault = boolFromEnv(process.env.SILENCE_DEFAULT_LOG, false);
   const defaultLevel = process.env.LOG_LEVEL || 'info';
-
-  // Default logger
+  
   winston.loggers.add('defaultLog', {
     silent: silenceDefault,
     transports: [
@@ -79,15 +70,15 @@ module.exports.configureAppLogging = () => {
           splat(),
           tzTimestamp(),
           logFormat
-        ),
-      }),
-    ],
+        )
+      })
+    ]
   });
 
+   // Developer logger
   const devLevel = process.env.DEV_LOG_LEVEL || 'info';
   const devSilenced = boolFromEnv(process.env.SILENCE_DEV_LOG, false);
-
-  // Developer logger
+ 
   winston.loggers.add('devLog', {
     silent: devSilenced,
     transports: [
@@ -96,12 +87,12 @@ module.exports.configureAppLogging = () => {
         format: combine(
           errors({ stack: true }),
           splat(),
-          label({ label: 'DEV LOGGER ' }),
+          labelFmt({ label: 'DEV' }),
           colorize(),
           tzTimestamp(),
           logFormat
-        ),
-      }),
-    ],
+        )
+      })
+    ]
   });
 };

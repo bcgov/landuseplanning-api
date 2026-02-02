@@ -52,11 +52,7 @@ exports.protectedPost = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, theVc);
   } catch (e) {
-    defaultLog.error('VC protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'VC protected post failed');
   }
 };
 
@@ -116,11 +112,7 @@ exports.protectedGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('VC protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'VC protected get failed');
   }
 };
 
@@ -149,11 +141,7 @@ exports.protectedPut = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('VC protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'VC protected put failed');
   }
 };
 
@@ -173,10 +161,6 @@ exports.protectedDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('VC protected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'VC protected delete failed');
   }
 };

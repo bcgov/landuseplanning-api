@@ -93,8 +93,8 @@ exports.getDynamicSitemap = async (_, res) => {
     );
   } catch (e) {
     defaultLog.error('Error generating dynamic sitemap', {
-      message: e && e.message,
-      stack: e && e.stack,
+      status: e && (e.status || e.statusCode),
+      err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
     });
     res
       .status(500)

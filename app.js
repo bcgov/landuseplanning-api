@@ -84,60 +84,66 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   } catch (e) {
     // Fall through - uploads will continue to fail until this is resolved locally.
     defaultLog.info("Couldn't create upload folder.", {
-      message: e && e.message,
-      stack: e && e.stack,
+      status: e && (e.status || e.statusCode || undefined),
+      err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
     });
   }
   // Load up DB
   mongoose.set('strictQuery', false);
   const options = {
-      user: dbUsername,
-      pass: dbPassword,
-      maxPoolSize: 10, // Maintain up to 10 socket connections
-      connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
-      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+    user: dbUsername,
+    pass: dbPassword,
+    maxPoolSize: 10, // Maintain up to 10 socket connections
+    connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   };
   defaultLog.info('Connecting to:', dbConnection);
   mongoose.Promise = global.Promise;
-  mongoose.connect(dbConnection, options).then(
-      () => {
-          defaultLog.info('Database connected');
+  (mongoose.connect(dbConnection, options).then(() => {
+    defaultLog.info('Database connected');
 
-          // Load database models
-          defaultLog.info('loading db models.');
-          require('./api/helpers/models/audit');
-          require('./api/helpers/models/list');
-          require('./api/helpers/models/user');
-          require('./api/helpers/models/group');
-          require('./api/helpers/models/pin');
-          require('./api/helpers/models/organization');
-          require('./api/helpers/models/vc');
-          require('./api/helpers/models/project');
-          require('./api/helpers/models/recentActivity');
-          require('./api/helpers/models/survey');
-          require('./api/helpers/models/surveyQuestion');
-          require('./api/helpers/models/surveyLikert');
-          require('./api/helpers/models/surveyQuestionAnswer');
-          require('./api/helpers/models/surveyResponse');
-          require('./api/helpers/models/document');
-          require('./api/helpers/models/externalLink');
-          require('./api/helpers/models/documentSection');
-          require('./api/helpers/models/comment');
-          require('./api/helpers/models/commentperiod');
-          require('./api/helpers/models/topic');
-          require('./api/helpers/models/emailSubscribe');
-          defaultLog.info('db model loading done.');
+    // Load database models
+    defaultLog.info('loading db models.');
+    require('./api/helpers/models/audit');
+    require('./api/helpers/models/list');
+    require('./api/helpers/models/user');
+    require('./api/helpers/models/group');
+    require('./api/helpers/models/pin');
+    require('./api/helpers/models/organization');
+    require('./api/helpers/models/vc');
+    require('./api/helpers/models/project');
+    require('./api/helpers/models/recentActivity');
+    require('./api/helpers/models/survey');
+    require('./api/helpers/models/surveyQuestion');
+    require('./api/helpers/models/surveyLikert');
+    require('./api/helpers/models/surveyQuestionAnswer');
+    require('./api/helpers/models/surveyResponse');
+    require('./api/helpers/models/document');
+    require('./api/helpers/models/externalLink');
+    require('./api/helpers/models/documentSection');
+    require('./api/helpers/models/comment');
+    require('./api/helpers/models/commentperiod');
+    require('./api/helpers/models/topic');
+    require('./api/helpers/models/emailSubscribe');
+    defaultLog.info('db model loading done.');
 
-          // Build text index.
-          databaseIndexes.generateTextIndex();
+    // Build text index.
+    databaseIndexes.generateTextIndex();
 
-          app.listen(3000, '0.0.0.0', function () {
-              defaultLog.info('Started server on port 3000');
-          });
-      },
-      (err) => {
-          defaultLog.info('err:', err);
-          return;
-      }
-  );
+    // Fix unique email index bug.
+    databaseIndexes.fixEmailIndex();
+
+    app.listen(3000, '0.0.0.0', function () {
+      defaultLog.info('Started server on port 3000');
+    });
+  }),
+    (e) => {
+      defaultLog.info({
+        details: 'Failed to initialize middleware',
+        status: e && (e.status || e.statusCode || undefined),
+        message: e && e.message,
+        stack: e && e.stack,
+      });
+      return;
+    });
 });

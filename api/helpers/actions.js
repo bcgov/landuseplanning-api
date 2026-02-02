@@ -1,6 +1,8 @@
 'use strict';
 
 const { find, isEqual, remove } = require('lodash');
+const winston = require('winston');
+const defaultLog = winston.loggers.get('defaultLog');
 
 exports.isPublished = (o) => {
   if (!o) return undefined;
@@ -67,60 +69,72 @@ exports.delete = async (o) => {
   } catch (e) {
     throw {
       code: 400,
-      message: e && e.message ? ermessage : String(e),
+      message: e && e.message ? e.message : String(e),
     };
   }
 };
 
-// Check if there is an error or stack
-function isErrorLike(value) {
-  if (!value || typeof value !== 'object') return false;
-  return (value instanceof Error) || ('stack' in value && 'message' in value);
-}
-
 // Sanitize errors for client
-function toSafeClientError(code, err) {
-  if (Number(code) >= 500) {
-    // 5XX: Do not leak details
-    return { code, message: 'Internal server error' };
+const toSafeClientError = (code, e) => {
+  const status = Number(code);
+  let message = (e && e.message) || 'Unknown error';
+  if (status >= 500) {
+    // 500 level: Do not leak details
+    message = 'Internal server error';
+  } else if (status >= 400 && status < 500) {
+    // 400 level: Safe for users
+    message =
+      (e && typeof e.message === 'string' && e.message.trim()) ||
+      'Request failed';
   }
-  // 4XX: Safe for users
-  const message =
-    (err && typeof err.message === 'string' && err.message.trim()) ||
-    'Request failed';
   return { code, message };
-}
+};
 
 // Send a response to the client
-exports.sendResponse = function (res, code, obj) {
+exports.sendResponse = (res, code, obj, details = '') => {
+  const isError =
+    obj &&
+    typeof obj === 'object' &&
+    (obj instanceof Error || ('stack' in obj && 'message' in obj));
+
+  // Prefer error object status code, then code argument, then default value
+  const status =
+    Number((obj && (obj.status || obj.statusCode)) || code) ||
+    (isError ? 500 : 200);
+    
   try {
-    if (isErrorLike(obj)) {
-      try {
-        if (typeof defaultLog?.error === 'function') {
-          defaultLog.error('Error sent to client (sanitized)', {
-            status: code,
-            message: obj.message,
-            stack: obj.stack,
-            name: obj.name,
-            code: obj.code,
-          });
-        }
-      } catch (_) { /* Avoid breaking response */ }
-      const safe = toSafeClientError(code, obj);
-      return res.status(code).json(safe);
+    // Let regular responses pass through
+    if (status === 204 && !isError) {
+      return res.status(204).end();
+    } else if (status < 400 && !isError) {
+      return res.status(status).json(obj);
     }
 
-    // Non-error payloads pass through
-    return res.status(code).json(obj);
-  } catch (sendErr) {
-      try {
-        defaultLog.error('sendResponse failed', {
-          message: sendErr?.message,
-          stack: sendErr?.stack,
-          original: obj,
-        });
-      } catch (_) { /* Avoid breaking response */ }
-    return res.status(500).json({ code: 500, message: 'Internal server error' });
+    // Log errors
+    const errorLogObj = {
+      status: status,
+      err: { name: obj && obj.name, message: obj && obj.message, stack: obj && obj.stack },
+    };
+    errorLogObj.stack =
+      (status >= 500 || isError) && obj ? obj.stack : undefined;
+    if (status < 500) {
+      defaultLog.warn(details, errorLogObj);
+    } else {
+      defaultLog.error(details, errorLogObj);
+    }
+
+    // Send a safe response
+    const safe = toSafeClientError(status, obj);
+    return res.status(status).json(safe);
+  } catch (re) {
+    defaultLog.error('Failed to send a response to the user', {
+      message: re && re.message,
+      stack: re && re.stack,
+      original: obj,
+    });
+    return res
+      .status(500)
+      .json({ code: 500, message: 'Internal server error' });
   }
 };
 

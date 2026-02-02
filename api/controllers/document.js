@@ -112,11 +112,7 @@ exports.publicGet = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Document public get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Document public get failed');
   }
 };
 
@@ -157,8 +153,8 @@ exports.unProtectedPost = async (args, res) => {
       fs.unlinkSync(tempFilePath);
     } catch (e) {
       defaultLog.warn('Could not clean temp file', {
-        message: e && e.message,
-        stack: e && e.stack,
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
       });
     }
 
@@ -204,13 +200,14 @@ exports.unProtectedPost = async (args, res) => {
     Utils.recordAction('Post', 'Document', 'public', d._id);
     return Actions.sendResponse(res, 200, d);
   } catch (e) {
-    defaultLog.error('Document unprotected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    // Delete the path details before we return to the caller.
-    delete e.path;
-    return Actions.sendResponse(res, 400, e);
+      // Delete the path details before we return to the caller.
+      delete e.path;
+      return Actions.sendResponse(
+        res,
+        400,
+        e,
+        'Document unprotected post failed',
+      );
   }
 };
 
@@ -267,11 +264,7 @@ exports.protectedHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.error('Document protected head failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Document protected head failed');
   }
 }
 
@@ -323,11 +316,7 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got document(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Document protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Document protected get failed');
   }
 }
 
@@ -398,11 +387,12 @@ exports.publicDownload = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Document public download failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, {});
+    return Actions.sendResponse(
+      res,
+      500,
+      {},
+      'Document public download failed',
+    );
   }
 }
 
@@ -473,11 +463,12 @@ exports.protectedDownload = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Document protected download failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, {});
+    return Actions.sendResponse(
+      res,
+      500,
+      {},
+      'Document protected download failed',
+    );
   }
 }
 
@@ -550,21 +541,23 @@ exports.protectedOpen = async (args, res) => {
 
     return rp(docURL).pipe(res);
   } catch (e) {
-    defaultLog.error('Document protected open failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
+    const errorDetails = 'Document protected open failed';
+    const statusCode =
+      e &&
+      (e.code === 'NoSuchKey' || (e.message && e.message.includes('not found')))
+        ? 404
+        : 500;
     if (!res.headersSent) {
-      if (
-        e.code === 'NoSuchKey' ||
-        (e.message && e.message.includes('not found'))
-      ) {
-        return Actions.sendResponse(res, 404, { message: 'File not found' });
-      }
-      return Actions.sendResponse(res, 500, {
-        message: 'Internal server error',
+      return Actions.sendResponse(res, statusCode, e, errorDetails);
+    } else {
+      defaultLog.error({
+        details: errorDetails,
+        status: statusCode,
+        message: e && e.message,
+        stack: e && e.stack,
       });
     }
+
     res.end();
   }
 };
@@ -607,7 +600,9 @@ exports.protectedPost = async (args, res) => {
     try {
       fs.unlinkSync(tempFilePath);
     } catch (e) {
-      defaultLog.warn('Could not clean temp file', {
+      defaultLog.warn({
+        details: 'Could not clean temp file',
+        status: e && (e.status || e.statusCode || undefined),
         message: e && e.message,
         stack: e && e.stack,
       });
@@ -657,13 +652,9 @@ exports.protectedPost = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, d);
   } catch (e) {
-    defaultLog.error('Document protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
     // Delete the path details before we return to the caller.
     delete e.path;
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(res, 500, e, 'Document protected post failed');
   }
 };
 
@@ -691,11 +682,12 @@ exports.protectedPublish = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, published);
   } catch (e) {
-    defaultLog.error('Document protected publish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document protected publish failed',
+    );
   }
 };
 
@@ -721,11 +713,12 @@ exports.protectedUnPublish = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, unPublished);
   } catch (e) {
-    defaultLog.error('Document protected unpublish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document protected unpublish failed',
+    );
   }
 };
 
@@ -775,11 +768,7 @@ exports.protectedPut = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Document protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Document protected put failed');
   }
 };
 
@@ -808,10 +797,11 @@ exports.protectedDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error('Document protected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document protected delete failed',
+    );
   }
 };

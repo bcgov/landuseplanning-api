@@ -113,11 +113,12 @@ exports.publicHead = async (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (e) {
-      defaultLog.error('Document section protected head failed', {
-        message: e && e.message,
-        stack: e && e.stack,
-      });
-      return Actions.sendResponse(res, 400, e);
+      return Actions.sendResponse(
+        res,
+        400,
+        e,
+        'Document section protected head failed',
+      );
     }
   }
 
@@ -164,11 +165,7 @@ exports.publicHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.error('Project public head failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project public head failed');
   }
 };
 
@@ -210,11 +207,12 @@ exports.publicGet = async (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (e) {
-      defaultLog.info('Error getting projects, project public get failed.', {
-        message: e && e.message,
-        stack: e && e.stack,
-      });
-      return Actions.sendResponse(res, 400, e);
+      return Actions.sendResponse(
+        res,
+        400,
+        e,
+        'Error getting projects, project public get failed.',
+      );
     }
   }
 
@@ -263,11 +261,7 @@ exports.publicGet = async (args, res) => {
     defaultLog.info('Got projects: ', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Project public get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project public get failed');
   }
 };
 
@@ -338,11 +332,12 @@ exports.protectedGet = async (args, res) => {
       // Enable Count
       count = true;
     } catch (e) {
-      defaultLog.error('Error getting projects in project protected get.', {
-        message: e && e.message,
-        stack: e && e.stack,
-      });
-      return Actions.sendResponse(res, 400, e);
+      return Actions.sendResponse(
+        res,
+        400,
+        e,
+        'Error getting projects in project protected get.',
+      );
     }
   }
 
@@ -385,11 +380,7 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got project(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Project protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project protected get failed');
   }
 };
 
@@ -416,11 +407,7 @@ exports.protectedHead = async (args, res) => {
     try {
       query = addStandardQueryFilters(query, args);
     } catch (e) {
-      defaultLog.error('Project protected head failed', {
-        message: e && e.message,
-        stack: e && e.stack,
-      });
-      return Actions.sendResponse(res, 400, e);
+      return Actions.sendResponse(res, 400, e, 'Project protected head failed');
     }
   }
 
@@ -472,11 +459,7 @@ exports.protectedHead = async (args, res) => {
       return Actions.sendResponse(res, 404, data);
     }
   } catch (e) {
-    defaultLog.error('Project protected head failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project protected head failed');
   }
 };
 
@@ -510,11 +493,7 @@ exports.protectedDelete = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Project protected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project protected delete failed');
   }
 };
 
@@ -551,11 +530,7 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Created new project: ', theProject._id);
     return Actions.sendResponse(res, 200, theProject);
   } catch (e) {
-    defaultLog.error('Project protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'Project protected post failed');
   }
 };
 
@@ -588,11 +563,12 @@ exports.protectedPinDelete = async (args, res) => {
     defaultLog.info('Deleted project pin: ', pinId);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Project protected pin delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 404, {});
+    return Actions.sendResponse(
+      res,
+      404,
+      e,
+      'Project protected pin delete failed',
+    );
   }
 };
 
@@ -685,16 +661,21 @@ const handleGetPins = async (
         );
         return Actions.sendResponse(res, 200, orgData);
       } catch (e) {
-        defaultLog.error('Project handle get pins failed', {
-          message: e && e.message,
-          stack: e && e.stack,
-        });
-        return Actions.sendResponse(res, 400, e);
+        return Actions.sendResponse(
+          res,
+          400,
+          e,
+          'Project handle get pins failed',
+        );
       }
     }
   } else {
-    defaultLog.error('Error getting project');
-    return Actions.sendResponse(res, 400, 'error');
+    return Actions.sendResponse(
+      res,
+      400,
+      new Error('Error getting project'),
+      'Project ID is not valid in project handle get pins.',
+    );
   }
 };
 
@@ -803,11 +784,12 @@ exports.protectedDeleteGroupMembers = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.info('Project protected delete group members failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 404, {});
+    return Actions.sendResponse(
+      res,
+      404,
+      {},
+      'Project protected delete group members failed',
+    );
   }
 };
 
@@ -946,15 +928,21 @@ const handleGetGroupMembers = async (
         Utils.recordAction('Get', 'GroupMember', username);
         return Actions.sendResponse(res, 200, groupData);
       } catch (e) {
-        defaultLog.info('Project handle get group members failed', {
-          message: e && e.message,
-          stack: e && e.stack,
-        });
-        return Actions.sendResponse(res, 400, e);
+        return Actions.sendResponse(
+          res,
+          400,
+          e,
+          'Project handle get group members failed',
+        );
       }
     }
   } else {
-    return Actions.sendResponse(res, 400, 'error');
+    return Actions.sendResponse(
+      res,
+      400,
+      new Error('Unable to find group members.'),
+      'Invalid group ID in project handle get group members.',
+    );
   }
 };
 
@@ -986,11 +974,12 @@ exports.protectedAddGroup = async (args, res) => {
     defaultLog.info('Saved new group object:', d);
     return Actions.sendResponse(res, 200, d);
   } catch (e) {
-    defaultLog.error('Project protected add group failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Project protected add group failed',
+    );
   }
 };
 
@@ -1014,11 +1003,12 @@ exports.protectedGroupPut = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, group);
   } catch (e) {
-    defaultLog.error('Project protected group put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Project protected group put failed',
+    );
   }
 };
 
@@ -1039,11 +1029,12 @@ exports.protectedGroupDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, {});
   } catch (e) {
-    defaultLog.error('Project protected group delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Project protected group delete failed',
+    );
   }
 };
 
@@ -1141,11 +1132,12 @@ exports.protectedPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Project protected publish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Project protected publish failed',
+    );
   }
 };
 
@@ -1172,11 +1164,12 @@ exports.protectedUnPublish = async (args, res) => {
       return Actions.sendResponse(res, 404, {});
     }
   } catch (e) {
-    defaultLog.error('Project protected unpublish failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, e);
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Project protected unpublish failed',
+    );
   }
 };
 

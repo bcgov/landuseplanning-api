@@ -38,11 +38,7 @@ exports.protectedPost = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, saved);
   } catch (e) {
-    defaultLog.error('List protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'List protected post failed');
   }
 };
 
@@ -104,11 +100,7 @@ exports.protectedGet = async (args, res) => {
 
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('List protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'List protected get failed');
   }
 };
 
@@ -138,11 +130,7 @@ exports.protectedPut = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, updated);
   } catch (e) {
-    defaultLog.error('List protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'List protected put failed');
   }
 };
 
@@ -162,10 +150,6 @@ exports.protectedDelete = async (args, res) => {
     );
     return Actions.sendResponse(res, 200, result);
   } catch (e) {
-    defaultLog.error('List protected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'List protected delete failed');
   }
 };

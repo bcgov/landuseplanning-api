@@ -116,12 +116,12 @@ exports.unProtectedPost = async (args, res) => {
     requestedProjectId = mongoose.Types.ObjectId(subscriptionRequest.project);
   } catch (e) {
     defaultLog.error(
-      'Invalid project identifier supplied for subscription, email subscribe unprotected post failed.',
+      'Invalid project ID supplied for subscription, email subscribe unprotected post failed.',
       {
         email: requestedEmail,
         project: subscriptionRequest.project,
-        message: e && e.message,
-        stack: e && e.stack,
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
       },
     );
     return sendGenericSuccess();
@@ -202,9 +202,9 @@ exports.unProtectedPost = async (args, res) => {
           subscriptionId: subscription._id
         });
       } else {
-        defaultLog.info('Confirmation email recently sent; skipping resend', {
+        defaultLog.info('Confirmation email recently sent, skipping resend', {
           subscriptionId: subscription._id,
-          lastSent: subscription.dateSubscribed
+          lastSent: subscription.dateSubscribed,
         });
       }
 
@@ -235,11 +235,12 @@ exports.unProtectedPost = async (args, res) => {
     return sendGenericSuccess();
 
   } catch (e) {
-    defaultLog.error('Email subscribe unprotected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Email subscribe unprotected post failed',
+    );
   }
 };
 
@@ -309,14 +310,12 @@ exports.unProtectedPut = async (args, res) => {
     return Actions.sendResponse(res, 200, { message: 'Subscription confirmed' });
 
   } catch (e) {
-    defaultLog.error(
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
       'Error confirming email subscription, email subscribe unprotected put failed.',
-      {
-        message: e && e.message,
-        stack: e && e.stack,
-      },
     );
-    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
   }
 };
 
@@ -350,11 +349,12 @@ exports.unProtectedDelete = async (args, res /*, next */) => {
     }
     return Actions.sendResponse(res, 200, es || {});
   } catch (e) {
-    defaultLog.error('Email subscribe unprotected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Email subscribe unprotected delete failed',
+    );
   }
 }
 
@@ -456,11 +456,12 @@ exports.protectedGet = async (args, res /*, next */) => {
     defaultLog.info('Got email subscribers:', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Email subscribe protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Email subscribe protected get failed',
+    );
   }
 };
 
@@ -516,14 +517,12 @@ exports.protectedDelete = async (args, res) => {
           defaultLog.info('Email deleted from one project:', es);
           return Actions.sendResponse(res, 200, es);
         } catch (e) {
-          defaultLog.error(
+          return Actions.sendResponse(
+            res,
+            500,
+            e,
             'Error removing user subscription from project, email subscribe protected delete failed.',
-            {
-              message: e && e.message,
-              stack: e && e.stack,
-            },
           );
-          return Actions.sendResponse(res, 500, e);
         }
       } else {
         // delete email object
@@ -538,14 +537,12 @@ exports.protectedDelete = async (args, res) => {
           defaultLog.info('Email deleted from system:', emailId);
           return Actions.sendResponse(res, 200, es);
         } catch (e) {
-          defaultLog.error(
+          return Actions.sendResponse(
+            res,
+            500,
+            e,
             'Error deleting email subscription entry, email subscribe protected delete failed.',
-            {
-              message: e && e.message,
-              stack: e && e.stack,
-            },
           );
-          return Actions.sendResponse(res, 500, e);
         }
       }
     } else {
@@ -557,14 +554,12 @@ exports.protectedDelete = async (args, res) => {
       return Actions.sendResponse(res, 404, 'Project ID not found');
     }
   } catch (e) {
-    defaultLog.error(
+    return Actions.sendResponse(
+      res,
+      404,
+      e,
       'Error finding email subscribe object in email subscribe protected delete.',
-      {
-        message: e && e.message,
-        stack: e && e.stack,
-      },
     );
-    return Actions.sendResponse(res, 404, e);
   }
 }
 
@@ -654,16 +649,12 @@ exports.handleContactFormResponse = async (args, res) => {
         defaultLog.info('File passed virus scan:', result.file.originalname);
       });
     } catch (e) {
-      defaultLog.error(
-        'Error during virus scanning in email subscribe handle contact form response.',
-        {
-          message: e && e.message,
-          stack: e && e.stack,
-        },
+      return Actions.sendResponse(
+        res,
+        500,
+        e,
+        'Virus scan failed unexpectedly.',
       );
-      return Actions.sendResponse(res, 500, {
-        message: 'Virus scan failed unexpectedly.',
-      });
     }
   }
 
@@ -690,13 +681,11 @@ exports.handleContactFormResponse = async (args, res) => {
     await Email.handleContactFormResponse(projectName, contactForm, recipients);
     return Actions.sendResponse(res, 200, true);
   } catch (e) {
-    defaultLog.error(
+    return Actions.sendResponse(
+      res,
+      400,
+      false,
       'Error sending email in email subscribe handle contact form response.',
-      {
-        message: e && e.message,
-        stack: e && e.stack,
-      },
     );
-    return Actions.sendResponse(res, 400, false);
   }
 };

@@ -118,11 +118,12 @@ exports.publicGet = async (_unused, res) => {
       return Actions.sendResponse(res, 200, data);
     }
   } catch (e) {
-    defaultLog.error('Recent activity public get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Recent activity public get failed',
+    );
   }
 };
 
@@ -168,11 +169,12 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got recent activities', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error('Recent activity protected get failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Recent activity protected get failed',
+    );
   }
 };
 
@@ -213,11 +215,12 @@ exports.protectedDelete = async (args, res) => {
       return Actions.sendResponse(res, 400, {});
     }
   } catch (e) {
-    defaultLog.error('Recent activity protected delete failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Recent activity protected delete failed',
+    );
   }
 };
 
@@ -251,11 +254,12 @@ exports.protectedPost = async (args, res) => {
     defaultLog.info('Saved new RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error('Recent activity protected post failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Recent activity protected post failed',
+    );
   }
 };
 
@@ -288,10 +292,11 @@ exports.protectedPut = async (args, res) => {
     defaultLog.info('Updated RecentActivity object:', rec._id);
     return Actions.sendResponse(res, 200, rec);
   } catch (e) {
-    defaultLog.error('Recent activity protected put failed', {
-      message: e && e.message,
-      stack: e && e.stack,
-    });
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Recent activity protected put failed',
+    );
   }
 };

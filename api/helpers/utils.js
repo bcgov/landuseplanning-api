@@ -142,8 +142,8 @@ exports.runDataQuery = async (
       projectPermissions = await getUserProjectPermissions(userGuid);
     } catch (e) {
       defaultLog.error('Error fetching user project permissions', {
-        message: e && e.message,
-        stack: e && e.stack,
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
       });
     }
   }

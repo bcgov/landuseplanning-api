@@ -2,6 +2,8 @@
 
 const minio = require('minio');
 const path = require('path');
+const Actions = require('./actions')
+const defaultLog = require('winston').loggers.get('defaultLog');
 
 /**
  * The Minio client which facilitates the connection to Minio, and through which all calls should be made.
@@ -149,9 +151,9 @@ const statObject = async (bucketName, objectName) => {
     return stat;
   } catch (e) {
     defaultLog.error('Unable to get metadata for the specified file from minio client', {
-      message: e && e.message,
-      stack: e && e.stack,
-    })
+      status: e && (e.status || e.statusCode),
+      err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
+    });
     return undefined;
   }
 };
@@ -174,11 +176,7 @@ const asHttpRequest = {
       );
       return res.json(result);
     } catch (e) {
-      defaultLog.error('Minio delete document failed', {
-        message: e && e.message,
-        stack: e && e.stack,
-      });
-      return Actions.sendResponse(res, 400, e);
+      return Actions.sendResponse(res, 400, e, 'Minio delete document failed');
     }
   },
 };

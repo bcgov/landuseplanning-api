@@ -1,4 +1,4 @@
-### Jan 28, 2026
+### Feb 2, 2026
 * Modernized the API to meet MongoDB and Mongoose Requirements [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
     * Updated target MongoDB version to 6.0.13
     * Updated Mongoose to version 6.13.8
@@ -17,6 +17,10 @@
         * Updated README.md file with local db upgrade instructions
     * Updated server responses to filter out error data for security
     * Updated several catch blocks with bespoke error messages
+    * Standardized and protected error logging
+    * Implemented db migration for email index unique bug
+        * Email property is now unique for documents with _schemaName: EmailSubscribe
+        * Email property is not unique for documents with _schemaName: User
 
 ### Nov 13, 2025
 * Add dynamic sitemap generation for projects and comment periods [DESENG-917](https://citz-gdx.atlassian.net/browse/DESENG-917)
