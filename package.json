@@ -54,7 +54,6 @@
     "yamljs": "0.2.9"
   },
   "scripts": {
-    "preinstall": "npm install --package-lock-only --ignore-scripts",
     "start": "node app.js",
     "dev": "nodemon app",
     "lint": "eslint api/controllers/*.js api/helpers/**/*.js",
