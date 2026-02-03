@@ -1,4 +1,6 @@
 name: Lint and Test API Backend
+permissions:
+  contents: read
 on:
   pull_request:
     branches:
