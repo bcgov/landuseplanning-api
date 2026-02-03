@@ -1,3 +1,27 @@
+### Feb 2, 2026
+* Modernized the API to meet MongoDB and Mongoose Requirements [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
+    * Updated target MongoDB version to 6.0.13
+    * Updated Mongoose to version 6.13.8
+        * Refactored any code that was using deprecated Mongoose methods or patterns
+    * Changed all Node version references to version 18
+    * Restored unit test functionality, unit tests will need to be remade
+    * Modernized code to es2017 standards
+        * Replaced .then with async/await
+        * Streamlined object creation with direct property assignments
+        * Replaced var with let and const
+        * Other misc syntax updates
+    * Fixed several errors in swagger.yaml, including duplicate keys and missing tags
+    * Applied basic prettier formatting to files for easier readability
+    * Tested and fixed any broken API logic after upgrade
+    * Updated DB folder with new docker-compose.yaml and left Mongo 3.6 docker-compose for backup purposes
+        * Updated README.md file with local db upgrade instructions
+    * Updated server responses to filter out error data for security
+    * Updated several catch blocks with bespoke error messages
+    * Standardized and protected error logging
+    * Implemented db migration for email index unique bug
+        * Email property is now unique for documents with _schemaName: EmailSubscribe
+        * Email property is not unique for documents with _schemaName: User
+
 ### Nov 13, 2025
 * Add dynamic sitemap generation for projects and comment periods [DESENG-917](https://citz-gdx.atlassian.net/browse/DESENG-917)
     * New endpoint at `/api/sitemap_dynamic.xml` (linked by reference from `/sitemap.xml` on the webapp side)

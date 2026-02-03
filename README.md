@@ -18,9 +18,10 @@ API for the Land Use Planning [Public](https://github.com/bcgov/landuseplanning-
 
 | Technology | Version | Website                                     | Description                               |
 |------------|---------|---------------------------------------------|-------------------------------------------|
-| node       | 14.15.x   | https://nodejs.org/en/                      | JavaScript Runtime                        |
-| npm        | 6.14.x   | https://www.npmjs.com/                      | Node Package Manager                      |
-| mongodb    | 3.6     | https://docs.mongodb.com/v3.6/installation/ | NoSQL database                            |
+| node       | 18.19.0 | https://nodejs.org/en/                      | JavaScript Runtime                        |
+| npm        | 10.2.3  | https://www.npmjs.com/                      | Node Package Manager                      |
+| mongodb    | 6.0.13  | https://docs.mongodb.com/                   | NoSQL database                            |
+| mongoose   | 6.13.8  | https://docs.mongodb.com/                   | Database wrapper                          |
 
 ## API Specification
 

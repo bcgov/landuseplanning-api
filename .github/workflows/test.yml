@@ -1,4 +1,6 @@
 name: Lint and Test API Backend
+permissions:
+  contents: read
 on:
   pull_request:
     branches:
@@ -9,19 +11,27 @@ on:
       - "api/test/*.js"
       - "api/test/**/*.js"
       - "app.js"
+
 jobs:
   static_checks:
-    if: github.repository_owner == 'bcgov' && github.event.pull_request.draft == false
+    if: ${{ github.repository_owner == 'bcgov' && github.event.pull_request.draft == false }}
     timeout-minutes: 10
     runs-on: ubuntu-latest
+    
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-node@v1
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 18
+        uses: actions/setup-node@v4
         with:
-          node-version: 10
-      - name: Install packages
-        run: npm install
+          node-version: 18
+          cache: npm
+      
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
       - name: Run ESLint
         run: npm run lint
-      - name: Run Tests
+
+      - name: Run tests
         run: npm run test

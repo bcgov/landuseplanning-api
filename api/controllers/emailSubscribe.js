@@ -1,12 +1,13 @@
-var { remove, indexOf, assignIn } = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
-var mongoose = require('mongoose');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
-var Email = require('../helpers/email');
+const { remove, indexOf, assignIn } = require('lodash');
+const { Readable, Transform } = require('node:stream') ;
+const defaultLog = require('winston').loggers.get('defaultLog');
+const mongoose = require('mongoose');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
+const Email = require('../helpers/email');
 const randToken = require('rand-token');
 const csv = require('csv');
-const transform = require('stream-transform');
+const { pipeline } = require('stream/promises');
 const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
 
 /**
@@ -14,8 +15,8 @@ const ENABLE_VIRUS_SCANNING = process.env.ENABLE_VIRUS_SCANNING || false;
  * Shared options 
  */
 
-var getSanitizedFields = function (fields) {
-  return remove(fields, function (f) {
+const getSanitizedFields = (fields = []) => {
+  return remove(fields, (f) => {
     return (indexOf([
       'email',
       'project',
@@ -29,7 +30,7 @@ var getSanitizedFields = function (fields) {
   });
 };
 
-exports.protectedOptions = function (args, res) {
+exports.protectedOptions = (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PROTECTED OPTIONS');
   res.status(200).send();
 }
@@ -38,22 +39,27 @@ exports.protectedOptions = function (args, res) {
  * Public
  */
 
-exports.publicHead = async function (args, res) {
+exports.publicHead = async (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PUBLIC HEAD');
-  const fields = getSanitizedFields(args.swagger.params.fields.value);
+  const fields = getSanitizedFields(args.swagger.params.fields && args.swagger.params.fields.value);
+  const query = {};
 
   // Set query type
   assignIn(query, { '_schemaName': 'EmailSubscribe' });
 
-  var data = await Utils.runDataQuery('EmailSubscribe',
+  const data = await Utils.runDataQuery(
+    'EmailSubscribe',
     ['public'],
+    null,
     query,
     fields, // Fields
     null, // sort warmup
     null, // sort
     null, // skip
     null, // limit
-    true); // count
+    true  // count
+  );
+
   Utils.recordAction('Head', 'EmailSubscribe', 'public');
   res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
   defaultLog.info('Got email subscribe headers:', data);
@@ -98,7 +104,7 @@ const fetchProjectNames = async (ProjectModel, projectIds, fallbackName) => {
 };
 
 // subscribe a new email address
-exports.unProtectedPost = async function (args, res) {
+exports.unProtectedPost = async (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PUBLIC POST');
 
   const subscriptionRequest = args.swagger.params.emailSubscribe.value;
@@ -108,8 +114,16 @@ exports.unProtectedPost = async function (args, res) {
   let requestedProjectId;
   try {
     requestedProjectId = mongoose.Types.ObjectId(subscriptionRequest.project);
-  } catch (err) {
-    defaultLog.warn('Invalid project identifier supplied for subscription', { email: requestedEmail, project: subscriptionRequest.project });
+  } catch (e) {
+    defaultLog.error(
+      'Invalid project ID supplied for subscription, email subscribe unprotected post failed.',
+      {
+        email: requestedEmail,
+        project: subscriptionRequest.project,
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
+      },
+    );
     return sendGenericSuccess();
   }
 
@@ -150,7 +164,6 @@ exports.unProtectedPost = async function (args, res) {
 
       const projectNames = await fetchProjectNames(Project, savedSubscription.project, requestedProjectName);
       await Email.sendConfirmEmail(projectNames, requestedEmail, savedSubscription.confirmKey);
-      defaultLog.info('Sent confirmation email for new subscription', { email: requestedEmail, projects: projectNames });
 
       return sendGenericSuccess();
     }
@@ -189,9 +202,9 @@ exports.unProtectedPost = async function (args, res) {
           subscriptionId: subscription._id
         });
       } else {
-        defaultLog.info('Confirmation email recently sent; skipping resend', {
+        defaultLog.info('Confirmation email recently sent, skipping resend', {
           subscriptionId: subscription._id,
-          lastSent: subscription.dateSubscribed
+          lastSent: subscription.dateSubscribed,
         });
       }
 
@@ -222,13 +235,17 @@ exports.unProtectedPost = async function (args, res) {
     return sendGenericSuccess();
 
   } catch (e) {
-    defaultLog.error('Error processing email subscription:', e);
-    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Email subscribe unprotected post failed',
+    );
   }
 };
 
 // Confirm a new email address
-exports.unProtectedPut = async function (args, res) {
+exports.unProtectedPut = async (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PUT - Confirmation request');
 
   // Validate required parameters
@@ -246,6 +263,9 @@ exports.unProtectedPut = async function (args, res) {
 
   const EmailSubscribe = mongoose.model('EmailSubscribe');
   const Project = mongoose.model('Project');
+
+  // Local helper to prevent account enumeration
+  const sendGenericSuccess = () => Actions.sendResponse(res, 200, { message: 'Subscription request processed' });
 
   try {
     const subscription = await EmailSubscribe.findOne({
@@ -290,13 +310,17 @@ exports.unProtectedPut = async function (args, res) {
     return Actions.sendResponse(res, 200, { message: 'Subscription confirmed' });
 
   } catch (e) {
-    defaultLog.error('Error confirming email subscription:', e);
-    return Actions.sendResponse(res, 500, { error: 'Internal server error' });
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'Error confirming email subscription, email subscribe unprotected put failed.',
+    );
   }
 };
 
 // unsubscribe from updates
-exports.unProtectedDelete = async function (args, res, next) {
+exports.unProtectedDelete = async (args, res /*, next */) => {
   defaultLog.info('EMAIL SUBSCRIBE PUBLIC DELETE');
 
   // verify that the email and key have been set in the request
@@ -304,34 +328,33 @@ exports.unProtectedDelete = async function (args, res, next) {
     return Actions.sendResponse(res, 404, 'Not found');
   }
 
-  var emailAddress = args.swagger.params.email.value;
-  var emailIds;
+  const emailAddress = args.swagger.params.email.value;
+  let emailIds = [];
+  let es;
   defaultLog.info('Delete email subscribe:', emailAddress);
 
-  var EmailSubscribe = mongoose.model('EmailSubscribe');
-
-  // find the object ID(s) based on the email address
-  await EmailSubscribe.find({ _schemaName: 'EmailSubscribe', email: emailAddress }, null, function (err, entities) {
-    if (err) {
-      defaultLog.error('Error finding email subscribe object from email', err);
-      return Actions.sendResponse(res, 404, err);
-    }
-
-    if (entities) {
-      emailIds = entities.map(entity => entity._id);
-    }
-  });
+  const EmailSubscribe = mongoose.model('EmailSubscribe');
 
   try {
+    // find the object ID(s) based on the email address  (refactor: await, no callback)
+    const entities = await EmailSubscribe.find({ _schemaName: 'EmailSubscribe', email: emailAddress }).lean();
+    if (entities && entities.length > 0) {
+      emailIds = entities.map(entity => entity._id);
+    }
+
     for (const emailId of emailIds) {
-      var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
+      es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
       Utils.recordAction('Delete', 'EmailSubscribe', 'public', emailId);
       defaultLog.info('Email unsubscribed:', es);
     }
-    return Actions.sendResponse(res, 200, es);
+    return Actions.sendResponse(res, 200, es || {});
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Email subscribe unprotected delete failed',
+    );
   }
 }
 
@@ -341,9 +364,9 @@ exports.unProtectedDelete = async function (args, res, next) {
 
 // get list of subscribers
 
-exports.protectedHead = async function (args, res) {
+exports.protectedHead = async (args, res) => {
   defaultLog.info('');
-  var query = {};
+  let query = {};
 
   if (args.swagger.params.email && args.swagger.params.email.value) {
     query = Utils.buildQuery('_id', args.swagger.params.email.value, query);
@@ -352,17 +375,22 @@ exports.protectedHead = async function (args, res) {
   // Set query type
   assignIn(query, { '_schemaName': 'EmailSubscribe' });
 
-  var data = await Utils.runDataQuery('EmailSubscribe',
+  // Fixed runDataQuery args: include userGuid
+  const data = await Utils.runDataQuery(
+    'EmailSubscribe',
     args.swagger.operation['x-security-scopes'],
+    args.swagger.params.auth_payload && args.swagger.params.auth_payload.idir_user_guid,
     query,
-    ['_id',
-      'tags'], // Fields
+    ['_id', 'tags'], // Fields
     null, // sort warmup
     null, // sort
     null, // skip
     null, // limit
-    true); // count
+    true  // count
+  );
+
   Utils.recordAction('Head', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, args.swagger.params.email && args.swagger.params.email.value ? args.swagger.params.email.value : null);
+
   // /api/comment/ route, return 200 OK with 0 items if necessary
   if (!(args.swagger.params.email && args.swagger.params.email.value) || (data && data.length > 0)) {
     res.setHeader('x-total-count', data && data.length > 0 ? data[0].total_items : 0);
@@ -374,10 +402,10 @@ exports.protectedHead = async function (args, res) {
   }
 };
 
-exports.protectedGet = async function (args, res, next) {
+exports.protectedGet = async (args, res /*, next */) => {
   defaultLog.info('EMAIL SUBSCRIBE PROTECTED GET');
 
-  var query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
+  let query = {}, sort = {}, skip = null, limit = null, count = false, filter = [];
 
   // Build match query for project ID
   if (args.swagger.params.project && args.swagger.params.project.value) {
@@ -387,15 +415,15 @@ exports.protectedGet = async function (args, res, next) {
 
   // Sort
   if (args.swagger.params.sortBy && args.swagger.params.sortBy.value) {
-    args.swagger.params.sortBy.value.forEach(function (value) {
-      var order_by = value.charAt(0) == '-' ? -1 : 1;
-      var sort_by = value.slice(1);
+    args.swagger.params.sortBy.value.forEach((value) => {
+      const order_by = value.charAt(0) == '-' ? -1 : 1;
+      const sort_by = value.slice(1);
       sort[sort_by] = order_by;
     }, this);
   }
 
   // Skip and limit
-  var processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
+  const processedParameters = Utils.getSkipLimitParameters(args.swagger.params.pageSize, args.swagger.params.pageNum);
   skip = processedParameters.skip;
   limit = processedParameters.limit;
 
@@ -412,27 +440,33 @@ exports.protectedGet = async function (args, res, next) {
   }
 
   try {
-    var data = await Utils.runDataQuery('EmailSubscribe',
+    const data = await Utils.runDataQuery(
+      'EmailSubscribe',
       args.swagger.params.auth_payload.client_roles,
       args.swagger.params.auth_payload.idir_user_guid,
       query,
-      getSanitizedFields(args.swagger.params.fields.value), // Fields
+      getSanitizedFields(args.swagger.params.fields && args.swagger.params.fields.value), // Fields
       null,
       sort, // sort
       skip, // skip
       limit, // limit
-      count); // count
+      count  // count
+    );
     //Utils.recordAction('Get', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, args.swagger.params.email && args.swagger.params.email.value ? args.swagger.params.email.value : null);
     defaultLog.info('Got email subscribers:', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Email subscribe protected get failed',
+    );
   }
 };
 
 // Admin delete email
-exports.protectedDelete = async function (args, res, next) {
+exports.protectedDelete = async (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PROTECTED DELETE');
 
   // verify that the email and key have been set in the request
@@ -441,66 +475,97 @@ exports.protectedDelete = async function (args, res, next) {
     return Actions.sendResponse(res, 404, 'Not found');
   }
 
-  let emailAddress = args.swagger.params.email.value;
-  let projectId = args.swagger.params.projectId.value;
+  const emailAddress = args.swagger.params.email.value;
+  const projectId = args.swagger.params.projectId && args.swagger.params.projectId.value;
   let emailId;
   let projectList = [];
   defaultLog.info('Delete email subscribe:', emailAddress);
 
-  var EmailSubscribe = mongoose.model('EmailSubscribe');
+  const EmailSubscribe = mongoose.model('EmailSubscribe');
 
-  // find the object ID based on the email address
-  await EmailSubscribe.findOne({ email: emailAddress }, null, async function (err, entity) {
-    if (err) {
-      defaultLog.error('Error finding email subscribe object from email', err);
-      return Actions.sendResponse(res, 404, err);
+  try {
+    // find the object ID based on the email address  (refactor: await, no callback)
+    const entity = await EmailSubscribe.findOne({ email: emailAddress });
+
+    if (!entity) {
+      defaultLog.error('Email subscription entry not found for deletion');
+      return Actions.sendResponse(res, 404, 'Not found');
     }
 
-    if (entity) {
-      emailId = entity._id;
-      projectList = entity.project;
+    emailId = entity._id;
+    projectList = Array.isArray(entity.project) ? [...entity.project] : [];
 
-      // check if project id is in project list
-      const index = projectList.indexOf(projectId);
-      if (index > -1) {
-        projectList.splice(index, 1);
-        if (projectList.length > 0) {
-          // update existing email object with new project list
-          try {
-            var es = await EmailSubscribe.updateOne({ _id: emailId }, { $set: { project: projectList } });
-            Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
-            defaultLog.info('Email deleted from one project:', es);
-            return Actions.sendResponse(res, 200, es);
-          } catch (e) {
-            defaultLog.error('Error removing user subscription from project', e);
-            return Actions.sendResponse(res, 500, e);
-          }
-        } else {
-          // delete email object
-          try {
-            var es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
-            Utils.recordAction('Delete', 'EmailSubscribe', args.swagger.params.auth_payload.preferred_username, emailId);
-            defaultLog.info('Email deleted from system:', emailId);
-            return Actions.sendResponse(res, 200, es);
-          } catch (e) {
-            defaultLog.error('Error deleting email subscription entry', e);
-            return Actions.sendResponse(res, 500, e);
-          }
+    // check if project id is in project list
+    const index = projectList.findIndex(
+      (p) => p && p.toString() === String(projectId),
+    );
+    if (index > -1) {
+      projectList.splice(index, 1);
+      if (projectList.length > 0) {
+        // update existing email object with new project list
+        try {
+          const es = await EmailSubscribe.updateOne(
+            { _id: emailId },
+            { $set: { project: projectList } },
+          );
+          Utils.recordAction(
+            'Delete',
+            'EmailSubscribe',
+            args.swagger.params.auth_payload.preferred_username,
+            emailId,
+          );
+          defaultLog.info('Email deleted from one project:', es);
+          return Actions.sendResponse(res, 200, es);
+        } catch (e) {
+          return Actions.sendResponse(
+            res,
+            500,
+            e,
+            'Error removing user subscription from project, email subscribe protected delete failed.',
+          );
         }
       } else {
-        // if not return 404
-        defaultLog.info('Project ID not found: ', projectId);
-        return Actions.sendResponse(res, 404, 'Project ID not found');
+        // delete email object
+        try {
+          const es = await EmailSubscribe.findOneAndRemove({ _id: emailId });
+          Utils.recordAction(
+            'Delete',
+            'EmailSubscribe',
+            args.swagger.params.auth_payload.preferred_username,
+            emailId,
+          );
+          defaultLog.info('Email deleted from system:', emailId);
+          return Actions.sendResponse(res, 200, es);
+        } catch (e) {
+          return Actions.sendResponse(
+            res,
+            500,
+            e,
+            'Error deleting email subscription entry, email subscribe protected delete failed.',
+          );
+        }
       }
-
+    } else {
+      // if not return 404
+      defaultLog.warn(
+        'Project ID not found during email subscribe protected delete. ',
+        projectId,
+      );
+      return Actions.sendResponse(res, 404, 'Project ID not found');
     }
-  });
-
+  } catch (e) {
+    return Actions.sendResponse(
+      res,
+      404,
+      e,
+      'Error finding email subscribe object in email subscribe protected delete.',
+    );
+  }
 }
 
 
 // Export all subscribers
-exports.protectedExport = async function (args, res) {
+exports.protectedExport = async (args, res) => {
   defaultLog.info('EMAIL SUBSCRIBE PROTECTED EXPORT');
   const projectId = args.swagger.params.projectId.value;
 
@@ -511,25 +576,22 @@ exports.protectedExport = async function (args, res) {
   };
 
   const aggregation = [
-    {
-      $match: match
-    }
+    { $match: match }
   ];
 
-  const data = mongoose.model('EmailSubscribe')
+  const data = await mongoose
+    .model('EmailSubscribe')
     .aggregate(aggregation)
-    .cursor()
     .exec();
 
   const filename = `export_${new Date().toISOString().split('T')[0]}.csv`;
-  res.setHeader('Content-disposition', `attachment; filename=${filename}`);
+  res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
   res.writeHead(200, { 'Content-Type': 'text/csv' });
 
-  res.flushHeaders();
-
-  data
-    .pipe(transform(function (d) {
-      delete d.__v
+  const scrubbed = new Transform({
+    objectMode: true,
+    transform(d, _enc, cb) {
+      delete d.__v;
       delete d._id;
       delete d._schemaName;
       delete d.confirmKey;
@@ -540,11 +602,18 @@ exports.protectedExport = async function (args, res) {
       delete d.read;
       delete d.write;
       delete d.delete;
+      cb(null, d);
+    }
+  });
 
-      return { ...d };
-    }))
-    .pipe(csv.stringify({ header: true }))
-    .pipe(res);
+  const csvOut = csv.stringify({ header: true });
+
+  await pipeline(
+    Readable.from(data),
+    scrubbed,
+    csvOut,
+    res
+  );
 }
 
 exports.handleContactFormResponse = async (args, res) => {
@@ -560,7 +629,9 @@ exports.handleContactFormResponse = async (args, res) => {
   if ('true' === ENABLE_VIRUS_SCANNING && Array.isArray(files) && files.length > 0) {
     try {
       const results = await Promise.all(
-        files.map(file => Utils.avScan(file.buffer).then(clean => ({ file, clean })))
+        files.map((file) =>
+          Utils.avScan(file.buffer).then((clean) => ({ file, clean })),
+        ),
       );
 
       const failed = results.filter((result) => !result.clean);
@@ -569,14 +640,21 @@ exports.handleContactFormResponse = async (args, res) => {
         failed.forEach((result) => {
           defaultLog.warn('File failed virus scan:', result.file.originalname);
         });
-        return Actions.sendResponse(res, 400, { message: 'One or more files failed virus check.' });
+        return Actions.sendResponse(res, 400, {
+          message: 'One or more files failed virus check.',
+        });
       }
 
-      results.forEach((result) => { defaultLog.info('File passed virus scan:', result.file.originalname); });
-
-    } catch (err) {
-      defaultLog.error('Error during virus scanning:', err);
-      return Actions.sendResponse(res, 500, { message: 'Virus scan failed unexpectedly.' });
+      results.forEach((result) => {
+        defaultLog.info('File passed virus scan:', result.file.originalname);
+      });
+    } catch (e) {
+      return Actions.sendResponse(
+        res,
+        500,
+        e,
+        'Virus scan failed unexpectedly.',
+      );
     }
   }
 
@@ -603,7 +681,11 @@ exports.handleContactFormResponse = async (args, res) => {
     await Email.handleContactFormResponse(projectName, contactForm, recipients);
     return Actions.sendResponse(res, 200, true);
   } catch (e) {
-    defaultLog.error('Error sending email:', e);
-    return Actions.sendResponse(res, 400, false);
+    return Actions.sendResponse(
+      res,
+      400,
+      false,
+      'Error sending email in email subscribe handle contact form response.',
+    );
   }
 };

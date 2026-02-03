@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 // Allow local .env files to be read
 require('dotenv').config();
@@ -10,16 +10,16 @@ require('dotenv').config();
 const { configureAppLogging } = require('./config/loggers');
 configureAppLogging();
 
-const app           = require("express")();
+const app           = require('express')();
 const fs            = require('fs');
-const uploadDir     = process.env.UPLOAD_DIRECTORY || "./uploads/";
-const hostname      = process.env.API_HOSTNAME || "localhost:3000";
-const swaggerTools  = require("swagger-tools");
-const YAML          = require("yamljs");
-const mongoose      = require("mongoose");
-const auth          = require("./api/helpers/auth");
-const databaseIndexes = require("./api/helpers/databaseIndexes");
-const swaggerConfig = YAML.load("./api/swagger/swagger.yaml");
+const uploadDir     = process.env.UPLOAD_DIRECTORY || './uploads/';
+const hostname      = process.env.API_HOSTNAME || 'localhost:3000';
+const swaggerTools  = require('swagger-tools');
+const YAML          = require('yamljs');
+const mongoose      = require('mongoose');
+const auth          = require('./api/helpers/auth');
+const databaseIndexes = require('./api/helpers/databaseIndexes');
+const swaggerConfig = YAML.load('./api/swagger/swagger.yaml');
 const winston       = require('winston');
 const bodyParser    = require('body-parser');
 const dbConnection  = 'mongodb://'
@@ -68,7 +68,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   );
   
   const routerConfig = {
-    controllers: "./api/controllers",
+    controllers: './api/controllers',
     useStubs: false
   };
 
@@ -83,66 +83,67 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     }
   } catch (e) {
     // Fall through - uploads will continue to fail until this is resolved locally.
-    defaultLog.info("Couldn't create upload folder:", e);
+    defaultLog.info("Couldn't create upload folder.", {
+      status: e && (e.status || e.statusCode || undefined),
+      err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
+    });
   }
   // Load up DB
+  mongoose.set('strictQuery', false);
   const options = {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    poolSize: 10,
     user: dbUsername,
     pass: dbPassword,
-    reconnectTries: Number.MAX_VALUE, // Never stop trying to reconnect
-    reconnectInterval: 500, // Reconnect every 500ms
-    poolSize: 10, // Maintain up to 10 socket connections
-    // If not connected, return errors immediately rather than waiting for reconnect
-    bufferMaxEntries: 0,
+    maxPoolSize: 10, // Maintain up to 10 socket connections
     connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
-    socketTimeoutMS: 45000 // Close sockets after 45 seconds of inactivity
+    socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   };
-  defaultLog.info("Connecting to:", dbConnection);
-  mongoose.Promise  = global.Promise;
-  mongoose.connect(dbConnection, options).then(
-    () => {
-      defaultLog.info("Database connected");
+  defaultLog.info('Connecting to:', dbConnection);
+  mongoose.Promise = global.Promise;
+  (mongoose.connect(dbConnection, options).then(() => {
+    defaultLog.info('Database connected');
 
-      // Global mongoose config.
-      mongoose.set('useFindAndModify', false);
+    // Load database models
+    defaultLog.info('loading db models.');
+    require('./api/helpers/models/audit');
+    require('./api/helpers/models/list');
+    require('./api/helpers/models/user');
+    require('./api/helpers/models/group');
+    require('./api/helpers/models/pin');
+    require('./api/helpers/models/organization');
+    require('./api/helpers/models/vc');
+    require('./api/helpers/models/project');
+    require('./api/helpers/models/recentActivity');
+    require('./api/helpers/models/survey');
+    require('./api/helpers/models/surveyQuestion');
+    require('./api/helpers/models/surveyLikert');
+    require('./api/helpers/models/surveyQuestionAnswer');
+    require('./api/helpers/models/surveyResponse');
+    require('./api/helpers/models/document');
+    require('./api/helpers/models/externalLink');
+    require('./api/helpers/models/documentSection');
+    require('./api/helpers/models/comment');
+    require('./api/helpers/models/commentperiod');
+    require('./api/helpers/models/topic');
+    require('./api/helpers/models/emailSubscribe');
+    defaultLog.info('db model loading done.');
 
-      // Load database models
-      defaultLog.info("loading db models.");
-      require('./api/helpers/models/audit');
-      require('./api/helpers/models/list');
-      require('./api/helpers/models/user');
-      require('./api/helpers/models/group');
-      require('./api/helpers/models/pin');
-      require('./api/helpers/models/organization');
-      require('./api/helpers/models/vc');
-      require('./api/helpers/models/project');
-      require('./api/helpers/models/recentActivity');
-      require('./api/helpers/models/survey');
-      require('./api/helpers/models/surveyQuestion');
-      require('./api/helpers/models/surveyLikert');
-      require('./api/helpers/models/surveyQuestionAnswer');
-      require('./api/helpers/models/surveyResponse');
-      require('./api/helpers/models/document');
-			require('./api/helpers/models/externalLink');
-      require('./api/helpers/models/documentSection');
-      require('./api/helpers/models/comment');
-      require('./api/helpers/models/commentperiod');
-      require('./api/helpers/models/topic');
-      require('./api/helpers/models/emailSubscribe');
-      defaultLog.info("db model loading done.");
+    // Build text index.
+    databaseIndexes.generateTextIndex();
 
-      // Build text index.
-      databaseIndexes.generateTextIndex();
+    // Fix unique email index bug.
+    databaseIndexes.fixEmailIndex();
 
-      app.listen(3000, '0.0.0.0', function() {
-        defaultLog.info("Started server on port 3000");
+    app.listen(3000, '0.0.0.0', function () {
+      defaultLog.info('Started server on port 3000');
+    });
+  }),
+    (e) => {
+      defaultLog.info({
+        details: 'Failed to initialize middleware',
+        status: e && (e.status || e.statusCode || undefined),
+        message: e && e.message,
+        stack: e && e.stack,
       });
-    },
-    err => {
-      defaultLog.info("err:", err);
       return;
     });
 });

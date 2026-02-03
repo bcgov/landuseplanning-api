@@ -3,16 +3,24 @@
  * compatible with the node version running in the production environment.
  */
 module.exports = {
-    root: true,
-    extends: ["eslint:recommended"],
-    globals: {},
-    env: {
-      node: true,
-      es6: true,
+  root: true,
+  extends: ['eslint:recommended'],
+  globals: {},
+  env: {
+    node: true,
+    es6: true,
+  },
+  parserOptions: {
+    ecmaFeatures: {},
+    ecmaVersion: 2018,
+    sourceType: 'script',
+  },
+  overrides: [
+    {
+      files: ['**/*.test.js', '**/*.spec.js', '**/__tests__/**/*.[jt]s?(x)'],
+      env: { jest: true },
+      plugins: ['jest'],
+      extends: ['plugin:jest/recommended'],
     },
-    parserOptions: {
-      ecmaFeatures: {},
-      ecmaVersion: 6,
-      sourceType: "module",
-    },
+  ],
 };

@@ -10,17 +10,14 @@ const Utils = require('../helpers/utils');
  * @param {array} fields The fields to strip.
  * @returns {array}
  */
-const getSanitizedFields = (fields) => {
+const getSanitizedFields = (fields = []) => {
   return remove(fields, (f) => {
-    return (indexOf([
-        '_schemaName',
-        'name',
-        'order',
-        'project',
-        'read',
-        'write',
-        'delete'
-    ], f) !== -1);
+    return (
+      indexOf(
+        ['_schemaName', 'name', 'order', 'project', 'read', 'write', 'delete'],
+        f
+      ) !== -1
+    );
   });
 };
 
@@ -32,13 +29,13 @@ const getSanitizedFields = (fields) => {
  * @returns {object}
  */
 exports.protectedOptions = (args, res) => {
-    defaultLog.info('DOCUMENT SECTION PROTECTED OPTIONS');
-    res.status(200).send();
+  defaultLog.info('DOCUMENT SECTION PROTECTED OPTIONS');
+  res.status(200).send();
 };
 
 /**
  * Get the document sections for a given project.
- * 
+ *
  * @param {object} args The arguments used to save the section.
  * @param {HTTPResponse} res The response used for the HTTP route.
  * @returns {object}
@@ -46,26 +43,33 @@ exports.protectedOptions = (args, res) => {
 exports.protectedGet = async (args, res) => {
   defaultLog.info('DOCUMENT SECTION PROTECTED GET');
   const query = {};
+  const params = args.swagger.params;
 
   // Build match query if on project's id
-  if (args.swagger.params.project && args.swagger.params.project.value) {
-    assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+  if (params.project && params.project.value) {
+    assignIn(query, {
+      project: mongoose.Types.ObjectId(params.project.value),
+    });
   }
 
   // Set query type
-  assignIn(query, { '_schemaName': 'DocumentSection' });
+  assignIn(query, { _schemaName: 'DocumentSection' });
 
   try {
-    const data = await Utils.runDataQuery('DocumentSection',
-      args.swagger.params.auth_payload.client_roles,
-      args.swagger.params.auth_payload.idir_user_guid,
+    const data = await Utils.runDataQuery(
+      'DocumentSection',
+      params.auth_payload.client_roles,
+      params.auth_payload.idir_user_guid,
       query,
-      getSanitizedFields(args.swagger.params.fields.value), // Fields
-      null,   // sort warmup
-      null,   // sort
-      null,   // skip
-      null,  // limit
-      null); // count
+      getSanitizedFields(
+        params.fields && params.fields.value
+      ), // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      null // count
+    );
 
     Utils.recordAction(
       'Get',
@@ -76,8 +80,12 @@ exports.protectedGet = async (args, res) => {
     defaultLog.info('Got document section(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document section protected get failed',
+    );
   }
 };
 
@@ -88,43 +96,61 @@ exports.protectedGet = async (args, res) => {
  * @param {HTTPResponse} res The response used for the HTTP route.
  * @returns {object}
  */
-exports.publicGet = async(args, res) => {
+exports.publicGet = async (args, res) => {
   defaultLog.info('DOCUMENT SECTION PUBLIC GET');
   const query = {};
+  const params = args.swagger.params;
 
   // Build match query if on project's id
-  if (args.swagger.params.project && args.swagger.params.project.value) {
-    assignIn(query, { project: mongoose.Types.ObjectId(args.swagger.params.project.value) });
+  if (params.project && params.project.value) {
+    assignIn(query, {
+      project: mongoose.Types.ObjectId(params.project.value),
+    });
   }
 
   // Set query type
-  assignIn(query, { '_schemaName': 'DocumentSection' });
+  assignIn(query, { _schemaName: 'DocumentSection' });
 
   try {
-    const data = await Utils.runDataQuery('DocumentSection',
+    const data = await Utils.runDataQuery(
+      'DocumentSection',
       ['public'],
       null,
       query,
-      getSanitizedFields(args.swagger.params.fields.value), // Fields
-      null,   // sort warmup
-      null,   // sort
-      null,   // skip
-      null,  // limit
-      null); // count
+      getSanitizedFields(
+        params.fields && params.fields.value
+      ), // Fields
+      null, // sort warmup
+      null, // sort
+      null, // skip
+      null, // limit
+      null // count
+    );
 
-    Utils.recordAction('Get', 'DocumentSection', 'public', args.swagger.params.project && args.swagger.params.project.value ? args.swagger.params.project.value : null);
+    Utils.recordAction(
+      'Get',
+      'DocumentSection',
+      'public',
+      params.project && params.project.value
+        ? params.project.value
+        : null
+    );
 
     defaultLog.info('Got document section(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document section public get failed',
+    );
   }
-}
+};
 
 /**
  * Save a new document section.
- * 
+ *
  * @param {object} args The arguments used to save the section.
  * @param {HTTPResponse} res The response used for the HTTP route.
  * @returns {object}
@@ -144,7 +170,7 @@ exports.protectedPost = async (args, res) => {
     order: obj.order,
     read: ['public', 'staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
-    delete: ['staff', 'sysadmin']
+    delete: ['staff', 'sysadmin'],
   });
 
   try {
@@ -154,12 +180,16 @@ exports.protectedPost = async (args, res) => {
       'DocumentSection',
       args.swagger.params.auth_payload.preferred_username,
       docSectionResult._id
-      );
+    );
     defaultLog.info('Saved new document section object:', docSectionResult._id);
     return Actions.sendResponse(res, 200, docSectionResult);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document section protected post failed',
+    );
   }
 };
 
@@ -179,12 +209,13 @@ exports.protectedReorder = async (args, res) => {
 
   const DocumentSection = mongoose.model('DocumentSection');
   const updatedSections = [];
+
   try {
     for (const section of docSections) {
       const updatedDocSection = await DocumentSection.findByIdAndUpdate(
         section._id,
         { order: section.order },
-        { new: true, returnDocument: "after" }
+        { new: true }
       );
       updatedSections.push(updatedDocSection);
     }
@@ -195,11 +226,15 @@ exports.protectedReorder = async (args, res) => {
       args.swagger.params.auth_payload.preferred_username,
       null
     );
+
     defaultLog.info('Reordered document sections:', updatedSections);
     return Actions.sendResponse(res, 200, updatedSections);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'Document section protected reorder failed',
+    );
   }
-    
-}
+};

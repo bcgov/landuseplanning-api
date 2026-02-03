@@ -1,83 +1,88 @@
 'use strict';
 
-var { isArray, assignIn, each, compact, isEmpty } = require('lodash');
-var mongoose = require('mongoose');
-var clamav = require('clamav.js');
-var _serviceHost = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
-var _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
-var MAX_LIMIT = 1000;
-var DEFAULT_PAGESIZE = 100;
-var defaultLog = require('winston').loggers.get('defaultLog');
+const { isArray, assignIn, each, compact, isEmpty } = require('lodash');
+const mongoose = require('mongoose');
+const clamav = require('clamav.js');
+const defaultLog = require('winston').loggers.get('defaultLog');
+const _serviceHost = process.env.CLAMAV_SERVICE_HOST || '127.0.0.1';
+const _servicePort = process.env.CLAMAV_SERVICE_PORT || '3310';
+const MAX_LIMIT = 1000;
+const DEFAULT_PAGESIZE = 100;
 
-const getUserProjectPermissions = async function (userGuid) {
+const getUserProjectPermissions = async (userGuid) => {
   let projectPermissions = [];
   const User = mongoose.model('User');
   const user = await User.findOne({ idirUserGuid: userGuid }).exec();
 
-  if (user && "projectPermissions" in user) {
+  if (user && 'projectPermissions' in user) {
     projectPermissions = user.projectPermissions;
   }
 
   return projectPermissions;
-}
+};
 
 exports.getUserProjectPermissions = getUserProjectPermissions;
 
-exports.buildQuery = function (property, values, query) {
-  var oids = [];
+exports.buildQuery = (property, values, query) => {
+  const oids = [];
   if (isArray(values)) {
-    each(values, function (i) {
+    each(values, (i) => {
       oids.push(mongoose.Types.ObjectId(i));
     });
   } else {
     oids.push(mongoose.Types.ObjectId(values));
   }
   return assignIn(query, {
-    [property]: {
-      $in: oids
-    }
+    [property]: { $in: oids },
   });
 };
 
-// MBL: TODO Make this event driven instead of synchronous?
-exports.avScan = function (buffer) {
-  return new Promise(function (resolve, reject) {
-    var stream = require('stream');
-    // Initiate the source
-    var bufferStream = new stream.PassThrough();
-    // Write your buffer
+// TODO: Make this event-driven instead of synchronous?
+exports.avScan = (buffer) => {
+  return new Promise((resolve) => {
+    const stream = require('stream');
+    const bufferStream = new stream.PassThrough();
     bufferStream.end(buffer);
 
-    clamav.ping(_servicePort, _serviceHost, 1000, function (err) {
+    clamav.ping(_servicePort, _serviceHost, 1000, (err) => {
       if (err) {
-        defaultLog.info('ClamAV service: ' + _serviceHost + ':' + _servicePort + ' is not available[' + err + ']');
-        resolve(false);
-      } else {
-        defaultLog.info('ClamAV service is alive: ' + _serviceHost + ':' + _servicePort);
-        clamav.createScanner(_servicePort, _serviceHost)
-          .scan(bufferStream, function (err, object, malicious) {
-            if (err) {
-              defaultLog.error(err);
-              resolve(false);
-            }
-            else if (malicious) {
-              defaultLog.warn('Malicious object FOUND');
-              resolve(false);
-            }
-            else {
-              defaultLog.info('Virus scan OK');
-              resolve(true);
-            }
-          });
+        defaultLog.info(
+          'ClamAV service: ' +
+            _serviceHost +
+            ':' +
+            _servicePort +
+            ' is not available[' +
+            err +
+            ']'
+        );
+        return resolve(false);
       }
+
+      defaultLog.info(
+        'ClamAV service is alive: ' + _serviceHost + ':' + _servicePort
+      );
+      clamav
+        .createScanner(_servicePort, _serviceHost)
+        .scan(bufferStream, (scanErr, object, malicious) => {
+          if (scanErr) {
+            defaultLog.error(scanErr);
+            return resolve(false);
+          }
+          if (malicious) {
+            defaultLog.warn('Malicious object FOUND');
+            return resolve(false);
+          }
+          defaultLog.info('Virus scan OK');
+          return resolve(true);
+        });
     });
   });
-}
+};
 
-exports.getSkipLimitParameters = function (pageSize, pageNum) {
+exports.getSkipLimitParameters = (pageSize, pageNum) => {
   const params = {};
 
-  var ps = DEFAULT_PAGESIZE; // Default
+  let ps = DEFAULT_PAGESIZE; // Default
   if (pageSize && pageSize.value !== undefined) {
     if (pageSize.value > 0) {
       ps = pageSize.value;
@@ -85,213 +90,212 @@ exports.getSkipLimitParameters = function (pageSize, pageNum) {
   }
   if (pageNum && pageNum.value !== undefined) {
     if (pageNum.value >= 0) {
-      params.skip = (pageNum.value * ps);
+      params.skip = pageNum.value * ps;
       params.limit = ps;
     }
   }
   return params;
 };
 
-exports.recordAction = async function (action, meta, payload, objId = null) {
-  var Audit = mongoose.model('Audit');
-  var audit = new Audit({
+exports.recordAction = async (action, meta, payload, objId = null) => {
+  const Audit = mongoose.model('Audit');
+  const audit = new Audit({
     _objectSchema: 'Query',
     action: action,
     meta: meta,
     objId: objId,
-    performedBy: payload
+    performedBy: payload,
   });
-  return await audit.save();
-}
+  return audit.save();
+};
 
-exports.runDataQuery = async function (modelType, role, userGuid, query, fields, sortWarmUp, sort, skip, limit, count, preQueryPipelineSteps, populateProponent = false, populateProjectLead = false, populateProjectDirector = false, postQueryPipelineSteps = false, populateProject = false) {
-  return new Promise(async function (resolve, reject) {
-    let projection = {};
-    let projectPermissions = [];
-    let projectKey;
-    const theModel = mongoose.model(modelType);
-    const isUserQuery = modelType === 'User';
-    
-    projectKey = modelType === 'Project' ? '$_id' : '$project';
+exports.runDataQuery = async (
+  modelType,
+  role,
+  userGuid,
+  query,
+  fields,
+  sortWarmUp,
+  sort,
+  skip,
+  limit,
+  count,
+  preQueryPipelineSteps,
+  populateProponent = false,
+  populateProjectLead = false,
+  populateProjectDirector = false,
+  postQueryPipelineSteps = false,
+  populateProject = false
+) => {
+  let projection = {};
+  let projectPermissions = [];
+  const theModel = mongoose.model(modelType);
+  const isUserQuery = modelType === 'User';
+  let projectKey = modelType === 'Project' ? '$_id' : '$project';
 
-    if (modelType === 'EmailSubscribe') {
-      projectKey = query.project;
+  if (modelType === 'EmailSubscribe') {
+    projectKey = query.project;
+  }
+
+  if (userGuid) {
+    try {
+      projectPermissions = await getUserProjectPermissions(userGuid);
+    } catch (e) {
+      defaultLog.error('Error fetching user project permissions', {
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
+      });
     }
+  }
 
-    if (userGuid) {
-      projectPermissions = await getUserProjectPermissions(userGuid)
-      .then(permissions => permissions)
-      .catch(error => defaultLog.error('Error fetching user project permissions:', error));
-    }
+  // Fields always returned
+  const defaultFields = ['_id', 'code', 'proponent', 'tags', 'read'];
+  each(defaultFields, (f) => {
+    projection[f] = 1;
+  });
 
-    // Fields we always return
-    var defaultFields = ['_id',
-      'code',
-      'proponent',
-      'tags',
-      'read'];
+  // Add requested fields only
+  each(fields, (f) => {
+    projection[f] = 1;
+  });
 
-    each(defaultFields, function (f) {
-      projection[f] = 1;
-    });
+  const aggregations = compact([
+    { $match: query },
+    { $project: projection },
+    populateProponent && {
+      $lookup: {
+        from: 'lup',
+        localField: 'proponent',
+        foreignField: '_id',
+        as: 'proponent',
+      },
+    },
+    populateProponent && { $unwind: '$proponent' },
 
-    // Add requested fields - sanitize first by including only those that we can/want to return
-    each(fields, function (f) {
-      projection[f] = 1;
-    });
+    populateProjectLead && {
+      $lookup: {
+        from: 'lup',
+        localField: 'projectLead',
+        foreignField: '_id',
+        as: 'projectLead',
+      },
+    },
+    populateProjectLead && {
+      $unwind: {
+        path: '$projectLead',
+        preserveNullAndEmptyArrays: true,
+      },
+    },
 
-    var aggregations = compact([
-      {
-        '$match': query
+    populateProjectDirector && {
+      $lookup: {
+        from: 'lup',
+        localField: 'projectDirector',
+        foreignField: '_id',
+        as: 'projectDirector',
       },
-      {
-        '$project': projection
+    },
+    populateProjectDirector && {
+      $unwind: {
+        path: '$projectDirector',
+        preserveNullAndEmptyArrays: true,
       },
-      populateProponent && {
-        '$lookup': {
-          "from": "lup",
-          "localField": "proponent",
-          "foreignField": "_id",
-          "as": "proponent"
-        }
+    },
+
+    populateProject && {
+      $lookup: {
+        from: 'lup',
+        localField: 'project',
+        foreignField: '_id',
+        as: 'project',
       },
-      populateProponent && {
-        "$unwind": "$proponent"
+    },
+    populateProject && {
+      $unwind: {
+        path: '$project',
+        preserveNullAndEmptyArrays: true,
       },
-      populateProjectLead && {
-        '$lookup': {
-          "from": "lup",
-          "localField": "projectLead",
-          "foreignField": "_id",
-          "as": "projectLead"
-        }
-      },
-      populateProjectLead && {
-        "$unwind": {
-          "path": "$projectLead",
-          "preserveNullAndEmptyArrays": true
-        }
-      },
-      populateProjectDirector && {
-        '$lookup': {
-          "from": "lup",
-          "localField": "projectDirector",
-          "foreignField": "_id",
-          "as": "projectDirector"
-        }
-      },
-      populateProjectDirector && {
-        "$unwind": {
-          "path": "$projectDirector",
-          "preserveNullAndEmptyArrays": true
-        }
-      },
-      populateProject && {
-        '$lookup': {
-          "from": "lup",
-          "localField": "project",
-          "foreignField": "_id",
-          "as": "project"
-        }
-      },
-      populateProject && {
-        "$unwind": {
-          "path": "$project",
-          "preserveNullAndEmptyArrays": true
-        }
-      },
-      postQueryPipelineSteps,
-      {
-        $redact: {
-          $cond: {
-            if: {
-              // This way, if read isn't present, we assume public no roles array.
-              $and: [
-                {
-                  $and: [
-                    { $cond: { if: "$read", then: true, else: false } },
-                    {
-                      $anyElementTrue: {
-                        $map: {
-                          input: "$read",
-                          as: "fieldTag",
-                          in: { $setIsSubset: [["$$fieldTag"], role] }
-                        }
-                      }
-                    }
-                  ]
+    },
+
+    // Allow caller-provided post-lookup pipeline steps
+    postQueryPipelineSteps,
+
+    {
+      $redact: {
+        $cond: {
+          if: {
+            $and: [
+              {
+                $and: [
+                  { $cond: { if: '$read', then: true, else: false } },
+                  {
+                    $anyElementTrue: {
+                      $map: {
+                        input: '$read',
+                        as: 'fieldTag',
+                        in: { $setIsSubset: [['$$fieldTag'], role] },
+                      },
+                    },
+                  },
+                ],
+              },
+              {
+                $cond: {
+                  if: { $in: ['public', role] },
+                  then: true,
+                  else: {
+                    $cond: {
+                      if: isUserQuery,
+                      then: true,
+                      else: {
+                        $or: [
+                          { $in: ['create-projects', role] },
+                          { $in: [projectKey, projectPermissions] },
+                        ],
+                      },
+                    },
+                  },
                 },
-                // Check if user either has the create-projects role or has project permissions.
-                { $cond: 
-                  { if: { $in: [ "public", role ] }, then: true, else:
-                    { $cond: 
-                      { if: isUserQuery, then: true, else: 
-                        { $or: [
-                          { $in: [ "create-projects" , role ] },
-                          { $in: [ projectKey, projectPermissions ] }
-                          ]
-                        } 
-                      }
-                    }
-                  }
-                }
-              ]
-            },
-            then: "$$KEEP",
-            else: {
-              $cond: { if: "$read", then: "$$PRUNE", else: "$$DESCEND" }
-            }
-          }
-        }
+              },
+            ],
+          },
+          then: '$$KEEP',
+          else: { $cond: { if: '$read', then: '$$PRUNE', else: '$$DESCEND' } },
+        },
       },
+    },
 
-      sortWarmUp, // Used to setup the sort if a temporary projection is needed.
+    sortWarmUp, // Used to setup the sort if a temporary projection is needed.
+    !isEmpty(sort) ? { $sort: sort } : null,
+    sort ? { $project: projection } : null,
 
-      !isEmpty(sort) ? { $sort: sort } : null,
-
-      sort ? { $project: projection } : null, // Reset the projection just in case the sortWarmUp changed it.
-
-      // Do this only if they ask for it.
-      count && {
-        $group: {
-          _id: null,
-          total_items: { $sum: 1 },
-          results: { $push: '$$ROOT' }
-        }
+    // Count, if requested.
+    count && {
+      $group: {
+        _id: null,
+        total_items: { $sum: 1 },
+        results: { $push: '$$ROOT' },
       },
-      count && {
-        $project: {
-          'total_items': 1,
-          'results': {
-            $slice: [
-              '$results',
-              skip,
-              limit
-            ]
-          }
-        }
+    },
+    count && {
+      $project: {
+        total_items: 1,
+        results: { $slice: ['$results', skip, limit] },
       },
-      !count && { $skip: skip || 0 },
-      !count && { $limit: limit || MAX_LIMIT }
-    ]);
+    },
+    !count && { $skip: skip || 0 },
+    !count && { $limit: limit || MAX_LIMIT },
+  ]);
 
-    // Pre-pend the aggregation with other pipeline steps if we are joining on another datasource
-    if (preQueryPipelineSteps && preQueryPipelineSteps.length > 0) {
-      for (let step of preQueryPipelineSteps) {
-        aggregations.unshift(step);
-      }
+  // Optionally prepend caller-provided pipeline steps (joins, etc.)
+  if (preQueryPipelineSteps && preQueryPipelineSteps.length > 0) {
+    for (let step of preQueryPipelineSteps) {
+      aggregations.unshift(step);
     }
+  }
 
-    let collation = {
-      locale: 'en',
-      strength: 2
-    };
+  const collation = { locale: 'en', strength: 2 };
 
-    theModel.aggregate(aggregations)
-      .collation(collation)
-      .exec()
-      .then(function(data) {
-        resolve(data)
-      }, reject);
-  });
+  // Return the aggregate result (Promise)
+  return theModel.aggregate(aggregations).collation(collation).exec();
 };

@@ -1,43 +1,53 @@
-var auth = require("../helpers/auth");
-var _ = require('lodash');
-var defaultLog = require('winston').loggers.get('defaultLog');
-var mongoose = require('mongoose');
-var Actions = require('../helpers/actions');
-var Utils = require('../helpers/utils');
+const _ = require('lodash');
+const defaultLog = require('winston').loggers.get('defaultLog');
+const mongoose = require('mongoose');
+const Actions = require('../helpers/actions');
+const Utils = require('../helpers/utils');
 
 const getSanitizedFields = (fields) => {
   return _.remove(fields, (f) => {
-    return (_.indexOf([
-      'sub',
-      'idirUserGuid',
-      'firstName',
-      'lastName',
-      'displayName',
-      'email',
-      'projectPermissions'], f) !== -1);
+    return (
+      _.indexOf(
+        [
+          'sub',
+          'idirUserGuid',
+          'firstName',
+          'lastName',
+          'displayName',
+          'email',
+          'projectPermissions',
+        ],
+        f
+      ) !== -1
+    );
   });
 };
 
-exports.protectedOptions = function (args, res) {
+exports.protectedOptions = (args, res) => {
   defaultLog.info('USER PROTECTED OPTIONS');
   res.status(200).send();
-}
+};
 
-exports.protectedGet = async function (args, res) {
+exports.protectedGet = async (args, res) => {
   defaultLog.info('USER PROTECTED GET', args.swagger.params);
 
-  let query = {}, sort = {}, skip = null, limit = null, count = false;
+  let query = {},
+    sort = {},
+    skip = null,
+    limit = null,
+    count = false;
 
-  // Build match query if on userId route. Query by user idirUserGuid so as to only get real users(not Contacts).
+  // Build match query if on userId route. Query by user idirUserGuid so as to only get real users (not Contacts).
   if (args.swagger.params.userId && args.swagger.params.userId.value) {
     _.assignIn(query, { idirUserGuid: args.swagger.params.userId.value });
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "User" });
+  _.assignIn(query, { _schemaName: 'User' });
 
   try {
-    const data = await Utils.runDataQuery('User',
+    const data = await Utils.runDataQuery(
+      'User',
       args.swagger.params.auth_payload.client_roles,
       false, // User GUID not needed here as results should only get returned to 'create-projects' users.
       query,
@@ -46,31 +56,42 @@ exports.protectedGet = async function (args, res) {
       sort, // sort
       skip, // skip
       limit, // limit
-      count); // count
-    Utils.recordAction('Get', 'User', args.swagger.params.auth_payload.preferred_username, data[0] && data[0]._id ? data[0]._id.toString() : null);
+      count // count
+    );
+
+    Utils.recordAction(
+      'Get',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      data[0] && data[0]._id ? data[0]._id.toString() : null
+    );
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected get failed');
   }
 };
 
-exports.protectedGetByEmail = async function (args, res) {
+exports.protectedGetByEmail = async (args, res) => {
   defaultLog.info('USER PROTECTED GET BY EMAIL', args.swagger.params.userEmail);
 
-  let query = {}, sort = {}, skip = null, limit = null, count = false;
+  let query = {},
+    sort = {},
+    skip = null,
+    limit = null,
+    count = false;
 
-  // Build match query if on userId route. Query by user guid so as to only get real users(not Contacts).
+  // Build match query if on userId route. Query by user guid so as to only get real users (not Contacts).
   if (args.swagger.params.userEmail && args.swagger.params.userEmail.value) {
     _.assignIn(query, { email: args.swagger.params.userEmail.value });
   }
 
   // Set query type
-  _.assignIn(query, { "_schemaName": "User" });
+  _.assignIn(query, { _schemaName: 'User' });
 
   try {
-    const data = await Utils.runDataQuery('User',
+    const data = await Utils.runDataQuery(
+      'User',
       args.swagger.params.auth_payload.client_roles,
       false, // User GUID not needed here as results should only get returned to 'create-projects' users.
       query,
@@ -79,24 +100,35 @@ exports.protectedGetByEmail = async function (args, res) {
       sort, // sort
       skip, // skip
       limit, // limit
-      count); // count
-    Utils.recordAction('Get', 'User', args.swagger.params.auth_payload.preferred_username, data[0] && data[0]._id ? data[0]._id.toString() : null);
+      count // count
+    );
+
+    Utils.recordAction(
+      'Get',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      data[0] && data[0]._id ? data[0]._id.toString() : null
+    );
     defaultLog.info('Got user(s):', data);
     return Actions.sendResponse(res, 200, data);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(
+      res,
+      400,
+      e,
+      'User protected get by email failed',
+    );
   }
 };
 
 //  Create a new user
-exports.protectedPost = async function (args, res) {
+exports.protectedPost = async (args, res) => {
   defaultLog.info('USER PROTECTED POST');
-  var obj = args.swagger.params.user.value;
-  defaultLog.info("Incoming new object:", obj);
+  const obj = args.swagger.params.user.value;
+  defaultLog.info('Incoming new object:', obj);
 
-  var User = mongoose.model('User');
-  var user = new User({
+  const User = mongoose.model('User');
+  const user = new User({
     firstName: obj.firstName,
     lastName: obj.lastName,
     displayName: obj.displayName,
@@ -104,39 +136,51 @@ exports.protectedPost = async function (args, res) {
     idirUserGuid: obj.idirUserGuid,
     read: ['staff', 'sysadmin'],
     write: ['staff', 'sysadmin'],
-    delete: ['staff', 'sysadmin']
+    delete: ['staff', 'sysadmin'],
   });
 
   try {
-    var u = await user.save();
-    Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, u._id);
+    const u = await user.save();
+    Utils.recordAction(
+      'Post',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      u._id
+    );
     defaultLog.info('Saved new user:', u._id);
     return Actions.sendResponse(res, 200, u._id);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected post failed');
   }
 };
 
 // Update an existing user
-exports.protectedPut = async function (args, res) {
+exports.protectedPut = async (args, res) => {
   defaultLog.info('USER PROTECTED PUT');
-  var objId = args.swagger.params.userId.value;
-  var obj = args.swagger.params.user.value;
-  defaultLog.info("Put user:", args.swagger.params.userId.value);
+  const objId = args.swagger.params.userId.value;
+  const obj = args.swagger.params.user.value;
+  defaultLog.info('Put user:', args.swagger.params.userId.value);
 
-  var User = require('mongoose').model('User');
+  const User = mongoose.model('User');
 
   try {
-    var u = await User.findOneAndUpdate({ _id: objId }, obj, { upsert: false, new: true }).exec();
-    Utils.recordAction('Put', 'User', args.swagger.params.auth_payload.preferred_username, objId);
-    defaultLog.info('User updated:', u._id);
+    const u = await User.findOneAndUpdate({ _id: objId }, obj, {
+      upsert: false,
+      new: true,
+    }).exec();
+
+    Utils.recordAction(
+      'Put',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      objId
+    );
+    defaultLog.info('User updated:', u && u._id ? u._id : objId);
     return Actions.sendResponse(res, 200, u);
   } catch (e) {
-    defaultLog.error(e);
-    return Actions.sendResponse(res, 400, e);
+    return Actions.sendResponse(res, 400, e, 'User protected put failed');
   }
-}
+};
 
 const addProjectPermission = async (user, projId) => {
   defaultLog.info(`Attempting to add user ${user} to project ${projId}'`);
@@ -148,8 +192,8 @@ const addProjectPermission = async (user, projId) => {
     } else {
       reject(`Cannot add project to user ${user.displayName}.`);
     }
-  })
-}
+  });
+};
 
 const removeProjectPermission = async (user, projId) => {
   defaultLog.info(`Attempting to remove user ${user} from project ${projId}'`);
@@ -162,7 +206,7 @@ const removeProjectPermission = async (user, projId) => {
       reject(`Cannot remove project from user ${user.displayName}.`);
     }
   });
-}
+};
 
 const removeUser = async (user) => {
   const UserModel = mongoose.model('User');
@@ -170,14 +214,23 @@ const removeUser = async (user) => {
   if (user._id && user.displayName) {
     defaultLog.info(`Attempting to remove user ${user.displayName}`);
     try {
-      const result = await UserModel.findOneAndDelete({ _id: user._id}, { useFindAndModify: false });
+      const result = await UserModel.findOneAndDelete({ _id: user._id });
       // Also remove projectLead and projectDirector values from any applicable projects
-      await ProjectModel.updateMany({ projectLead: user._id }, { $set: { projectLead: null } });
-      await ProjectModel.updateMany({ projectDirector: user._id }, { $set: { projectDirector: null } });
+      await ProjectModel.updateMany(
+        { projectLead: user._id },
+        { $set: { projectLead: null } }
+      );
+      await ProjectModel.updateMany(
+        { projectDirector: user._id },
+        { $set: { projectDirector: null } }
+      );
       defaultLog.info('User deleted: ', user._id);
       return result;
     } catch (e) {
-      defaultLog.error('Error while removing user:', e);
+      defaultLog.error('User remove failed',{
+        status: e && (e.status || e.statusCode),
+        err: { name: e && e.name, message: e && e.message, stack: e && e.stack }
+      });
       throw e;
     }
   } else {
@@ -185,87 +238,133 @@ const removeUser = async (user) => {
   }
 };
 
-exports.protectedAddPermission = (args, res) => {
+exports.protectedAddPermission = async (args, res) => {
   defaultLog.info('USER PROTECTED ADD PERMISSION');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
-  const User = require('mongoose').model('User');
+  const User = mongoose.model('User');
 
-  // Find all users that have the idirUserGuid field(real users as opposed to Contacts).
-  User.find({_schemaName: 'User', idirUserGuid: {$exists: true}}, (err, users) => {
-    if (users) {
-      users.forEach(user => {
-        if (user._id.equals(userId)) {
-          addProjectPermission(user, projId)
-          .then((permissionAdded) => {
-            Utils.recordAction('Add Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
-            defaultLog.info('Permission added to user', userId);
-            // Return all users to be able to update list of users in Permissions tab.
-            return Actions.sendResponse(res, 200, users);
-          })
-          .catch((err) => {
-            defaultLog.error(err);
-            return Actions.sendResponse(res, 500, err);
-          });
-        }
-      })
-    } else {
+  try {
+    // Find all users that have the idirUserGuid field (real users as opposed to Contacts).
+    const users = await User.find({ _schemaName: 'User', idirUserGuid: { $exists: true } });
+
+    if (!users || users.length === 0) {
       defaultLog.info("Couldn't find user!");
       return Actions.sendResponse(res, 404, {});
     }
-  })
+
+    // Locate the target user among the returned set.
+    const targetUser = users.find((user) => user._id.equals(userId));
+    if (!targetUser) {
+      defaultLog.info("Couldn't find user!");
+      return Actions.sendResponse(res, 404, {});
+    }
+
+    // Add permission (uses existing helper which returns a Promise)
+    await addProjectPermission(targetUser, projId);
+
+    Utils.recordAction(
+      'Add Permission',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      userId
+    );
+    defaultLog.info('Permission added to user', userId);
+
+    // Return all users to be able to update list of users in Permissions tab.
+    return Actions.sendResponse(res, 200, users);
+  } catch (e) {
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'User protected add permission failed',
+    );
+  }
 };
 
-exports.protectedRemovePermission = function (args, res) {
+
+exports.protectedRemovePermission = async (args, res) => {
   defaultLog.info('USER PROTECTED REMOVE PERMISSION');
-  const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
-  const projId = mongoose.Types.ObjectId(args.swagger.params.projId.value);
-  const User = require('mongoose').model('User');
+  const params = args.swagger.params;
+  try {
+    // Validate and build ObjectIds
+    const userIdParam = params && params.userId;
+    const projIdParam = params && params.projId;
+    const authPayload = params && params.auth_payload;
 
-  // Find all users that have the idirUserGuid field(real users as opposed to Contacts).
-  User.find({_schemaName: 'User', idirUserGuid: {$exists: true}}, (err, users) => {
-    if (users) {
-      users.forEach(user => {
-        if (user._id.equals(userId)) {
-          removeProjectPermission(user, projId)
-          .then((permissionAdded) => {
-            Utils.recordAction('Remove Permission', 'User', args.swagger.params.auth_payload.preferred_username, userId);
-            defaultLog.info('Permission removed from user', userId);
-            // Return all users to be able to update list of users in Permissions tab.
-            return Actions.sendResponse(res, 200, users);
-          })
-          .catch((err) => {
-            defaultLog.error(err);
-            return Actions.sendResponse(res, 500, err);
-          });
-        }
-      })
-    } else {
-      defaultLog.info("Couldn't find user!");
-      return Actions.sendResponse(res, 404, {});
+    if (!userIdParam || !userIdParam.value || !projIdParam || !projIdParam.value) {
+      return Actions.sendResponse(res, 400, { message: 'Missing userId or projId' });
     }
-  })
+
+    const userId = new mongoose.Types.ObjectId(userIdParam.value);
+    const projId = new mongoose.Types.ObjectId(projIdParam.value);
+
+    const User = mongoose.model('User');
+    const user = await User.findOne({
+      _schemaName: 'User',
+      idirUserGuid: { $exists: true },
+      _id: userId
+    }).exec();
+
+    if (!user) {
+      defaultLog.info("Couldn't find user!");
+      return Actions.sendResponse(res, 404, { message: 'User not found' });
+    }
+    await removeProjectPermission(user, projId);
+    const username =
+      authPayload && authPayload.preferred_username
+        ? authPayload.preferred_username
+        : undefined;
+
+    Utils.recordAction('Remove Permission', 'User', username, userId);
+    defaultLog.info('Permission removed from user', userId);
+
+    // Return full list for the Permissions tab
+    const users = await User.find({
+      _schemaName: 'User',
+      idirUserGuid: { $exists: true }
+    }).exec();
+
+    return Actions.sendResponse(res, 200, users);
+  } catch (e) {
+    return Actions.sendResponse(
+      res,
+      500,
+      e,
+      'User protected remove permission failed',
+    );
+  }
 };
 
-exports.protectedRemove = async function (args, res) {
+exports.protectedRemove = async (args, res) => {
   defaultLog.info('USER PROTECTED REMOVE');
   const userId = mongoose.Types.ObjectId(args.swagger.params.userId.value);
   const User = mongoose.model('User');
   try {
-    const users = await User.find({ _schemaName: 'User', idirUserGuid: { $exists: true } });
-    const targetUser = users.find(user => user._id.equals(userId));
+    const users = await User.find({
+      _schemaName: 'User',
+      idirUserGuid: { $exists: true },
+    });
+    const targetUser = users.find((user) => user._id.equals(userId));
     if (!targetUser) {
       defaultLog.info("Couldn't find user!");
       return Actions.sendResponse(res, 404, {});
     }
     await removeUser(targetUser);
-    Utils.recordAction('Remove User', 'User', args.swagger.params.auth_payload.preferred_username, userId);
+    Utils.recordAction(
+      'Remove User',
+      'User',
+      args.swagger.params.auth_payload.preferred_username,
+      userId,
+    );
     defaultLog.info('User removed', userId);
-    const updatedUsers = await User.find({ _schemaName: 'User', idirUserGuid: { $exists: true } });
+    const updatedUsers = await User.find({
+      _schemaName: 'User',
+      idirUserGuid: { $exists: true },
+    });
     return Actions.sendResponse(res, 200, updatedUsers);
-  } catch (err) {
-    defaultLog.error('Error in protectedRemove:', err);
-    return Actions.sendResponse(res, 500, err.message || err);
+  } catch (e) {
+    return Actions.sendResponse(res, 500, e, 'User protected remove failed');
   }
 };
-

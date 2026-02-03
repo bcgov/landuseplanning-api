@@ -35,7 +35,7 @@ objects:
         from:
           kind: ImageStreamTag
           namespace: "${S2I_NAMESPACE}"
-          name: nodejs:6
+          name: nodejs:18
     output:
       to:
         kind: ImageStreamTag

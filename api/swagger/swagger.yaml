@@ -40,6 +40,56 @@ tags:
   externalDocs:
     description: "Find out more about our API"
     url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "health"
+  description: "Health checks"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "sitemap"
+  description: "Sitemap endpoints"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "link"
+  description: "Operations about external links"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "documentSection"
+  description: "Operations about document sections"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "commentperiod"
+  description: "Operations about comment periods"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "survey"
+  description: "Operations about surveys"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "surveyResponse"
+  description: "Operations about survey responses"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "emailSubscribe"
+  description: "Operations about email subscriptions"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "vc"
+  description: "Operations about valued components"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
+- name: "audit"
+  description: "Operations about audit logs"
+  externalDocs:
+    description: "Find out more about our API"
+    url: "http://github.com/bcgov/landuseplanning-api.git"
 schemes:
   - http
 securityDefinitions:
@@ -130,10 +180,13 @@ definitions:
       - contactFormFilesEnabled
       - contactFormEmails
       - collectionNotice
+  ProjectTypes:
+    type: string
+    description: "Allowed projectTypes values."
     enum: &projectTypes
       - name
       - checked
-  TopicSortByFields:
+  ProjectSortByFields:
     type: string
     description: "Optional fields to sort by (prefixed with + or - for order)"
     example: +name,-name
@@ -249,9 +302,6 @@ definitions:
     type: array
     items:
       $ref: '#/definitions/DocumentSectionObject'
-    properties:
-      project:
-        type: string
   DocumentSectionFields:
     type: string
     description: "Optional fields to return."
@@ -409,14 +459,7 @@ definitions:
       - +dateCompleted
       - -dateCompleted
 
-### Survey Response Definitions
-  SurveyStatus:
-    type: object
-    properties:
-      status:
-        type: string
-        description: "Can be the following commands: publish, defer, reject, reset."
-        example: "publish"
+  ### Survey Response Definitions
   SurveyResponseId:
     type: object
     properties:
@@ -585,6 +628,9 @@ definitions:
     #TODO: Fix enums
     enum: &organizationFields
       - name
+  OrganizationSortByFields:
+    type: string
+    description: "Optional fields to sort by (prefixed with + or -)"
     enum: &organizationSortByFields
       - +name
       - -name
@@ -1862,15 +1908,6 @@ paths:
           description: "Access Denied"
           schema:
             $ref: "#/definitions/Error"
-      responses:
-        "200":
-          description: "Success"
-          schema:
-            $ref: "#/definitions/RecentActivityObject"
-        "403":
-          description: "Access Denied"
-          schema:
-            $ref: "#/definitions/Error"
     get:
       tags:
         - project
@@ -2640,7 +2677,6 @@ paths:
     post:
       tags:
         - document
-      summary: "Create a new document"
       operationId: protectedPost
       description: "Create a new document object."
       summary: "Create a new document object."
@@ -2705,11 +2741,11 @@ paths:
           in: formData
           description: "The description of the file."
           required: false
-          name: keywords
+          type: string
+        - name: keywords
           in: formData
           description: "The keywords of the file."
           required: false
-          type: string
           type: string
         - name: labels
           in: formData
@@ -3280,7 +3316,6 @@ paths:
       summary: "Create a new document from public"
       operationId: unProtectedPost
       description: "Create a new document object from public."
-      summary: "Create a new document object from public."
       consumes:
         - multipart/form-data
       parameters:
@@ -3481,7 +3516,6 @@ paths:
       summary: "Create a new external link"
       operationId: protectedPost
       description: "Create a new external link object."
-      summary: "Create a new external link object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -3999,7 +4033,6 @@ paths:
       summary: "Create a new document section"
       operationId: protectedPost
       description: "Create a new document section object."
-      summary: "Create a new document section object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -4091,7 +4124,6 @@ paths:
       summary: "Reorder document sections"
       operationId: protectedReorder
       description: "Reorder document sections within a project."
-      summary: "Reorder document sections within a project."
       security:
         - Bearer: []
       x-security-scopes:
@@ -5109,7 +5141,6 @@ paths:
       summary: "Create a new comment"
       operationId: protectedPost
       description: "Create a new comment object."
-      summary: "Create a new comment object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -5359,7 +5390,6 @@ paths:
       summary: "Create a new comment"
       operationId: unProtectedPost
       description: "Create a new comment object."
-      summary: "Create a new comment object."
       parameters:
         - name: comment
           in: body
@@ -5429,8 +5459,6 @@ paths:
           type: boolean
           required: false
           collectionFormat: pipes
-          items:
-            type: string
         - in: query
           name: fields
           description: "Comment fields to return."
@@ -5545,7 +5573,6 @@ paths:
       summary: "Create a new commentperiod"
       operationId: protectedPost
       description: "Create a new commentperiod object."
-      summary: "Create a new commentperiod object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -6066,7 +6093,7 @@ paths:
           collectionFormat: pipes
           items:
             type: string
-            enum: *commentFields
+            enum: *commentPeriodFields
       responses:
         "200":
           description: "Success"
@@ -6381,7 +6408,6 @@ paths:
       summary: "Create a new survey"
       operationId: protectedPost
       description: "Create a new survey object."
-      summary: "Create a new survey object."
       security:
         - Bearer: []
       x-security-scopes:
@@ -7035,7 +7061,6 @@ paths:
       summary: "Create a new survey response"
       operationId: unProtectedPost
       description: "Create a new survey response object."
-      summary: "Create a new survey response object."
       parameters:
         - name: surveyResponse
           in: body
@@ -7600,7 +7625,6 @@ paths:
       summary: "Create a new email subscribe object"
       operationId: unProtectedPost
       description: "Create a new emailSubscribe object."
-      summary: "Create a new emailSubscribe object."
       parameters:
         - name: emailSubscribe
           in: body
@@ -7621,7 +7645,6 @@ paths:
         - emailSubscribe
       summary: "Confirm an email address"
       operationId: unProtectedPut
-      summary: "Confirm an email address"
       parameters:
         - in: query
           name: email
@@ -7647,7 +7670,6 @@ paths:
         - emailSubscribe
       summary: "Unsubscribe an email address"
       operationId: unProtectedDelete
-      summary: "Unsubscribe an email address"
       parameters:
         - in: query
           name: email
