@@ -1,0 +1,95 @@
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftWebConsole
+  name: landuseplanning-api-mongodb-dev
+  namespace: e8b9ad-dev
+  labels:
+    app: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/component: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/instance: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/part-of: landuseplanning-api-dev
+    app.openshift.io/runtime-namespace: openshift
+    app.openshift.io/runtime-version: latest
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - landuseplanning-api-mongodb-dev
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: 'mongodb:latest'
+        lastTriggeredImage: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb@sha256:8dc9932eabd30f2ee4d0b882500c65b48f3c2fbbd85bfd51d0d18410af404a39'
+    - type: ConfigChange
+  replicas: 1
+  revisionHistoryLimit: 10
+  test: false
+  selector:
+    app: landuseplanning-api-mongodb-dev
+    deploymentconfig: landuseplanning-api-mongodb-dev
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api-mongodb-dev
+        deploymentconfig: landuseplanning-api-mongodb-dev
+      annotations:
+        openshift.io/generated-by: OpenShiftWebConsole
+    spec:
+      volumes:
+        - name: landuseplanning-api-mongodb-dev
+          persistentVolumeClaim:
+            claimName: landuseplanning-api-mongodb-dev
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: landuseplanning-api-mongodb-dev
+          env:
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-name
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-password
+            - name: MONGODB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-dev
+                  key: database-admin-password
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: landuseplanning-api-mongodb-dev
+              mountPath: /var/lib/mongodb/data
+          terminationMessagePolicy: File
+          image: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb@sha256:8dc9932eabd30f2ee4d0b882500c65b48f3c2fbbd85bfd51d0d18410af404a39'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler

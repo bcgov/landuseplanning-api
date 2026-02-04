@@ -1,0 +1,27 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: landuseplanning-api-mongodb-dev
+  namespace: e8b9ad-dev
+  labels:
+    app: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/component: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/instance: landuseplanning-api-mongodb-dev
+    app.kubernetes.io/part-of: landuseplanning-api-dev
+spec:
+  clusterIP: 10.98.216.79
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - 10.98.216.79
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: landuseplanning-api-mongodb-dev
