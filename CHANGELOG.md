@@ -1,3 +1,6 @@
+### Feb 20, 2026
+* Added YAMLs for test environment MongoDB 6 configuration [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
+
 ### Feb 2, 2026
 * Modernized the API to meet MongoDB and Mongoose Requirements [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
     * Updated target MongoDB version to 6.0.13

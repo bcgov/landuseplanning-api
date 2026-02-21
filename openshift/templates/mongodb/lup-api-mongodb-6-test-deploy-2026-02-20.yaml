@@ -1,0 +1,94 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: '7'
+  name: landuseplanning-api-mongodb6-test
+  namespace: e8b9ad-test
+  labels:
+    app: landuseplanning-api
+    component: mongodb6
+    environment: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: landuseplanning-api
+      component: mongodb6
+      environment: test
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api
+        component: mongodb6
+        environment: test
+      annotations:
+        openshift.openshift.io/restartedAt: '2026-02-20T22:28:57.640Z'
+    spec:
+      volumes:
+        - name: data
+          emptyDir: {}
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: mongodb
+          command:
+            - mongod
+          livenessProbe:
+            tcpSocket:
+              port: mongodb
+            initialDelaySeconds: 30
+            timeoutSeconds: 1
+            periodSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-name
+            - name: MONGODB_USER
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-password
+            - name: MONGODB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-test
+                  key: database-admin-password
+          ports:
+            - name: mongodb
+              containerPort: 27017
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          terminationMessagePolicy: File
+          image: 'mongo:6'
+          args:
+            - '--bind_ip'
+            - 0.0.0.0
+            - '--dbpath'
+            - /data/db
+            - '--auth'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext: {}
+      schedulerName: default-scheduler
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

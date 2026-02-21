@@ -1,0 +1,30 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: landuseplanning-api-mongodb6-test
+  namespace: e8b9ad-test
+  labels:
+    app: landuseplanning-api
+    component: mongodb6
+    environment: test
+spec:
+  clusterIP: 10.98.58.117
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: mongodb
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - 10.98.58.117
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: landuseplanning-api
+    component: mongodb6
+    environment: test
+status:
+  loadBalancer: {}

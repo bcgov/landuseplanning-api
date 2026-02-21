@@ -1,0 +1,33 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    pv.kubernetes.io/bind-completed: 'yes'
+    pv.kubernetes.io/bound-by-controller: 'yes'
+    volume.beta.kubernetes.io/storage-provisioner: csi.trident.netapp.io
+    volume.kubernetes.io/storage-provisioner: csi.trident.netapp.io
+  name: landuseplanning-api-mongodb6-test
+  namespace: e8b9ad-test
+  finalizers:
+    - kubernetes.io/pvc-protection
+  labels:
+    app: landuseplanning-api
+    component: mongodb
+    environment: test
+    role: data
+    version: '6'
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: pvc-d7f36126-b0ef-4a7e-b50e-1b60582967dd
+  storageClassName: netapp-file-standard
+  volumeMode: Filesystem
+status:
+  phase: Bound
+  accessModes:
+    - ReadWriteOnce
+  capacity:
+    storage: 5Gi
