@@ -23,8 +23,6 @@ spec:
       creationTimestamp: null
       labels:
         app: landuseplanning-api-mongodb-dev
-      annotations:
-        openshift.io/generated-by: OpenShiftWebConsole
     spec:
       volumes:
         - name: landuseplanning-api-mongodb-dev
