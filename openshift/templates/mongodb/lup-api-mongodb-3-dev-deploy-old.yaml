@@ -1,5 +1,5 @@
-kind: Deployment
-apiVersion: apps/v1
+kind: DeploymentConfig
+apiVersion: apps.openshift.io/v1
 metadata:
   name: landuseplanning-api-mongodb-dev
   namespace: e8b9ad-dev
@@ -12,19 +12,39 @@ metadata:
     app.openshift.io/runtime-version: latest
 spec:
   strategy:
-    type: RollingUpdate
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - landuseplanning-api-mongodb-dev
+        from:
+          kind: ImageStreamTag
+          namespace: openshift
+          name: 'mongodb:latest'
+        lastTriggeredImage: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb@sha256:8dc9932eabd30f2ee4d0b882500c65b48f3c2fbbd85bfd51d0d18410af404a39'
+    - type: ConfigChange
   replicas: 1
   revisionHistoryLimit: 10
+  test: false
   selector:
-    matchLabels:
-      app: landuseplanning-api-mongodb-dev
+    app: landuseplanning-api-mongodb-dev
+    deploymentconfig: landuseplanning-api-mongodb-dev
   template:
     metadata:
       creationTimestamp: null
       labels:
         app: landuseplanning-api-mongodb-dev
-      annotations:
-        openshift.io/generated-by: OpenShiftWebConsole
+        deploymentconfig: landuseplanning-api-mongodb-dev
     spec:
       volumes:
         - name: landuseplanning-api-mongodb-dev
@@ -63,7 +83,7 @@ spec:
             - name: landuseplanning-api-mongodb-dev
               mountPath: /var/lib/mongodb/data
           terminationMessagePolicy: File
-          image: 'image-registry.apps.silver.devops.gov.bc.ca/openshift/mongodb'
+          image: 'image-registry.openshift-image-registry.svc:5000/openshift/mongodb@sha256:8dc9932eabd30f2ee4d0b882500c65b48f3c2fbbd85bfd51d0d18410af404a39'
       restartPolicy: Always
       terminationGracePeriodSeconds: 30
       dnsPolicy: ClusterFirst

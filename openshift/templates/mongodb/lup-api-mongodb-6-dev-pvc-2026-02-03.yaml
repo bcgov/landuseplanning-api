@@ -1,0 +1,27 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    pv.kubernetes.io/bind-completed: 'yes'
+    pv.kubernetes.io/bound-by-controller: 'yes'
+    volume.beta.kubernetes.io/storage-provisioner: csi.trident.netapp.io
+    volume.kubernetes.io/storage-provisioner: csi.trident.netapp.io
+  name: landuseplanning-api-mongodb-6-dev
+  namespace: e8b9ad-dev
+  finalizers:
+    - kubernetes.io/pvc-protection
+  labels:
+    app: landuseplanning-api
+    component: mongodb
+    environment: dev
+    role: data
+    version: '6'
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: pvc-8f352a44-c0be-4233-82eb-bd0735fec854
+  storageClassName: netapp-file-standard
+  volumeMode: Filesystem

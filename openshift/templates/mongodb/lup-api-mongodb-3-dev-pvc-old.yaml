@@ -1,0 +1,23 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  annotations:
+    pv.kubernetes.io/bind-completed: 'yes'
+    pv.kubernetes.io/bound-by-controller: 'yes'
+    volume.beta.kubernetes.io/storage-provisioner: csi.trident.netapp.io
+  name: landuseplanning-api-mongodb-dev
+  namespace: e8b9ad-dev
+  finalizers:
+    - kubernetes.io/pvc-protection
+  labels:
+    template: mongodb-persistent-template
+    template.openshift.io/template-instance-owner: 4247f127-78a4-4fa7-8bb9-a590d07b768c
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  volumeName: pvc-589600cc-e9ce-43fb-8ea9-fa09ab566526
+  storageClassName: netapp-file-standard
+  volumeMode: Filesystem

@@ -1,0 +1,24 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: landuseplanning-api-mongodb6-dev
+  namespace: e8b9ad-dev
+  labels:
+    app: landuseplanning-api-mongodb6-dev
+spec:
+  clusterIP: 10.98.104.36
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: mongodb
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - 10.98.104.36
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: landuseplanning-api-mongodb6-dev
