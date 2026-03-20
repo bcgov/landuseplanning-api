@@ -1,3 +1,6 @@
+### Mar 20, 2026
+* Added YAMLs for prod environment MongoDB 6 configuration [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
+
 ### Feb 20, 2026
 * Added YAMLs for test environment MongoDB 6 configuration [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
 

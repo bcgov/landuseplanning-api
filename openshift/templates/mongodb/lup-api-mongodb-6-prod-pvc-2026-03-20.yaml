@@ -1,0 +1,21 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: landuseplanning-api-mongodb-6-prod
+  namespace: e8b9ad-prod
+  finalizers:
+    - kubernetes.io/pvc-protection
+  labels:
+    app: landuseplanning-api
+    component: mongodb
+    environment: prod
+    role: data
+    version: '6'
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: netapp-file-standard
+  volumeMode: Filesystem
