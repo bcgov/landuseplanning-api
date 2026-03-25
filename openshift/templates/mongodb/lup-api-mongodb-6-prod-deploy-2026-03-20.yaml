@@ -1,0 +1,85 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: landuseplanning-api-mongodb-6-prod
+  namespace: e8b9ad-prod
+  labels:
+    app: landuseplanning-api
+    component: mongodb6
+    environment: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: landuseplanning-api
+      component: mongodb6
+      environment: prod
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: landuseplanning-api
+        component: mongodb6
+        environment: prod
+    spec:
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: landuseplanning-api-mongodb-6-prod
+      containers:
+        - resources: {}
+          terminationMessagePath: /dev/termination-log
+          name: mongodb
+          command:
+            - mongod
+          env:
+            - name: MONGODB_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-name
+            - name: MONGODB_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-user
+            - name: MONGODB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-password
+            - name: MONGODB_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: landuseplanning-api-mongodb-prod
+                  key: database-admin-password
+          securityContext:
+            runAsUser: 1003720000
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: 27017
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: data
+              mountPath: /data/db
+          terminationMessagePolicy: File
+          image: 'mongo:6'
+          args:
+            - '--bind_ip'
+            - 0.0.0.0
+            - '--dbpath'
+            - /data/db
+            - '--auth'
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      securityContext:
+        fsGroup: 1003720000
+        fsGroupChangePolicy: OnRootMismatch
+      schedulerName: default-scheduler
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
