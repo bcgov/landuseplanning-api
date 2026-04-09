@@ -1,0 +1,29 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: landuseplanning-api-mongodb-prod
+  namespace: e8b9ad-prod
+  labels:
+    app: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/component: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/instance: landuseplanning-api-mongodb-prod
+    app.kubernetes.io/part-of: landuseplanning-api-prod
+  annotations:
+    template.openshift.io/expose-uri: 'mongodb://{.spec.clusterIP}:{.spec.ports[?(.name=="mongo")].port}'
+spec:
+  clusterIP: 10.98.123.243
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: mongo
+      protocol: TCP
+      port: 27017
+      targetPort: 27017
+  internalTrafficPolicy: Cluster
+  clusterIPs:
+    - 10.98.123.243
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: landuseplanning-api-mongodb-prod

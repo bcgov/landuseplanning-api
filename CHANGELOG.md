@@ -1,3 +1,7 @@
+### Apr 9, 2026
+* Added additional YAMLs for MongoDB 3 PVCs and services that were not previously documented [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
+* Organized openshift templates folder
+
 ### Mar 20, 2026
 * Added YAMLs for prod environment MongoDB 6 configuration [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
 
