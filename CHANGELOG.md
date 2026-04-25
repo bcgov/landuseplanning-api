@@ -1,3 +1,7 @@
+### Apr 24, 2026
+* Added an additional field to comment period objects for external tool popup URL [DESENG-959](https://citz-gdx.atlassian.net/browse/DESENG-959)
+* Fixed some minor issues with unit testing environment (individual tests still need to be fixed)
+
 ### Apr 9, 2026
 * Added additional YAMLs for MongoDB 3 PVCs and services that were not previously documented [DESENG-800](https://citz-gdx.atlassian.net/browse/DESENG-800)
 * Organized openshift templates folder

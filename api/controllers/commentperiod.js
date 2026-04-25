@@ -33,6 +33,7 @@ const CP_ALLOWED_FIELDS = new Set([
   'isVetted',
   'commentingMethod',
   'externalToolPopupText',
+  'externalToolPopupURL',
   'surveySelected',
   'openHouses',
   'periodType',
@@ -424,6 +425,7 @@ exports.protectedPost = async (args, res) => {
     instructions: obj.instructions,
     commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    externalToolPopupURL: obj.externalToolPopupURL,
     surveySelected: obj.surveySelected
       ? mongoose.Types.ObjectId(obj.surveySelected)
       : obj.surveySelected,
@@ -482,6 +484,7 @@ exports.protectedPut = async (args, res) => {
     instructions: obj.instructions,
     commentingMethod: obj.commentingMethod,
     externalToolPopupText: obj.externalToolPopupText,
+    externalToolPopupURL: obj.externalToolPopupURL,
     surveySelected: obj.surveySelected,
     openHouses: obj.openHouses,
     relatedDocuments: obj.relatedDocuments,

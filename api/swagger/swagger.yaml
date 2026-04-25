@@ -429,6 +429,7 @@ definitions:
       - isVetted
       - commentingMethod
       - externalToolPopupText
+      - externalToolPopupURL
       - surveySelected
       - openHouses
       - periodType

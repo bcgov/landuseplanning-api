@@ -58,7 +58,7 @@
     "dev": "nodemon app",
     "lint": "eslint api/controllers/*.js api/helpers/**/*.js",
     "lint-tests": "eslint api/test/*.js api/test/**/*.js",
-    "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --config=jest.config.js --runInBand",
+    "test": "UPLOAD_DIRECTORY='./api/test/uploads/' jest --config=jest.config.js --runInBand --detectOpenHandles --forceExit",
     "tests-debug": "node --inspect node_modules/.bin/jest --config=jest.config.js --runInBand",
     "coverage": "jest --collectCoverageFrom=api/**.js --coverage api"
   },

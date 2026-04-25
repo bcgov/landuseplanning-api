@@ -24,6 +24,7 @@ module.exports = require('../models')('CommentPeriod', {
     isVetted                    : { type: String, default: '' },
     commentingMethod            : { type: String, default: ''},
     externalToolPopupText       : { type: String, default: '' },
+    externalToolPopupURL        : { type: String, default: '' },
     surveySelected              : { type: 'ObjectId', ref: 'Survey', default: null, index: true },
     openHouses                  : [{ type: Mixed, default: {} }],
     periodType                  : { type: String, default: '' },
