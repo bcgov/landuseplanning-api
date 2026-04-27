@@ -78,14 +78,6 @@ function createPublicSwaggerParams(fieldNames, additionalValues = {}) {
   return swaggerObject;
 }
 
-function defaultPublicParams(fieldNames) {
-  return {
-    fields: {
-      value: _.cloneDeep(fieldNames),
-    },
-  };
-}
-
 function buildParams(nameValueMapping) {
   const paramObj = {};
   _.mapKeys(nameValueMapping, (value, key) => {

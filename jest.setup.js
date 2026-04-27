@@ -1,7 +1,6 @@
 // Force defaultLog to have at least one transport during tests
 const winston = require('winston');
 const defaultLog = require('winston').loggers.get('defaultLog');
-const jest = require('jest');
 
 // Ensure TextEncoder/TextDecoder exist (needed by whatwg-url)
 const { TextEncoder, TextDecoder } = require('util');
@@ -15,6 +14,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { globSync } = require('glob');
 const path = require('path');
 
+winston.clear();
 let mongod;
 mongoose.set('strictQuery', true);
 
@@ -30,13 +30,13 @@ if (!winston.loggers.has('defaultLog')) {
 if (typeof global.TextEncoder === 'undefined') global.TextEncoder = TextEncoder;
 if (typeof global.TextDecoder === 'undefined') global.TextDecoder = TextDecoder;
 
-jest.setTimeout(60000);
+jest.setTimeout(30000);
 
 beforeAll(async () => {
     mongod = await MongoMemoryServer.create({
         binary: { version: process.env.MONGOMS_VERSION || '5.0.19' },
     });
-    await mongoose.connect(mongod.getUri(), { serverSelectionTimeoutMS: 60000 });
+    await mongoose.connect(mongod.getUri(), { serverSelectionTimeoutMS: 30000 });
     const modelDirPattern = path.join(__dirname, 'api', 'helpers', 'models', '**', '*.js');
     const modelFiles = globSync(modelDirPattern, { nodir: true });
 
