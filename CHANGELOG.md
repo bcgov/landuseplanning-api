@@ -1,3 +1,6 @@
+### Apr 29, 2026
+* Modified app.js to add authSource and sync indexes.
+
 ### Apr 24, 2026
 * Added an additional field to comment period objects for external tool popup URL [DESENG-959](https://citz-gdx.atlassian.net/browse/DESENG-959)
 * Fixed some minor issues with unit testing environment (individual tests still need to be fixed)
