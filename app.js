@@ -93,7 +93,7 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
   const options = {
     user: dbUsername,
     pass: dbPassword,
-    authSource: 'admin',
+    authSource: process.env.MONGODB_AUTH_SOURCE || process.env.MONGODB_DATABASE,
     maxPoolSize: 10, // Maintain up to 10 socket connections
     connectTimeoutMS: 10000, // Give up initial connection after 10 seconds
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
