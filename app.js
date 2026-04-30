@@ -99,7 +99,6 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
   };
   defaultLog.info('Connecting to:', dbConnection);
-  defaultLog.info(options);
   mongoose.Promise = global.Promise;
   (mongoose.connect(dbConnection, options).then(async () => {
     defaultLog.info('Database connected');
