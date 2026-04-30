@@ -126,9 +126,8 @@ swaggerTools.initializeMiddleware(swaggerConfig, function(middleware) {
     require('./api/helpers/models/commentperiod');
     require('./api/helpers/models/topic');
     require('./api/helpers/models/emailSubscribe');
-    defaultLog.info('db model loading done.');
-
     await mongoose.connection.syncIndexes();
+    defaultLog.info('db model loading done.');
 
     // Build text index.
     databaseIndexes.generateTextIndex();
