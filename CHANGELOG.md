@@ -1,3 +1,6 @@
+### Jun 26, 2026
+* Removed publishing/visibility updates on protected document put. These are handled outside of form submission.
+
 ### Apr 29, 2026
 * Modified app.js to add authSource.
 

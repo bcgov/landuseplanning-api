@@ -728,6 +728,7 @@ exports.protectedPut = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED PUT');
   const objId = params.docId.value;
   defaultLog.info('Put document:', objId);
+  defaultLog.info('PARAM CHECK FOR PUBLISHED STRING, is it Published?', params.eaoStatus.value === 'Published')
 
   const patch = {
     _updatedBy: params.auth_payload.preferred_username,
@@ -739,12 +740,6 @@ exports.protectedPut = async (args, res) => {
     datePosted: params.datePosted.value,
     description: params.description.value,
     keywords: params.keywords.value,
-    eaoStatus: params.eaoStatus.value,
-    read: [
-      'staff',
-      'sysadmin',
-      params.eaoStatus.value === 'Published' ? 'public' : undefined,
-    ],
   };
 
   const Document = mongoose.model('Document');
