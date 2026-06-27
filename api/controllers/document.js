@@ -728,7 +728,6 @@ exports.protectedPut = async (args, res) => {
   defaultLog.info('DOCUMENT PROTECTED PUT');
   const objId = params.docId.value;
   defaultLog.info('Put document:', objId);
-  defaultLog.info('PARAM CHECK FOR PUBLISHED STRING, is it Published?', params.eaoStatus.value === 'Published')
 
   const patch = {
     _updatedBy: params.auth_payload.preferred_username,
