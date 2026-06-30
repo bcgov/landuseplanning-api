@@ -739,12 +739,6 @@ exports.protectedPut = async (args, res) => {
     datePosted: params.datePosted.value,
     description: params.description.value,
     keywords: params.keywords.value,
-    eaoStatus: params.eaoStatus.value,
-    read: [
-      'staff',
-      'sysadmin',
-      params.eaoStatus.value === 'Published' ? 'public' : undefined,
-    ],
   };
 
   const Document = mongoose.model('Document');
